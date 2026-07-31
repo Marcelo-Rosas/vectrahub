@@ -1,7 +1,7 @@
 # Cargo Flow Navigator — Contexto para Agentes AI
 
 ## Projeto
-TMS (Transport Management System) da Vectra Cargo, operação em Navegantes e Itajaí, SC.
+TMS (Transport Management System) da VECTRA HUB LTDA, operação em Navegantes e Itajaí, SC.
 Sistema web para gestão de cotações de frete, ordens de serviço, precificação, financeiro, documentos de transporte, frota e notificações.
 
 ## Stack
@@ -36,7 +36,7 @@ npm run docs:claude                        # Regenera CLAUDE.md UTF-8 (repo prin
 - Edge Functions: chamar via `invokeEdgeFunction` em `src/lib/edgeFunctions.ts`
 
 ## Supabase
-- Project ref: epgedaiukjippepujuzc
+- Project ref: lrbtbrpoklgwaaclbufz (Vectra HUB)
 - Region: sa-east-1
 - RLS habilitado em todas as tabelas
 - Service Role Key: apenas em Edge Functions
