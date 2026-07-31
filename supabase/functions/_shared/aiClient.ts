@@ -1,6 +1,6 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
-type LLMProvider = 'anthropic' | 'openai' | 'gemini';
+type LLMProvider = 'anthropic' | 'openai' | 'gemini' | 'kimi' | 'fugu';
 
 const getEnv = (key: string): string | undefined => {
   try {
@@ -65,6 +65,109 @@ async function logProviderFallback(params: {
   } catch (e) {
     console.error('Failed to log AI provider fallback:', e);
   }
+}
+
+export function resolveCallPlan(modelHint?: LLMProvider): {
+  primary: LLMProvider;
+  fallback?: LLMProvider;
+} {
+  if (modelHint === 'kimi') return { primary: 'kimi' };
+  if (modelHint === 'fugu') return { primary: 'fugu' };
+  if (modelHint === 'gemini') return { primary: 'gemini' };
+  if (modelHint === 'anthropic' || modelHint === 'openai') return { primary: modelHint };
+  return { primary: 'fugu', fallback: 'gemini' };
+}
+
+async function callOpenAICompat(opts: {
+  provider: 'kimi' | 'fugu' | 'openai';
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+  params: CallLLMParams;
+  bodyExtras?: Record<string, unknown>;
+  omitTemperature?: boolean;
+}): Promise<CallLLMResult> {
+  const maxTokens = opts.params.maxTokens ?? 1024;
+  const body: Record<string, unknown> = {
+    model: opts.model,
+    messages: [
+      ...(opts.params.system ? [{ role: 'system' as const, content: opts.params.system }] : []),
+      { role: 'user' as const, content: opts.params.prompt },
+    ],
+    ...(opts.bodyExtras ?? {}),
+  };
+
+  if (opts.provider === 'kimi') {
+    body.max_completion_tokens = maxTokens;
+  } else {
+    body.max_tokens = maxTokens;
+  }
+
+  if (!opts.omitTemperature) {
+    body.temperature = opts.params.temperature ?? 0.2;
+  }
+
+  const base = opts.baseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${opts.apiKey}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  const textBody = await res.text();
+  let parsed: unknown = null;
+  try {
+    parsed = JSON.parse(textBody);
+  } catch {
+    parsed = textBody;
+  }
+
+  if (!res.ok) {
+    const errObj = (parsed as { error?: { message?: string } })?.error;
+    throw new Error(`${opts.provider} API error (${res.status}): ${errObj?.message || textBody}`);
+  }
+
+  const contentText =
+    (parsed as { choices?: Array<{ message?: { content?: string }; text?: string }> })?.choices?.[0]
+      ?.message?.content ??
+    (parsed as { choices?: Array<{ text?: string }> })?.choices?.[0]?.text ??
+    String(textBody);
+
+  return { provider: opts.provider, text: contentText, raw: parsed };
+}
+
+async function callFugu(params: CallLLMParams): Promise<CallLLMResult> {
+  const apiKey = getEnv('SAKANA_API_KEY');
+  if (!apiKey) throw new Error('SAKANA_API_KEY not configured');
+  const baseUrl = getEnv('SAKANA_API_BASE_URL') || 'https://api.sakana.ai/v1';
+  const model = getEnv('SAKANA_MODEL') || 'fugu';
+  return callOpenAICompat({
+    provider: 'fugu',
+    apiKey,
+    baseUrl,
+    model,
+    params,
+  });
+}
+
+async function callKimi(params: CallLLMParams): Promise<CallLLMResult> {
+  const apiKey = getEnv('MOONSHOT_API_KEY');
+  if (!apiKey) throw new Error('MOONSHOT_API_KEY not configured');
+  const baseUrl = getEnv('MOONSHOT_API_URL') || 'https://api.moonshot.ai/v1';
+  const model = getEnv('MOONSHOT_MODEL') || 'kimi-k3';
+  const reasoningEffort = getEnv('MOONSHOT_REASONING_EFFORT') || 'low';
+  return callOpenAICompat({
+    provider: 'kimi',
+    apiKey,
+    baseUrl,
+    model,
+    params,
+    omitTemperature: true,
+    bodyExtras: { reasoning_effort: reasoningEffort },
+  });
 }
 
 async function callAnthropic(params: CallLLMParams): Promise<CallLLMResult> {
@@ -263,7 +366,40 @@ async function callGeminiLLM(params: CallLLMParams): Promise<CallLLMResult> {
 }
 
 export async function callLLM(params: CallLLMParams): Promise<CallLLMResult> {
-  // Gemini only — same LLM used by Navi.
-  // OpenAI/Anthropic kept as dead code for future reactivation if needed.
-  return callGeminiLLM(params);
+  const plan = resolveCallPlan(params.modelHint);
+
+  const run = async (provider: LLMProvider): Promise<CallLLMResult> => {
+    switch (provider) {
+      case 'kimi':
+        return callKimi(params);
+      case 'fugu':
+        return callFugu(params);
+      case 'gemini':
+        return callGeminiLLM(params);
+      case 'anthropic':
+        return callAnthropic(params);
+      case 'openai':
+        return callOpenAI(params);
+      default: {
+        const _exhaustive: never = provider;
+        throw new Error(`Unknown provider: ${_exhaustive}`);
+      }
+    }
+  };
+
+  try {
+    return await run(plan.primary);
+  } catch (primaryErr) {
+    if (!plan.fallback) throw primaryErr;
+    const reason = primaryErr instanceof Error ? primaryErr.message : String(primaryErr);
+    await logProviderFallback({
+      from: plan.primary,
+      to: plan.fallback,
+      reason,
+      analysisType: params.analysisType,
+      entityType: params.entityType,
+      entityId: params.entityId,
+    });
+    return await run(plan.fallback);
+  }
 }
