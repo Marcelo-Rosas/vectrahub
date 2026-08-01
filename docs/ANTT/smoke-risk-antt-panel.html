@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Smoke Risk ANTT Hub</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f4f6f9; padding: 24px; color: #1e2330; }
+    .card { max-width: 560px; background: #fff; border: 1px solid #bbf7d0; background: #f0fdf4; border-radius: 12px; padding: 16px; }
+    .title { display: flex; align-items: center; gap: 8px; font-weight: 600; margin-bottom: 8px; }
+    .ok { color: #16a34a; }
+    .muted { color: #64748b; font-size: 14px; line-height: 1.5; }
+    a { color: #2563eb; }
+    .meta { margin-top: 16px; font-size: 12px; color: #94a3b8; }
+    h1 { font-size: 18px; margin: 0 0 16px; }
+  </style>
+</head>
+<body>
+  <h1 data-testid="smoke-title">Passo 1: Consulta ANTT (RNTRC) — smoke Hub</h1>
+  <div class="card" data-testid="risk-step-antt-smoke">
+    <div class="title"><span class="ok">✓</span> ANTT: Consulta válida</div>
+    <div class="muted" data-testid="transportador">Vectra Hub Ltda</div>
+    <div class="muted" data-testid="rntrc">RNTRC: 059734055</div>
+    <div class="muted" data-testid="situacao">Situação: regular</div>
+    <div class="muted" data-testid="registro">Registro RNTRC: ETC</div>
+    <div class="muted" data-testid="municipio">Itajaí/SC · desde 31/07/2026</div>
+    <div class="muted" data-testid="apto">Apto: SIM · Frota (SVC2F44): SIM</div>
+    <div class="muted" data-testid="comprovante-absent">Comprovante: link ausente (consulta pública sem certidão — esperado)</div>
+  </div>
+  <p class="meta">Fonte: docs/ANTT/smoke-rntrc-raw.json + smoke-veiculo-raw.json · espelho do RiskWorkflowWizard</p>
+</body>
+</html>

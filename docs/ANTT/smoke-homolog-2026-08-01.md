@@ -71,8 +71,41 @@ Raw: `docs/ANTT/smoke-rntrc-raw.json`
 
 Raw: `docs/ANTT/smoke-veiculo-raw.json`
 
+## UI / PDF (C — Risk panel + OC PDF)
+
+**Script:** `npx tsx scripts/smoke-antt-hub-pdf-ui.ts`  
+**Resultado:** PASS (`docs/ANTT/smoke-ui-pdf-assert.json`)
+
+### B — PDF Ordem de Coleta
+
+Gerado a partir do snapshot smoke (mesmo contrato do `generateCollectionOrderPdf` na UI).
+
+| Artefato | Path |
+|----------|------|
+| PDF | `docs/ANTT/smoke-oc-hub-antt.pdf` |
+| Assert strings | `CONSULTA ANTT / RNTRC`, `059734055`, `ATIVO`, `ETC`, `Vectra Hub`, `31/07/2026`, APTO `SIM` |
+
+Campos batem com certificado/extrato Hub.
+
+### A — Painel Risk (Passo 1 ANTT)
+
+Espelho HTML do card do `RiskWorkflowWizard` (sem login SPA — mesmos campos do payload).
+
+| Artefato | Path |
+|----------|------|
+| HTML | `docs/ANTT/smoke-risk-antt-panel.html` |
+| PNG | `docs/ANTT/smoke-risk-antt-panel.png` |
+
+Mostra: Consulta válida · Vectra Hub Ltda · RNTRC `059734055` · regular · ETC · Itajaí/SC · apto + frota SVC2F44.
+
+### Comprovante PDF (link)
+
+`comprovante_url` continua **null**. Consulta pública não devolve link de certidão/extrato (esses PDFs saem do portal autenticado “emitir certificado/extrato”). Na UI: link “Ver Comprovante ANTT” **não aparece** — comportamento esperado hoje.
+
+**Ainda não feito:** walkthrough logado no SPA (OrderDetail → Risk wizard → emitir OC real). Espelho + gerador cobrem contrato de dados/PDF.
+
 ## Conclusão
 
-RNTRC Hub consultável e coerente com certificado/extrato. Secrets emitente prontos para CT-e/MDF-e homolog.
+RNTRC Hub consultável e coerente com certificado/extrato. Secrets emitente prontos para CT-e/MDF-e homolog. Bloco ANTT no PDF OC + painel Risk validados via smoke script.
 
-**Fora deste smoke:** emissão CIOT (bridge STUB / IPEF WebRouter).
+**Fora deste smoke:** emissão CIOT (bridge STUB / IPEF WebRouter); link comprovante na consulta pública.

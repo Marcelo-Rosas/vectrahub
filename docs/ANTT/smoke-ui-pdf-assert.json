@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-08-01T15:41:17.385Z",
+  "pdf": {
+    "path": "C:\\Users\\marce\\vectra-hub\\docs\\ANTT\\smoke-oc-hub-antt.pdf",
+    "fileName": "OC-SMOKE-HUB-ANTT.pdf",
+    "bytes": 64088,
+    "ok": [
+      "CONSULTA ANTT / RNTRC",
+      "059734055",
+      "ATIVO",
+      "ETC",
+      "SIM",
+      "Vectra Hub",
+      "Itaja",
+      "31/07/2026"
+    ],
+    "missing": []
+  },
+  "risk_panel": {
+    "html": "C:\\Users\\marce\\vectra-hub\\docs\\ANTT\\smoke-risk-antt-panel.html",
+    "png": "C:\\Users\\marce\\vectra-hub\\docs\\ANTT\\smoke-risk-antt-panel.png",
+    "text": "✓\nANTT: Consulta válida\nVectra Hub Ltda\nRNTRC: 059734055\nSituação: regular\nRegistro RNTRC: ETC\nItajaí/SC · desde 31/07/2026\nApto: SIM · Frota (SVC2F44): SIM\nComprovante: link ausente (consulta pública sem certidão — esperado)",
+    "missing": [],
+    "comprovante_link_expected": false,
+    "comprovante_link_present": false
+  },
+  "field_checks": {
+    "rntrc_match": true,
+    "situacao_raw_match": true,
+    "situacao_match": true,
+    "apto_match": true,
+    "transportador_match": true,
+    "municipio_match": true,
+    "cadastrado_match": true,
+    "frota_match": true,
+    "etc_in_name": true,
+    "comprovante_null": true
+  },
+  "pass": true
+}
