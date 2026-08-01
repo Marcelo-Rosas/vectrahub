@@ -508,25 +508,26 @@ async function fetchPage(url: string, signal: AbortSignal): Promise<PageTokens> 
 // ─── CONSULTATION FLOWS ──────────────────────────────────────────────────────
 
 /**
- * Modo-switch intermediário para rbTipoConsulta=3 (Por Veículo).
+ * Modo-switch intermediário para rbTipoConsulta.
  *
- * O portal ANTT renderiza txtPlaca condicionalmente — só aparece quando
- * tipo=3 está ativo. Sem este POST intermediário, o __EVENTVALIDATION do
- * POST final não inclui txtPlaca/btnConsulta para tipo=3 e o servidor
- * rejeita com "Invalid postback or callback argument".
- *
- * Estratégia: POST regular (sem X-MicrosoftAjax) para que o servidor
- * responda com HTML completo. A resposta delta (ScriptManager) era
- * consistentemente rejeitada com event validation error 505.
+ * Radio indices (DOM): $0 = Por Transportador (1), $2 = Por Veículo (3).
+ * O portal renderiza campos condicionalmente; sem autopostback o
+ * __EVENTVALIDATION rejeita o POST final ("Invalid postback").
  */
-async function switchRntrcMode(tokens: PageTokens, signal: AbortSignal): Promise<PageTokens> {
-  console.log('[antt] autopostback rbTipoConsulta=$2 (Por Veículo)');
+async function switchRntrcMode(
+  tokens: PageTokens,
+  tipoConsulta: '1' | '3',
+  signal: AbortSignal
+): Promise<PageTokens> {
+  const radioIdx = tipoConsulta === '3' ? '2' : '0';
+  console.log('[antt] autopostback rbTipoConsulta=$' + radioIdx + ' (tipo=' + tipoConsulta + ')');
 
   const selBody = new URLSearchParams();
-  // ScriptManager arg referencia o radio com índice $2 (terceiro radio = Por Veículo)
-  selBody.append('ctl00$ScriptManagerMain', 'ctl00$ScriptManagerMain|ctl00$Corpo$rbTipoConsulta$2');
-  // EVENTTARGET com $2 — confirmado pelo onclick do DOM real
-  selBody.append('__EVENTTARGET', 'ctl00$Corpo$rbTipoConsulta$2');
+  selBody.append(
+    'ctl00$ScriptManagerMain',
+    `ctl00$ScriptManagerMain|ctl00$Corpo$rbTipoConsulta$${radioIdx}`
+  );
+  selBody.append('__EVENTTARGET', `ctl00$Corpo$rbTipoConsulta$${radioIdx}`);
   selBody.append('__EVENTARGUMENT', '');
   selBody.append('__LASTFOCUS', '');
   selBody.append('__VIEWSTATE', tokens.viewState);
@@ -535,12 +536,10 @@ async function switchRntrcMode(tokens: PageTokens, signal: AbortSignal): Promise
   selBody.append('ctl00$bMostraAlerta', 'true');
   selBody.append('ctl00$Corpo$hfPnlConsulta', '1');
   selBody.append('ctl00$Corpo$hfAltchaUrl', tokens.altchaUrl);
-  selBody.append('ctl00$Corpo$rbTipoConsulta', '3');
-  // CRÍTICO: NÃO enviar txtPlaca aqui — esse campo só existe APÓS o autopostback.
-  // Enviá-lo antes faz o __EVENTVALIDATION rejeitar com "Invalid postback".
+  selBody.append('ctl00$Corpo$rbTipoConsulta', tipoConsulta);
+  // NÃO enviar txtPlaca no switch — só existe após tipo=3 ativo.
   selBody.append('ctl00$Corpo$txtRNTRC', '');
   selBody.append('ctl00$Corpo$txtCpfCnpj', '');
-  // CRÍTICO: campo obrigatório em postbacks AJAX do ScriptManager
   selBody.append('__ASYNCPOST', 'true');
 
   try {
@@ -561,7 +560,6 @@ async function switchRntrcMode(tokens: PageTokens, signal: AbortSignal): Promise
       signal,
     });
     const text = await res.text();
-    // Merge any new session cookies set by the autopostback response
     const freshCookies = extractCookies(res);
     const mergedCookies = freshCookies
       ? mergeCookies(tokens.cookies, freshCookies)
@@ -594,7 +592,7 @@ async function switchRntrcMode(tokens: PageTokens, signal: AbortSignal): Promise
     };
   } catch (e) {
     console.error('[antt] switchRntrcMode FALHOU:', String(e));
-    throw e; // propaga em vez de silenciar — o caller decide retry/fallback
+    throw e;
   }
 }
 
@@ -619,13 +617,8 @@ async function consultaRntrc(
     let tokens = await fetchPage(RNTRC_URL, signal);
     if (!tokens.viewState) throw new Error('RNTRC ViewState não encontrado');
 
-    // tipoConsulta=3 requires an intermediate autopostback so the server
-    // registers txtPlaca in __EVENTVALIDATION before the actual search POST.
-    // Logs anteriores comprovaram que sem o autopostback a 1ª tentativa SEMPRE
-    // falha com EventValidation rejection — entao roda sempre.
-    if (tipoConsulta === '3') {
-      tokens = await switchRntrcMode(tokens, signal);
-    }
+    // Sempre sincroniza o radio com o tipo desejado antes do POST de consulta.
+    tokens = await switchRntrcMode(tokens, tipoConsulta, signal);
 
     const altchaPayload = await fetchAltchaAndSolve(RNTRC_URL, signal);
 
@@ -643,13 +636,16 @@ async function consultaRntrc(
       ctl00$Corpo$hfPnlConsulta: '1',
       ctl00$Corpo$hfAltchaUrl: altchaUrl,
       ctl00$Corpo$rbTipoConsulta: tipoConsulta,
-      ctl00$Corpo$txtPlaca: tipoConsulta === '3' ? plate : '',
       ctl00$Corpo$txtRNTRC: rntrc ?? '',
       ctl00$Corpo$txtCpfCnpj: cpfCnpj,
       ...(altchaPayload ? { altcha: altchaPayload } : {}),
       ctl00$Corpo$btnConsulta: 'Consultar',
-      __ASYNCPOST: 'true', // CRÍTICO: campo obrigatório em postbacks AJAX
+      __ASYNCPOST: 'true',
     });
+    // txtPlaca só existe no DOM/EVENTVALIDATION quando tipo=3.
+    if (tipoConsulta === '3') {
+      formBody.set('ctl00$Corpo$txtPlaca', plate);
+    }
     const postRes = await fetch(RNTRC_URL, {
       method: 'POST',
       headers: {
@@ -670,16 +666,13 @@ async function consultaRntrc(
     const responseText = await postRes.text();
     const ct = postRes.headers.get('content-type') ?? '';
     console.log('[antt] RNTRC ct=', ct, 'response.len=', responseText.length);
-    // Diagnostico: lista todos os updatePanel ids do delta para entender qual
-    // painel o servidor atualizou (resultados vs radio vs ...).
     const panelIds = Array.from(responseText.matchAll(/updatePanel\|([^|]+)\|/g)).map((m) => m[1]);
     console.log('[antt] RNTRC delta updatePanel ids=', panelIds.join(','));
     console.log('[antt] RNTRC response[:500]=', responseText.slice(0, 500));
     console.log('[antt] RNTRC response[1500:3000]=', responseText.slice(1500, 3000));
     console.log('[antt] RNTRC response[-500:]=', responseText.slice(-500));
 
-    // If ASP.NET event-validation rejected our POST, retry with fresh tokens
-    if (attempt < 2 && tipoConsulta === '3' && isEventValidationError(responseText)) {
+    if (attempt < 2 && isEventValidationError(responseText)) {
       console.warn('[antt] EventValidation rejection detectada — retrying');
       continue;
     }
