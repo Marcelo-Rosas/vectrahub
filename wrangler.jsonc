@@ -3,9 +3,5 @@
   "name": "vectrahub",
   "compatibility_date": "2025-03-07",
   "compatibility_flags": ["nodejs_compat"],
-  "pages_build_output_dir": "dist",
-  "observability": {
-    "enabled": true,
-    "head_sampling_rate": 1
-  }
+  "pages_build_output_dir": "dist"
 }
