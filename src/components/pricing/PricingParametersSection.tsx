@@ -30,20 +30,22 @@ import type { PricingParameter } from '@/types/pricing';
 
 interface PricingParametersSectionProps {
   includeKeys?: string[];
+  excludeKeys?: string[];
   title?: string;
 }
 
 export function PricingParametersSection({
   includeKeys,
+  excludeKeys,
   title,
 }: PricingParametersSectionProps = {}) {
   const { data: allParameters, isLoading } = usePricingParameters();
 
-  // Filter parameters by includeKeys if provided
-  const parameters =
-    includeKeys && includeKeys.length > 0
-      ? allParameters?.filter((p) => includeKeys.includes(p.key))
-      : allParameters;
+  const parameters = (allParameters ?? []).filter((p) => {
+    if (includeKeys?.length) return includeKeys.includes(p.key);
+    if (excludeKeys?.length) return !excludeKeys.includes(p.key);
+    return true;
+  });
   const updateMutation = useUpdatePricingParameter();
   const createMutation = useCreatePricingParameter();
   const deleteMutation = useDeletePricingParameter();

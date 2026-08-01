@@ -167,12 +167,39 @@ Deno.serve(async (req) => {
 
     const { data: allRules } = await supabase
       .from('pricing_rules_config')
-      .select('key, value, vehicle_type_id, min_value, max_value')
+      .select('key, value, vehicle_type_id, min_value, max_value, methodology')
       .eq('is_active', true);
+
+    type PriceTableMethodology = 'lotacao' | 'fracionado_ntc' | 'fracionado_parceiro';
+    let methodology: PriceTableMethodology = 'lotacao';
+    let modality: 'lotacao' | 'fracionado' = 'lotacao';
+
+    if (input.price_table_id) {
+      const { data: ptEarly } = await supabase
+        .from('price_tables')
+        .select('modality, methodology, ad_valorem_lotacao_percent')
+        .eq('id', input.price_table_id)
+        .maybeSingle();
+      if (ptEarly?.modality === 'fracionado') modality = 'fracionado';
+      const m = ptEarly?.methodology;
+      if (m === 'lotacao' || m === 'fracionado_ntc' || m === 'fracionado_parceiro') {
+        methodology = m;
+      } else if (!m) {
+        return new Response(JSON.stringify({ error: 'Tabela sem methodology' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    const hasHubFiscal = methodology === 'lotacao' || methodology === 'fracionado_ntc';
 
     function resolveRule(key: string, vtId: string | null | undefined): number | undefined {
       if (!allRules?.length) return undefined;
-      const byKey = allRules.filter((r: { key: string }) => r.key === key);
+      const byKey = allRules.filter(
+        (r: { key: string; methodology?: string }) =>
+          r.key === key && (r.methodology ?? 'lotacao') === methodology
+      );
       if (byKey.length === 0) return undefined;
       const vehicleRule = vtId
         ? byKey.find((r: { vehicle_type_id: string | null }) => r.vehicle_type_id === vtId)
@@ -190,37 +217,53 @@ Deno.serve(async (req) => {
 
     // VEC-126: pricing_parameters depreciado — pricing_rules_config é a única fonte de verdade
     const cubageFactor = FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3;
-    const dasPercent =
-      input.das_percent ??
-      resolveRule('das_percent', vehicleTypeIdForRules) ??
-      FREIGHT_CONSTANTS.DEFAULT_DAS_PERCENT;
-    const markupPercent =
-      input.markup_percent ??
-      resolveRule('markup_percent', vehicleTypeIdForRules) ??
-      FREIGHT_CONSTANTS.DEFAULT_MARKUP_PERCENT;
-    const overheadPercent =
-      input.overhead_percent ??
-      resolveRule('overhead_percent', vehicleTypeIdForRules) ??
-      FREIGHT_CONSTANTS.DEFAULT_OVERHEAD_PERCENT;
+    const dasPercent = hasHubFiscal
+      ? (input.das_percent ??
+        resolveRule('das_percent', vehicleTypeIdForRules) ??
+        FREIGHT_CONSTANTS.DEFAULT_DAS_PERCENT)
+      : 0;
+    const markupPercent = hasHubFiscal
+      ? (input.markup_percent ??
+        resolveRule('markup_percent', vehicleTypeIdForRules) ??
+        FREIGHT_CONSTANTS.DEFAULT_MARKUP_PERCENT)
+      : 0;
+    const overheadPercent = hasHubFiscal
+      ? (input.overhead_percent ??
+        resolveRule('overhead_percent', vehicleTypeIdForRules) ??
+        FREIGHT_CONSTANTS.DEFAULT_OVERHEAD_PERCENT)
+      : 0;
 
-    const regimeSimplesNacional =
-      input.regime_simples_nacional ??
-      (resolveRule('regime_simples_nacional', vehicleTypeIdForRules) ?? 1) === 1;
-    const excessoSublimite =
-      input.excesso_sublimite ??
-      (resolveRule('excesso_sublimite', vehicleTypeIdForRules) ?? 0) === 1;
+    const regimeSimplesNacional = hasHubFiscal
+      ? (input.regime_simples_nacional ??
+        (resolveRule('regime_simples_nacional', vehicleTypeIdForRules) ?? 1) === 1)
+      : false;
+    const excessoSublimite = hasHubFiscal
+      ? (input.excesso_sublimite ??
+        (resolveRule('excesso_sublimite', vehicleTypeIdForRules) ?? 0) === 1)
+      : false;
 
-    const pisPercent = input.pis_percent ?? resolveRule('pis_percent', vehicleTypeIdForRules) ?? 0;
-    const cofinsPercent =
-      input.cofins_percent ?? resolveRule('cofins_percent', vehicleTypeIdForRules) ?? 0;
-    const irpjEffectivePercent =
-      input.irpj_percent ?? resolveRule('irpj_effective_percent', vehicleTypeIdForRules) ?? 0;
-    const csllEffectivePercent =
-      input.csll_percent ?? resolveRule('csll_effective_percent', vehicleTypeIdForRules) ?? 0;
-    let regimeLucroPresumido =
-      input.regime_lucro_presumido ??
-      (resolveRule('regime_lucro_presumido', vehicleTypeIdForRules) ?? 0) === 1;
-    if (!regimeLucroPresumido && !regimeSimplesNacional && (pisPercent > 0 || cofinsPercent > 0)) {
+    const pisPercent = hasHubFiscal
+      ? (input.pis_percent ?? resolveRule('pis_percent', vehicleTypeIdForRules) ?? 0)
+      : 0;
+    const cofinsPercent = hasHubFiscal
+      ? (input.cofins_percent ?? resolveRule('cofins_percent', vehicleTypeIdForRules) ?? 0)
+      : 0;
+    const irpjEffectivePercent = hasHubFiscal
+      ? (input.irpj_percent ?? resolveRule('irpj_effective_percent', vehicleTypeIdForRules) ?? 0)
+      : 0;
+    const csllEffectivePercent = hasHubFiscal
+      ? (input.csll_percent ?? resolveRule('csll_effective_percent', vehicleTypeIdForRules) ?? 0)
+      : 0;
+    let regimeLucroPresumido = hasHubFiscal
+      ? (input.regime_lucro_presumido ??
+        (resolveRule('regime_lucro_presumido', vehicleTypeIdForRules) ?? 0) === 1)
+      : false;
+    if (
+      hasHubFiscal &&
+      !regimeLucroPresumido &&
+      !regimeSimplesNacional &&
+      (pisPercent > 0 || cofinsPercent > 0)
+    ) {
       regimeLucroPresumido = true;
     }
 
@@ -234,6 +277,7 @@ Deno.serve(async (req) => {
 
     // NTC Lotação Dez/25: correctionFactor e markup não aplicados ao frete peso
     fallbacksApplied.push('ntc_mode: correctionFactor/markup ignored');
+    fallbacksApplied.push(`methodology: ${methodology}`);
 
     // =====================================================
     // CALCULATE WEIGHTS
@@ -290,19 +334,16 @@ Deno.serve(async (req) => {
       adValoremResolved ?? FREIGHT_CONSTANTS.DEFAULT_AD_VALOREM_LOTACAO_PERCENT;
 
     // =====================================================
-    // DETECT MODALITY (lotacao vs fracionado)
+    // DETECT MODALITY / METHODOLOGY (already resolved above from price_tables)
     // =====================================================
 
-    let modality: 'lotacao' | 'fracionado' = 'lotacao';
-
+    // Per-table ad_valorem takes precedence over pricing_rules_config
     if (input.price_table_id) {
       const { data: ptData } = await supabase
         .from('price_tables')
-        .select('modality, ad_valorem_lotacao_percent')
+        .select('ad_valorem_lotacao_percent')
         .eq('id', input.price_table_id)
         .maybeSingle();
-      if (ptData?.modality === 'fracionado') modality = 'fracionado';
-      // Per-table ad_valorem takes precedence over global pricing_rules_config
       const tableAdValorem = toFiniteNumber(ptData?.ad_valorem_lotacao_percent);
       if (tableAdValorem != null) {
         adValoremLotacaoPercent = tableAdValorem;
@@ -312,15 +353,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Resolving target margin based on modality
-    const profitMarginPercent =
-      resolveRule(
-        modality === 'fracionado'
+    const marginKey =
+      methodology === 'fracionado_parceiro'
+        ? 'profit_margin_parceiro_fracionado_percent'
+        : methodology === 'fracionado_ntc'
           ? 'profit_margin_fracionado_percent'
-          : 'profit_margin_lotacao_percent',
-        vehicleTypeIdForRules
-      ) ??
-      resolveRule('profit_margin_percent', vehicleTypeIdForRules) ??
+          : 'profit_margin_lotacao_percent';
+
+    const profitMarginPercent =
+      resolveRule(marginKey, vehicleTypeIdForRules) ??
+      (methodology === 'lotacao'
+        ? resolveRule('profit_margin_percent', vehicleTypeIdForRules)
+        : undefined) ??
       FREIGHT_CONSTANTS.TARGET_MARGIN_PERCENT;
 
     // =====================================================

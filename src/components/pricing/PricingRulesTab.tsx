@@ -6,7 +6,18 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Settings2, Truck, Clock, Receipt, Fuel, Route, CreditCard, Percent } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  Settings2,
+  Truck,
+  Clock,
+  Receipt,
+  Fuel,
+  Route,
+  CreditCard,
+  Percent,
+  AlertCircle,
+} from 'lucide-react';
 
 import { PricingRulesManager } from './PricingRulesManager';
 import { PricingParametersSection } from './PricingParametersSection';
@@ -77,9 +88,14 @@ export function PricingRulesTab() {
               </div>
             </AccordionTrigger>
             <AccordionContent>
-              <PricingParametersSection
-                includeKeys={['das_percent', 'markup_percent', 'overhead_percent']}
-              />
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Editado na Central de Regras</AlertTitle>
+                <AlertDescription>
+                  DAS, Markup e Overhead agora vivem em Central de Regras (por metodologia). Não
+                  edite mais em pricing_parameters.
+                </AlertDescription>
+              </Alert>
             </AccordionContent>
           </AccordionItem>
 
@@ -95,7 +111,9 @@ export function PricingRulesTab() {
               </div>
             </AccordionTrigger>
             <AccordionContent>
-              <PricingParametersSection />
+              <PricingParametersSection
+                excludeKeys={['das_percent', 'markup_percent', 'overhead_percent']}
+              />
             </AccordionContent>
           </AccordionItem>
 

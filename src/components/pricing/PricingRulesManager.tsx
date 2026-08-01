@@ -68,6 +68,11 @@ import {
 } from '@/hooks/usePricingRulesMutations';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import {
+  isPriceTableMethodology,
+  METHODOLOGY_LABELS,
+  type PriceTableMethodology,
+} from '@/lib/pricingMethodology';
 
 const CATEGORIES = [
   { id: 'imposto', label: 'Impostos', icon: Percent },
@@ -83,12 +88,15 @@ const CATEGORIES = [
   { id: 'prazo', label: 'Prazo', icon: Receipt },
 ] as const;
 
+const CATEGORIES_PARTNER = CATEGORIES.filter((c) => ['markup', 'taxa', 'veiculo'].includes(c.id));
+
 const PROTECTED_RULE_KEYS = new Set([
   'das_percent',
   'markup_percent',
   'overhead_percent',
   'profit_margin_lotacao_percent',
   'profit_margin_fracionado_percent',
+  'profit_margin_parceiro_fracionado_percent',
   'regime_simples_nacional',
   'excesso_sublimite',
   'regime_lucro_presumido',
@@ -102,6 +110,12 @@ const DEFAULT_VALUE_TYPE = 'percentage';
 
 function formatValue(rule: PricingRuleConfig): string {
   const v = Number(rule.value);
+  if (rule.value_type === 'boolean' || rule.key.startsWith('regime_')) {
+    return Number(rule.value) === 1 ? 'Sim' : 'Não';
+  }
+  if (rule.key === 'fiscal_origin_uf') {
+    return String(rule.metadata?.uf ?? rule.value);
+  }
   if (rule.value_type === 'percentage') return `${v.toFixed(2)}%`;
   if (rule.value_type === 'per_km')
     return `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/km`;
@@ -124,14 +138,20 @@ export function PricingRulesManager() {
   const [newValueType, setNewValueType] = useState<string>(DEFAULT_VALUE_TYPE);
   const [newValue, setNewValue] = useState('');
   const [newVehicleTypeId, setNewVehicleTypeId] = useState<string | ''>('');
+  const [methodologyTab, setMethodologyTab] = useState<PriceTableMethodology>('lotacao');
 
-  // Filtra regras legadas de ICMS por UF e TDE/TEAR NTC:
-  // - ICMS por UF é gerido na tela de Alíquotas de ICMS.
-  // - TDE/TEAR NTC agora são tratados como Taxas Condicionais em conditional_fees.
+  // Filtra regras legadas de ICMS por UF e TDE/TEAR NTC + pack metodologia:
   const visibleRules =
     rules?.filter(
-      (r) => !r.key.startsWith('icms_uf_') && r.key !== 'tde_percent' && r.key !== 'tear_percent'
+      (r) =>
+        r.methodology === methodologyTab &&
+        !r.key.startsWith('icms_uf_') &&
+        r.key !== 'tde_percent' &&
+        r.key !== 'tear_percent'
     ) ?? [];
+
+  const categoriesForTab =
+    methodologyTab === 'fracionado_parceiro' ? CATEGORIES_PARTNER : CATEGORIES;
 
   const rulesByCategory = (category: string) => visibleRules.filter((r) => r.category === category);
 
@@ -193,6 +213,7 @@ export function PricingRulesManager() {
         value_type: newValueType,
         value: numericValue,
         vehicle_type_id: newVehicleTypeId || null,
+        methodology: methodologyTab,
       });
       toast.success('Regra criada com sucesso');
       resetCreateForm();
@@ -206,13 +227,20 @@ export function PricingRulesManager() {
 
   // Configurações Fiscais (Motor Híbrido Simples vs Sublimite)
   const regimeSimplesRule = rules?.find(
-    (r) => r.key === 'regime_simples_nacional' && r.vehicle_type_id == null
+    (r) =>
+      r.key === 'regime_simples_nacional' &&
+      r.vehicle_type_id == null &&
+      r.methodology === methodologyTab
   );
   const excessoSublimiteRule = rules?.find(
-    (r) => r.key === 'excesso_sublimite' && r.vehicle_type_id == null
+    (r) =>
+      r.key === 'excesso_sublimite' && r.vehicle_type_id == null && r.methodology === methodologyTab
   );
   const regimeLucroPresumidoRule = rules?.find(
-    (r) => r.key === 'regime_lucro_presumido' && r.vehicle_type_id == null
+    (r) =>
+      r.key === 'regime_lucro_presumido' &&
+      r.vehicle_type_id == null &&
+      r.methodology === methodologyTab
   );
   const regimeLucroPresumido = Number(regimeLucroPresumidoRule?.value ?? 0) === 1;
   const regimeSimplesNacional =
@@ -265,6 +293,7 @@ export function PricingRulesManager() {
     'das_percent',
     'profit_margin_lotacao_percent',
     'profit_margin_fracionado_percent',
+    'profit_margin_parceiro_fracionado_percent',
   ] as const;
   const lpKeys = [
     'overhead_percent',
@@ -275,9 +304,18 @@ export function PricingRulesManager() {
     'profit_margin_lotacao_percent',
     'profit_margin_fracionado_percent',
   ] as const;
-  const activeFinanceiroKeys = regimeLucroPresumido ? lpKeys : financeiroKeys;
+  const activeFinanceiroKeys =
+    methodologyTab === 'fracionado_parceiro'
+      ? (['profit_margin_parceiro_fracionado_percent'] as const)
+      : regimeLucroPresumido
+        ? lpKeys
+        : financeiroKeys;
   const financeiroRules = activeFinanceiroKeys
-    .map((key) => rules?.find((r) => r.key === key && r.vehicle_type_id == null))
+    .map((key) =>
+      rules?.find(
+        (r) => r.key === key && r.vehicle_type_id == null && r.methodology === methodologyTab
+      )
+    )
     .filter((r): r is PricingRuleConfig => r != null);
 
   if (isLoading) {
@@ -290,87 +328,175 @@ export function PricingRulesManager() {
 
   return (
     <div className="space-y-6">
-      {/* Seção Configurações Fiscais (Motor Híbrido) */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Configurações Fiscais
-          </CardTitle>
-          <CardDescription>
-            Defina o regime tributário e parâmetros financeiros da operação. Estas configurações
-            afetam o cálculo do Gross-up (Asset-Light).
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-4">
-            <div className="flex-1 mr-4">
-              <Label className="text-base font-semibold">Regime Tributário</Label>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Define o regime fiscal e os tributos aplicados no Gross-up
-              </p>
-            </div>
-            <Select
-              value={regimeLucroPresumido ? 'lucro_presumido' : 'simples'}
-              onValueChange={handleRegimeChange}
-              disabled={updateMutation.isPending}
-            >
-              <SelectTrigger className="w-56">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="simples">Simples Nacional</SelectItem>
-                <SelectItem value="lucro_presumido">Lucro Presumido</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <Tabs
+        value={methodologyTab}
+        onValueChange={(v) => {
+          if (isPriceTableMethodology(v)) setMethodologyTab(v);
+        }}
+      >
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="lotacao">{METHODOLOGY_LABELS.lotacao}</TabsTrigger>
+          <TabsTrigger value="fracionado_ntc">{METHODOLOGY_LABELS.fracionado_ntc}</TabsTrigger>
+          <TabsTrigger value="fracionado_parceiro">
+            {METHODOLOGY_LABELS.fracionado_parceiro}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
-          {regimeSimplesNacional && (
-            <div className="flex items-center justify-between rounded-lg border bg-warning/10 border-warning/20 p-4">
-              <div>
-                <Label className="text-base font-semibold">Excesso de Sublimite (R$ 3,6mi)</Label>
+      {/* Seção Configurações Fiscais — só metodologias com emissão Hub */}
+      {methodologyTab !== 'fracionado_parceiro' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Configurações Fiscais
+            </CardTitle>
+            <CardDescription>
+              Defina o regime tributário e parâmetros financeiros da operação. Estas configurações
+              afetam o cálculo do Gross-up (Asset-Light).
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-4">
+              <div className="flex-1 mr-4">
+                <Label className="text-base font-semibold">Regime Tributário</Label>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  ICMS sai da DAS e vira imposto estadual separado (Cálculo por Dentro)
+                  Define o regime fiscal e os tributos aplicados no Gross-up
                 </p>
               </div>
-              <Switch
-                checked={excessoSublimite}
-                onCheckedChange={handleToggleExcessoSublimite}
+              <Select
+                value={regimeLucroPresumido ? 'lucro_presumido' : 'simples'}
+                onValueChange={handleRegimeChange}
                 disabled={updateMutation.isPending}
-              />
+              >
+                <SelectTrigger className="w-56">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="simples">Simples Nacional</SelectItem>
+                  <SelectItem value="lucro_presumido">Lucro Presumido</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
 
-          <Alert
-            className={cn(
-              regimeLucroPresumido
-                ? 'bg-blue-500/10 border-blue-500/20'
-                : excessoSublimite
-                  ? 'bg-warning/10 border-warning/20'
-                  : 'bg-primary/10 border-primary/20'
+            {regimeSimplesNacional && (
+              <div className="flex items-center justify-between rounded-lg border bg-warning/10 border-warning/20 p-4">
+                <div>
+                  <Label className="text-base font-semibold">Excesso de Sublimite (R$ 3,6mi)</Label>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    ICMS sai da DAS e vira imposto estadual separado (Cálculo por Dentro)
+                  </p>
+                </div>
+                <Switch
+                  checked={excessoSublimite}
+                  onCheckedChange={handleToggleExcessoSublimite}
+                  disabled={updateMutation.isPending}
+                />
+              </div>
             )}
-          >
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Regime Ativo</AlertTitle>
-            <AlertDescription>
-              {regimeLucroPresumido
-                ? 'Lucro Presumido ativo: PIS 0,65% + COFINS 3,00% + IRPJ 1,20% + CSLL 1,08% + ICMS por UF'
-                : excessoSublimite
-                  ? 'Excesso de Sublimite: ICMS será calculado separadamente (DAS Federal + ICMS Estadual).'
-                  : regimeSimplesNacional
-                    ? 'Simples Nacional: ICMS incluído na DAS (divisor Gross-up não soma ICMS).'
-                    : 'Regime Normal: ICMS calculado separadamente.'}
-            </AlertDescription>
-          </Alert>
 
-          <div className="pt-4">
-            <h4 className="mb-3 text-sm font-semibold">Parâmetros Financeiros (Gross-up)</h4>
+            <Alert
+              className={cn(
+                regimeLucroPresumido
+                  ? 'bg-blue-500/10 border-blue-500/20'
+                  : excessoSublimite
+                    ? 'bg-warning/10 border-warning/20'
+                    : 'bg-primary/10 border-primary/20'
+              )}
+            >
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Regime Ativo</AlertTitle>
+              <AlertDescription>
+                {regimeLucroPresumido
+                  ? 'Lucro Presumido ativo: PIS 0,65% + COFINS 3,00% + IRPJ 1,20% + CSLL 1,08% + ICMS por UF'
+                  : excessoSublimite
+                    ? 'Excesso de Sublimite: ICMS será calculado separadamente (DAS Federal + ICMS Estadual).'
+                    : regimeSimplesNacional
+                      ? 'Simples Nacional: ICMS incluído na DAS (divisor Gross-up não soma ICMS).'
+                      : 'Regime Normal: ICMS calculado separadamente.'}
+              </AlertDescription>
+            </Alert>
+
+            <div className="pt-4">
+              <h4 className="mb-3 text-sm font-semibold">Parâmetros Financeiros (Gross-up)</h4>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Parâmetro</TableHead>
+                    <TableHead>Valor</TableHead>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {financeiroRules.map((rule) => (
+                    <TableRow key={rule.id}>
+                      <TableCell className="font-semibold">{rule.label}</TableCell>
+                      <TableCell>
+                        {editingId === rule.id ? (
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            className="h-8 w-24"
+                          />
+                        ) : (
+                          <Badge variant="outline" className="text-base">
+                            {Number(rule.value).toFixed(2)}%
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {(rule.metadata as { description?: string })?.description ?? '—'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {editingId === rule.id ? (
+                          <div className="flex justify-end gap-2">
+                            <Button size="sm" variant="ghost" onClick={handleCancel}>
+                              Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={handleSave}
+                              disabled={updateMutation.isPending}
+                            >
+                              {updateMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                'Salvar'
+                              )}
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button size="sm" variant="ghost" onClick={() => handleStartEdit(rule)}>
+                            Editar
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {methodologyTab === 'fracionado_parceiro' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Margem Parceiro</CardTitle>
+            <CardDescription>
+              Pack sem fiscal Hub. Edite a margem de markup sobre o custo do parceiro.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Parâmetro</TableHead>
                   <TableHead>Valor</TableHead>
-                  <TableHead>Descrição</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -389,12 +515,9 @@ export function PricingRulesManager() {
                         />
                       ) : (
                         <Badge variant="outline" className="text-base">
-                          {Number(rule.value).toFixed(2)}%
+                          {formatValue(rule)}
                         </Badge>
                       )}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {(rule.metadata as { description?: string })?.description ?? '—'}
                     </TableCell>
                     <TableCell className="text-right">
                       {editingId === rule.id ? (
@@ -407,11 +530,7 @@ export function PricingRulesManager() {
                             onClick={handleSave}
                             disabled={updateMutation.isPending}
                           >
-                            {updateMutation.isPending ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              'Salvar'
-                            )}
+                            Salvar
                           </Button>
                         </div>
                       ) : (
@@ -424,20 +543,19 @@ export function PricingRulesManager() {
                 ))}
               </TableBody>
             </Table>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Central de Regras por Categoria */}
       <div>
         <p className="mb-4 text-sm text-muted-foreground">
-          Edite Markup, DAS, TDE/TEAR e outras regras sem alterar código. Regras por veículo têm
-          precedência sobre regras globais. As alíquotas de ICMS por UF são geridas na tela
-          específica de Alíquotas de ICMS.
+          Pack ativo: <strong>{METHODOLOGY_LABELS[methodologyTab]}</strong>. Regras por veículo têm
+          precedência sobre o pack. Alíquotas de ICMS por UF ficam na tela de Alíquotas.
         </p>
         <Tabs defaultValue="imposto" className="w-full">
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 overflow-x-auto">
-            {CATEGORIES.map(({ id, label, icon: Icon }) => (
+            {categoriesForTab.map(({ id, label, icon: Icon }) => (
               <TabsTrigger key={id} value={id} className="flex items-center gap-2 text-xs">
                 <Icon className="h-4 w-4" />
                 {label}
@@ -446,12 +564,14 @@ export function PricingRulesManager() {
                 </Badge>
               </TabsTrigger>
             ))}
-            <TabsTrigger value="ntc-fracionado" className="flex items-center gap-2 text-xs">
-              <SlidersHorizontal className="h-4 w-4" />
-              NTC Fracionado
-            </TabsTrigger>
+            {methodologyTab === 'fracionado_ntc' && (
+              <TabsTrigger value="ntc-fracionado" className="flex items-center gap-2 text-xs">
+                <SlidersHorizontal className="h-4 w-4" />
+                NTC Fracionado
+              </TabsTrigger>
+            )}
           </TabsList>
-          {CATEGORIES.map(({ id, label }) => (
+          {categoriesForTab.map(({ id, label }) => (
             <TabsContent key={id} value={id} className="mt-4">
               <div className="rounded-lg border">
                 <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/40">
