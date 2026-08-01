@@ -49,15 +49,15 @@ const MR = 12;
 const CW = PW - ML - MR;
 
 const VECTRA = {
-  name: 'VECTRA CARGO',
-  cnpj: '59.650.913/0001-04',
-  ie: '263450562',
-  address: 'AVENIDA PREFEITO CIRINO ADOLFO',
-  number: '495',
-  city: 'NAVEGANTES',
+  name: 'VECTRA HUB',
+  cnpj: '62.188.748/0001-17',
+  ie: '263768406',
+  address: 'RODOVIA JORGE LACERDA',
+  number: '725',
+  city: 'ITAJAI',
   uf: 'SC',
-  phone: '(47) 93385-1351',
-  email: 'comercial@vectracargo.com.br',
+  phone: '(47) 98850-9714',
+  email: 'marcelo.rosas@vectracargo.com.br',
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ function drawHeader(
   doc.setTextColor(200, 215, 235);
   doc.text(`CNPJ: ${VECTRA.cnpj}    IE: ${VECTRA.ie}`, ix, 13);
   doc.text(`${VECTRA.address}, ${VECTRA.number} - ${VECTRA.city}/${VECTRA.uf}`, ix, 17.5);
-  doc.text(`Fone: ${VECTRA.phone}`, ix, 22);
+  doc.text(`Fone: ${VECTRA.phone}    E-mail: ${VECTRA.email}`, ix, 22);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
@@ -438,7 +438,13 @@ function drawFooter(doc: PdfDoc): void {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.5);
   doc.setTextColor(180, 195, 215);
-  doc.text(`VECTRA CARGO - ${VECTRA.phone} | ${VECTRA.email}`, ML, ph - 3);
+  doc.text(
+    VECTRA.email
+      ? `VECTRA HUB - ${VECTRA.phone} | ${VECTRA.email}`
+      : `VECTRA HUB - ${VECTRA.phone}`,
+    ML,
+    ph - 3
+  );
   doc.text('Pagina 1/1', PW - MR, ph - 3, { align: 'right' });
 }
 

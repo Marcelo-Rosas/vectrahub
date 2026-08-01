@@ -92,15 +92,15 @@ const CW = PW - ML - MR;
 
 // Fallback do emitente — usado só quando company_settings (/empresa) não traz o campo.
 const VECTRA_DEFAULT = {
-  name: 'VECTRA CARGO',
-  cnpj: '59.650.913/0001-04',
-  ie: '263450562',
-  address: 'AVENIDA PREFEITO CIRINO ADOLFO',
-  number: '495',
-  city: 'NAVEGANTES',
+  name: 'VECTRA HUB',
+  cnpj: '62.188.748/0001-17',
+  ie: '263768406',
+  address: 'RODOVIA JORGE LACERDA',
+  number: '725',
+  city: 'ITAJAI',
   uf: 'SC',
-  phone: '(47) 93385-1351',
-  email: '',
+  phone: '(47) 98850-9714',
+  email: 'marcelo.rosas@vectracargo.com.br',
 };
 
 /** Resolve cada campo do emitente: usa company_settings se não-vazio, senão default. */
@@ -198,7 +198,9 @@ function drawHeader(doc: PdfDoc, p: CtePdfPayload, logo: string | null): number 
   doc.setTextColor(200, 215, 235);
   doc.text(`CNPJ: ${v.cnpj}    IE: ${v.ie}`, ix, 12.5);
   doc.text(`${v.address}, ${v.number} - ${v.city}/${v.uf}`, ix, 16.5);
-  const contato = [v.phone ? `Fone: ${v.phone}` : '', v.email].filter(Boolean).join('    ');
+  const contato = [v.phone ? `Fone: ${v.phone}` : '', v.email ? `E-mail: ${v.email}` : '']
+    .filter(Boolean)
+    .join('    ');
   doc.text(contato, ix, 20.5);
 
   doc.setFont('helvetica', 'bold');
@@ -353,7 +355,7 @@ function drawFooter(doc: PdfDoc, p: CtePdfPayload): void {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.5);
   doc.setTextColor(180, 195, 215);
-  doc.text('VECTRA CARGO - Navegantes/SC', ML, ph - 3);
+  doc.text('VECTRA HUB - Itajai/SC', ML, ph - 3);
   doc.text('Pagina 1/1', PW - MR, ph - 3, { align: 'right' });
 }
 

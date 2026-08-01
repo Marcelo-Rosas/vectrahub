@@ -3,7 +3,7 @@ import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 /** Production origin for auth redirects (emails); avoids preview domains. */
-const PROD_ORIGIN = 'https://app.vectracargo.com.br';
+const PROD_ORIGIN = 'https://app.hub.vectracargo.com.br';
 
 interface AuthContextType {
   user: User | null;

@@ -12,7 +12,8 @@
 | Supabase ref | `lrbtbrpoklgwaaclbufz` |
 | Supabase URL | https://lrbtbrpoklgwaaclbufz.supabase.co |
 | Região | sa-east-1 |
-| Cloudflare Pages | `vectrahub` |
+| Cloudflare Pages | `vectrahub` (`https://vectrahub.pages.dev`) |
+| Custom domain | `https://app.hub.vectracargo.com.br` |
 
 ## Secrets GitHub Actions (`vectrahub` repo)
 
@@ -28,6 +29,14 @@
 - `.env` gitignored (copiado de `.env.txt` no bootstrap)
 - Upstream Cargo: remote `cargo-upstream`
 - Origin Hub: remote `origin` → `Marcelo-Rosas/vectrahub`
+
+## Auth (login)
+
+- Domínio permitido: **`@vectracargo.com.br`** (`enforce_company_domain` + `invite-user`)
+- Contas clonadas do Auth Cargo → Hub (mesmo e-mail + mesma senha; UUID preservado)
+- Admin: `marcelo.rosas@vectracargo.com.br` (perfil admin; roles admin + comercial)
+- Também: `cadastro@`, `operacional@`, `financeiro@`, `manager@` (e2e não clonado)
+- Role Cargo `financeiro` → Hub `app_role.fiscal` (enum Hub sem label `financeiro`)
 
 ## Sync Cargo → Hub
 

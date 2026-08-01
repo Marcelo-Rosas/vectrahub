@@ -29,9 +29,12 @@ const apply = process.argv.includes('--apply');
  * Inclui previews PR: pr-123.cargo-flow-navigator.pages.dev
  */
 const PUBLIC_HOST_PATTERNS = [
+  'app.hub.vectracargo.com.br',
+  'hub.vectracargo.com.br',
+  'vectrahub.pages.dev',
+  // legado Cargo (se Access acidentalmente cobrir previews mistos)
   'app.vectracargo.com.br',
   'cargo-flow-navigator.pages.dev',
-  'cargo-flow-navigator.marcelo-rosas.workers.dev',
 ];
 
 function matchesPublicHost(app) {

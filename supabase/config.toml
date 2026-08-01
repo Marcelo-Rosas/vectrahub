@@ -1,4 +1,4 @@
-project_id = "epgedaiukjippepujuzc"
+project_id = "lrbtbrpoklgwaaclbufz"
 
 # ────────────────────────────────────────────────────────────────────
 # [auth] – Referência para dev local (supabase start).
@@ -7,23 +7,37 @@ project_id = "epgedaiukjippepujuzc"
 # Mantenha esta seção sincronizada manualmente como documentação.
 # ────────────────────────────────────────────────────────────────────
 [auth]
-site_url = "https://app.vectracargo.com.br"
+site_url = "https://app.hub.vectracargo.com.br"
 additional_redirect_urls = [
   # Dev local
   "http://localhost:8080",
   "http://localhost:8080/auth",
   "http://localhost:8080/reset-password",
+  "http://localhost:5173",
+  "http://localhost:5173/auth",
+  "http://localhost:5173/reset-password",
   # Produção e previews
+  "https://app.hub.vectracargo.com.br",
+  "https://app.hub.vectracargo.com.br/**",
+  "https://app.hub.vectracargo.com.br**",
+  "https://app.hub.vectracargo.com.br/auth",
+  "https://app.hub.vectracargo.com.br/reset-password",
+  "https://*.app.hub.vectracargo.com.br",
+  "https://*.app.hub.vectracargo.com.br/**",
+  "https://*.app.hub.vectracargo.com.br**",
+  "https://hub.vectracargo.com.br",
+  "https://hub.vectracargo.com.br/**",
+  "https://*.hub.vectracargo.com.br",
+  "https://*.hub.vectracargo.com.br/**",
+  "https://vectrahub.pages.dev",
+  "https://vectrahub.pages.dev/**",
+  "https://*.vectrahub.pages.dev",
+  "https://*.vectrahub.pages.dev/**",
+  # Legado Vectra Cargo (login compartilhado)
   "https://app.vectracargo.com.br",
   "https://app.vectracargo.com.br/**",
-  "https://app.vectracargo.com.br**",
   "https://*.app.vectracargo.com.br",
   "https://*.app.vectracargo.com.br/**",
-  "https://*.app.vectracargo.com.br**",
-  "https://cargo-flow-navigator.pages.dev",
-  "https://cargo-flow-navigator.pages.dev/**",
-  "https://*.cargo-flow-navigator.pages.dev",
-  "https://*.cargo-flow-navigator.pages.dev/**",
 ]
 
 [functions.import-price-table]

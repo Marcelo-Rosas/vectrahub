@@ -12,7 +12,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const path = join(root, 'dist', 'wrangler.json');
 
 const pagesConfig = {
-  name: 'cargo-flow-navigator',
+  name: 'vectrahub',
   pages_build_output_dir: '.',
 };
 

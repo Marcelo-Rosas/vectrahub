@@ -43,13 +43,14 @@ const MR = 12;
 const CW = PW - ML - MR;
 
 const VECTRA = {
-  name: 'VECTRA CARGO LTDA',
-  cnpj: '59.650.913/0001-04',
-  ie: '263450562',
-  address: 'AV. PREFEITO CIRINO ADOLFO, 495',
-  city: 'NAVEGANTES',
+  name: 'VECTRA HUB LTDA',
+  cnpj: '62.188.748/0001-17',
+  ie: '263768406',
+  address: 'RODOVIA JORGE LACERDA, 725',
+  city: 'ITAJAI',
   uf: 'SC',
-  phone: '(47) 93385-1351',
+  phone: '(47) 98850-9714',
+  email: 'marcelo.rosas@vectracargo.com.br',
 };
 
 const fmtDate = (d: string | null | undefined): string => {
@@ -110,7 +111,7 @@ function drawHeader(doc: PdfDoc, payload: PodPdfPayload, logoBase64: string | nu
   doc.setTextColor(200, 215, 235);
   doc.text(`CNPJ: ${VECTRA.cnpj}    IE: ${VECTRA.ie}`, ix, 13);
   doc.text(`${VECTRA.address} - ${VECTRA.city}/${VECTRA.uf}`, ix, 17.5);
-  doc.text(`Fone: ${VECTRA.phone}`, ix, 22);
+  doc.text(`Fone: ${VECTRA.phone}    E-mail: ${VECTRA.email}`, ix, 22);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);

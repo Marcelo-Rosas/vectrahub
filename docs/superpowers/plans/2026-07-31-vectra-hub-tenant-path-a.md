@@ -200,14 +200,14 @@ Dashboard → Authentication → URL Configuration:
 **Consumes:** access token Supabase + project healthy  
 **Produces:** todas migrations aplicadas em Hub; `supabase_migrations.schema_migrations` alinhado ao Cargo
 
-- [ ] **Step 1: Login / token**
+- [x] **Step 1: Login / token**
 
 ```bash
 npx supabase login
 # ou: $env:SUPABASE_ACCESS_TOKEN = "<token>"
 ```
 
-- [ ] **Step 2: Link Hub (cwd = repo root)**
+- [x] **Step 2: Link Hub (cwd = repo root)**
 
 ```bash
 npx supabase link --project-ref lrbtbrpoklgwaaclbufz
@@ -215,7 +215,7 @@ npx supabase link --project-ref lrbtbrpoklgwaaclbufz
 
 Expected: linked project `Vectra HUB`.
 
-- [ ] **Step 3: Dry-run push**
+- [x] **Step 3: Dry-run push**
 
 ```bash
 npx supabase db push --dry-run
@@ -224,7 +224,7 @@ npx supabase db push --dry-run
 Expected: lista ~209 migrations, sem erro de SQL.  
 Se falhar por migration já parcial: `npx supabase migration list --linked` e comparar com Cargo.
 
-- [ ] **Step 4: Push real**
+- [x] **Step 4: Push real**
 
 ```bash
 npx supabase db push
@@ -232,7 +232,7 @@ npx supabase db push
 
 Expected: `Finished supabase db push` / Remote database is up to date.
 
-- [ ] **Step 5: Sanity tables**
+- [x] **Step 5: Sanity tables**
 
 Via MCP `list_tables` no project `lrbtbrpoklgwaaclbufz` ou SQL:
 
@@ -254,6 +254,8 @@ npx supabase link --project-ref epgedaiukjippepujuzc
 
 **Commit:** nenhum (só remoto).
 
+**Done 2026-07-31:** linked `Vectra HUB` (`lrbtbrpoklgwaaclbufz`); `db push` finished; `company_settings`+`quotes` OK; `quotes`=0. Link local permanece Hub (Path A). Re-link Cargo só se voltar a trabalhar no outro repo.
+
 ---
 
 ### Task 3: Bootstrap `company_settings` Hub
@@ -262,7 +264,7 @@ npx supabase link --project-ref epgedaiukjippepujuzc
 **Consumes:** service role Hub + URL Hub  
 **Produces:** 1 linha emitente VECTRA HUB
 
-- [ ] **Step 1: `.env.hub.local` (gitignored)**
+- [x] **Step 1: `.env.hub.local` (gitignored)**
 
 Criar arquivo local (não commit):
 
@@ -271,7 +273,7 @@ SUPABASE_URL=https://lrbtbrpoklgwaaclbufz.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<service_role_hub>
 ```
 
-- [ ] **Step 2: Rodar bootstrap**
+- [x] **Step 2: Rodar bootstrap**
 
 ```bash
 npx tsx scripts/bootstrap-company-settings.ts `
@@ -285,7 +287,7 @@ Com env apontando Hub (`SUPABASE_URL` / service role do Step 1).
 Expected: `[bootstrap-company] Criado: VECTRA HUB LTDA | CNPJ 62188748000117`  
 Se já existir linha: script exit 0 sem overwrite — aí atualizar via UI ou SQL.
 
-- [ ] **Step 3: Completar campos fiscais/endereço**
+- [x] **Step 3: Completar campos fiscais/endereço**
 
 Após frontend Hub no ar (Task 5): `/configuracoes-empresa`  
 Ou SQL service role:
@@ -310,6 +312,8 @@ where regexp_replace(cnpj, '\D', '', 'g') = '62188748000117';
 
 **Test:** `select legal_name, cnpj, state_registration, address_city from company_settings;` → Hub Itajaí.
 
+**Done 2026-07-31:** seed migration veio com VECTRA CARGO; UPDATE singleton → VECTRA HUB LTDA / CNPJ Hub / Itajaí / IE 263768406; banco Cargo limpo (pix null). Bootstrap confirma “Já existe” (sem overwrite).
+
 ---
 
 ### Task 4: Secrets Edge Functions Hub
@@ -318,7 +322,7 @@ where regexp_replace(cnpj, '\D', '', 'g') = '62188748000117';
 **Consumes:** lista secrets Cargo (copiar **valores Hub-específicos**; nunca copiar CNPJ/token Focus do Cargo sem troca)  
 **Produces:** Edge Functions Hub com env fiscal Hub
 
-- [ ] **Step 1: Inventário mínimo fiscal/ops**
+- [x] **Step 1: Inventário mínimo fiscal/ops** (parcial — VECTRA_* + FOCUS_NFE_AMBIENTE=homolog OK 2026-07-31; falta FOCUS tokens / WEBROUTER / OPENCLAW / RESEND / GEMINI / SEFAZ)
 
 Definir no Hub (valores Hub):
 
@@ -340,7 +344,7 @@ Definir no Hub (valores Hub):
 
 Supabase injeta automaticamente `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` / anon nas functions.
 
-- [ ] **Step 2: Set secrets via CLI**
+- [x] **Step 2: Set secrets via CLI** (mínimo fiscal aplicado)
 
 ```bash
 npx supabase secrets set `
@@ -354,13 +358,15 @@ npx supabase secrets set `
 
 Repetir para tokens sensíveis um a um (não logar no CI transcript).
 
-- [ ] **Step 3: Listar**
+- [x] **Step 3: Listar**
 
 ```bash
 npx supabase secrets list --project-ref lrbtbrpoklgwaaclbufz
 ```
 
 Expected: nomes presentes (valores mascarados).
+
+**Done parcial 2026-07-31:** 6 secrets Hub (`VECTRA_CNPJ/NOME/FANTASIA/IE/IEST`, `FOCUS_NFE_AMBIENTE`). Pendente: `FOCUS_NFE_TOKEN_*`, `WEBROUTER_API_KEY`, `OPENCLAW_*`, `RESEND_*`, `GEMINI_API_KEY`, `SEFAZ_PROXY_*`.
 
 ---
 
@@ -370,7 +376,7 @@ Expected: nomes presentes (valores mascarados).
 **Consumes:** Task 2 schema + Task 4 secrets  
 **Produces:** ~63 functions no projeto Hub
 
-- [ ] **Step 1: Deploy all**
+- [x] **Step 1: Deploy all**
 
 ```bash
 npx supabase functions deploy --project-ref lrbtbrpoklgwaaclbufz
@@ -388,7 +394,7 @@ Get-ChildItem supabase/functions -Directory |
 
 Expected: cada function `Deployed Function ...`.
 
-- [ ] **Step 2: Smoke calculate-freight**
+- [x] **Step 2: Smoke calculate-freight**
 
 ```bash
 curl -s -X POST "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate-freight" `
@@ -399,6 +405,8 @@ curl -s -X POST "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate
 ```
 
 Expected: resposta JSON de validação (erro de payload OK; **não** 401/404 de function missing).
+
+**Done 2026-07-31:** bulk deploy 502 em `generate-contract-pdf`; retry restante OK=27 FAIL=0; total ACTIVE ≈64. Smoke `calculate-freight` abaixo.
 
 ---
 

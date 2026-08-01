@@ -1,12 +1,11 @@
 name = "vectrahub"
-compatibility_date = "2025-01-01"
+compatibility_date = "2025-03-07"
 pages_build_output_dir = "dist"
 
-# Variáveis de ambiente para Cloudflare Pages
-# NUNCA coloque valores reais aqui — use "wrangler secret put VITE_CFN_API_KEY"
-# ou configure no dashboard: Cloudflare Pages → Settings → Environment Variables
-[ai]
-binding = "AI"
+# Prefer wrangler.jsonc (fonte canônica). Este TOML fica por compatibilidade
+# com scripts/CI que ainda leem wrangler.toml.
+# NUNCA coloque secrets aqui — use Cloudflare Pages → Settings → Environment Variables
+# ou `wrangler pages secret put`.
 
 [vars]
-# VITE_CFN_API_KEY deve ser configurado como secret no dashboard da Cloudflare
+# VITE_* vêm dos secrets do GitHub Actions no build (não do runtime Pages).
