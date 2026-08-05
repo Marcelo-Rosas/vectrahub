@@ -75,6 +75,55 @@ export function resolveContractContratante(quote: Record<string, unknown>): {
   };
 }
 
+/**
+ * Deriva o código CTR do contrato a partir do `quote_code` (1:1 com a cotação).
+ * `COT-2026-08-0002` → `CTR-2026-08-0002`. Sem código → `CTR`.
+ */
+export function ctrCodeFromQuoteCode(quoteCode: string | null | undefined): string {
+  const code = String(quoteCode ?? '').trim();
+  if (!code) return 'CTR';
+  if (/^COT-/i.test(code)) return code.replace(/^COT-/i, 'CTR-');
+  return `CTR-${code}`;
+}
+
+/** Slug da razão social do pagador para nome de arquivo (ASCII, maiúsculo). */
+export function slugifyPayer(name: string | null | undefined): string {
+  return String(name ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .toUpperCase()
+    .slice(0, 80);
+}
+
+/**
+ * Referência canônica exibida no documento: `CÓDIGO — RAZÃO SOCIAL DO PAGADOR`.
+ * A razão social do pagador fica SEMPRE após o número (regra canônica).
+ */
+export function buildCanonicalReference(
+  code: string,
+  payerName: string | null | undefined
+): string {
+  const c = String(code ?? '').trim() || '[SEM CÓDIGO]';
+  const p = String(payerName ?? '').trim();
+  return p ? `${c} — ${p}` : c;
+}
+
+/** Nome de arquivo canônico: `CÓDIGO-RAZAO_SOCIAL_SLUG.ext` (pagador após o número). */
+export function buildCanonicalFilename(
+  code: string,
+  payerName: string | null | undefined,
+  ext = 'pdf'
+): string {
+  const c =
+    String(code ?? '')
+      .trim()
+      .replace(/[^\w-]+/g, '_') || 'documento';
+  const slug = slugifyPayer(payerName);
+  return slug ? `${c}-${slug}.${ext}` : `${c}.${ext}`;
+}
+
 /** 5.3 — condição de pagamento com prazo/parcelas quando disponíveis. */
 export function buildPaymentTermsDescription(
   quote: Record<string, unknown>,

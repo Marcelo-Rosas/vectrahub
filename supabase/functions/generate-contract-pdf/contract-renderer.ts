@@ -2,8 +2,10 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { LOGO_BASE64 } from '../_shared/logo-base64.ts';
 import { patchFont, patchPageDrawText } from '../_shared/pdf-sanitize.ts';
 import {
+  buildCanonicalReference,
   buildClause52IncludedItems,
   buildPaymentTermsDescription,
+  ctrCodeFromQuoteCode,
   formatBrlReais,
   formatCnpjForContract,
   fmtTodayBr,
@@ -361,13 +363,17 @@ export async function renderContractPdf(ctx: {
   const contratante = resolveContractContratante(quote);
   const contratanteParty = contratante.party;
 
+  // Referência canônica: CTR-AAAA-MM-#### — RAZÃO SOCIAL DO PAGADOR.
+  const ctrCode = ctrCodeFromQuoteCode(quote.quote_code as string | null | undefined);
+  const canonicalRef = buildCanonicalReference(ctrCode, contratante.name);
+
   const w = new PdfWriter();
   await w.init();
 
   // ── Header ───────────────────────────────────────────────────────────────────
   await w.drawContractHeader(
     'CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE RODOVIÁRIO DE CARGAS',
-    `Referência: ${String(quote.quote_code ?? '')}  —  Versão ${version}`,
+    `Referência: ${canonicalRef}  —  Versão ${version}`,
     LOGO_BASE64
   );
 
@@ -583,7 +589,7 @@ export async function renderContractPdf(ctx: {
   w['y'] = Math.min(leftBottom, rightBottom);
   w.gap(8);
   w.text(
-    `Documento gerado em ${new Date().toLocaleString('pt-BR')} — Ref. ${String(quote.quote_code ?? '')} v${version}`,
+    `Documento gerado em ${new Date().toLocaleString('pt-BR')} — Ref. ${canonicalRef} v${version}`,
     {
       align: 'center',
       size: 7,

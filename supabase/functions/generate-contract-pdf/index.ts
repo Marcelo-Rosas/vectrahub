@@ -3,6 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { fetchCompanySettings } from '../_shared/company-settings.ts';
 import { renderContractPdf } from './contract-renderer.ts';
+import {
+  buildCanonicalFilename,
+  ctrCodeFromQuoteCode,
+  resolveContractContratante,
+} from './contract-clause-helpers.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -128,7 +133,10 @@ Deno.serve(async (req: Request) => {
     // Upload to storage
     const timestamp = Date.now();
     const storagePath = `contracts/${quote_id}/v${version}-${timestamp}.pdf`;
-    const fileName = `${quote.quote_code ?? quote_id}_contrato_v${version}.pdf`;
+    // Nome canônico: CTR-AAAA-MM-####-vN-RAZAO_SOCIAL_DO_PAGADOR.pdf
+    const ctrCode = ctrCodeFromQuoteCode(quote.quote_code as string | null | undefined);
+    const payerName = resolveContractContratante(quote as Record<string, unknown>).name;
+    const fileName = buildCanonicalFilename(`${ctrCode}-v${version}`, payerName);
 
     const { error: uploadError } = await sb.storage
       .from('documents')
