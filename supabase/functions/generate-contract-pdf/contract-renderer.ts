@@ -393,7 +393,7 @@ export async function renderContractPdf(ctx: {
   const contratanteCnpj = formatCnpjForContract(contratanteParty.cnpj as string);
   const contratanteAddr = buildAddress(contratanteParty);
   const contratanteQualificacao = contratante.isCif
-    ? ', na qualidade de embarcador/remetente da carga (frete CIF),'
+    ? ', na qualidade de embarcador/remetente da carga (frete CIF)'
     : '';
   w.text(
     `${contratanteName}, pessoa jurídica de direito privado, inscrita no CNPJ sob o nº ${contratanteCnpj || '[CNPJ não informado]'}, ` +
