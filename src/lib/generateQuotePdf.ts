@@ -1,9 +1,52 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { formatCurrency, formatDate } from '@/lib/formatters';
+import {
+  formatCurrency,
+  formatDate,
+  formatCnpjDisplay,
+  formatCpfDisplay,
+  formatPhoneDisplay,
+} from '@/lib/formatters';
 import type { StoredPricingBreakdown } from '@/lib/freightCalculator';
+import { loadVectraPdfLogo } from '@/lib/pdfLogo';
+import { buildCanonicalFilename, resolveFreightPayerName } from '@/lib/canonical-doc-ref';
 
 type QuotePdfMode = 'simplified' | 'detailed';
+
+export interface QuotePdfParty {
+  name: string;
+  cnpj?: string | null;
+  cpf?: string | null;
+  contact_name?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  city?: string | null;
+  state?: string | null;
+  address?: string | null;
+  address_number?: string | null;
+  address_neighborhood?: string | null;
+  zip_code?: string | null;
+}
+
+/** @deprecated use QuotePdfParty */
+export type QuotePdfShipper = QuotePdfParty & {
+  trade_name?: string | null;
+  cnae_main_code?: string | null;
+  cnae_main_description?: string | null;
+  legal_representative_name?: string | null;
+  partners?: unknown;
+};
+
+export interface QuotePdfRouteStop {
+  sequence: number;
+  stop_type: 'origin' | 'stop' | 'destination' | string;
+  name?: string | null;
+  cnpj?: string | null;
+  cep?: string | null;
+  city_uf?: string | null;
+  label?: string | null;
+  planned_km_from_prev?: number | null;
+}
 
 export interface QuotePdfPayload {
   id: string;
@@ -11,6 +54,8 @@ export interface QuotePdfPayload {
   client_name: string;
   origin: string | null;
   destination: string | null;
+  origin_cep?: string | null;
+  destination_cep?: string | null;
   value: number | null;
   cargo_type: string | null;
   weight: number | null;
@@ -27,6 +72,15 @@ export interface QuotePdfPayload {
   pricing_breakdown?: StoredPricingBreakdown | null;
   freight_modality?: 'lotacao' | 'fracionado' | null;
   freight_type?: string | null;
+  /** Cliente (cadastro clients) — mesmo layout do embarcador */
+  client?: QuotePdfParty | null;
+  client_email_fallback?: string | null;
+  /** Embarcador (cadastro shippers / Shippers.tsx) */
+  shipper?: QuotePdfParty | null;
+  shipper_name_fallback?: string | null;
+  shipper_email_fallback?: string | null;
+  /** Paradas intermediárias persistidas em quote_route_stops */
+  route_stops?: QuotePdfRouteStop[];
 }
 
 type PdfDoc = jsPDF & { lastAutoTable?: { finalY?: number } };
@@ -49,7 +103,7 @@ const MR = 12;
 const CW = PW - ML - MR;
 
 const VECTRA = {
-  name: 'VECTRA HUB',
+  name: 'VECTRA HUB LTDA',
   cnpj: '62.188.748/0001-17',
   ie: '263768406',
   address: 'RODOVIA JORGE LACERDA',
@@ -102,23 +156,8 @@ const humanizeCargoType = (raw: string | null | undefined): string => {
   return raw.replace(/_/g, ' ').toUpperCase();
 };
 
-async function loadLogoBase64(): Promise<string | null> {
-  try {
-    const mod = (await import('@/assets/logo_vectra_cargo.jpg?url')) as { default?: string };
-    const logoUrl = mod.default;
-    if (!logoUrl) return null;
-    const res = await fetch(logoUrl);
-    if (!res.ok) return null;
-    const blob = await res.blob();
-    return new Promise<string | null>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;
-  }
+async function loadLogoBase64(): Promise<{ dataUrl: string; format: 'JPEG' | 'PNG' } | null> {
+  return loadVectraPdfLogo();
 }
 
 // ── Drawers (padrão OC/POD) ────────────────────────────────────────────────────
@@ -140,7 +179,7 @@ function drawHeader(
   doc: PdfDoc,
   payload: QuotePdfPayload,
   mode: QuotePdfMode,
-  logoBase64: string | null
+  logo: { dataUrl: string; format: 'JPEG' | 'PNG' } | null
 ): number {
   const H = 28;
   doc.setFillColor(...C.navy);
@@ -148,8 +187,8 @@ function drawHeader(
   doc.setFillColor(...C.orange);
   doc.rect(0, H, PW, 2, 'F');
 
-  if (logoBase64) {
-    doc.addImage(logoBase64, 'JPEG', ML, 3, 22, 22);
+  if (logo) {
+    doc.addImage(logo.dataUrl, logo.format, ML, 3, 22, 22);
   }
 
   const ix = ML + 26;
@@ -193,7 +232,8 @@ function drawSectionTitle(doc: PdfDoc, label: string, y: number): number {
   doc.setFontSize(8);
   doc.setTextColor(...C.white);
   doc.text(label, ML + CW / 2, y + 3.8, { align: 'center' });
-  return y + 5.5;
+  // gap abaixo da barra — evita texto colado/sobreposto
+  return y + 8;
 }
 
 /** Bloco com pares label/value em colunas — padrão CARGA/MOTORISTA do OC */
@@ -225,57 +265,287 @@ function drawFieldsBlock(
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...C.text);
-    const lines = doc.splitTextToSize(cell.value, innerW) as string[];
+    const lines = doc.splitTextToSize(upper(cell.value), innerW) as string[];
     doc.text(lines[0] ?? '', x + 2, y + 10.5);
   });
 
   return y + height + 1;
 }
 
-function drawClientBlock(doc: PdfDoc, payload: QuotePdfPayload, y: number): number {
-  const H = 14;
+function upper(v: string | null | undefined): string {
+  if (v == null || v === '') return '—';
+  return String(v).toLocaleUpperCase('pt-BR');
+}
+
+function formatDocId(cnpj?: string | null, cpf?: string | null | number): string {
+  if (cpf != null && String(cpf).trim() !== '') {
+    return formatCpfDisplay(String(cpf)) || String(cpf);
+  }
+  if (cnpj) return formatCnpjDisplay(cnpj) || cnpj;
+  return '—';
+}
+
+function formatCep(cep?: string | null): string {
+  if (!cep) return '—';
+  const d = cep.replace(/\D/g, '');
+  if (d.length !== 8) return upper(cep);
+  return `${d.slice(0, 5)}-${d.slice(5)}`;
+}
+
+function buildLocation(p: Partial<QuotePdfParty> | null | undefined): string {
+  if (!p) return '—';
+  const parts = [
+    p.address,
+    p.address_number,
+    p.address_neighborhood,
+    [p.city, p.state].filter(Boolean).join('/'),
+    p.zip_code ? `CEP ${formatCep(p.zip_code)}` : null,
+  ].filter(Boolean);
+  if (parts.length) return parts.join(', ');
+  const cityUf = [p.city, p.state].filter(Boolean).join('/');
+  return cityUf || '—';
+}
+
+function buildContact(p: Partial<QuotePdfParty> | null | undefined): string {
+  if (!p) return '—';
+  const phone = formatPhoneDisplay(p.phone ?? null) || p.phone;
+  const parts = [p.contact_name, phone].filter(Boolean);
+  return parts.length ? parts.join(' · ') : '—';
+}
+
+function stopTypeLabel(stopType: string, indexAmongStops: number): string {
+  if (stopType === 'origin') return 'ORIGEM';
+  if (stopType === 'destination') return 'DESTINO';
+  return `PARADA ${indexAmongStops}`;
+}
+
+/** Quebra página se bloco não couber; retorna y atualizado. */
+function ensureSpace(doc: PdfDoc, y: number, needMm: number): number {
+  const ph = doc.internal.pageSize.getHeight();
+  const bottom = 18;
+  if (y + needMm <= ph - bottom) return y;
+  doc.addPage();
+  return 14;
+}
+
+function drawKeyValueRows(
+  doc: PdfDoc,
+  rows: { label: string; value: string }[],
+  y: number
+): number {
+  const rowH = 7;
+  const blockH = rows.length * rowH + 2;
+  y = ensureSpace(doc, y, blockH);
+
   doc.setDrawColor(...C.border);
   doc.setLineWidth(0.25);
-  doc.rect(ML, y, CW, H);
+  doc.rect(ML, y, CW, blockH);
 
+  rows.forEach((row, i) => {
+    const yy = y + 5 + i * rowH;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.muted);
+    doc.text(row.label, ML + 2, yy);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.text);
+    const lines = doc.splitTextToSize(upper(row.value), CW - 52) as string[];
+    doc.text(lines[0] ?? '—', ML + 48, yy);
+  });
+
+  return y + blockH + 1;
+}
+
+/** Layout único: nome · cpf/cnpj · contato · e-mail · localização */
+function drawPartyBlock(
+  doc: PdfDoc,
+  nameLabel: 'CLIENTE' | 'EMBARCADOR',
+  party: QuotePdfParty | null | undefined,
+  nameFallback: string,
+  emailFallback: string | null | undefined,
+  y: number
+): number {
+  const name = party?.name || nameFallback || '—';
+  const rows = [
+    { label: nameLabel, value: name },
+    { label: 'CPF / CNPJ', value: formatDocId(party?.cnpj, party?.cpf) },
+    { label: 'CONTATO', value: buildContact(party) },
+    { label: 'E-MAIL', value: party?.email || emailFallback || '—' },
+    { label: 'LOCALIZAÇÃO', value: buildLocation(party) },
+  ];
+  return drawKeyValueRows(doc, rows, y);
+}
+
+function drawClientBlock(doc: PdfDoc, payload: QuotePdfPayload, y: number): number {
+  return drawPartyBlock(
+    doc,
+    'CLIENTE',
+    payload.client,
+    payload.client_name,
+    payload.client_email_fallback,
+    y
+  );
+}
+
+function drawShipperBlock(doc: PdfDoc, payload: QuotePdfPayload, y: number): number {
+  return drawPartyBlock(
+    doc,
+    'EMBARCADOR',
+    payload.shipper,
+    payload.shipper_name_fallback || '—',
+    payload.shipper_email_fallback,
+    y
+  );
+}
+
+function buildItinerary(payload: QuotePdfPayload): QuotePdfRouteStop[] {
+  const mid = [...(payload.route_stops ?? [])].sort((a, b) => a.sequence - b.sequence);
+  const origin: QuotePdfRouteStop = {
+    sequence: -1,
+    stop_type: 'origin',
+    name: payload.shipper?.name || payload.shipper_name_fallback || null,
+    city_uf: payload.origin,
+    cep: payload.origin_cep ?? null,
+    label: 'Coleta / origem',
+  };
+  const destination: QuotePdfRouteStop = {
+    sequence: 9999,
+    stop_type: 'destination',
+    name: payload.client?.name || payload.client_name,
+    city_uf: payload.destination,
+    cep: payload.destination_cep ?? null,
+    label: 'Entrega / destino',
+  };
+
+  const hasTypedEnds = mid.some((s) => s.stop_type === 'origin' || s.stop_type === 'destination');
+  if (hasTypedEnds && mid.length > 0) return mid;
+
+  return [origin, ...mid.map((s, i) => ({ ...s, sequence: i })), destination];
+}
+
+function drawItineraryBlock(doc: PdfDoc, payload: QuotePdfPayload, y: number): number {
+  const points = buildItinerary(payload);
+  const midCount = points.filter((p) => p.stop_type === 'stop').length;
+  const legsKm = points.reduce((acc, p) => acc + (Number(p.planned_km_from_prev) || 0), 0);
+  const totalKm =
+    payload.km_distance != null && payload.km_distance > 0 ? Number(payload.km_distance) : legsKm;
+
+  // subtítulo com gap claro após a barra de seção
+  y = ensureSpace(doc, y, 12);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(...C.muted);
+  const caption =
+    midCount > 0
+      ? `ROTEIRO COM ${midCount} PARADA(S) INTERMEDIÁRIA(S) · ${points.length} PONTOS`
+      : 'ROTEIRO DIRETO (ORIGEM → DESTINO)';
+  doc.text(caption, ML, y + 3);
+  y += 6;
+
+  const headH = 6;
+  const rowH = 8;
+  const totalRowH = 7;
+  y = ensureSpace(doc, y, headH + rowH + totalRowH);
+
+  doc.setFillColor(...C.light);
+  doc.rect(ML, y, CW, headH, 'F');
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.25);
+  doc.rect(ML, y, CW, headH);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
   doc.setTextColor(...C.muted);
-  doc.text('CLIENTE / EMBARCADOR', ML + 2, y + 4.5);
+  const cols = [22, 42, 58, 28, 36];
+  const headers = ['TIPO', 'LOCAL', 'DESTINATÁRIO / NOME', 'CEP', 'KM TRECHO'];
+  let x = ML + 1.5;
+  headers.forEach((h, i) => {
+    doc.text(h, x, y + 4);
+    x += cols[i];
+  });
+  y += headH;
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
+  let stopIdx = 0;
+  points.forEach((p, i) => {
+    y = ensureSpace(doc, y, rowH);
+    if (p.stop_type === 'stop') stopIdx += 1;
+    const tipo = stopTypeLabel(p.stop_type, stopIdx);
+    const local = upper(p.city_uf || p.label || '—');
+    const nome = upper(p.name || '—');
+    const cep = formatCep(p.cep);
+    const km = p.planned_km_from_prev != null ? upper(fmtUnit(p.planned_km_from_prev, 'km')) : '—';
+
+    if (i % 2 === 1) {
+      doc.setFillColor(252, 253, 255);
+      doc.rect(ML, y, CW, rowH, 'F');
+    }
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.15);
+    doc.line(ML, y + rowH, ML + CW, y + rowH);
+
+    const vals = [tipo, local, nome, cep, km];
+    x = ML + 1.5;
+    vals.forEach((v, vi) => {
+      doc.setFont('helvetica', vi === 0 ? 'bold' : 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...C.text);
+      const lines = doc.splitTextToSize(v, cols[vi] - 2) as string[];
+      doc.text(lines[0] ?? '—', x, y + 5.2);
+      x += cols[vi];
+    });
+    y += rowH;
+  });
+
+  // linha total km
+  y = ensureSpace(doc, y, totalRowH);
+  doc.setFillColor(...C.light);
+  doc.rect(ML, y, CW, totalRowH, 'F');
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.25);
+  doc.rect(ML, y, CW, totalRowH);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
   doc.setTextColor(...C.text);
-  const lines = doc.splitTextToSize(payload.client_name || '—', CW - 6) as string[];
-  doc.text(lines[0] ?? '', ML + 2, y + 11);
+  doc.text('TOTAL KM', ML + 1.5, y + 4.8);
+  doc.text(totalKm > 0 ? upper(fmtUnit(totalKm, 'km')) : '—', ML + CW - 1.5, y + 4.8, {
+    align: 'right',
+  });
+  y += totalRowH + 2;
 
-  return y + H + 1;
+  return y;
 }
 
-function drawRouteBlock(doc: PdfDoc, payload: QuotePdfPayload, y: number): number {
+function drawRouteSummaryBlock(doc: PdfDoc, payload: QuotePdfPayload, y: number): number {
   const modality = payload.freight_modality;
   const modalityLabel =
-    modality === 'lotacao' ? 'LOTAÇÃO' : modality === 'fracionado' ? 'FRACIONADO' : '—';
-  const freightTypeLabel = (payload.freight_type ?? '').toUpperCase() || '—';
-  const tipoFrete =
-    freightTypeLabel === '—'
-      ? modalityLabel
-      : modalityLabel === '—'
-        ? freightTypeLabel
-        : `${freightTypeLabel} - ${modalityLabel}`;
+    modality === 'lotacao' ? 'LOTAÇÃO' : modality === 'fracionado' ? 'FRACIONADO' : '';
+  const freightTypeLabel = (payload.freight_type ?? '').trim().toUpperCase();
+
+  let tipoFrete = '—';
+  if (freightTypeLabel && modalityLabel) {
+    tipoFrete = `${freightTypeLabel} · ${modalityLabel}`;
+  } else if (freightTypeLabel) {
+    tipoFrete = freightTypeLabel;
+  } else if (modalityLabel) {
+    tipoFrete = modalityLabel;
+  }
+
+  const points = buildItinerary(payload);
+  const mid = points.filter((p) => p.stop_type === 'stop').length;
 
   return drawFieldsBlock(
     doc,
     [
-      { label: 'ORIGEM', value: payload.origin ?? '—' },
-      { label: 'DESTINO', value: payload.destination ?? '—' },
       { label: 'TIPO FRETE', value: tipoFrete },
       {
         label: 'DISTÂNCIA',
         value: payload.km_distance != null ? fmtUnit(payload.km_distance, 'km') : '—',
       },
+      { label: 'PONTOS', value: String(points.length) },
+      { label: 'PARADAS', value: String(mid) },
     ],
-    y
+    y,
+    16
   );
 }
 
@@ -428,30 +698,39 @@ function drawTextBlock(
 }
 
 function drawFooter(doc: PdfDoc): void {
-  const ph = doc.internal.pageSize.getHeight();
-  const fh = 9;
-  doc.setFillColor(...C.navy);
-  doc.rect(0, ph - fh, PW, fh, 'F');
-  doc.setFillColor(...C.orange);
-  doc.rect(0, ph - fh, PW, 1, 'F');
+  const pageCount = doc.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p);
+    const ph = doc.internal.pageSize.getHeight();
+    const fh = 9;
+    doc.setFillColor(...C.navy);
+    doc.rect(0, ph - fh, PW, fh, 'F');
+    doc.setFillColor(...C.orange);
+    doc.rect(0, ph - fh, PW, 1, 'F');
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.5);
-  doc.setTextColor(180, 195, 215);
-  doc.text(
-    VECTRA.email
-      ? `VECTRA HUB - ${VECTRA.phone} | ${VECTRA.email}`
-      : `VECTRA HUB - ${VECTRA.phone}`,
-    ML,
-    ph - 3
-  );
-  doc.text('Pagina 1/1', PW - MR, ph - 3, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(180, 195, 215);
+    doc.text(`${VECTRA.name} - ${VECTRA.phone} | ${VECTRA.email}`, ML, ph - 3);
+    doc.text(`Pagina ${p}/${pageCount}`, PW - MR, ph - 3, { align: 'right' });
+  }
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 
-const toFilename = (code: string | null, mode: QuotePdfMode): string =>
-  `cotacao-${(code || 'cotacao').replace(/[^\w-]+/g, '-')}-${mode === 'simplified' ? 'cliente' : 'interno'}.pdf`;
+/** Razão social do pagador do frete (CIF → embarcador; FOB → cliente). */
+const resolveQuotePayerName = (quote: QuotePdfPayload): string =>
+  resolveFreightPayerName(
+    quote.freight_type,
+    quote.client?.name ?? quote.client_name,
+    quote.shipper?.name ?? quote.shipper_name_fallback
+  );
+
+const toFilename = (quote: QuotePdfPayload, mode: QuotePdfMode): string => {
+  const code = quote.quote_code || 'COT';
+  const modeLabel = mode === 'simplified' ? 'CLIENTE' : 'INTERNO';
+  return buildCanonicalFilename(`${code}-${modeLabel}`, resolveQuotePayerName(quote));
+};
 
 export async function generateQuotePdf({
   quote,
@@ -466,6 +745,16 @@ export async function generateQuotePdf({
   let y = drawHeader(doc, quote, mode, logo);
   y += 2;
 
+  // Regra canônica: razão social do pagador do frete após o número do documento.
+  const payerName = resolveQuotePayerName(quote);
+  if (payerName) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.navy);
+    doc.text(`Pagador do frete: ${payerName}`, ML, y);
+    y += 4;
+  }
+
   if (mode === 'detailed' && quote.antt_compliance?.below) {
     drawWatermark(doc, 'ABAIXO DO PISO ANTT');
   }
@@ -473,26 +762,40 @@ export async function generateQuotePdf({
   y = drawSectionTitle(doc, 'CLIENTE', y);
   y = drawClientBlock(doc, quote, y);
 
-  y = drawSectionTitle(doc, 'ROTA', y);
-  y = drawRouteBlock(doc, quote, y);
+  y = ensureSpace(doc, y, 45);
+  y = drawSectionTitle(doc, 'EMBARCADOR', y);
+  y = drawShipperBlock(doc, quote, y);
 
+  y = ensureSpace(doc, y, 35);
+  y = drawSectionTitle(doc, 'ROTEIRO (PARADAS)', y);
+  y = drawItineraryBlock(doc, quote, y);
+
+  y = ensureSpace(doc, y, 22);
+  y = drawSectionTitle(doc, 'RESUMO DA ROTA', y);
+  y = drawRouteSummaryBlock(doc, quote, y);
+
+  y = ensureSpace(doc, y, 22);
   y = drawSectionTitle(doc, 'CARGA', y);
   y = drawCargoBlock(doc, quote, y);
 
+  y = ensureSpace(doc, y, 30);
   y = drawSectionTitle(doc, 'DETALHAMENTO DE CUSTOS', y);
   y = drawPricingBlock(doc, quote, mode, y);
 
   y = drawTotalBlock(doc, quote, y);
 
   if (quote.payment_term_name || quote.payment_method_label) {
+    y = ensureSpace(doc, y, 20);
     y = drawSectionTitle(doc, 'CONDIÇÃO DE PAGAMENTO', y);
     y = drawPaymentBlock(doc, quote, y);
   }
 
+  y = ensureSpace(doc, y, 18);
   y = drawSectionTitle(doc, 'VALIDADE', y);
   y = drawValidityBlock(doc, quote, y);
 
   if (quote.notes?.trim()) {
+    y = ensureSpace(doc, y, 24);
     y = drawSectionTitle(doc, 'OBSERVAÇÕES', y);
     y = drawTextBlock(doc, quote.notes, y, 18);
   }
@@ -500,5 +803,5 @@ export async function generateQuotePdf({
   drawFooter(doc);
   void autoTable;
 
-  return { blob: doc.output('blob'), fileName: toFilename(quote.quote_code, mode) };
+  return { blob: doc.output('blob'), fileName: toFilename(quote, mode) };
 }
