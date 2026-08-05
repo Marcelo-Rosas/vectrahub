@@ -34,6 +34,47 @@ export function fmtTodayBr(): string {
   );
 }
 
+/**
+ * Resolve a parte CONTRATANTE do contrato conforme o tipo de frete.
+ *
+ * Regra comercial: em operação **CIF** o frete é de responsabilidade do
+ * embarcador (remetente), portanto o embarcador (`shippers`) figura como
+ * CONTRATANTE e pagador. Em **FOB** (ou CIF sem embarcador cadastrado) o
+ * CONTRATANTE é o cliente (`clients`).
+ */
+export function resolveContractContratante(quote: Record<string, unknown>): {
+  party: Record<string, unknown>;
+  name: string;
+  isCif: boolean;
+  source: 'shipper' | 'client';
+} {
+  const freightType = String(quote.freight_type ?? '')
+    .trim()
+    .toUpperCase();
+  const isCif = freightType === 'CIF';
+  const client = (quote.clients as Record<string, unknown> | null) ?? {};
+  const shipper = (quote.shippers as Record<string, unknown> | null) ?? {};
+  const shipperHasData = Boolean(
+    (shipper.name && String(shipper.name).trim()) || (shipper.cnpj && String(shipper.cnpj).trim())
+  );
+
+  if (isCif && shipperHasData) {
+    return {
+      party: shipper,
+      name: String(quote.shipper_name ?? shipper.name ?? '[embarcador não informado]'),
+      isCif: true,
+      source: 'shipper',
+    };
+  }
+
+  return {
+    party: client,
+    name: String(client.name ?? quote.client_name ?? '[cliente não informado]'),
+    isCif,
+    source: 'client',
+  };
+}
+
 /** 5.3 — condição de pagamento com prazo/parcelas quando disponíveis. */
 export function buildPaymentTermsDescription(
   quote: Record<string, unknown>,

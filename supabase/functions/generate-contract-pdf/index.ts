@@ -62,6 +62,7 @@ Deno.serve(async (req: Request) => {
       .select(
         `
         id, quote_code, client_id, client_name, client_email,
+        freight_type, shipper_id, shipper_name,
         origin, destination, cargo_type, weight, volume,
         value, payment_term_id, estimated_loading_date, validity_date,
         advance_due_date, balance_due_date, stage,
@@ -69,6 +70,12 @@ Deno.serve(async (req: Request) => {
         payment_terms:payment_term_id (name, days, advance_percent),
         clients:client_id (
           name, cnpj, address, city, state, zip_code, zip_code_mask,
+          state_registration, legal_representative_name,
+          legal_representative_cpf, legal_representative_role,
+          address_number, address_complement, address_neighborhood
+        ),
+        shippers:shipper_id (
+          name, cnpj, address, city, state, zip_code,
           state_registration, legal_representative_name,
           legal_representative_cpf, legal_representative_role,
           address_number, address_complement, address_neighborhood

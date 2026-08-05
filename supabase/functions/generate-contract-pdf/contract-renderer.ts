@@ -7,6 +7,7 @@ import {
   formatBrlReais,
   formatCnpjForContract,
   fmtTodayBr,
+  resolveContractContratante,
 } from './contract-clause-helpers.ts';
 
 // Paleta Vectra
@@ -354,8 +355,11 @@ export async function renderContractPdf(ctx: {
   version: number;
 }): Promise<Uint8Array> {
   const { quote, company, version } = ctx;
-  const client = (quote.clients as Record<string, unknown> | null) ?? {};
   const paymentTerm = (quote.payment_terms as Record<string, unknown> | null) ?? {};
+
+  // CONTRATANTE = embarcador (shipper) quando CIF; cliente quando FOB.
+  const contratante = resolveContractContratante(quote);
+  const contratanteParty = contratante.party;
 
   const w = new PdfWriter();
   await w.init();
@@ -385,12 +389,15 @@ export async function renderContractPdf(ctx: {
 
   // ── CONTRATANTE ───────────────────────────────────────────────────────────────
   w.heading('CONTRATANTE');
-  const clientName = String(client.name ?? quote.client_name ?? '[cliente não informado]');
-  const clientCnpj = formatCnpjForContract(client.cnpj as string);
-  const clientAddr = buildAddress(client);
+  const contratanteName = contratante.name;
+  const contratanteCnpj = formatCnpjForContract(contratanteParty.cnpj as string);
+  const contratanteAddr = buildAddress(contratanteParty);
+  const contratanteQualificacao = contratante.isCif
+    ? ', na qualidade de embarcador/remetente da carga (frete CIF),'
+    : '';
   w.text(
-    `${clientName}, pessoa jurídica de direito privado, inscrita no CNPJ sob o nº ${clientCnpj || '[CNPJ não informado]'}, ` +
-      `com sede na ${clientAddr}, doravante denominada CONTRATANTE.`,
+    `${contratanteName}, pessoa jurídica de direito privado, inscrita no CNPJ sob o nº ${contratanteCnpj || '[CNPJ não informado]'}, ` +
+      `com sede na ${contratanteAddr}${contratanteQualificacao}, doravante denominada CONTRATANTE.`,
     { size: 8.5 }
   );
   w.gap(6);
@@ -461,6 +468,11 @@ export async function renderContractPdf(ctx: {
     'DO PAGAMENTO',
     `5.1. O pagamento do frete deverá ser realizado exclusivamente em conta bancária de titularidade jurídica da CONTRATADA, no valor total de ${freightValue}.`
   );
+  if (contratante.isCif) {
+    w.subItem(
+      'Por se tratar de operação na modalidade CIF, o frete é de responsabilidade do embarcador (remetente da carga), ora CONTRATANTE, a quem compete efetuar o pagamento à CONTRATADA nos termos desta cláusula.'
+    );
+  }
   w.subItem(clause52.text);
   w.subItem(
     `5.3. O pagamento será realizado conforme a condição negociada: ${paymentDescription}.`
@@ -544,8 +556,8 @@ export async function renderContractPdf(ctx: {
   const lineW = colW - 8;
   const blockTop = w['y'];
 
-  const clientRep = client.legal_representative_name
-    ? String(client.legal_representative_name)
+  const contratanteRep = contratanteParty.legal_representative_name
+    ? String(contratanteParty.legal_representative_name)
     : null;
   const companyRep = company.legal_representative_name
     ? String(company.legal_representative_name)
@@ -556,8 +568,8 @@ export async function renderContractPdf(ctx: {
     lineW,
     blockTop,
     'CONTRATANTE',
-    clientName,
-    clientRep
+    contratanteName,
+    contratanteRep
   );
   const rightBottom = w.drawSignatureColumn(
     rightX,
