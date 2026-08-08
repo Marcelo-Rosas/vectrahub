@@ -61,7 +61,7 @@ import { RiskWorkflowWizard } from '@/components/risk/RiskWorkflowWizard';
 import { OrderCteTab } from '@/components/modals/order-detail/OrderCteTab';
 import { OrderMdfeTab } from '@/components/modals/order-detail/OrderMdfeTab';
 import { OrderVpoTab, isVpoSatisfied } from '@/components/modals/order-detail/OrderVpoTab';
-import { useCteEmissionByQuote } from '@/hooks/useCteEmission';
+import { useCteEmissionsByQuote } from '@/hooks/useCteEmission';
 import {
   useOrderRiskStatus,
   useRiskEvaluationByEntity,
@@ -243,8 +243,15 @@ export function OrderDetailModal({
   const tripId = order?.trip_id ?? (tripForOrder as { id?: string } | null)?.id ?? undefined;
   const { data: tripRiskEval } = useRiskEvaluationByEntity('trip', tripId);
   const quoteIdForFiscal = order?.quote_id ?? order?.quote?.id ?? null;
-  const { data: cteEmission } = useCteEmissionByQuote(quoteIdForFiscal);
-  const cteOkForFiscal = cteEmission?.status === 'authorized' && Boolean(cteEmission?.chave_cte);
+  const { data: cteEmissions = [] } = useCteEmissionsByQuote(quoteIdForFiscal);
+  const nfeDocCount = (orderDocuments ?? []).filter(
+    (d) => d.type === 'nfe' && Boolean(d.nfe_key)
+  ).length;
+  const authorizedCteCount = cteEmissions.filter(
+    (e) => e.status === 'authorized' && Boolean(e.chave_cte)
+  ).length;
+  const cteOkForFiscal =
+    authorizedCteCount > 0 && (nfeDocCount === 0 || authorizedCteCount >= nfeDocCount);
 
   // Reset plate input when the plate changes externally (apply vehicle, new OS, modal reopen)
   useEffect(() => {

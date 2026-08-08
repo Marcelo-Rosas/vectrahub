@@ -21,7 +21,7 @@ import {
   useManageMdfe,
   describeMdfeStatus,
 } from '@/hooks/useMdfeEmission';
-import { useCteEmissionByQuote } from '@/hooks/useCteEmission';
+import { useCteEmissionsByQuote } from '@/hooks/useCteEmission';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -50,7 +50,9 @@ export function MdfeEmissionInline({
   const [justificativa, setJustificativa] = useState('');
   const [resolvingVehicle, setResolvingVehicle] = useState(false);
 
-  const { data: cte } = useCteEmissionByQuote(quoteId);
+  const { data: ctes = [] } = useCteEmissionsByQuote(quoteId);
+  const authorizedCtes = ctes.filter((c) => c.status === 'authorized' && Boolean(c.chave_cte));
+  const cte = authorizedCtes[0] ?? null;
   const { data: emission, isLoading } = useMdfeEmissionByQuote(quoteId);
   useMdfeEmissionRealtime(quoteId);
   const emit = useEmitMdfe();
@@ -73,7 +75,7 @@ export function MdfeEmissionInline({
   // Cancelado/rejeitado: permite nova emissão (novo número/ref; backend incrementa -rN).
   const isDraftLike = !emission || isRejected || isCancelled;
   const isReemit = isRejected || isCancelled;
-  const cteOk = cte?.status === 'authorized' && Boolean(cte.chave_cte);
+  const cteOk = authorizedCtes.length > 0;
   const fleetOk = Boolean(driverId && vehiclePlate);
 
   async function resolveVehicleId(): Promise<string | null> {
@@ -90,7 +92,7 @@ export function MdfeEmissionInline({
   }
 
   async function handleEmit() {
-    if (!quoteId || !cte?.id || !driverId) return;
+    if (!quoteId || !authorizedCtes.length || !driverId) return;
     setResolvingVehicle(true);
     try {
       const vehicleId = await resolveVehicleId();
@@ -99,7 +101,7 @@ export function MdfeEmissionInline({
         return;
       }
       emit.mutate({
-        cte_emission_ids: [cte.id],
+        cte_emission_ids: authorizedCtes.map((c) => c.id),
         vehicle_id: vehicleId,
         driver_id: driverId,
       });

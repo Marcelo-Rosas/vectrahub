@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MdfeEmissionInline } from '@/components/boards/MdfeEmissionInline';
 import { useMdfeEmissionByQuote, describeMdfeStatus } from '@/hooks/useMdfeEmission';
-import { useCteEmissionByQuote } from '@/hooks/useCteEmission';
+import { useCteEmissionsByQuote } from '@/hooks/useCteEmission';
 import { FiscalEmissionPipeline } from '@/components/modals/order-detail/FiscalEmissionPipeline';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -42,7 +42,8 @@ export function OrderMdfeTab({
   ciotNumber,
 }: OrderMdfeTabProps) {
   const { data: emission, isLoading } = useMdfeEmissionByQuote(quoteId);
-  const { data: cte } = useCteEmissionByQuote(quoteId);
+  const { data: ctes = [] } = useCteEmissionsByQuote(quoteId);
+  const cte = ctes.find((c) => c.status === 'authorized') ?? ctes[0] ?? null;
 
   const focusDamdfeUrl = (emission?.response_received as { caminho_damdfe?: string } | null)
     ?.caminho_damdfe;

@@ -55,6 +55,7 @@ export interface QuoteRow {
   freight_modality?: string | null;
   pricing_breakdown?: PricingBreakdown | null;
   toll_value?: number | null;
+  discount_value?: number | null;
   tomador_tipo: number; // 0-4 (required for CT-e)
   nfe_keys?: string[] | null;
 }
@@ -92,6 +93,11 @@ export interface PricingBreakdown {
   icms_base?: number;
   icms_aliquota?: number;
   icms_valor?: number;
+  totals?: {
+    totalCliente?: number;
+    discount?: number;
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 }
 
@@ -108,6 +114,12 @@ export interface BuildCteInput {
   naturezaOperacao?: string;
   /** Incrementa sufixo `-rN` no ref (idempotência Focus + UNIQUE cte_emissions.ref). */
   retry?: number;
+  /** Valor faturado da OS (card). Tem prioridade sobre quote.value. */
+  orderValue?: number | string | null;
+  /** Prestação desta via (1 CT-e por NF). Tem prioridade sobre order/quote. */
+  valorPrestacao?: number | string | null;
+  /** Número da NF-e vinculada (sufixo do ref Focus). */
+  nfeNumero?: string | null;
 }
 
 export interface BuildCteResult {
@@ -162,10 +174,42 @@ export function normalizeRntrcSefaz(raw: string | null | undefined): string {
   return d.padStart(8, '0');
 }
 
-function moneyToBRL(value: number | null | undefined): number {
-  if (value == null) return 0;
-  // quote.value is already in R$ (numeric), not centavos
-  return Number(value.toFixed(2));
+function toMoneyNumber(value: number | string | null | undefined): number | null {
+  if (value == null || value === '') return null;
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Valor da prestação do CT-e = o que o tomador paga.
+ * Ordem: OS.card (order.value) → tabela − desconto (1x) → quote.value.
+ * Evita desconto duplicado quando quote.value já veio líquido e o save
+ * subtraiu discount de novo (COT-2026-08-0002: 26.000 → 25.248,31).
+ */
+export function resolveCteValorPrestacao(input: {
+  quoteValue?: number | string | null;
+  orderValue?: number | string | null;
+  totalCliente?: number | string | null;
+  discount?: number | string | null;
+  valorPrestacao?: number | string | null;
+}): number {
+  const forced = toMoneyNumber(input.valorPrestacao);
+  if (forced != null && forced > 0) return Number(forced.toFixed(2));
+
+  const order = toMoneyNumber(input.orderValue);
+  if (order != null && order > 0) return Number(order.toFixed(2));
+
+  const bruto = toMoneyNumber(input.totalCliente);
+  const discount = Math.max(0, toMoneyNumber(input.discount) ?? 0);
+  if (bruto != null && bruto > 0) {
+    return Number(Math.max(0, bruto - discount).toFixed(2));
+  }
+
+  return Number((toMoneyNumber(input.quoteValue) ?? 0).toFixed(2));
+}
+
+function moneyToBRL(value: number | string | null | undefined): number {
+  return Number((toMoneyNumber(value) ?? 0).toFixed(2));
 }
 
 function nz<T>(value: T | null | undefined, fallback: T): T {
@@ -226,9 +270,11 @@ function buildComponentes(
     .map(([nome, valor]) => ({ nome, valor: Number((valor as number).toFixed(2)) }));
 }
 
-export function buildCteRef(quoteCode: string, retry = 0): string {
+export function buildCteRef(quoteCode: string, retry = 0, nfeNumero?: string | null): string {
   const code = quoteCode || 'NOCODE';
-  return retry > 0 ? `CFN-CTE-${code}-r${retry}` : `CFN-CTE-${code}`;
+  const nfe = String(nfeNumero ?? '').replace(/\D/g, '');
+  const nfePart = nfe ? `-NF${nfe}` : '';
+  return retry > 0 ? `CFN-CTE-${code}${nfePart}-r${retry}` : `CFN-CTE-${code}${nfePart}`;
 }
 
 /**
@@ -278,10 +324,17 @@ export function buildCtePayload(input: BuildCteInput): BuildCteResult {
   });
 
   const componentes = buildComponentes(quote.pricing_breakdown ?? undefined);
-  const valorTotal = moneyToBRL(quote.value);
-  const valorReceber = moneyToBRL(quote.value);
+  const pbTotals = quote.pricing_breakdown?.totals;
+  const valorTotal = resolveCteValorPrestacao({
+    quoteValue: quote.value,
+    orderValue: input.orderValue,
+    totalCliente: pbTotals?.totalCliente,
+    discount: pbTotals?.discount ?? quote.discount_value,
+    valorPrestacao: input.valorPrestacao,
+  });
+  const valorReceber = valorTotal;
 
-  const ref = buildCteRef(quote.quote_code ?? quote.id, retry);
+  const ref = buildCteRef(quote.quote_code ?? quote.id, retry, input.nfeNumero);
   const rntrcSefaz = normalizeRntrcSefaz(vectra.rntrc);
   if (!rntrcSefaz || (rntrcSefaz !== 'ISENTO' && rntrcSefaz.length !== 8)) {
     warnings.push(`vectra.rntrc invalid for SEFAZ pattern [0-9]{8}|ISENTO (raw=${vectra.rntrc})`);
@@ -426,7 +479,9 @@ export function buildCtePayload(input: BuildCteInput): BuildCteResult {
         }),
 
     // === info adicionais ===
-    informacoes_adicionais_contribuinte: `Cotacao ${quote.quote_code ?? quote.id.slice(0, 8)} — emitido via CFN`,
+    informacoes_adicionais_contribuinte: input.nfeNumero
+      ? `Cotacao ${quote.quote_code ?? quote.id.slice(0, 8)} NF-e ${input.nfeNumero} dest ${client.name} — CFN`
+      : `Cotacao ${quote.quote_code ?? quote.id.slice(0, 8)} — emitido via CFN`,
   };
 
   // Validation warnings (non-blocking — caller decides)

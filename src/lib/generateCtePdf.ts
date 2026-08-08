@@ -578,15 +578,21 @@ function drawFooter(doc: PdfDoc, p: CtePdfPayload): void {
   doc.setFontSize(6.5);
   doc.setTextColor(180, 195, 215);
   doc.text('VECTRA HUB - Itajai/SC', ML, ph - 3);
-  doc.text('Pagina 1/1', PW - MR, ph - 3, { align: 'right' });
 }
 
-export async function generateCtePdf(
-  payload: CtePdfPayload
-): Promise<{ blob: Blob; fileName: string }> {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as PdfDoc;
-  const logo = payload.logoBase64Override ?? (await loadLogoBase64());
+function stampPageNumbers(doc: PdfDoc): void {
+  const total = doc.getNumberOfPages();
+  const ph = doc.internal.pageSize.getHeight();
+  for (let i = 1; i <= total; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(180, 195, 215);
+    doc.text(`Pagina ${i}/${total}`, PW - MR, ph - 3, { align: 'right' });
+  }
+}
 
+function renderOneCte(doc: PdfDoc, payload: CtePdfPayload, logo: string | null): void {
   let y = drawHeader(doc, payload, logo);
   y += 2;
 
@@ -648,7 +654,30 @@ export async function generateCtePdf(
   }
 
   drawFooter(doc, payload);
+}
 
-  const fileName = `CTe-${payload.numero}-${payload.serie}.pdf`;
-  return { blob: doc.output('blob'), fileName };
+export function ctePdfFileName(payloads: CtePdfPayload[]): string {
+  if (payloads.length === 1) return `CTe-${payloads[0].numero}-${payloads[0].serie}.pdf`;
+  const nums = payloads.map((p) => String(p.numero)).join('-');
+  const quote = payloads.map((p) => p.quote_code).find(Boolean);
+  return quote ? `CTe-${quote}.pdf` : `CTe-${nums}.pdf`;
+}
+
+/** Um ou N CT-es no mesmo PDF (uma seção / páginas por conhecimento). */
+export async function generateCtePdf(
+  payload: CtePdfPayload | CtePdfPayload[]
+): Promise<{ blob: Blob; fileName: string }> {
+  const payloads = Array.isArray(payload) ? payload : [payload];
+  if (payloads.length === 0) throw new Error('Sem CT-e para gerar PDF');
+
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as PdfDoc;
+  const logo = payloads[0].logoBase64Override ?? (await loadLogoBase64());
+
+  for (let i = 0; i < payloads.length; i++) {
+    if (i > 0) doc.addPage();
+    renderOneCte(doc, payloads[i], logo);
+  }
+  stampPageNumbers(doc);
+
+  return { blob: doc.output('blob'), fileName: ctePdfFileName(payloads) };
 }

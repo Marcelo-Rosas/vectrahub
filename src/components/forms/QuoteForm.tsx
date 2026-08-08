@@ -105,6 +105,7 @@ import {
   isMarginBelowTarget,
   type FreightCalculationOutput,
 } from '@/lib/freightCalculator';
+import { negotiatedQuoteValue } from '@/lib/quote-breakdown-utils';
 import { resolveLotacaoKmOverPercent } from '@/lib/lotacao-freight-base';
 import { buildStoredBreakdownFromEdgeResponse } from '@/hooks/useCalculateFreight';
 import { useEdgeFreightPreview } from '@/hooks/use-edge-freight-preview';
@@ -1783,10 +1784,11 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
         toll_value: data.toll || null,
         cargo_value: data.cargo_value || null,
         discount_value: data.discount || 0,
-        value: Math.max(
-          0,
-          (useStoredPricing ? storedValue : calculationResult.totals.totalCliente) -
-            (data.discount || 0)
+        value: negotiatedQuoteValue(
+          useStoredPricing
+            ? Number(pricingBreakdown?.totals?.totalCliente) || storedValue
+            : calculationResult.totals.totalCliente,
+          data.discount || 0
         ),
         pricing_breakdown: {
           ...pricingBreakdown,

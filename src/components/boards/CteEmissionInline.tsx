@@ -15,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  useCteEmissionByQuote,
+  useCteEmissionsByQuote,
   useCteEmissionRealtime,
   useEmitCte,
   useManageCte,
@@ -33,10 +33,21 @@ export function CteEmissionInline({ quoteId, readOnly = false }: CteEmissionInli
   const [cancelOpen, setCancelOpen] = useState(false);
   const [justificativa, setJustificativa] = useState('');
 
-  const { data: emission, isLoading } = useCteEmissionByQuote(quoteId);
+  const { data: emissions = [], isLoading } = useCteEmissionsByQuote(quoteId);
   useCteEmissionRealtime(quoteId);
   const emit = useEmitCte();
   const manage = useManageCte();
+  const authorized = emissions
+    .filter((e) => e.status === 'authorized')
+    .slice()
+    .sort((a, b) => (a.numero ?? 0) - (b.numero ?? 0));
+  const inflight = emissions.filter((e) => e.status === 'sent' || e.status === 'processing');
+  const active = emissions.filter((e) => e.status !== 'cancelled');
+  const emission =
+    authorized[authorized.length - 1] ??
+    active[active.length - 1] ??
+    emissions[emissions.length - 1] ??
+    null;
 
   if (!quoteId) {
     return <span className="text-xs text-muted-foreground">Sem cotação vinculada</span>;
@@ -47,12 +58,11 @@ export function CteEmissionInline({ quoteId, readOnly = false }: CteEmissionInli
   }
 
   const { label, color } = describeCteStatus(emission?.status);
-  const isAuthorized = emission?.status === 'authorized';
-  const isProcessing = emission?.status === 'processing' || emission?.status === 'sent';
+  const isAuthorized = authorized.length > 0 && inflight.length === 0;
+  const isProcessing = inflight.length > 0;
   const isCancelled = emission?.status === 'cancelled';
   const isRejected = emission?.status === 'rejected';
-  // Cancelado/rejeitado: permite nova emissão (novo número/ref; backend incrementa -rN).
-  const isDraftLike = !emission || isRejected || isCancelled;
+  const isDraftLike = inflight.length === 0;
 
   function handleEmit() {
     if (!quoteId) return;
@@ -75,10 +85,25 @@ export function CteEmissionInline({ quoteId, readOnly = false }: CteEmissionInli
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <Badge variant="outline" className={`text-[10px] uppercase ${color}`}>
-        CT-e: {label}
-        {emission?.numero ? ` · #${emission.numero}` : ''}
-      </Badge>
+      {emissions.length > 1 ? (
+        emissions
+          .filter((e) => e.status !== 'cancelled')
+          .map((e) => {
+            const st = describeCteStatus(e.status);
+            const nfe = String(e.ref ?? '').match(/-NF(\d+)/)?.[1];
+            return (
+              <Badge key={e.id} variant="outline" className={`text-[10px] uppercase ${st.color}`}>
+                #{e.numero ?? '—'}
+                {nfe ? ` NF${nfe}` : ''} · {st.label}
+              </Badge>
+            );
+          })
+      ) : (
+        <Badge variant="outline" className={`text-[10px] uppercase ${color}`}>
+          CT-e: {label}
+          {emission?.numero ? ` · #${emission.numero}` : ''}
+        </Badge>
+      )}
 
       {emission?.protocolo && (
         <span className="text-[10px] text-muted-foreground" title="Protocolo SEFAZ">
@@ -103,7 +128,11 @@ export function CteEmissionInline({ quoteId, readOnly = false }: CteEmissionInli
           ) : (
             <Send className="w-3 h-3 mr-1" />
           )}
-          {isRejected || isCancelled ? 'Reemitir CT-e' : 'Emitir CT-e'}
+          {authorized.length > 0
+            ? 'Emitir restantes'
+            : isRejected || isCancelled
+              ? 'Reemitir CT-e'
+              : 'Emitir CT-e'}
         </Button>
       )}
 
@@ -164,11 +193,11 @@ export function CteEmissionInline({ quoteId, readOnly = false }: CteEmissionInli
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent onClick={(e) => e.stopPropagation()}>
           <AlertDialogHeader>
-            <AlertDialogTitle>Emitir CT-e (Homologação)</AlertDialogTitle>
+            <AlertDialogTitle>Emitir CT-e</AlertDialogTitle>
             <AlertDialogDescription>
-              CT-e será enviado para a SEFAZ via Focus NFe. Após autorização, o DACTE ficará
-              disponível para download. Esta ação é reversível somente via cancelamento (janela de 7
-              dias).
+              Cada NF-e com destinatário diferente gera 1 CT-e. O frete da OS (R$ total) é rateado
+              pelo km negociado de cada destinatário — nenhum CT-e sai com o valor cheio. SEFAZ
+              produção.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

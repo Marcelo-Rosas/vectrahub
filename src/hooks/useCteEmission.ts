@@ -51,6 +51,18 @@ export interface EmitCteResponse {
   focus_status: number;
   focus_body: Record<string, unknown>;
   warnings: string[];
+  count?: number;
+  emissions?: Array<{
+    emission_id?: string;
+    ref?: string;
+    numero?: number;
+    status: string;
+    nfe_key?: string;
+    nfe_numero?: string;
+    dest_name?: string;
+    valor_total?: number;
+    ok?: boolean;
+  }>;
   error?: string;
   detail?: string;
 }
@@ -75,6 +87,29 @@ export function useCteEmissionByQuote(quoteId: string | null | undefined) {
       return data as CteEmissionRow | null;
     },
   });
+}
+
+/** Todos os CT-es da cotação (1 por NF). */
+export function useCteEmissionsByQuote(quoteId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['cte_emissions', 'list_by_quote', quoteId],
+    enabled: Boolean(quoteId),
+    queryFn: async (): Promise<CteEmissionRow[]> => {
+      const { data, error } = await supabase
+        .from('cte_emissions')
+        .select('*')
+        .eq('quote_id', quoteId!)
+        .order('numero', { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as CteEmissionRow[];
+    },
+  });
+}
+
+export function nfeKeyFromCtePayload(emission: CteEmissionRow | null | undefined): string | null {
+  const nfes = (emission?.payload_sent as { nfes?: Array<{ chave_nfe?: string }> } | null)?.nfes;
+  const key = nfes?.[0]?.chave_nfe;
+  return key ? String(key).replace(/\D/g, '') : null;
 }
 
 /**
@@ -112,7 +147,7 @@ export function useCteEmissionRealtime(quoteId: string | null | undefined) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'cte_emissions', filter: `quote_id=eq.${quoteId}` },
         () => {
-          qc.invalidateQueries({ queryKey: ['cte_emissions', 'by_quote', quoteId] });
+          qc.invalidateQueries({ queryKey: ['cte_emissions'] });
         }
       )
       .subscribe();
@@ -139,6 +174,12 @@ export function useEmitCte() {
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['cte_emissions'] });
+      const n = data.count ?? 1;
+      if (n > 1) {
+        const ok = (data.emissions ?? []).filter((e) => e.status === 'authorized').length;
+        toast.success(`${n} CT-es enviados (${ok} autorizados)`);
+        return;
+      }
       if (data.status === 'authorized') {
         toast.success(`CT-e ${data.numero} autorizado pela SEFAZ`);
       } else if (data.status === 'rejected') {
