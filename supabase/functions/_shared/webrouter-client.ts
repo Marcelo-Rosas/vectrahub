@@ -8,7 +8,7 @@
  */
 
 /** Map axes_count → WebRouter categoriaVeiculo (commercial, rod. dupla) */
-function axesToCategoriaVeiculo(axesCount?: number): string {
+export function axesToCategoriaVeiculo(axesCount?: number): string {
   const map: Record<number, string> = {
     2: '2',
     3: '4',
@@ -196,9 +196,20 @@ export interface TollPlaza {
   nome: string;
   cidade: string;
   uf: string;
-  valor: number; // centavos
-  valorTag: number; // centavos
+  /** Valor praça em R$ (WebRouter). */
+  valor: number;
+  /** Valor TAG em R$ (WebRouter). */
+  valorTag: number;
   ordemPassagem: number;
+  /** Código da praça AILOG (`idPedagio`) — criarViagem.idAilog. */
+  idAilog?: number;
+  idCNP?: string;
+  codigo?: string;
+  idSemParar?: string;
+  idConectcar?: string;
+  idVeloe?: string;
+  idMoveMais?: string;
+  idRepom?: string;
 }
 
 export interface RouteDistanceFullResult {
@@ -220,6 +231,8 @@ export interface RouteDistanceFullResult {
   url_mapa_view: string;
   /** WebRouter route ID for future queries (requires salvarRota: true) */
   id_rota: number | null;
+  /** Endereços enviados ao roteirizador (origem → paradas → destino). */
+  enderecos: ReturnType<typeof buildAddress>[];
 }
 
 export interface RouteDistanceFullError {
@@ -370,6 +383,7 @@ export async function calculateRouteDistanceFull(
       encoded_polyline: encodedPolyline,
       url_mapa_view: urlMapaView,
       id_rota: idRota,
+      enderecos,
     };
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : 'WebRouter fetch failed' };
@@ -386,6 +400,9 @@ function extractTollPlazas(rota: Record<string, unknown> | null): TollPlaza[] {
 
     return pedagios.map((p: Record<string, unknown>) => {
       const cidade = p.cidade as Record<string, unknown> | undefined;
+      const idAilogRaw = p.idAilog ?? p.idAILOG ?? p.id_ailog ?? p.idPedagio ?? p.id;
+      const idAilog = Number(idAilogRaw);
+      const idCnp = p.idCNP ?? p.idANTT;
       return {
         nome: String(p.nome || ''),
         cidade: String(cidade?.cidade || ''),
@@ -393,6 +410,14 @@ function extractTollPlazas(rota: Record<string, unknown> | null): TollPlaza[] {
         valor: Number(p.valor) || 0,
         valorTag: Number(p.valorTag) || 0,
         ordemPassagem: Number(p.ordemPassagem) || 0,
+        idAilog: Number.isFinite(idAilog) && idAilog > 0 ? idAilog : undefined,
+        idCNP: idCnp != null && String(idCnp).trim() ? String(idCnp) : undefined,
+        codigo: p.codigo != null ? String(p.codigo) : undefined,
+        idSemParar: p.idSemParar != null ? String(p.idSemParar) : undefined,
+        idConectcar: p.idConectcar != null ? String(p.idConectcar) : undefined,
+        idVeloe: p.idVeloe != null ? String(p.idVeloe) : undefined,
+        idMoveMais: p.idMoveMais != null ? String(p.idMoveMais) : undefined,
+        idRepom: p.idRepom != null ? String(p.idRepom) : undefined,
       };
     });
   } catch {

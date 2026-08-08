@@ -1816,6 +1816,7 @@ export function OrderDetailModal({
                   vehiclePlate={order.vehicle_plate}
                   canManage={canManage}
                   cteOk={cteOkForFiscal}
+                  vpoEmission={pricingBreakdown?.meta?.vpo ?? null}
                 />
               </TabsContent>
 

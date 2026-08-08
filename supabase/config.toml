@@ -191,3 +191,6 @@ verify_jwt = false  # Chamado por cron/pg_cron com service role
 
 [functions.petrobras-diesel]
 verify_jwt = false  # Chamado por cron/pg_cron com service role
+
+[functions.emit-vpo]
+verify_jwt = false  # Gateway 401 Invalid JWT; chamado pelo front com Bearer de usuário

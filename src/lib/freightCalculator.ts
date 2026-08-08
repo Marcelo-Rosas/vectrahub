@@ -454,6 +454,32 @@ export interface TollPlaza {
   valor: number;
   valorTag: number;
   ordemPassagem: number;
+  idAilog?: number;
+  idCNP?: string;
+  codigo?: string;
+  idSemParar?: string;
+  idConectcar?: string;
+  idVeloe?: string;
+  idMoveMais?: string;
+  idRepom?: string;
+}
+
+export interface VpoEmissionRecord {
+  emissor: string;
+  tag?: string | null;
+  idANTT?: string | null;
+  idViagemAILog?: number | null;
+  idViagemOSA?: number | null;
+  codigoViagem?: string | null;
+  idVpo?: string | null;
+  cnpjFornecedora?: string;
+  cnpjPagador?: string;
+  tipoVale?: '01' | '04';
+  valorReais?: number;
+  pedagiosCount?: number;
+  idRota?: number | null;
+  kmDistance?: number;
+  emittedAt?: string;
 }
 
 export interface StoredPricingBreakdown {
@@ -477,6 +503,9 @@ export interface StoredPricingBreakdown {
 
     // Praças de pedágio retornadas pelo WebRouter
     tollPlazas?: TollPlaza[];
+
+    /** Emissão VPO (WebRouter criarViagem) persistida na OS. */
+    vpo?: VpoEmissionRecord;
 
     /** KM por UF (para restauração e recálculo ICMS proporcional) */
     kmByUf?: Record<string, number>;
