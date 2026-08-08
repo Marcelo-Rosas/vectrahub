@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-08-03T15:52:50.766Z",
+  "os_number": "OS-2026-08-0002",
+  "live_cte": true,
+  "live_mdfe": false,
+  "cte": {
+    "ok": true,
+    "emission_id": "659cbe56-49ca-47e0-9697-fa3a3198a477",
+    "status": "authorized",
+    "ref": "CFN-CTE-COT-2026-08-0001-r8",
+    "numero": 12,
+    "focus_status": 202,
+    "rejection": "Autorizado o uso do CT-e",
+    "body": {
+      "ok": true,
+      "emission_id": "659cbe56-49ca-47e0-9697-fa3a3198a477",
+      "ref": "CFN-CTE-COT-2026-08-0001-r8",
+      "ambiente": "homolog",
+      "serie": 1,
+      "numero": 12,
+      "status": "authorized",
+      "focus_status": 202,
+      "focus_body": {
+        "cnpj_emitente": "62188748000117",
+        "ref": "CFN-CTE-COT-2026-08-0001-r8",
+        "status": "autorizado",
+        "status_sefaz": "100",
+        "mensagem_sefaz": "Autorizado o uso do CT-e",
+        "chave": "CTe42260862188748000117570010000000121660361841",
+        "numero": "12",
+        "serie": "1",
+        "modelo": "57",
+        "caminho_xml": "https://focusnfe.s3.sa-east-1.amazonaws.com/arquivos_development/62188748000117_228052/202608/XMLs/CTe42260862188748000117570010000000121660361841-cte.xml",
+        "caminho_dacte": "https://focusnfe.s3.sa-east-1.amazonaws.com/arquivos_development/62188748000117_228052/202608/DACTEs/42260862188748000117570010000000121660361841.pdf"
+      },
+      "warnings": []
+    }
+  }
+}

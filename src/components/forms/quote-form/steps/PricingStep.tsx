@@ -40,8 +40,10 @@ import type { UnloadingCostItem } from '@/components/quotes/UnloadingCostSection
 import type { QuoteFormData } from '../types';
 import {
   type FreightCalculationOutput,
+  resolveCustoServicosOperacionaisDisplay,
+  resolveLucroAlvoDisplay,
   resolveMargemBrutaDisplay,
-  isMarginBelowTarget,
+  resolveResultadoLiquidoDisplay,
 } from '@/lib/freightCalculator';
 import { AnttFloorWizardCard } from '@/components/forms/quote-form/AnttFloorWizardCard';
 import type { AnttFloorFlags } from '@/lib/antt-floor-calc';
@@ -156,7 +158,7 @@ export function PricingStep({
     Math.max(0, (t?.totalCliente ?? 0) - (t?.totalImpostos ?? (t?.das ?? 0) + (t?.icms ?? 0)));
   const custoMotoristaGolden =
     isLotacao && pisoAnttComOver > 0 ? pisoAnttComOver : (c?.baseCost ?? c?.baseFreight ?? 0);
-  const custoServicos = p?.custoServicos ?? 0;
+  const custoServicos = resolveCustoServicosOperacionaisDisplay(c, p?.custoServicos);
   const margemContribuicao = resolveMargemBrutaDisplay(
     p?.margemBruta,
     receitaLiquida,
@@ -165,22 +167,20 @@ export function PricingStep({
     custoServicos
   );
   const custosDiretosCalc = p?.custosDiretos ?? 0;
-  const targetMarginStep =
-    p?.profitMarginTarget ?? calculationResult?.rates?.profitMarginPercent ?? 15;
-  const resultadoLiquido =
-    custosDiretosCalc > 0 && targetMarginStep > 0
-      ? custosDiretosCalc * (targetMarginStep / 100)
-      : (p?.resultadoLiquido ?? margemContribuicao);
-  const margemPercentDisplay =
-    custosDiretosCalc > 0 && isLotacao
-      ? (resultadoLiquido / custosDiretosCalc) * 100
-      : (t?.totalCliente ?? 0) > 0
-        ? (resultadoLiquido / (t?.totalCliente ?? 1)) * 100
-        : 0;
   const targetMargin = p?.profitMarginTarget ?? calculationResult?.rates?.profitMarginPercent ?? 15;
+  const lucroAlvo = resolveLucroAlvoDisplay(custosDiretosCalc, targetMargin, p?.lucroAlvo);
+  const resultadoLiquido = resolveResultadoLiquidoDisplay(
+    p?.resultadoLiquido,
+    margemContribuicao,
+    calculationResult?.riskCosts?.total ?? 0
+  );
+  const margemPercentDisplay =
+    (t?.totalCliente ?? 0) > 0 ? (resultadoLiquido / (t?.totalCliente ?? 1)) * 100 : 0;
   const showMarginAlert =
     showAllIn &&
-    (isMarginBelowTarget(margemPercentDisplay, targetMargin) || margemContribuicao < 0);
+    (margemContribuicao < 0 ||
+      resultadoLiquido < 0 ||
+      (lucroAlvo > 0 && resultadoLiquido + 0.01 < lucroAlvo));
 
   const kmForIndicators = Number(watchKmDistance || 0);
   const vendaPerKm =
@@ -765,16 +765,15 @@ export function PricingStep({
                   <div className="flex justify-between items-center bg-emerald-50 dark:bg-emerald-950/20 p-3 rounded-lg border border-emerald-100 dark:border-emerald-900 mt-4">
                     <div className="flex flex-col">
                       <span className="font-bold text-emerald-700 dark:text-emerald-400 text-xs uppercase">
-                        Lucro alvo (s/ custos diretos)
+                        Resultado líquido
                       </span>
                       <span className="text-[10px] text-emerald-600 dark:text-emerald-500 font-medium">
-                        {isLotacao
-                          ? `Margem s/ CD: ${margemPercentDisplay.toFixed(2)}%`
-                          : `Margem operacional: ${margemPercentDisplay.toFixed(2)}%`}
+                        Margem operacional: {margemPercentDisplay.toFixed(2)}% do FAT
+                        {lucroAlvo > 0 ? ` · alvo gross-up ${formatCurrency(lucroAlvo)}` : ''}
                       </span>
                     </div>
                     <span className="font-black text-xl text-emerald-700 dark:text-emerald-400">
-                      {formatCurrency(p?.resultadoLiquido ?? 0)}
+                      {formatCurrency(resultadoLiquido)}
                     </span>
                   </div>
                 </TabsContent>

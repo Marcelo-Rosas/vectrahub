@@ -30,6 +30,7 @@ import {
 import { resolveAnttCargoTypeForPiso } from '../_shared/antt-cargo-type-map.ts';
 import {
   calculateLotacaoProfitability,
+  estimateInsuranceRiskCosts,
   LOTACAO_OVER_ANTT_KEY,
   resolveLotacaoFretePeso,
   resolveLotacaoKmOverPercent,
@@ -978,21 +979,21 @@ Deno.serve(async (req) => {
     // do embarcador, NAO custo direto. Mantida apenas em receitaBrutaPreTac;
     // removida do custoServicosOperacionais pra nao inflar custosDiretos
     // (e portanto o "lucro alvo" calculado por custosDiretos x targetPercent).
+    // CD: motorista + pedágio/NTC + espera + aluguel + descarga (repasse real).
+    // Taxas condicionais = markup (receita) — fora do divisor c/ risco.
     const custoServicosOperacionais = roundCurrency(
-      toll +
-        tde +
-        tear +
-        conditionalFeesTotal +
-        waitingTimeCost +
-        aluguelMaquinasValue +
-        tacAdjustment +
-        paymentAdjustment
+      toll + tde + tear + waitingTimeCost + aluguelMaquinasValue + tacAdjustment + paymentAdjustment
     );
-    /** Soma exibida (operacional + repasse); repasse não entra no divisor do gross-up (v5). */
-    const custoServicos = roundCurrency(custoServicosOperacionais + repasseRisco);
+    const custoServicos = custoServicosOperacionais;
     const custoMotoristaContratado = fretePesoForGrossUp;
     const custosDescarga = descargaValue;
     const custosDiretos = custoMotoristaContratado + custoServicosOperacionais + custosDescarga;
+    const receitaForaDivisor = roundCurrency(repasseRisco + conditionalFeesTotal);
+    const riskCostsEstimate = estimateInsuranceRiskCosts(
+      Number(input.cargo_value ?? 0),
+      roundCurrency
+    );
+    const custosRiscoReal = riskCostsEstimate.total;
 
     let regimeFiscal: 'simples_nacional' | 'excesso_sublimite' | 'lucro_presumido' | 'normal';
     let icmsNoDivisor: boolean;
@@ -1059,7 +1060,21 @@ Deno.serve(async (req) => {
       totalCliente = roundCurrency(receitaFinal + das + icms + pis + cofins + irpj + csll);
     } else {
       const totalClienteCore = roundCurrency(custosDiretos / (1 - taxaBruta));
-      totalCliente = roundCurrency(totalClienteCore + repasseRisco);
+      let taxaImpostos = 0;
+      if (regimeFiscal === 'lucro_presumido') {
+        taxaImpostos =
+          (pisPercent + cofinsPercent + irpjEffectivePercent + csllEffectivePercent + icmsPercent) /
+          100;
+      } else if (icmsNoDivisor) {
+        taxaImpostos = (dasPercent + icmsPercent) / 100;
+      } else {
+        taxaImpostos = dasPercent / 100;
+      }
+      const receitaForaComImpostos =
+        receitaForaDivisor > 0 && taxaImpostos < 1
+          ? receitaForaDivisor / (1 - taxaImpostos)
+          : receitaForaDivisor;
+      totalCliente = roundCurrency(totalClienteCore + receitaForaComImpostos);
       if (regimeFiscal === 'lucro_presumido') {
         das = 0;
         pis = roundCurrency(totalCliente * (pisPercent / 100));
@@ -1082,6 +1097,7 @@ Deno.serve(async (req) => {
 
     let margemBruta: number;
     let resultadoLiquido: number;
+    let lucroAlvo: number;
     let margemPercent: number;
 
     if (modality === 'lotacao') {
@@ -1096,19 +1112,23 @@ Deno.serve(async (req) => {
           custosDiretos,
           totalCliente,
           profitMarginPercent,
+          custosRiscoReal,
         },
         roundCurrency
       );
       margemBruta = lotacaoProfit.margemBruta;
       resultadoLiquido = lotacaoProfit.resultadoLiquido;
+      lucroAlvo = lotacaoProfit.lucroAlvo;
       margemPercent = lotacaoProfit.margemPercent;
     } else {
-      resultadoLiquido = roundCurrency(
-        receitaLiquida - overhead - custoMotoristaContratado - custosDescarga
-      );
       margemBruta = roundCurrency(
-        receitaLiquida - overhead - custoMotoristaAntt - custoServicosOperacionais
+        receitaLiquida - overhead - custoMotoristaAntt - custoServicosOperacionais - custosDescarga
       );
+      resultadoLiquido = roundCurrency(margemBruta - custosRiscoReal);
+      lucroAlvo =
+        custosDiretos > 0 && profitMarginPercent > 0
+          ? roundCurrency(custosDiretos * (profitMarginPercent / 100))
+          : resultadoLiquido;
       margemPercent = totalCliente > 0 ? roundCurrency((resultadoLiquido / totalCliente) * 100) : 0;
     }
 
@@ -1141,7 +1161,7 @@ Deno.serve(async (req) => {
         cofinsPercent,
         irpjEffectivePercent,
         csllEffectivePercent,
-        repasseRisco
+        receitaForaDivisor
       );
       ckanBenchmarkGross = ckanGrossUp.totalCliente;
     }
@@ -1269,6 +1289,7 @@ Deno.serve(async (req) => {
       margem_bruta: margemBruta,
       overhead,
       resultado_liquido: resultadoLiquido,
+      lucro_alvo: lucroAlvo,
       margem_percent: margemPercent,
       profit_margin_target: profitMarginPercent,
       regime_fiscal: regimeFiscal,
@@ -1296,6 +1317,13 @@ Deno.serve(async (req) => {
           components.gris + components.tso + components.rctrc + components.ad_valorem
         ),
       },
+      risk_costs:
+        riskCostsEstimate.total > 0
+          ? {
+              items: riskCostsEstimate.items,
+              total: riskCostsEstimate.total,
+            }
+          : undefined,
     };
 
     console.log('[calculate-freight] Complete:', {

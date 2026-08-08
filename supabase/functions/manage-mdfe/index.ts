@@ -11,6 +11,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { FocusClient, type FocusAmbiente } from '../_shared/focus-client.ts';
+import { normalizeSefazJustificativa } from '../_shared/sefaz-justificativa.ts';
 
 function envOrThrow(key: string): string {
   const v = Deno.env.get(key);
@@ -163,10 +164,11 @@ serve(async (req) => {
   // cancel
   // ============================================================
   if (action === 'cancel') {
-    const justificativa = String(body.justificativa ?? '');
-    if (justificativa.length < 15 || justificativa.length > 255) {
-      return json({ error: 'invalid_justificativa', detail: '15-255 chars' }, 400, cors);
+    const just = normalizeSefazJustificativa(body.justificativa);
+    if (!just.ok) {
+      return json({ error: 'invalid_justificativa', detail: just.detail }, 400, cors);
     }
+    const justificativa = just.value;
     if (emission.status !== 'authorized') {
       return json(
         {
@@ -179,9 +181,15 @@ serve(async (req) => {
     }
     const resp = await focus.cancelMdfe(ref, justificativa);
     if (resp.status >= 400) {
+      const focusMsg = typeof resp.body?.mensagem === 'string' ? resp.body.mensagem : null;
       return json(
-        { error: 'focus_cancel_failed', focus_status: resp.status, focus_body: resp.body },
-        502,
+        {
+          error: 'focus_cancel_failed',
+          detail: focusMsg ?? 'Focus rejeitou o cancelamento',
+          focus_status: resp.status,
+          focus_body: resp.body,
+        },
+        resp.status === 422 ? 422 : 502,
         cors
       );
     }

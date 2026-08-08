@@ -7,6 +7,7 @@ import {
 import {
   MapPin,
   Truck,
+  FileStack,
   Phone,
   Calendar,
   FileText,
@@ -33,6 +34,7 @@ import {
   ShieldQuestion,
   UserX,
   Unlink,
+  Ticket,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,6 +59,9 @@ import { CollectionOrderSection } from '@/components/operational/CollectionOrder
 import { CiotPanel } from '@/components/operational/CiotPanel';
 import { RiskWorkflowWizard } from '@/components/risk/RiskWorkflowWizard';
 import { OrderCteTab } from '@/components/modals/order-detail/OrderCteTab';
+import { OrderMdfeTab } from '@/components/modals/order-detail/OrderMdfeTab';
+import { OrderVpoTab, isVpoSatisfied } from '@/components/modals/order-detail/OrderVpoTab';
+import { useCteEmissionByQuote } from '@/hooks/useCteEmission';
 import {
   useOrderRiskStatus,
   useRiskEvaluationByEntity,
@@ -65,7 +70,7 @@ import {
 import { CRITICALITY_CONFIG } from '@/types/risk';
 import { useOccurrencesByOrder, useResolveOccurrence } from '@/hooks/useOccurrences';
 import { useVehicleByPlate } from '@/hooks/useVehicles';
-import { useUpdateOrder, type OrderWithOccurrences } from '@/hooks/useOrders';
+import { useUpdateOrder, useOrder, type OrderWithOccurrences } from '@/hooks/useOrders';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEnsureFinancialDocument } from '@/hooks/useEnsureFinancialDocument';
 import { useTripsForOrder, useLinkOrderToTrip, useUnlinkOrderFromTrip } from '@/hooks/useTrips';
@@ -126,12 +131,6 @@ const STAGES_WITH_DOCS_TAB: OrderStage[] = [
   'entregue',
 ];
 const STAGES_WITH_CARRETEIRO_TAB: OrderStage[] = [
-  'documentacao',
-  'coleta_realizada',
-  'em_transito',
-  'entregue',
-];
-const STAGES_WITH_CIOT_TAB: OrderStage[] = [
   'documentacao',
   'coleta_realizada',
   'em_transito',
@@ -213,10 +212,13 @@ const STAGE_LABELS: Record<OrderStage, { label: string; color: string }> = {
 export function OrderDetailModal({
   open,
   onClose,
-  order,
+  order: boardOrder,
   canManage = true,
 }: OrderDetailModalProps) {
   const { user } = useAuth();
+  // Board list is slim — hydrate full row (occurrences, quote.pricing_breakdown) on open
+  const { data: hydratedOrder } = useOrder(open && boardOrder?.id ? boardOrder.id : '');
+  const order = hydratedOrder ?? boardOrder;
   const { data: occurrences } = useOccurrencesByOrder(order?.id || '');
   const resolveOccurrenceMutation = useResolveOccurrence();
   const [isOccurrenceFormOpen, setIsOccurrenceFormOpen] = useState(false);
@@ -240,6 +242,9 @@ export function OrderDetailModal({
   const updateRiskEvaluation = useUpdateRiskEvaluation();
   const tripId = order?.trip_id ?? (tripForOrder as { id?: string } | null)?.id ?? undefined;
   const { data: tripRiskEval } = useRiskEvaluationByEntity('trip', tripId);
+  const quoteIdForFiscal = order?.quote_id ?? order?.quote?.id ?? null;
+  const { data: cteEmission } = useCteEmissionByQuote(quoteIdForFiscal);
+  const cteOkForFiscal = cteEmission?.status === 'authorized' && Boolean(cteEmission?.chave_cte);
 
   // Reset plate input when the plate changes externally (apply vehicle, new OS, modal reopen)
   useEffect(() => {
@@ -632,7 +637,12 @@ export function OrderDetailModal({
   const showCarreteiroTab = STAGES_WITH_CARRETEIRO_TAB.includes(order.stage);
   const showDocsTab = STAGES_WITH_DOCS_TAB.includes(order.stage);
   const showRiskBadge = STAGES_WITH_DOCS_TAB.includes(order.stage); // documentacao+
-  const showCiotTab = STAGES_WITH_CIOT_TAB.includes(order.stage);
+  const orderHasVpo = Boolean((order as { has_vpo?: boolean | null }).has_vpo);
+  const orderCiotNumber = (order as { ciot_number?: string | null }).ciot_number ?? null;
+  const orderCiotStatus = (order as { ciot_status?: string | null }).ciot_status;
+  const orderCiotActive = Boolean(orderCiotNumber) && orderCiotStatus !== 'cancelled';
+  const orderTollValue = order.toll_value != null ? Number(order.toll_value) : null;
+  const vpoSatisfied = isVpoSatisfied(orderHasVpo, tollPlazas.length, orderTollValue);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -962,10 +972,6 @@ export function OrderDetailModal({
                   Docs
                 </TabsTrigger>
               )}
-              <TabsTrigger value="cte" className="gap-1.5">
-                <Truck className="w-3.5 h-3.5" />
-                CT-e
-              </TabsTrigger>
               <TabsTrigger value="risco" className="gap-1.5">
                 <Shield className="w-3.5 h-3.5" />
                 Risco
@@ -978,18 +984,34 @@ export function OrderDetailModal({
                   <AlertCircle className="w-3.5 h-3.5 text-red-500" />
                 ) : null}
               </TabsTrigger>
-              {showCiotTab && (
-                <TabsTrigger value="ciot" className="gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  CIOT
-                  {(order as unknown as { ciot_status?: string | null }).ciot_status ===
-                  'generated' ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
-                  ) : (
-                    <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
-                  )}
-                </TabsTrigger>
-              )}
+              <TabsTrigger value="cte" className="gap-1.5">
+                <Truck className="w-3.5 h-3.5" />
+                CT-e
+              </TabsTrigger>
+              <TabsTrigger value="vpo" className="gap-1.5">
+                <Ticket className="w-3.5 h-3.5" />
+                VPO
+                {vpoSatisfied ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                ) : (
+                  <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="ciot" className="gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                CIOT
+                {orderCiotStatus === 'cancelled' ? (
+                  <XCircle className="w-3.5 h-3.5 text-muted-foreground" />
+                ) : orderCiotActive ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                ) : (
+                  <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="mdfe" className="gap-1.5">
+                <FileStack className="w-3.5 h-3.5" />
+                MDF-e
+              </TabsTrigger>
               <TabsTrigger value="occurrences" className="gap-1.5">
                 <AlertTriangle className="w-3.5 h-3.5" />
                 Ocorrências
@@ -1402,9 +1424,11 @@ export function OrderDetailModal({
                             <p
                               className={cn(
                                 'font-semibold',
-                                Number(order.carreteiro_real) - Number(order.carreteiro_antt) > 0
-                                  ? 'text-warning-foreground'
-                                  : 'text-success'
+                                Number(order.carreteiro_real) < Number(order.carreteiro_antt)
+                                  ? 'text-destructive'
+                                  : Number(order.carreteiro_real) > Number(order.carreteiro_antt)
+                                    ? 'text-warning-foreground'
+                                    : 'text-success'
                               )}
                             >
                               {formatCurrency(
@@ -1439,9 +1463,13 @@ export function OrderDetailModal({
                                   className={cn(
                                     'font-semibold',
                                     order.carreteiro_antt != null &&
-                                      Number(order.carreteiro_real) > Number(order.carreteiro_antt)
-                                      ? 'text-warning-foreground'
-                                      : 'text-success'
+                                      Number(order.carreteiro_real) < Number(order.carreteiro_antt)
+                                      ? 'text-destructive'
+                                      : order.carreteiro_antt != null &&
+                                          Number(order.carreteiro_real) >
+                                            Number(order.carreteiro_antt)
+                                        ? 'text-warning-foreground'
+                                        : 'text-success'
                                   )}
                                 >
                                   R${' '}
@@ -1756,15 +1784,6 @@ export function OrderDetailModal({
                 </TabsContent>
               )}
 
-              {/* Risco Tab */}
-              <TabsContent value="ciot" className="m-0 space-y-4">
-                <CiotPanel order={order} canManage={canManage} />
-              </TabsContent>
-
-              <TabsContent value="cte" className="m-0 space-y-4">
-                <OrderCteTab quoteId={order.quote_id ?? order.quote?.id} canManage={canManage} />
-              </TabsContent>
-
               <TabsContent value="risco" className="m-0 space-y-4">
                 <RiskWorkflowWizard
                   key={`risk-${order.id}-${wizardDriverKey}`}
@@ -1781,6 +1800,52 @@ export function OrderDetailModal({
                   destinationUf={order.destination
                     ?.match(/,?\s*([A-Z]{2})\s*$/i)?.[1]
                     ?.toUpperCase()}
+                />
+              </TabsContent>
+
+              <TabsContent value="cte" className="m-0 space-y-4">
+                <OrderCteTab quoteId={order.quote_id ?? order.quote?.id} canManage={canManage} />
+              </TabsContent>
+
+              <TabsContent value="vpo" className="m-0 space-y-4">
+                <OrderVpoTab
+                  orderId={order.id}
+                  hasVpo={orderHasVpo}
+                  tollValue={orderTollValue}
+                  tollPlazaCount={tollPlazas.length}
+                  vehiclePlate={order.vehicle_plate}
+                  canManage={canManage}
+                  cteOk={cteOkForFiscal}
+                />
+              </TabsContent>
+
+              <TabsContent value="ciot" className="m-0 space-y-4">
+                <CiotPanel
+                  order={order}
+                  canManage={canManage}
+                  cteOk={cteOkForFiscal}
+                  hasVpo={vpoSatisfied}
+                />
+              </TabsContent>
+
+              <TabsContent value="mdfe" className="m-0 space-y-4">
+                <OrderMdfeTab
+                  quoteId={order.quote_id ?? order.quote?.id}
+                  driverId={order.driver_id}
+                  vehiclePlate={order.vehicle_plate}
+                  destinationUf={
+                    (order.quote as { destination_uf?: string | null } | null | undefined)
+                      ?.destination_uf ??
+                    order.destination?.match(/,?\s*([A-Z]{2})\s*$/i)?.[1]?.toUpperCase()
+                  }
+                  destinationIbge={
+                    (order.quote as { destination_ibge?: number | null } | null | undefined)
+                      ?.destination_ibge
+                  }
+                  canManage={canManage}
+                  hasVpo={vpoSatisfied}
+                  vpoDispensado={!orderHasVpo && vpoSatisfied}
+                  ciotNumber={orderCiotActive ? orderCiotNumber : null}
                 />
               </TabsContent>
 

@@ -646,7 +646,7 @@ export type Database = {
             foreignKeyName: 'ciot_operations_service_order_id_fkey';
             columns: ['service_order_id'];
             isOneToOne: false;
-            referencedRelation: 'trip_orders';
+            referencedRelation: 'orders';
             referencedColumns: ['id'];
           },
         ];
@@ -7327,6 +7327,7 @@ export type Database = {
         Args: { p_order_id?: string; p_quote_id?: string };
         Returns: Json;
       };
+      get_dashboard_kpi: { Args: never; Returns: Json };
       get_diesel_cost_by_route: {
         Args: { p_from?: string; p_to?: string };
         Returns: {
@@ -7472,7 +7473,9 @@ export type Database = {
         | 'a_vista_fat'
         | 'saldo_fat'
         | 'a_prazo_fat'
-        | 'a_vista_pag';
+        | 'a_vista_pag'
+        | 'ciot'
+        | 'xml';
       driver_contract_type: 'proprio' | 'agregado' | 'terceiro';
       driver_qualification_status:
         | 'pendente'
@@ -7685,6 +7688,8 @@ export const Constants = {
         'saldo_fat',
         'a_prazo_fat',
         'a_vista_pag',
+        'ciot',
+        'xml',
       ],
       driver_contract_type: ['proprio', 'agregado', 'terceiro'],
       driver_qualification_status: ['pendente', 'em_analise', 'aprovado', 'reprovado', 'bloqueado'],

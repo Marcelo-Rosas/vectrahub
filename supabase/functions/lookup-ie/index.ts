@@ -53,10 +53,25 @@ serve(async (req) => {
   if (cnpj.length !== 14) return json({ error: 'cnpj_invalid' }, 400, cors);
   if (uf.length !== 2) return json({ error: 'uf_required' }, 400, cors);
 
+  const apiKey = Deno.env.get('SINTEGRA_API_KEY');
+  if (!apiKey) {
+    return json(
+      {
+        error: 'lookup_unavailable',
+        detail: 'SINTEGRA_API_KEY ausente nos secrets do projeto',
+      },
+      503,
+      cors
+    );
+  }
+
   const result = await lookupIeByCnpj(cnpj, uf);
   if (!result) {
     return json(
-      { error: 'lookup_unavailable', detail: 'SintegrAPI sem resposta ou key ausente' },
+      {
+        error: 'lookup_unavailable',
+        detail: 'SintegrAPI sem resposta (rede/timeout/HTTP não-OK)',
+      },
       502,
       cors
     );

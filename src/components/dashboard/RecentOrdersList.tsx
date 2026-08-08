@@ -12,7 +12,8 @@ type Occurrence = Database['public']['Tables']['occurrences']['Row'];
 type OrderStage = Database['public']['Enums']['order_stage'];
 
 interface OrderWithOccurrences extends Order {
-  occurrences: Occurrence[];
+  occurrences?: Occurrence[];
+  occurrence_count?: number;
 }
 
 const ORDER_STAGES: { id: OrderStage; label: string }[] = [
@@ -82,7 +83,7 @@ export function RecentOrdersList({ orders, onViewOrder, onViewAll }: RecentOrder
       <div className="space-y-3">
         {orders.slice(0, 5).map((order, index) => {
           const stage = ORDER_STAGES.find((s) => s.id === order.stage);
-          const occurrences = order.occurrences || [];
+          const hasOccurrences = (order.occurrence_count ?? order.occurrences?.length ?? 0) > 0;
 
           return (
             <motion.div
@@ -102,7 +103,7 @@ export function RecentOrdersList({ orders, onViewOrder, onViewAll }: RecentOrder
                 >
                   {order.stage === 'entregue' ? (
                     <CheckCircle className="w-5 h-5 text-success" />
-                  ) : occurrences.length > 0 ? (
+                  ) : hasOccurrences ? (
                     <AlertTriangle className="w-5 h-5 text-warning" />
                   ) : (
                     <Truck className="w-5 h-5 text-primary" />

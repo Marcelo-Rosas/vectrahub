@@ -16,9 +16,12 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { ciotGenerateRequestSchema, ciotOperacaoPayloadSchema } from '../_shared/ciot-schema.ts';
+import { emitCiotGratuitoEfrete } from '../_shared/efrete-ciot-client.ts';
 
 const CIOT_BRIDGE_URL = Deno.env.get('CIOT_BRIDGE_URL') || 'http://localhost:8080';
 const CIOT_BRIDGE_TIMEOUT = 30_000;
+/** Preferir e-FRETE gratuito (Nstech). Bridge/AILOG só se EFRETE_HASH ausente + FORCE_CIOT_BRIDGE=1. */
+const PREFER_EFRETE = Deno.env.get('EFRETE_HASH') || Deno.env.get('CIOT_PROVIDER') === 'efrete';
 
 function jsonResponse(body: unknown, status = 200, cors: Record<string, string>) {
   return new Response(JSON.stringify(body), {
@@ -214,26 +217,83 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ─── 4. Chama ciot-bridge ────────────────────────────────────────────────
-    const bridgeRes = await fetch(`${CIOT_BRIDGE_URL}/ciot`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ operation: 'generate', payload: validatedPayload }),
-      signal: AbortSignal.timeout(CIOT_BRIDGE_TIMEOUT),
-    });
-
-    if (!bridgeRes.ok) {
-      const text = await bridgeRes.text().catch(() => 'Unknown error');
-      throw new Error(`Bridge HTTP ${bridgeRes.status}: ${text}`);
-    }
-
-    const bridgeData = (await bridgeRes.json()) as {
+    // ─── 4. CIOT gratuito e-FRETE (Nstech) — NÃO AILOG pago ─────────────────
+    let bridgeData: {
       success: boolean;
       ciotNumber?: string;
       status?: string;
       message?: string;
       raw?: Record<string, unknown>;
     };
+
+    if (PREFER_EFRETE || Deno.env.get('EFRETE_HASH')) {
+      let origemUf = 'SC';
+      let destinoUf = 'SC';
+      if (validatedPayload.serviceOrderId) {
+        const { data: osUf } = await supabase
+          .from('orders')
+          .select('origin, destination')
+          .eq('id', validatedPayload.serviceOrderId)
+          .maybeSingle();
+        origemUf = extractUf(osUf?.origin as string) || origemUf;
+        destinoUf = extractUf(osUf?.destination as string) || destinoUf;
+      }
+      const efrete = await emitCiotGratuitoEfrete({
+        codigoOperacao: String(
+          validatedPayload.serviceOrderId || validatedPayload.quoteId || crypto.randomUUID()
+        ),
+        contratanteCnpj: Deno.env.get('VECTRA_CNPJ') || Deno.env.get('CIOT_COMPANY_CNPJ') || '',
+        contratadoCpfCnpj: String(validatedPayload.cpfCnpj || ''),
+        motoristaCpf: String(validatedPayload.cpfCnpj || ''),
+        placa: String(validatedPayload.placa || ''),
+        valorFrete: Number(validatedPayload.valorFrete || 0),
+        pesoKg: Number(validatedPayload.pesoTotalKg || 0),
+        origemUf,
+        destinoUf,
+      });
+      bridgeData = {
+        success: efrete.ok,
+        ciotNumber: efrete.ciotNumber,
+        message: efrete.message,
+        raw: (efrete.raw as Record<string, unknown>) || { stub: efrete.stub },
+      };
+      if (!efrete.ok && Deno.env.get('FORCE_CIOT_BRIDGE') !== '1') {
+        return jsonResponse(
+          {
+            success: false,
+            status: 'error',
+            message: efrete.message || 'e-FRETE CIOT gratuito falhou',
+            provider: 'efrete_gratuito',
+          },
+          502,
+          corsHeaders
+        );
+      }
+    } else if (Deno.env.get('FORCE_CIOT_BRIDGE') === '1') {
+      const bridgeRes = await fetch(`${CIOT_BRIDGE_URL}/ciot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ operation: 'generate', payload: validatedPayload }),
+        signal: AbortSignal.timeout(CIOT_BRIDGE_TIMEOUT),
+      });
+      if (!bridgeRes.ok) {
+        const text = await bridgeRes.text().catch(() => 'Unknown error');
+        throw new Error(`Bridge HTTP ${bridgeRes.status}: ${text}`);
+      }
+      bridgeData = (await bridgeRes.json()) as typeof bridgeData;
+    } else {
+      return jsonResponse(
+        {
+          success: false,
+          status: 'error',
+          message:
+            'Configure EFRETE_HASH (CIOT gratuito Nstech). AILOG/WebRouter CIOT é pago — não usado. Contingência: FORCE_CIOT_BRIDGE=1',
+          provider: 'none',
+        },
+        503,
+        corsHeaders
+      );
+    }
 
     // ─── 5. Persiste em ciot_operations ──────────────────────────────────────
     const userId = getUserIdFromJwt(authHeader);

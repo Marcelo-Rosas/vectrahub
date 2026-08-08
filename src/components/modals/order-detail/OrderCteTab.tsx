@@ -100,6 +100,47 @@ export function OrderCteTab({ quoteId, canManage }: OrderCteTabProps) {
             valor: Number(c.valor ?? 0),
           }))
         : [];
+      const quantidades = Array.isArray(ps.quantidades)
+        ? (
+            ps.quantidades as Array<{
+              tipo_medida?: string;
+              quantidade?: number;
+              codigo_unidade_medida?: string;
+            }>
+          ).map((q) => ({
+            tipo_medida: q.tipo_medida ?? null,
+            quantidade: q.quantidade ?? null,
+            unidade: q.codigo_unidade_medida === '01' ? 'KG' : (q.codigo_unidade_medida ?? 'KG'),
+          }))
+        : [];
+      const modalRod = ps.modal_rodoviario as { rntrc?: string } | null;
+      const docs: Array<{
+        tipo?: string | null;
+        numero?: string | null;
+        data_emissao?: string | null;
+        valor?: number | null;
+        chave_nfe?: string | null;
+      }> = [];
+      if (Array.isArray(ps.nfes)) {
+        for (const n of ps.nfes as Array<{ chave_nfe?: string }>) {
+          docs.push({ chave_nfe: n.chave_nfe ?? null, tipo: 'NF-e' });
+        }
+      }
+      if (Array.isArray(ps.outros_documentos)) {
+        for (const d of ps.outros_documentos as Array<{
+          tipo_documento?: string;
+          numero?: string;
+          data_emissao?: string;
+          valor?: number;
+        }>) {
+          docs.push({
+            tipo: d.tipo_documento ?? '99',
+            numero: d.numero ?? null,
+            data_emissao: d.data_emissao ?? null,
+            valor: d.valor ?? null,
+          });
+        }
+      }
       // Emitente vem de company_settings (/empresa); phone/email via cast até a
       // migration 20260801000000 deployar e os tipos serem regerados.
       const cs = company as
@@ -130,18 +171,33 @@ export function OrderCteTab({ quoteId, canManage }: OrderCteTabProps) {
         cfop: emission.cfop ?? (ps.cfop as number | undefined) ?? null,
         natureza_operacao: str('natureza_operacao'),
         data_autorizacao: emission.data_autorizacao,
+        data_emissao: str('data_emissao'),
+        tipo_documento: (ps.tipo_documento as number | undefined) ?? 0,
+        tipo_servico: (ps.tipo_servico as number | undefined) ?? 0,
+        modal: str('modal') ?? '01',
         tomador_label: TOMADOR_LABELS[Number(ps.tomador)] ?? null,
         remetente: party('remetente'),
         destinatario: party('destinatario'),
+        expedidor: party('expedidor'),
+        recebedor: party('recebedor'),
         valor_total: Number(ps.valor_total) || null,
         valor_receber: Number(ps.valor_receber) || null,
         componentes: comps,
+        icms_cst: str('icms_situacao_tributaria'),
+        icms_base: Number(ps.base_calculo_icms) || null,
+        icms_aliquota: Number(ps.aliquota_icms) || null,
+        icms_valor: Number(ps.valor_icms) || null,
         valor_carga: Number(ps.valor_carga) || null,
         produto_predominante: str('produto_predominante'),
+        quantidades,
+        rntrc: modalRod?.rntrc ?? null,
+        documentos: docs,
         municipio_inicio: str('municipio_inicio'),
         uf_inicio: str('uf_inicio'),
         municipio_fim: str('municipio_fim'),
         uf_fim: str('uf_fim'),
+        municipio_envio: str('municipio_envio'),
+        uf_envio: str('uf_envio'),
       };
       const { blob, fileName } = await generateCtePdf(payload);
       const url = URL.createObjectURL(blob);
@@ -223,7 +279,8 @@ export function OrderCteTab({ quoteId, canManage }: OrderCteTabProps) {
       ) : (
         <p className="text-sm text-muted-foreground rounded-lg border border-dashed p-4">
           Nenhum CT-e emitido para esta OS. Use <strong>Emitir CT-e</strong> acima — após a
-          autorização da SEFAZ, o botão <strong>Baixar PDF (DACTE)</strong> fica disponível.
+          autorização da SEFAZ, os botões <strong>DACTE oficial</strong> e{' '}
+          <strong>Baixar PDF (Vectra)</strong> ficam disponíveis.
         </p>
       )}
     </div>

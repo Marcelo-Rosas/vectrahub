@@ -16,9 +16,20 @@ export interface IeLookupResult {
   razaoSocial?: string;
 }
 
+export class IeLookupError extends Error {
+  constructor(
+    message: string,
+    public readonly code?: string
+  ) {
+    super(message);
+    this.name = 'IeLookupError';
+  }
+}
+
 /**
- * Resolve a IE ativa de um CNPJ na UF. Retorna null quando CNPJ/UF inválidos
- * ou a consulta falha (degrada silenciosamente — não bloqueia o formulário).
+ * Resolve a IE ativa de um CNPJ na UF.
+ * Lança IeLookupError quando a Edge/API falha (key ausente, 502, etc.).
+ * Retorna null só quando CNPJ/UF inválidos (caller deve validar antes).
  */
 export async function lookupIe(rawCnpj: string, uf: string): Promise<IeLookupResult | null> {
   const cnpj = (rawCnpj ?? '').replace(/\D/g, '');
@@ -26,12 +37,37 @@ export async function lookupIe(rawCnpj: string, uf: string): Promise<IeLookupRes
   if (cnpj.length !== 14 || ufNorm.length !== 2) return null;
 
   try {
-    const result = await invokeEdgeFunction<IeLookupResult | { error: string }>('lookup-ie', {
-      body: { cnpj, uf: ufNorm },
-    });
-    if (!result || 'error' in result) return null;
+    const result = await invokeEdgeFunction<IeLookupResult | { error: string; detail?: string }>(
+      'lookup-ie',
+      {
+        body: { cnpj, uf: ufNorm },
+      }
+    );
+
+    if (!result) {
+      throw new IeLookupError('Resposta vazia da Edge lookup-ie');
+    }
+    if ('error' in result && result.error) {
+      const detail = result.detail ? ` — ${result.detail}` : '';
+      if (result.error === 'lookup_unavailable') {
+        throw new IeLookupError(
+          `Consulta IE indisponível${detail}. Confira secret SINTEGRA_API_KEY no Hub.`,
+          result.error
+        );
+      }
+      throw new IeLookupError(`${result.error}${detail}`, result.error);
+    }
     return result as IeLookupResult;
-  } catch {
-    return null;
+  } catch (err) {
+    if (err instanceof IeLookupError) throw err;
+    const msg = err instanceof Error ? err.message : String(err);
+    // supabase.functions.invoke frequentemente engole body do 502
+    if (/502|lookup_unavailable|FunctionsHttpError/i.test(msg)) {
+      throw new IeLookupError(
+        'Consulta IE falhou (502). Provável SINTEGRA_API_KEY ausente no Hub.',
+        'lookup_unavailable'
+      );
+    }
+    throw new IeLookupError(msg || 'Falha ao consultar IE');
   }
 }

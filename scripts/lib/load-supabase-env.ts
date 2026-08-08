@@ -48,6 +48,7 @@ export function loadSupabaseScriptEnv(): SupabaseScriptEnv {
     process.env.SUPABASE_SERVICE_ROLE_KEY ??
       process.env.SUPABASE_SR_KEY ??
       process.env.SERVICE_ROLE_KEY ??
+      process.env.SUPABASE_SECRET_KEY ??
       ''
   );
 

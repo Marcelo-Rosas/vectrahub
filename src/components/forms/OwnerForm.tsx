@@ -31,38 +31,101 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { useCreateOwner, useUpdateOwner } from '@/hooks/useOwners';
+import { useAnttRntrcCheck } from '@/hooks/useAnttRntrcCheck';
+import {
+  resolveAnttRegistryType,
+  parseAnttMunicipioUf,
+  anttRegistryToMdfeTipoProprietario,
+  stripAnttTransportadorPrefix,
+} from '@/lib/risk-antt-evidence';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
-import { zodCpfOrCnpj, zodPhone, zodCep } from '@/lib/validators';
+import { zodCpfOrCnpj, zodPhone, zodCep, zodRntrcOptional, maskRntrcInput } from '@/lib/validators';
 
 type Owner = Database['public']['Tables']['owners']['Row'];
 
-const ownerSchema = z.object({
-  name: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres').max(200, 'Nome muito longo'),
-  cpf_cnpj: zodCpfOrCnpj,
-  rg: z.string().optional(),
-  rg_emitter: z.string().optional(),
-  phone: zodPhone,
-  email: z.string().email('E-mail inválido').optional().or(z.literal('')),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z
-    .string()
-    .max(2, 'Use a sigla do estado (ex: SP)')
-    .optional()
-    .transform((v) => v?.toUpperCase()),
-  zip_code: zodCep,
-  notes: z.string().max(500, 'Observações muito longas').optional(),
-  active: z.boolean(),
-  // ── Dados ANTT / MDF-e (proprietário do veículo) ──
-  rntrc: z.string().optional(),
-  uf: z
-    .string()
-    .max(2, 'Use a sigla da UF (ex: SC)')
-    .optional()
-    .transform((v) => v?.toUpperCase()),
-  tipo_proprietario: z.string().optional(),
-});
+const ownerSchema = z
+  .object({
+    name: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres').max(200, 'Nome muito longo'),
+    cpf_cnpj: zodCpfOrCnpj,
+    rg: z.string().optional(),
+    rg_emitter: z.string().optional(),
+    phone: zodPhone,
+    email: z.string().email('E-mail inválido').optional().or(z.literal('')),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    state: z
+      .string()
+      .max(2, 'Use a sigla do estado (ex: SP)')
+      .optional()
+      .transform((v) => v?.toUpperCase()),
+    zip_code: zodCep,
+    notes: z.string().max(500, 'Observações muito longas').optional(),
+    active: z.boolean(),
+    // ── Dados ANTT / MDF-e (proprietário do veículo) — Focus infProp ──
+    rntrc: zodRntrcOptional,
+    uf: z
+      .string()
+      .max(2, 'Use a sigla da UF (ex: SC)')
+      .optional()
+      .transform((v) => v?.toUpperCase()),
+    tipo_proprietario: z.string().optional(),
+    // ── Pagamento frete (MDF-e infPag / SEFAZ 302-303) ──
+    payment_prefer: z.union([z.literal('pix'), z.literal('banco'), z.literal('')]).optional(),
+    pix_key: z.string().max(60, 'PIX no máximo 60 caracteres').optional(),
+    bank_code: z
+      .string()
+      .optional()
+      .refine((v) => !v || /^\d{3,5}$/.test(v.replace(/\D/g, '')), 'Banco: 3 a 5 dígitos'),
+    bank_agency: z.string().max(10).optional(),
+    bank_account: z.string().max(20).optional(),
+  })
+  .superRefine((data, ctx) => {
+    // Terceiro com tipo ANTT → RNTRC 8 dígitos obrigatório (grupo prop MDF-e)
+    if (data.tipo_proprietario?.trim() && (!data.rntrc || data.rntrc === '')) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['rntrc'],
+        message: 'RNTRC obrigatório quando tipo de proprietário está preenchido (MDF-e)',
+      });
+    }
+    const prefer = data.payment_prefer || '';
+    const needsPay =
+      data.tipo_proprietario === '0' ||
+      data.tipo_proprietario === '1' ||
+      Boolean(data.rntrc?.trim());
+    if (needsPay && !prefer) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['payment_prefer'],
+        message: 'TAC/RNTRC: informe PIX ou banco (MDF-e pagamento)',
+      });
+    }
+    if (prefer === 'pix' && !data.pix_key?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pix_key'],
+        message: 'Informe a chave PIX',
+      });
+    }
+    if (prefer === 'banco') {
+      if (!data.bank_code?.replace(/\D/g, '')) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['bank_code'],
+          message: 'Informe o código do banco',
+        });
+      }
+      if (!data.bank_agency?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['bank_agency'],
+          message: 'Informe a agência',
+        });
+      }
+    }
+  });
 
 type OwnerFormData = z.infer<typeof ownerSchema>;
 
@@ -73,25 +136,38 @@ const TIPO_PROPRIETARIO_OPTIONS = [
   { value: '2', label: '2 — Outros' },
 ] as const;
 
-/** Colunas ANTT/MDF-e ainda não presentes nos tipos gerados — acesso via cast. */
+/** Colunas ANTT/MDF-e / pagamento ainda não nos tipos gerados — cast. */
 type OwnerMdfeColumns = {
   rntrc?: string | null;
   uf?: string | null;
   tipo_proprietario?: number | null;
+  bank_code?: string | null;
+  bank_agency?: string | null;
+  bank_account?: string | null;
+  pix_key?: string | null;
+  payment_prefer?: string | null;
 };
 
 type OwnerInsert = Database['public']['Tables']['owners']['Insert'];
 type OwnerUpdate = Database['public']['Tables']['owners']['Update'];
 
-/** Campos ANTT/MDF-e do form → payload do banco (tipo_proprietario numérico). */
+/** Campos ANTT/MDF-e + pagamento do form → payload do banco. */
 function ownerMdfePayload(data: OwnerFormData): OwnerMdfeColumns {
+  const rntrc = data.rntrc && data.rntrc !== '' ? data.rntrc : null;
+  const prefer =
+    data.payment_prefer === 'pix' || data.payment_prefer === 'banco' ? data.payment_prefer : null;
   return {
-    rntrc: data.rntrc?.trim() || null,
+    rntrc,
     uf: data.uf?.trim() || null,
     tipo_proprietario:
       data.tipo_proprietario && data.tipo_proprietario.trim() !== ''
         ? parseInt(data.tipo_proprietario, 10)
         : null,
+    payment_prefer: prefer,
+    pix_key: prefer === 'pix' ? data.pix_key?.trim() || null : null,
+    bank_code: prefer === 'banco' ? data.bank_code?.replace(/\D/g, '').slice(0, 5) || null : null,
+    bank_agency: prefer === 'banco' ? data.bank_agency?.trim() || null : null,
+    bank_account: prefer === 'banco' ? data.bank_account?.trim() || null : null,
   };
 }
 
@@ -107,6 +183,7 @@ interface OwnerFormProps {
 export function OwnerForm({ open, onClose, owner }: OwnerFormProps) {
   const createOwnerMutation = useCreateOwner();
   const updateOwnerMutation = useUpdateOwner();
+  const anttCheck = useAnttRntrcCheck();
   const isEditing = !!owner;
   const [isLookingUp, setIsLookingUp] = useState(false);
 
@@ -128,11 +205,17 @@ export function OwnerForm({ open, onClose, owner }: OwnerFormProps) {
       rntrc: '',
       uf: '',
       tipo_proprietario: '',
+      payment_prefer: '',
+      pix_key: '',
+      bank_code: '',
+      bank_agency: '',
+      bank_account: '',
     },
   });
 
   useEffect(() => {
-    if (owner) {
+    const mdfe = owner ? (owner as unknown as OwnerMdfeColumns) : null;
+    if (owner && mdfe) {
       form.reset({
         name: owner.name,
         cpf_cnpj: owner.cpf_cnpj || '',
@@ -146,12 +229,14 @@ export function OwnerForm({ open, onClose, owner }: OwnerFormProps) {
         zip_code: owner.zip_code || '',
         notes: owner.notes || '',
         active: owner.active,
-        rntrc: (owner as unknown as OwnerMdfeColumns).rntrc || '',
-        uf: (owner as unknown as OwnerMdfeColumns).uf || '',
-        tipo_proprietario:
-          (owner as unknown as OwnerMdfeColumns).tipo_proprietario != null
-            ? String((owner as unknown as OwnerMdfeColumns).tipo_proprietario)
-            : '',
+        rntrc: mdfe.rntrc || '',
+        uf: mdfe.uf || '',
+        tipo_proprietario: mdfe.tipo_proprietario != null ? String(mdfe.tipo_proprietario) : '',
+        payment_prefer: (mdfe.payment_prefer as 'pix' | 'banco' | '') || '',
+        pix_key: mdfe.pix_key || '',
+        bank_code: mdfe.bank_code || '',
+        bank_agency: mdfe.bank_agency || '',
+        bank_account: mdfe.bank_account || '',
       });
     } else {
       form.reset({
@@ -170,6 +255,11 @@ export function OwnerForm({ open, onClose, owner }: OwnerFormProps) {
         rntrc: '',
         uf: '',
         tipo_proprietario: '',
+        payment_prefer: '',
+        pix_key: '',
+        bank_code: '',
+        bank_agency: '',
+        bank_account: '',
       });
     }
   }, [owner, form]);
@@ -182,6 +272,85 @@ export function OwnerForm({ open, onClose, owner }: OwnerFormProps) {
     const current = form.getValues(key);
     if (typeof current === 'string' && current.trim().length > 0) return;
     form.setValue(key, str, { shouldValidate: true, shouldDirty: true });
+  };
+
+  /** Mesma pipeline do Risk: antt-rntrc-check → UF + tipo MDF-e + RNTRC. */
+  const handleAnttLookup = async () => {
+    const cpfCnpj = sanitizeCnpj(form.getValues('cpf_cnpj') ?? '');
+    if (cpfCnpj.length !== 11 && cpfCnpj.length !== 14) {
+      toast.error('Informe CPF (11) ou CNPJ (14) para consultar ANTT');
+      return;
+    }
+    try {
+      // Placa do 1º veículo do owner melhora hit no portal (smoke homolog usa placa).
+      let vehiclePlate: string | undefined;
+      if (owner?.id) {
+        const { data: veh } = await supabase
+          .from('vehicles')
+          .select('plate')
+          .eq('owner_id', owner.id)
+          .eq('active', true)
+          .limit(1)
+          .maybeSingle();
+        if (veh?.plate) vehiclePlate = String(veh.plate).replace(/[^A-Z0-9]/gi, '');
+      }
+
+      // NÃO enviar rntrc do form: máscara/SEFAZ 8 dig ≠ ANTT 9 dig (ex. 02353222 vs 002353222)
+      // e portal devolve indeterminado. CPF (+ placa) basta; RNTRC vem na resposta.
+      const resp = await anttCheck.mutateAsync({
+        order_id: owner?.id ? `owner:${owner.id}` : 'owner-lookup',
+        cpf_cnpj: cpfCnpj,
+        vehicle_plate: vehiclePlate,
+        operation: vehiclePlate ? 'veiculo' : 'rntrc',
+      });
+
+      if (resp.situacao === 'indeterminado') {
+        toast.warning(resp.message || 'Consulta ANTT indeterminada');
+        return;
+      }
+      if (resp.situacao === 'irregular') {
+        toast.error(
+          `ANTT irregular: ${resp.situacao_raw ?? resp.situacao}. Confira CPF/CNPJ no portal.`
+        );
+      }
+
+      const registry = resolveAnttRegistryType({
+        rntrc_registry_type: resp.rntrc_registry_type ?? null,
+        transportador: resp.transportador ?? null,
+      });
+      const { municipio, uf } = parseAnttMunicipioUf(resp.municipio_uf);
+      const tipoProp = anttRegistryToMdfeTipoProprietario(registry);
+      // Guarda RNTRC como o portal devolve (8 ou 9 dig). SEFAZ normaliza no emit.
+      const rntrcAntt = resp.rntrc ? maskRntrcInput(String(resp.rntrc)) : '';
+      if (rntrcAntt && rntrcAntt !== 'ISENTO') {
+        form.setValue('rntrc', rntrcAntt, { shouldDirty: true, shouldValidate: true });
+      }
+      if (uf) {
+        form.setValue('uf', uf, { shouldDirty: true, shouldValidate: true });
+      }
+      if (tipoProp) {
+        form.setValue('tipo_proprietario', tipoProp, { shouldDirty: true, shouldValidate: true });
+      }
+      // Município ANTT → city se vazio
+      if (municipio && !form.getValues('city')?.trim()) {
+        form.setValue('city', municipio, { shouldDirty: true });
+      }
+      // Nome do transportador se form vazio
+      const nomeAntt = stripAnttTransportadorPrefix(resp.transportador);
+      if (nomeAntt && !form.getValues('name')?.trim()) {
+        form.setValue('name', nomeAntt.slice(0, 200), { shouldDirty: true, shouldValidate: true });
+      }
+
+      if (resp.situacao === 'regular') {
+        toast.success(
+          `ANTT OK${registry ? ` · ${registry}` : ''}${uf ? ` · UF ${uf}` : ''}${
+            resp.is_stub ? ' (stub)' : ''
+          }`
+        );
+      }
+    } catch (err) {
+      toast.error(`Erro ANTT: ${err instanceof Error ? err.message : String(err)}`);
+    }
   };
 
   const handleCnpjLookup = async (rawValue?: string) => {
@@ -270,7 +439,8 @@ export function OwnerForm({ open, onClose, owner }: OwnerFormProps) {
     }
   };
 
-  const isLoading = createOwnerMutation.isPending || updateOwnerMutation.isPending;
+  const isLoading =
+    createOwnerMutation.isPending || updateOwnerMutation.isPending || anttCheck.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -469,30 +639,56 @@ export function OwnerForm({ open, onClose, owner }: OwnerFormProps) {
 
             {/* ── Dados ANTT / MDF-e ── */}
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Dados ANTT / MDF-e
-              </p>
-              <p className="text-[10px] text-muted-foreground -mt-1">
-                Usados na emissão de MDF-e quando este proprietário é o dono do veículo
-                (terceiro/TAC).
-              </p>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Dados ANTT / MDF-e
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Consulta portal ANTT (mesma do risco) preenche RNTRC, UF e Tipo.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 h-8"
+                  disabled={anttCheck.isPending || isLookingUp}
+                  onClick={() => void handleAnttLookup()}
+                >
+                  {anttCheck.isPending ? (
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  ) : (
+                    <Search className="w-3.5 h-3.5 mr-1.5" />
+                  )}
+                  Consultar ANTT
+                </Button>
+              </div>
               <div className="grid grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
                   name="rntrc"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>RNTRC</FormLabel>
+                      <FormLabel>RNTRC (Focus/SEFAZ)</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="8 dígitos"
-                          maxLength={8}
+                          placeholder="002353222"
+                          inputMode="numeric"
+                          autoComplete="off"
+                          maxLength={9}
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.value.replace(/\D/g, '').slice(0, 8))
-                          }
+                          value={field.value ?? ''}
+                          onChange={(e) => field.onChange(maskRntrcInput(e.target.value))}
+                          onBlur={(e) => {
+                            field.onChange(maskRntrcInput(e.target.value));
+                            field.onBlur();
+                          }}
                         />
                       </FormControl>
+                      <p className="text-[10px] text-muted-foreground">
+                        ANTT até 9 dig (ex. 002353222). Emit SEFAZ corta p/ 8. Vazio = omite prop.
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -548,6 +744,112 @@ export function OwnerForm({ open, onClose, owner }: OwnerFormProps) {
                   )}
                 />
               </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Pagamento frete (MDF-e)
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  SEFAZ 302/303 — PIX ou banco+agência (Focus infPag). Obrigatório p/ TAC.
+                </p>
+              </div>
+              <FormField
+                control={form.control}
+                name="payment_prefer"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Forma</FormLabel>
+                    <Select
+                      onValueChange={(v) => field.onChange(v === '__none__' ? '' : v)}
+                      value={field.value || '__none__'}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione…" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="__none__">
+                          <span className="text-muted-foreground">Não informado</span>
+                        </SelectItem>
+                        <SelectItem value="pix">PIX</SelectItem>
+                        <SelectItem value="banco">Banco + agência</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {form.watch('payment_prefer') === 'pix' && (
+                <FormField
+                  control={form.control}
+                  name="pix_key"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chave PIX *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="CPF, e-mail, telefone ou chave aleatória" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              {form.watch('payment_prefer') === 'banco' && (
+                <div className="grid grid-cols-3 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="bank_code"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Banco *</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="001"
+                            inputMode="numeric"
+                            maxLength={5}
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.replace(/\D/g, '').slice(0, 5))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="bank_agency"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Agência *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="1234" maxLength={10} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="bank_account"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Conta</FormLabel>
+                        <FormControl>
+                          <Input placeholder="opcional" maxLength={20} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </div>
 
             <FormField

@@ -33,6 +33,9 @@ import {
   type CteRowForMdfe,
   type MunicipioCarregamento,
 } from '../_shared/mdfe-mapper.ts';
+import { resolveMdfePercursoUfs } from '../_shared/uf-percurso.ts';
+import { calculateRouteDistanceFull } from '../_shared/webrouter-client.ts';
+import { extractNcmFromNfeXml, extractNcmFromPdfBytes } from '../_shared/nfe-extract.ts';
 
 function envOrThrow(key: string): string {
   const v = Deno.env.get(key);
@@ -108,10 +111,10 @@ serve(async (req) => {
   if (!vehicleId) return json({ error: 'vehicle_id_required' }, 400, cors);
   if (!driverId) return json({ error: 'driver_id_required' }, 400, cors);
 
-  // Load CT-es + their quotes + shippers (to derive municipios_carregamento)
+  // Load CT-es + payload_sent (fonte IBGE/UF já aceitos pela SEFAZ no CT-e)
   const { data: ctes, error: ctesErr } = await supabase
     .from('cte_emissions')
-    .select('id, status, chave_cte, quote_id')
+    .select('id, status, chave_cte, quote_id, payload_sent')
     .in('id', cteIds);
   if (ctesErr) return json({ error: 'cte_load_failed', detail: ctesErr.message }, 500, cors);
   if (!ctes || ctes.length !== cteIds.length) {
@@ -152,42 +155,118 @@ serve(async (req) => {
   const { data: quotes, error: quotesErr } = await supabase
     .from('quotes')
     .select(
-      'id, shipper_id, weight, cargo_value, destination_ibge, destination, destination_uf, origin_ibge, origin'
+      'id, shipper_id, client_id, weight, cargo_value, cargo_type, nfe_keys, destination_ibge, destination, destination_uf, destination_cep, origin_ibge, origin, origin_uf, origin_cep'
     )
     .in('id', quoteIds);
   if (quotesErr || !quotes) return json({ error: 'quotes_load_failed' }, 500, cors);
   const quoteById = new Map<string, any>(quotes.map((q: any) => [q.id, q]));
 
-  // Load shippers (for municipios_carregamento)
+  // Load shippers + clients (IBGE/UF fallback quando quote.*_ibge/_uf vazios)
   const shipperIds = Array.from(new Set(quotes.map((q: any) => q.shipper_id).filter(Boolean)));
-  const { data: shippers, error: shipErr } = await supabase
-    .from('shippers')
-    .select('id, ibge_code, city, state')
-    .in('id', shipperIds);
+  const clientIds = Array.from(new Set(quotes.map((q: any) => q.client_id).filter(Boolean)));
+  const [{ data: shippers, error: shipErr }, { data: clients, error: clientErr }] =
+    await Promise.all([
+      supabase
+        .from('shippers')
+        .select('id, name, cnpj, ibge_code, city, state, zip_code')
+        .in('id', shipperIds),
+      clientIds.length
+        ? supabase
+            .from('clients')
+            .select('id, ibge_code, city, state, zip_code')
+            .in('id', clientIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
   if (shipErr || !shippers) return json({ error: 'shippers_load_failed' }, 500, cors);
+  if (clientErr)
+    return json({ error: 'clients_load_failed', detail: clientErr.message }, 500, cors);
   const shipperById = new Map<string, any>(shippers.map((s: any) => [s.id, s]));
+  const clientById = new Map<string, any>((clients ?? []).map((c: any) => [c.id, c]));
+
+  const ufFromText = (s: string | null | undefined): string => {
+    const m = String(s ?? '').match(/,?\s*([A-Za-z]{2})\s*$/);
+    return m ? m[1].toUpperCase() : '';
+  };
 
   // Build CteRowForMdfe[] + municipios_carregamento[]
+  // Prioridade IBGE/UF: payload CT-e autorizado → quote → client/shipper → texto.
   const ctesForMdfe: CteRowForMdfe[] = [];
-  const carregamentoMap = new Map<number, string>(); // ibge → nome
+  const carregamentoMap = new Map<number, { nome: string; uf: string }>(); // ibge → meta
   for (const cte of ctes) {
     const quote = quoteById.get(cte.quote_id);
     if (!quote) continue;
     const shipper = shipperById.get(quote.shipper_id);
-    if (shipper?.ibge_code) {
-      carregamentoMap.set(shipper.ibge_code, shipper.city ?? 'SEM CIDADE');
+    const client = clientById.get(quote.client_id);
+    const ps = (cte.payload_sent ?? {}) as Record<string, unknown>;
+
+    const originIbge = Number(
+      ps.codigo_municipio_inicio ||
+        ps.codigo_municipio_envio ||
+        quote.origin_ibge ||
+        shipper?.ibge_code ||
+        0
+    );
+    const originUf = String(
+      ps.uf_inicio ||
+        ps.uf_envio ||
+        quote.origin_uf ||
+        shipper?.state ||
+        ufFromText(quote.origin) ||
+        ''
+    )
+      .toUpperCase()
+      .slice(0, 2);
+    const originNome = String(
+      ps.municipio_inicio || ps.municipio_envio || shipper?.city || quote.origin || 'SEM CIDADE'
+    );
+    if (originIbge > 0) carregamentoMap.set(originIbge, { nome: originNome, uf: originUf });
+
+    const destIbge = Number(
+      ps.codigo_municipio_fim || quote.destination_ibge || client?.ibge_code || 0
+    );
+    const destUf = String(
+      ps.uf_fim || quote.destination_uf || client?.state || ufFromText(quote.destination) || ''
+    )
+      .toUpperCase()
+      .slice(0, 2);
+    const destNome = String(ps.municipio_fim || client?.city || quote.destination || 'SEM DESTINO');
+
+    // Self-heal cadastro se CT-e já tinha IBGE e quote/cliente não
+    if (destIbge > 0 && quote.id && !quote.destination_ibge) {
+      void supabase
+        .from('quotes')
+        .update({ destination_ibge: destIbge, ...(destUf ? { destination_uf: destUf } : {}) })
+        .eq('id', quote.id);
     }
+    if (destIbge > 0 && quote.client_id && !client?.ibge_code) {
+      void supabase.from('clients').update({ ibge_code: destIbge }).eq('id', quote.client_id);
+    }
+
     ctesForMdfe.push({
       chave_cte: cte.chave_cte,
-      municipio_destino_ibge: quote.destination_ibge ?? 0,
-      municipio_destino_nome: quote.destination ?? 'SEM DESTINO',
-      uf_destino: quote.destination_uf ?? '',
+      municipio_destino_ibge: destIbge,
+      municipio_destino_nome: destNome,
+      uf_destino: destUf,
+      uf_origem: originUf,
       valor_carga: Number(quote.cargo_value ?? 0),
       peso_kg: Number(quote.weight ?? 0),
     });
   }
+  // Fallback carregamento = município emitente Vectra só se CT-e sem origem
+  if (carregamentoMap.size === 0) {
+    try {
+      const ibge = Number(envOrThrow('VECTRA_IBGE_MUN'));
+      const mun = Deno.env.get('VECTRA_MUNICIPIO') ?? 'Itajai';
+      const uf = String(Deno.env.get('VECTRA_UF') ?? 'SC')
+        .toUpperCase()
+        .slice(0, 2);
+      if (ibge > 0) carregamentoMap.set(ibge, { nome: mun, uf });
+    } catch {
+      /* vectra secrets ausentes — mapper vai warn */
+    }
+  }
   const municipiosCarregamento: MunicipioCarregamento[] = Array.from(carregamentoMap.entries()).map(
-    ([codigo, nome]) => ({ codigo, nome })
+    ([codigo, meta]) => ({ codigo, nome: meta.nome, uf: meta.uf })
   );
 
   // Load vehicle + driver
@@ -204,7 +283,9 @@ serve(async (req) => {
   if ((vehicle as any).owner_id) {
     const { data: owner } = await supabase
       .from('owners')
-      .select('name, cpf_cnpj, rntrc, uf, tipo_proprietario')
+      .select(
+        'name, cpf_cnpj, rntrc, uf, tipo_proprietario, payment_prefer, pix_key, bank_code, bank_agency, bank_account'
+      )
       .eq('id', (vehicle as any).owner_id)
       .single();
     if (owner) {
@@ -214,40 +295,127 @@ serve(async (req) => {
         rntrc: (owner as any).rntrc ?? '',
         uf: (owner as any).uf ?? '',
         tipo_proprietario: (owner as any).tipo_proprietario ?? 0,
+        payment_prefer: (owner as any).payment_prefer ?? null,
+        pix_key: (owner as any).pix_key ?? null,
+        bank_code: (owner as any).bank_code ?? null,
+        bank_agency: (owner as any).bank_agency ?? null,
+        bank_account: (owner as any).bank_account ?? null,
       };
     }
   }
 
   // Seguro da carga: apólices ativas (RCTR-C / RC-DC). Responsável = emitente (Vectra).
-  // nApol vem do `code` (dígitos); CNPJ da seguradora do metadata.insurer_cnpj
-  // (fallback Berkley quando ausente — as 2 apólices emitidas não têm no metadata).
+  // SEFAZ 699: nAver obrigatório no rodoviário. Fontes (ordem):
+  //   1) averbacoes do CT-e vinculado
+  //   2) risk_policies.metadata.numero_averbacao|averbacao
+  //   3) secret VECTRA_SEGURO_NAVER (homolog / fallback operacional)
+  // Se 54+55 ativas → só 55 (RCFDC; 54 já incluso — CNSP/prática Berkley).
   const BERKLEY_CNPJ = '07021544000189';
+  const { data: averbRows } = await supabase
+    .from('averbacoes')
+    .select('numero_averbacao, cte_emission_id, status')
+    .in('cte_emission_id', cteIds)
+    .eq('status', 'averbado');
+  const naverFromCte = (averbRows ?? [])
+    .map((a: any) =>
+      String(a.numero_averbacao ?? '')
+        .replace(/\s/g, '')
+        .slice(0, 40)
+    )
+    .filter(Boolean);
+  // Apólices Averba (estipulante VECTRA CARGO 59.650.913/0001-04):
+  //   ramo 54 → 1005400015107 | ramo 55 → 1005500008136
+  // Homolog sem nAver real: usa nApol 55 como nAver (teste SEFAZ).
+  const naverEnv = String(Deno.env.get('VECTRA_SEGURO_NAVER') ?? '')
+    .replace(/\s/g, '')
+    .slice(0, 40);
+  const HOMOLOG_NAVER_DEFAULT = '1005500008136';
+
+  const ambienteEarly = (Deno.env.get('FOCUS_NFE_AMBIENTE') as FocusAmbiente) ?? 'homolog';
+
   const { data: policies } = await supabase
     .from('risk_policies')
     .select('code, insurer, metadata')
     .eq('is_active', true);
-  const seguros = (policies ?? [])
-    .filter((pol: any) => (pol.metadata?.status ?? '') !== 'em_emissao')
-    .map((pol: any) => {
-      const apolice = String(pol.code ?? '').replace(/\D/g, '');
-      const insurer = String(pol.insurer ?? '');
-      const cnpjSeg =
-        String(pol.metadata?.insurer_cnpj ?? '').replace(/\D/g, '') ||
-        (/berkley/i.test(insurer) ? BERKLEY_CNPJ : '');
-      // nAver — averbação é OBRIGATÓRIA no modal rodoviário (SEFAZ rejeita 699
-      // sem ela). Vem do metadata da apólice (numero_averbacao | averbacao).
-      const averbacao = String(pol.metadata?.numero_averbacao ?? pol.metadata?.averbacao ?? '')
-        .replace(/\s/g, '')
-        .slice(0, 40);
-      return {
-        responsavel_seguro: '1',
-        nome_seguradora: insurer.slice(0, 30),
-        ...(cnpjSeg ? { cnpj_seguradora: cnpjSeg } : {}),
-        numero_apolice: apolice,
-        ...(averbacao ? { numero_averbacao: averbacao } : {}),
-      };
-    })
-    .filter((s: any) => s.numero_apolice);
+
+  let policyRows = (policies ?? []).filter(
+    (pol: any) => (pol.metadata?.status ?? '') !== 'em_emissao'
+  );
+  // Preferência explícita pelas apólices Averba conhecidas
+  const PREFERRED = new Set(['1005500008136', '1005400015107']);
+  if (policyRows.some((p: any) => PREFERRED.has(String(p.code ?? '').replace(/\D/g, '')))) {
+    policyRows = policyRows.filter((p: any) =>
+      PREFERRED.has(String(p.code ?? '').replace(/\D/g, ''))
+    );
+  }
+  const has55 = policyRows.some((p: any) => {
+    const c = String(p.code ?? '').replace(/\D/g, '');
+    return c.startsWith('10055') || c === '55';
+  });
+  const has54 = policyRows.some((p: any) => {
+    const c = String(p.code ?? '').replace(/\D/g, '');
+    return c.startsWith('10054') || c === '54';
+  });
+  if (has54 && has55) {
+    policyRows = policyRows.filter((p: any) => {
+      const c = String(p.code ?? '').replace(/\D/g, '');
+      return c.startsWith('10055');
+    });
+  }
+
+  const seguros: Array<{
+    responsavel_seguro: '1';
+    nome_seguradora: string;
+    cnpj_seguradora: string;
+    numero_apolice: string;
+    numero_averbacao: string;
+  }> = [];
+
+  for (const pol of policyRows as any[]) {
+    const apolice = String(pol.code ?? '').replace(/\D/g, '');
+    const insurer = String(pol.insurer ?? 'Berkley International do Brasil');
+    const cnpjSeg =
+      String(pol.metadata?.insurer_cnpj ?? '').replace(/\D/g, '') ||
+      (/berkley/i.test(insurer) || !pol.insurer ? BERKLEY_CNPJ : '');
+    const fromMeta = String(pol.metadata?.numero_averbacao ?? pol.metadata?.averbacao ?? '')
+      .replace(/\s/g, '')
+      .slice(0, 40);
+    // Homolog: nAver ← nApol 55 se nada cadastrado (portal Averba só lista apólice).
+    const homologFallback =
+      ambienteEarly === 'homolog' ? naverEnv || HOMOLOG_NAVER_DEFAULT || apolice : '';
+    const averbacao = naverFromCte[0] || fromMeta || naverEnv || homologFallback;
+    if (!averbacao || !apolice || !cnpjSeg) continue;
+    seguros.push({
+      responsavel_seguro: '1',
+      nome_seguradora: insurer.slice(0, 30),
+      cnpj_seguradora: cnpjSeg,
+      numero_apolice: apolice,
+      numero_averbacao: averbacao,
+    });
+  }
+
+  // Sem row em risk_policies → injeta apólice 55 Averba (homolog / estipulante Cargo)
+  if (seguros.length === 0 && ambienteEarly === 'homolog') {
+    seguros.push({
+      responsavel_seguro: '1',
+      nome_seguradora: 'Berkley International do Brasi',
+      cnpj_seguradora: BERKLEY_CNPJ,
+      numero_apolice: '1005500008136',
+      numero_averbacao: naverEnv || HOMOLOG_NAVER_DEFAULT,
+    });
+  }
+
+  if (seguros.length === 0) {
+    return json(
+      {
+        error: 'seguro_incompleto',
+        detail:
+          'SEFAZ 699: seguro rodoviário exige nAver. Cadastre numero_averbacao em risk_policies.metadata, averbe o CT-e, ou defina secret VECTRA_SEGURO_NAVER. Apólices Averba Cargo 59.650.913/0001-04: 54=1005400015107 / 55=1005500008136.',
+      },
+      422,
+      cors
+    );
+  }
 
   // Vectra config + ambiente
   const ambiente = (Deno.env.get('FOCUS_NFE_AMBIENTE') as FocusAmbiente) ?? 'homolog';
@@ -269,6 +437,314 @@ serve(async (req) => {
   const numero = Number(numeroData);
   const serie = 1;
 
+  // Retry/ref: cada MDF-e prévio ligado aos mesmos CT-es incrementa `-rN`
+  // (espelha emit-cte; evita UNIQUE mdfe_emissions_ref_key + dedup Focus).
+  const bodyRetry = Number(body.retry ?? body.force_retry ?? NaN);
+  let retry = Number.isFinite(bodyRetry) && bodyRetry >= 0 ? Math.floor(bodyRetry) : 0;
+  if (!Number.isFinite(bodyRetry)) {
+    const { data: priorLinks, error: priorErr } = await supabase
+      .from('mdfe_cte_link')
+      .select('mdfe_id')
+      .in('cte_emission_id', cteIds);
+    if (priorErr) {
+      return json({ error: 'retry_count_failed', detail: priorErr.message }, 500, cors);
+    }
+    retry = new Set((priorLinks ?? []).map((l: { mdfe_id: string }) => l.mdfe_id)).size;
+  }
+
+  // Contratante hint = shipper (frota própria). Com prop TAC/ETC o mapper força
+  // emitente Vectra (SEFAZ 741). SEFAZ 578 exige ≥1 infContratante.
+  const firstQuote = quotes[0];
+  const firstShipper = firstQuote ? shipperById.get(firstQuote.shipper_id) : null;
+  const firstClient = firstQuote ? clientById.get(firstQuote.client_id) : null;
+  const firstPs = (ctes[0]?.payload_sent ?? {}) as Record<string, unknown>;
+  const contratante = {
+    nome: String(
+      firstPs.nome_remetente || firstShipper?.name || vectra.nome || 'CONTRATANTE'
+    ).slice(0, 60),
+    cnpj:
+      String(firstPs.cnpj_remetente || firstShipper?.cnpj || '').replace(/\D/g, '') || undefined,
+    cpf: String(firstPs.cpf_remetente || '').replace(/\D/g, '') || undefined,
+  };
+
+  // CEPs origem/destino — WebRouter + SEFAZ 726 (infLotacao quando 1 CT-e)
+  const originCep = String(
+    (body.cep_carregamento as string) ||
+      firstQuote?.origin_cep ||
+      firstShipper?.zip_code ||
+      firstPs.cep_remetente ||
+      ''
+  ).replace(/\D/g, '');
+  const destCep = String(
+    (body.cep_descarregamento as string) ||
+      firstQuote?.destination_cep ||
+      firstClient?.zip_code ||
+      firstPs.cep_destinatario ||
+      ''
+  ).replace(/\D/g, '');
+
+  // Percurso (UFPer) — SEFAZ 663 se vazio/errado quando UFIni e UFFim não fazem fronteira.
+  // Override manual: body.percurso_ufs. Senão: WebRouter (praças) → BFS divisas.
+  let percursoUfs: string[] | undefined = Array.isArray(body.percurso_ufs)
+    ? (body.percurso_ufs as string[]).map((u) => String(u).toUpperCase().slice(0, 2))
+    : undefined;
+  let percursoSource = 'body';
+  if (percursoUfs === undefined) {
+    const ufIniHint = String(ctesForMdfe[0]?.uf_origem ?? '')
+      .toUpperCase()
+      .slice(0, 2);
+    const ufFimHint = String(ctesForMdfe[0]?.uf_destino ?? '')
+      .toUpperCase()
+      .slice(0, 2);
+    let wrHint: string[] = [];
+    if (originCep.length === 8 && destCep.length === 8) {
+      try {
+        const wr = await calculateRouteDistanceFull(originCep, destCep, [], vehicle?.axes_count);
+        if (wr.success) {
+          wrHint = wr.percurso_ufs_hint;
+          console.log(
+            `[emit-mdfe] WebRouter percurso hint: ${wrHint.join('-')} (${wr.km_distance} km, ${wr.toll_plazas.length} pedágios)`
+          );
+        } else {
+          console.warn(`[emit-mdfe] WebRouter percurso skip: ${wr.error}`);
+        }
+      } catch (e) {
+        console.warn(`[emit-mdfe] WebRouter percurso error:`, e);
+      }
+    } else {
+      console.warn(
+        `[emit-mdfe] CEPs incompletos p/ WebRouter (ori=${originCep || '?'} dest=${destCep || '?'}) — BFS só`
+      );
+    }
+    const resolved = resolveMdfePercursoUfs(ufIniHint, ufFimHint, wrHint);
+    percursoUfs = resolved.percurso;
+    percursoSource = resolved.source;
+    console.log(
+      `[emit-mdfe] percurso ${ufIniHint}→${ufFimHint}: [${percursoUfs.join(',')}] source=${percursoSource}` +
+        (resolved.emptyReason ? ` (${resolved.emptyReason})` : '')
+    );
+  }
+
+  // Produto predominante + NCM (lotação/1 CT-e exige NCM — SEFAZ 301)
+  // Ordem: body → documents.validation_metadata / XML|PDF NF-e → secret → cargo_type
+  const bodyProd =
+    typeof body.produto_predominante === 'object' && body.produto_predominante
+      ? (body.produto_predominante as {
+          descricao?: string;
+          ncm?: string;
+          cean?: string;
+          tipoCarga?: string;
+        })
+      : null;
+
+  let ncmFromNfe = '';
+  let descFromNfe = '';
+  let ncmSource = 'none';
+  try {
+    const { data: ordersForQuotes } = await supabase
+      .from('orders')
+      .select('id, quote_id')
+      .in('quote_id', quoteIds);
+    const orderIds = (ordersForQuotes ?? []).map((o: { id: string }) => o.id);
+
+    let docsQuery = supabase
+      .from('documents')
+      .select('id, type, nfe_key, file_url, file_name, validation_metadata, quote_id, order_id')
+      .or(
+        [
+          quoteIds.length ? `quote_id.in.(${quoteIds.join(',')})` : null,
+          orderIds.length ? `order_id.in.(${orderIds.join(',')})` : null,
+        ]
+          .filter(Boolean)
+          .join(',') || 'id.eq.00000000-0000-0000-0000-000000000000'
+      );
+
+    const { data: docs } = await docsQuery;
+    const nfeDocs = (docs ?? []).filter((d: any) => {
+      const t = String(d.type ?? '').toLowerCase();
+      const name = String(d.file_name ?? '').toLowerCase();
+      return (
+        t === 'nfe' ||
+        name.includes('nfe') ||
+        name.endsWith('.xml') ||
+        (d.nfe_key && String(d.nfe_key).replace(/\D/g, '').length === 44)
+      );
+    });
+
+    for (const doc of nfeDocs) {
+      const meta = (doc.validation_metadata ?? {}) as Record<string, unknown>;
+      const metaNcm = String(meta.ncm ?? '')
+        .replace(/\D/g, '')
+        .slice(0, 8);
+      if (metaNcm.length === 8) {
+        ncmFromNfe = metaNcm;
+        descFromNfe = String(meta.produto_predominante ?? '').slice(0, 120);
+        ncmSource = `document_meta:${doc.id}`;
+        break;
+      }
+    }
+
+    if (ncmFromNfe.length !== 8) {
+      for (const doc of nfeDocs) {
+        const storagePath = String(doc.file_url ?? '').trim();
+        if (!storagePath) continue;
+        try {
+          const { data: fileData, error: fileErr } = await supabase.storage
+            .from('documents')
+            .download(storagePath);
+          if (fileErr || !fileData) continue;
+          const bytes = new Uint8Array(await fileData.arrayBuffer());
+          const head = new TextDecoder('utf-8').decode(bytes.slice(0, 512)).trim();
+          let pred = null;
+          if (head.startsWith('<?xml') || head.startsWith('<')) {
+            pred = extractNcmFromNfeXml(new TextDecoder('utf-8').decode(bytes));
+          } else if (
+            storagePath.toLowerCase().includes('.pdf') ||
+            String(doc.file_name ?? '')
+              .toLowerCase()
+              .endsWith('.pdf')
+          ) {
+            pred = extractNcmFromPdfBytes(bytes);
+          }
+          if (pred?.ncm?.length === 8) {
+            ncmFromNfe = pred.ncm;
+            descFromNfe = pred.descricao;
+            ncmSource = `document_file:${doc.id}`;
+            // Persiste p/ próximos emits
+            void supabase
+              .from('documents')
+              .update({
+                validation_metadata: {
+                  ...((doc.validation_metadata as object) ?? {}),
+                  ncm: pred.ncm,
+                  produto_predominante: pred.descricao,
+                  ncm_itens: pred.itens.length,
+                },
+                ...(doc.nfe_key
+                  ? {}
+                  : {
+                      nfe_key:
+                        String(doc.nfe_key ?? '').replace(/\D/g, '').length === 44
+                          ? doc.nfe_key
+                          : undefined,
+                    }),
+              })
+              .eq('id', doc.id);
+            break;
+          }
+        } catch (e) {
+          console.warn(`[emit-mdfe] NCM extract fail doc=${doc.id}:`, e);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[emit-mdfe] NCM from NF-e lookup failed:', e);
+  }
+
+  const prodDescricao = String(
+    bodyProd?.descricao ||
+      descFromNfe ||
+      firstPs.produto_predominante ||
+      firstQuote?.cargo_type ||
+      'CARGA GERAL'
+  ).slice(0, 120);
+  const prodNcm = String(
+    bodyProd?.ncm || ncmFromNfe || Deno.env.get('VECTRA_MDFE_NCM_DEFAULT') || ''
+  ).replace(/\D/g, '');
+  if (bodyProd?.ncm && String(bodyProd.ncm).replace(/\D/g, '').length === 8) {
+    ncmSource = 'body';
+  } else if (ncmFromNfe.length === 8 && ncmSource === 'none') {
+    ncmSource = 'nfe';
+  } else if (prodNcm.length === 8 && ncmFromNfe.length !== 8 && !bodyProd?.ncm) {
+    ncmSource = 'env_default';
+  }
+
+  console.log(
+    `[emit-mdfe] produto predominante ncm=${prodNcm || '(vazio)'} source=${ncmSource} desc=${prodDescricao.slice(0, 40)}`
+  );
+
+  if (ctesForMdfe.length === 1 && prodNcm.length !== 8) {
+    return json(
+      {
+        error: 'ncm_required_lotacao',
+        detail:
+          'SEFAZ 301: MDF-e com 1 CT-e (carga lotação) exige NCM do produto predominante. Anexe XML/PDF da NF-e na OS/cotação, revalide o documento, ou envie produto_predominante.ncm (8 dígitos).',
+        hint_nfe_keys: firstQuote?.nfe_keys ?? [],
+      },
+      422,
+      cors
+    );
+  }
+
+  // Pagamento frete (SEFAZ 302 lotação) — valor carreteiro da OS / body
+  const bodyPag =
+    typeof body.pagamento === 'object' && body.pagamento
+      ? (body.pagamento as { valor_contrato?: number; forma_pagamento?: 0 | 1 })
+      : null;
+  let valorContrato = Number(bodyPag?.valor_contrato ?? 0);
+  const ciotsForMdfe: Array<{ ciot: string; cnpjResponsavel?: string }> = [];
+  if (quoteIds.length > 0) {
+    const { data: orderRows } = await supabase
+      .from('orders')
+      .select('carreteiro_real, carreteiro_antt, value, ciot_number, ciot_status')
+      .in('quote_id', quoteIds)
+      .limit(5);
+    for (const o of orderRows ?? []) {
+      const ciotStatus = String((o as any).ciot_status ?? '');
+      const ciotN = String((o as any).ciot_number ?? '').replace(/\D/g, '');
+      // CIOT cancelado no portal não vai no MDF-e (SEFAZ 304 com número inválido).
+      if (ciotN.length >= 8 && ciotStatus !== 'cancelled') {
+        ciotsForMdfe.push({ ciot: ciotN, cnpjResponsavel: vectra.cnpj });
+      }
+      if (!(valorContrato > 0)) {
+        const raw = Number(
+          (o as any).carreteiro_real ?? (o as any).carreteiro_antt ?? (o as any).value ?? 0
+        );
+        if (raw > 0) {
+          const asCents = Deno.env.get('VECTRA_MONEY_CENTS') === '1';
+          valorContrato = asCents ? raw / 100 : raw;
+        }
+      }
+    }
+  }
+  // Body override CIOT (homolog / e-FRETE já gerado)
+  if (Array.isArray(body.ciots)) {
+    for (const c of body.ciots as Array<{ ciot?: string; cnpj_responsavel?: string }>) {
+      const n = String(c?.ciot ?? '').replace(/\D/g, '');
+      if (n.length >= 8) {
+        ciotsForMdfe.push({
+          ciot: n,
+          cnpjResponsavel: c.cnpj_responsavel || vectra.cnpj,
+        });
+      }
+    }
+  }
+  if (!(valorContrato > 0)) {
+    const fromCte = Number(firstPs.valor_total ?? firstPs.valor_receber ?? 0);
+    if (fromCte > 0) valorContrato = fromCte;
+  }
+
+  const hasPix = String(proprietario?.pix_key ?? '').trim().length >= 2;
+  const hasBanco =
+    String(proprietario?.bank_code ?? '').replace(/\D/g, '').length >= 3 &&
+    String(proprietario?.bank_agency ?? '').trim().length > 0;
+  const hasPayBank = hasPix || hasBanco;
+
+  if (ctesForMdfe.length === 1 && (!hasPayBank || !(valorContrato > 0))) {
+    return json(
+      {
+        error: 'payment_required_lotacao',
+        detail:
+          'SEFAZ 302: MDF-e carga lotação exige pagamentos (infPag). Cadastre PIX ou banco+agência no proprietário do veículo (Owners) e informe carreteiro_real na OS.',
+        has_owner_bank: hasPayBank,
+        valor_contrato: valorContrato,
+        owner_id: (vehicle as any).owner_id ?? null,
+      },
+      422,
+      cors
+    );
+  }
+
   // Build payload
   let built;
   try {
@@ -279,17 +755,46 @@ serve(async (req) => {
       serie,
       numero,
       vectra,
+      retry,
       municipiosCarregamento,
       seguros,
       proprietario,
-      percursoUfs: Array.isArray(body.percurso_ufs) ? (body.percurso_ufs as string[]) : undefined,
-      produtoPredominante:
-        typeof body.produto_predominante === 'object' && body.produto_predominante
-          ? (body.produto_predominante as { descricao: string; ncm?: string; cean?: string })
+      contratante,
+      percursoUfs: percursoUfs && percursoUfs.length > 0 ? percursoUfs : undefined,
+      cepCarregamento: originCep.length === 8 ? originCep : undefined,
+      cepDescarregamento: destCep.length === 8 ? destCep : undefined,
+      produtoPredominante: {
+        descricao: prodDescricao,
+        tipoCarga: bodyProd?.tipoCarga,
+        ncm: prodNcm.length === 8 ? prodNcm : undefined,
+        cean: bodyProd?.cean,
+      },
+      pagamento:
+        valorContrato > 0
+          ? {
+              valorContrato,
+              formaPagamento: bodyPag?.forma_pagamento ?? 0,
+            }
           : undefined,
+      ciots: ciotsForMdfe.length > 0 ? ciotsForMdfe : undefined,
     });
   } catch (err) {
     return json({ error: 'mapper_failed', detail: String(err) }, 500, cors);
+  }
+
+  // Lotação: mapper deve ter emitido pagamentos
+  const modalRod = (built.payload as any)?.modal_rodoviario;
+  if (ctesForMdfe.length === 1 && !modalRod?.pagamentos?.length) {
+    return json(
+      {
+        error: 'payment_required_lotacao',
+        detail:
+          'SEFAZ 302: pagamentos não montados. Verifique nome/CPF e PIX ou banco no owner do veículo.',
+        warnings: built.warnings,
+      },
+      422,
+      cors
+    );
   }
 
   // Insert mdfe_emissions BEFORE Focus call
@@ -341,6 +846,7 @@ serve(async (req) => {
   const focusStatus = String(focusResp.body.status ?? '');
   const isError = focusResp.status >= 400 && focusResp.status !== 409 && focusResp.status !== 422;
   let newStatus = 'processing';
+  let finalBody = focusResp.body;
   if (focusResp.status === 202 || focusStatus === 'processando_autorizacao')
     newStatus = 'processing';
   else if (focusStatus === 'autorizado') newStatus = 'authorized';
@@ -350,25 +856,51 @@ serve(async (req) => {
   // mensagem} sem `status` e HTTP >= 400 — sem isto a row ficava 'processing'.
   else if (isError || focusResp.body.codigo) newStatus = 'rejected';
 
+  // Homolog: poll curto se processando (mesmo padrão emit-cte).
+  if (newStatus === 'processing') {
+    const focus = new FocusClient({ ambiente });
+    for (const waitMs of [2500, 3500, 5000]) {
+      await new Promise((r) => setTimeout(r, waitMs));
+      try {
+        const polled = await focus.consultMdfe(built.ref);
+        const st = String(polled.body.status ?? '');
+        finalBody = polled.body;
+        if (st === 'autorizado') {
+          newStatus = 'authorized';
+          break;
+        }
+        if (st === 'erro_autorizacao' || st === 'cancelado') {
+          newStatus = st === 'cancelado' ? 'cancelled' : 'rejected';
+          break;
+        }
+      } catch {
+        // UI ainda pode Consultar
+      }
+    }
+  }
+
   const isRejected = newStatus === 'rejected';
   await supabase
     .from('mdfe_emissions')
     .update({
       status: newStatus,
-      response_received: focusResp.body,
-      status_sefaz: focusResp.body.status_sefaz ?? null,
+      response_received: finalBody,
+      status_sefaz: finalBody.status_sefaz ?? null,
+      chave_mdfe: finalBody.chave ?? null,
+      protocolo: finalBody.protocolo ?? finalBody.numero_protocolo ?? null,
+      data_autorizacao: newStatus === 'authorized' ? new Date().toISOString() : null,
       rejection_code: isRejected
-        ? String(focusResp.body.codigo_status ?? focusResp.body.codigo ?? focusResp.status)
+        ? String(finalBody.codigo_status ?? finalBody.codigo ?? focusResp.status)
         : null,
       rejection_msg: isRejected
-        ? String(focusResp.body.mensagem_sefaz ?? focusResp.body.mensagem ?? '')
+        ? String(finalBody.mensagem_sefaz ?? finalBody.mensagem ?? '')
         : null,
     })
     .eq('id', emission.id);
 
   return json(
     {
-      ok: !isError,
+      ok: !isError && newStatus !== 'rejected',
       emission_id: emission.id,
       ref: built.ref,
       ambiente,
@@ -376,11 +908,15 @@ serve(async (req) => {
       numero,
       status: newStatus,
       focus_status: focusResp.status,
-      focus_body: focusResp.body,
+      focus_body: finalBody,
       warnings: built.warnings,
       cte_count: cteIds.length,
+      percurso_ufs: percursoUfs ?? [],
+      percurso_source: percursoSource,
+      cep_carregamento: originCep.length === 8 ? originCep : null,
+      cep_descarregamento: destCep.length === 8 ? destCep : null,
     },
-    isError ? 502 : 200,
+    isError || newStatus === 'rejected' ? 502 : 200,
     cors
   );
 });

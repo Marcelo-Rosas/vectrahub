@@ -108,11 +108,22 @@ async function consultViaProxy(
     const body = await res.json().catch(() => ({}));
 
     if (!res.ok) {
+      const detail =
+        typeof body?.error === 'string'
+          ? body.error
+          : typeof body?.message === 'string'
+            ? body.message
+            : '';
+      // Cloudflare 530 = origin unreachable (proxy Worker up, SEFAZ/cert host down)
+      const base =
+        res.status === 530
+          ? 'Proxy SEFAZ HTTP 530 (origem do proxy inacessível)'
+          : `Proxy SEFAZ HTTP ${res.status}`;
       return {
         ok: false,
         chave,
         document_type: documentTypeFromChave(chave),
-        error: typeof body?.error === 'string' ? body.error : `Proxy SEFAZ HTTP ${res.status}`,
+        error: detail ? `${base}: ${detail}` : base,
         http_status: res.status,
       };
     }

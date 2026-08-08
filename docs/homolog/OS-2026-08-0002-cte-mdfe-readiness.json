@@ -1,0 +1,243 @@
+{
+  "generated_at": "2026-08-03T15:52:50.763Z",
+  "mode": "live",
+  "os_number": "OS-2026-08-0002",
+  "order_id": "7c9f1938-403b-4e71-80a8-6a869681f738",
+  "quote_id": "e8f6ba8f-673c-4acf-9c29-c4ac494ef2be",
+  "quote_code": "COT-2026-08-0001",
+  "stage": "busca_motorista",
+  "parties": {
+    "shipper": {
+      "id": "ec283142-6ac1-431c-8517-53f638864a9a",
+      "name": "BOOST EQUIPAMENT",
+      "emit_cte_via": "cfn",
+      "ie_indicator": 1,
+      "has_ie": true
+    },
+    "client": {
+      "id": "5c8b6ca2-c08d-4a7f-bbb1-a689fde65871",
+      "name": "INOVE ACADEMIA LTDA",
+      "ie_indicator": 1,
+      "has_ie": true
+    }
+  },
+  "company_settings": {
+    "legal_name": "VECTRA HUB LTDA",
+    "cnpj": "62188748000117",
+    "address": "Rodovia Jorge Lacerda, 725 — Itajaí/SC",
+    "zip": "88317100",
+    "phone": "(47)98850-9714"
+  },
+  "suggested_vectra_secrets_from_company": {
+    "VECTRA_LOGRADOURO": "Rodovia Jorge Lacerda",
+    "VECTRA_NUMERO": "725",
+    "VECTRA_BAIRRO": "Espinheiros",
+    "VECTRA_MUNICIPIO": "Itajaí",
+    "VECTRA_UF": "SC",
+    "VECTRA_CEP": "88317100",
+    "VECTRA_IBGE_MUN": "4208202",
+    "VECTRA_CRT": "1"
+  },
+  "missing_vectra_secrets": [],
+  "sequences": {
+    "cte": [
+      {
+        "ambiente": "prod",
+        "serie": 1,
+        "last_numero": 578
+      },
+      {
+        "ambiente": "homolog",
+        "serie": 1,
+        "last_numero": 11
+      }
+    ],
+    "mdfe": [
+      {
+        "ambiente": "prod",
+        "serie": 1,
+        "last_numero": 289
+      },
+      {
+        "ambiente": "homolog",
+        "serie": 1,
+        "last_numero": 26
+      }
+    ]
+  },
+  "cte_emissions": [
+    {
+      "id": "61275d4d-835d-4c52-8138-2b65871f2e34",
+      "ref": "CFN-CTE-COT-2026-08-0001-r7",
+      "status": "cancelled",
+      "chave_cte": "CTe42260862188748000117570010000000111029388603",
+      "numero": 11,
+      "serie": 1,
+      "ambiente": "homolog",
+      "rejection_code": null,
+      "rejection_msg": null,
+      "created_at": "2026-08-02T11:28:54.626913+00:00"
+    },
+    {
+      "id": "17b62df1-aeb4-4f59-b7f7-af14ead3ae1f",
+      "ref": "CFN-CTE-COT-2026-08-0001-r6",
+      "status": "cancelled",
+      "chave_cte": "CTe42260862188748000117570010000000101324748596",
+      "numero": 10,
+      "serie": 1,
+      "ambiente": "homolog",
+      "rejection_code": null,
+      "rejection_msg": null,
+      "created_at": "2026-08-01T21:02:54.227165+00:00"
+    },
+    {
+      "id": "b1c6aecb-2acb-415d-b2c9-3c71eea9f104",
+      "ref": "CFN-CTE-COT-2026-08-0001-r5",
+      "status": "cancelled",
+      "chave_cte": "CTe42260862188748000117570010000000091863108193",
+      "numero": 9,
+      "serie": 1,
+      "ambiente": "homolog",
+      "rejection_code": null,
+      "rejection_msg": null,
+      "created_at": "2026-08-01T19:41:56.12763+00:00"
+    },
+    {
+      "id": "2128092c-55bc-4304-bcab-429d2e8fa2cf",
+      "ref": "CFN-CTE-COT-2026-08-0001-r4",
+      "status": "rejected",
+      "chave_cte": "CTe42260862188748000117570010000000081817322369",
+      "numero": 8,
+      "serie": 1,
+      "ambiente": "homolog",
+      "rejection_code": "232",
+      "rejection_msg": "Rejeicao: IE do destinatario nao informada",
+      "created_at": "2026-08-01T19:27:22.940253+00:00"
+    },
+    {
+      "id": "47c6e604-a291-45ef-950f-2def6825c501",
+      "ref": "CFN-CTE-COT-2026-08-0001-r3",
+      "status": "rejected",
+      "chave_cte": "CTe42260862188748000117570010000000071250464519",
+      "numero": 7,
+      "serie": 1,
+      "ambiente": "homolog",
+      "rejection_code": "232",
+      "rejection_msg": "Rejeicao: IE do destinatario nao informada",
+      "created_at": "2026-08-01T19:26:22.774736+00:00"
+    }
+  ],
+  "vehicle": null,
+  "driver": null,
+  "gates": [
+    {
+      "id": "shipper_emit_cte_via_cfn",
+      "ok": true,
+      "severity": "block",
+      "detail": "emit_cte_via=cfn (precisa cfn)"
+    },
+    {
+      "id": "quote_parties",
+      "ok": true,
+      "severity": "block",
+      "detail": "shipper_id=ec283142-6ac1-431c-8517-53f638864a9a client_id=5c8b6ca2-c08d-4a7f-bbb1-a689fde65871"
+    },
+    {
+      "id": "shipper_ie_contribuinte",
+      "ok": true,
+      "severity": "block",
+      "detail": "ie_indicator=1 ie=72694548"
+    },
+    {
+      "id": "client_ie_contribuinte",
+      "ok": true,
+      "severity": "block",
+      "detail": "ie_indicator=1 ie=155191381 — academia quase sempre ie_indicator=9"
+    },
+    {
+      "id": "origin_cep_or_ibge",
+      "ok": true,
+      "severity": "block",
+      "detail": "origin_ibge=null origin_cep=60743760"
+    },
+    {
+      "id": "destination_cep_or_ibge",
+      "ok": true,
+      "severity": "block",
+      "detail": "destination_ibge=null destination_cep=68628520"
+    },
+    {
+      "id": "vectra_address_secrets",
+      "ok": true,
+      "severity": "block",
+      "detail": "todos presentes"
+    },
+    {
+      "id": "focus_token_homolog",
+      "ok": true,
+      "severity": "block",
+      "detail": "presente"
+    },
+    {
+      "id": "tomador_tipo",
+      "ok": true,
+      "severity": "warn",
+      "detail": "persistido=0 derivado=0 (freight_type=CIF)"
+    },
+    {
+      "id": "mdfe_vehicle",
+      "ok": false,
+      "severity": "block",
+      "detail": "sem vehicle — passe --vehicle-id= ou atribua placa na OS"
+    },
+    {
+      "id": "mdfe_driver_cpf",
+      "ok": false,
+      "severity": "block",
+      "detail": "sem driver — passe --driver-id= ou atribua na OS"
+    },
+    {
+      "id": "ciot_for_mdfe_compliance",
+      "ok": false,
+      "severity": "warn",
+      "detail": "sem CIOT — mapper MDF-e ainda não envia infCIOT (gap conhecido)"
+    },
+    {
+      "id": "cte_authorized_for_mdfe",
+      "ok": false,
+      "severity": "warn",
+      "detail": "status=cancelled chave=yes ref=CFN-CTE-COT-2026-08-0001-r7"
+    }
+  ],
+  "cte_ready": true,
+  "mdfe_ready": false,
+  "blockers_cte": [],
+  "blockers_mdfe": [
+    {
+      "id": "mdfe_vehicle",
+      "ok": false,
+      "severity": "block",
+      "detail": "sem vehicle — passe --vehicle-id= ou atribua placa na OS"
+    },
+    {
+      "id": "mdfe_driver_cpf",
+      "ok": false,
+      "severity": "block",
+      "detail": "sem driver — passe --driver-id= ou atribua na OS"
+    }
+  ],
+  "warnings": [
+    {
+      "id": "ciot_for_mdfe_compliance",
+      "ok": false,
+      "severity": "warn",
+      "detail": "sem CIOT — mapper MDF-e ainda não envia infCIOT (gap conhecido)"
+    },
+    {
+      "id": "cte_authorized_for_mdfe",
+      "ok": false,
+      "severity": "warn",
+      "detail": "status=cancelled chave=yes ref=CFN-CTE-COT-2026-08-0001-r7"
+    }
+  ]
+}

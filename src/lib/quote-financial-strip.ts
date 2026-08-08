@@ -1,7 +1,8 @@
 import { readMetaAnttPisoCarreteiro, resolvePisoAnttCarreteiroReais } from '@/lib/carreteiro-cost';
 import type { FreightCalculationOutput } from '@/lib/freightCalculator';
 import {
-  isMarginBelowTarget,
+  resolveCustoServicosOperacionaisDisplay,
+  resolveLucroAlvoDisplay,
   resolveMargemBrutaDisplay,
   resolveResultadoLiquidoDisplay,
   round2,
@@ -84,7 +85,7 @@ export function buildQuoteFinancialStripFromCalculation(
     Math.max(0, totalBruto - (t?.totalImpostos ?? (t?.das ?? 0) + (t?.icms ?? 0)));
   const custoMotoristaGolden =
     anttApplied && pisoAntt > 0 ? pisoAntt : (c?.baseCost ?? c?.baseFreight ?? 0);
-  const custoServicos = p?.custoServicos ?? 0;
+  const custoServicos = resolveCustoServicosOperacionaisDisplay(c, p?.custoServicos);
   const margemContribuicao = resolveMargemBrutaDisplay(
     p?.margemBruta,
     receitaLiquida,
@@ -95,13 +96,13 @@ export function buildQuoteFinancialStripFromCalculation(
 
   const custosDiretos = p?.custosDiretos ?? 0;
   const targetPercent = p?.profitMarginTarget ?? calculation.rates?.profitMarginPercent ?? 15;
-  const lucroAlvo = resolveResultadoLiquidoDisplay(
-    p?.resultadoLiquido,
-    custosDiretos,
-    targetPercent,
-    margemContribuicao
-  );
+  const lucroAlvo = resolveLucroAlvoDisplay(custosDiretos, targetPercent, p?.lucroAlvo);
   const percentCd = custosDiretos > 0 ? round2((lucroAlvo / custosDiretos) * 100) : 0;
+  const resultadoContabil = resolveResultadoLiquidoDisplay(
+    p?.resultadoLiquido,
+    margemContribuicao,
+    calculation.riskCosts?.total ?? 0
+  );
 
   return {
     pag: {
@@ -131,7 +132,10 @@ export function buildQuoteFinancialStripFromCalculation(
       percentCustosDiretos: percentCd,
       contribuicao: margemContribuicao,
       targetPercent,
-      isBelowTarget: isMarginBelowTarget(percentCd, targetPercent) || margemContribuicao < 0,
+      isBelowTarget:
+        margemContribuicao < 0 ||
+        resultadoContabil < 0 ||
+        (lucroAlvo > 0 && resultadoContabil + 0.01 < lucroAlvo),
     },
   };
 }
@@ -174,12 +178,13 @@ export function buildQuoteFinancialStripFromBreakdown(
   const receitaLiquida = scale(p?.receitaLiquida);
   const custoMotoristaGolden =
     anttApplied && pisoAntt > 0 ? pisoAntt : round2(c?.baseCost ?? c?.baseFreight ?? 0);
+  const custoServicosOps = resolveCustoServicosOperacionaisDisplay(c, p?.custoServicos);
   const margemContribuicao = resolveMargemBrutaDisplay(
     p?.margemBruta != null ? scale(p.margemBruta) : undefined,
     receitaLiquida,
     scale(p?.overhead),
     custoMotoristaGolden,
-    round2(p?.custoServicos ?? 0)
+    custoServicosOps
   );
 
   const custosDiretos = scale(p?.custosDiretos);
@@ -188,13 +193,21 @@ export function buildQuoteFinancialStripFromBreakdown(
     p?.profitMarginTarget ??
     breakdown.rates?.profitMarginPercent ??
     15;
-  const lucroAlvo = resolveResultadoLiquidoDisplay(
-    p?.resultadoLiquido != null ? scale(p.resultadoLiquido) : null,
+  const lucroAlvo = resolveLucroAlvoDisplay(
     custosDiretos,
     targetPercent,
-    margemContribuicao
+    p?.lucroAlvo != null ? scale(p.lucroAlvo) : null
   );
   const percentCd = custosDiretos > 0 ? round2((lucroAlvo / custosDiretos) * 100) : 0;
+  const riscoReal =
+    breakdown.riskCosts?.total ??
+    // Legacy snapshots: estima se cargo conhecido via meta não — UI passa cargoValue à parte
+    0;
+  const resultadoContabil = resolveResultadoLiquidoDisplay(
+    p?.resultadoLiquido != null ? scale(p.resultadoLiquido) : null,
+    margemContribuicao,
+    scale(riscoReal)
+  );
 
   return {
     pag: {
@@ -219,7 +232,10 @@ export function buildQuoteFinancialStripFromBreakdown(
       percentCustosDiretos: percentCd,
       contribuicao: margemContribuicao,
       targetPercent,
-      isBelowTarget: isMarginBelowTarget(percentCd, targetPercent) || margemContribuicao < 0,
+      isBelowTarget:
+        margemContribuicao < 0 ||
+        resultadoContabil < 0 ||
+        (lucroAlvo > 0 && resultadoContabil + 0.01 < lucroAlvo),
     },
   };
 }

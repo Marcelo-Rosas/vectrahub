@@ -738,7 +738,7 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
     return {
       taxRegimeSimples,
       methodology,
-      dasPercent: resolvePricingRule(pricingRules, 'das_percent', scope, 14),
+      dasPercent: resolvePricingRule(pricingRules, 'das_percent', scope, 6),
       markupPercent: resolvePricingRule(pricingRules, 'markup_percent', scope, 30),
       overheadPercent: resolvePricingRule(pricingRules, 'overhead_percent', scope, 15),
       profitMarginLotacaoPercent:

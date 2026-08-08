@@ -59,10 +59,10 @@ function buildVectraConfig(): VectraConfig {
 }
 
 /**
- * Resolve a IE de uma parte (shipper/client) marcada contribuinte (ie_indicator=1)
- * mas sem state_registration, via SintegrAPI, e persiste no cadastro (self-healing).
- * Se a API diz não-contribuinte (sem IE ativa na UF) → corrige ie_indicator=9.
- * Degrada sem erro: se a consulta falha, devolve a parte inalterada.
+ * Resolve IE via SintegrAPI quando state_registration vazio (qualquer ie_indicator).
+ * - Achou IE ativa → grava IE + ie_indicator=1 (self-heal do 232 SEFAZ)
+ * - Sem IE ativa → ie_indicator=9
+ * Degrada sem erro se key/rede falhar.
  */
 async function ensurePartyIe(
   supabase: ReturnType<typeof createClient>,
@@ -70,23 +70,26 @@ async function ensurePartyIe(
   table: 'shippers' | 'clients'
 ): Promise<Record<string, unknown> | null> {
   if (!party) return party;
-  const indicator = Number(party.ie_indicator ?? 0);
-  const hasIe = party.state_registration && String(party.state_registration).trim() !== '';
+  const rawIe = String(party.state_registration ?? '').trim();
+  const hasIe = rawIe !== '' && !/^isento$/i.test(rawIe);
   const cnpj = String(party.cnpj ?? '').replace(/\D/g, '');
   const uf = String(party.state ?? '')
     .toUpperCase()
     .slice(0, 2);
-  if (indicator !== 1 || hasIe || cnpj.length !== 14 || uf.length !== 2) return party;
+  if (hasIe || cnpj.length !== 14 || uf.length !== 2) return party;
 
   const r = await lookupIeByCnpj(cnpj, uf);
   if (!r) return party;
   if (r.ie) {
-    await supabase.from(table).update({ state_registration: r.ie }).eq('id', party.id);
-    return { ...party, state_registration: r.ie };
+    await supabase
+      .from(table)
+      .update({ state_registration: r.ie, ie_indicator: 1 })
+      .eq('id', party.id);
+    return { ...party, state_registration: r.ie, ie_indicator: 1 };
   }
   if (r.naoContribuinte) {
     await supabase.from(table).update({ ie_indicator: 9 }).eq('id', party.id);
-    return { ...party, ie_indicator: 9 };
+    return { ...party, ie_indicator: 9, state_registration: null };
   }
   return party;
 }
@@ -236,6 +239,21 @@ serve(async (req) => {
   const numero = Number(numeroData);
   const serie = 1;
 
+  // Retry/ref: cada emissão prévia da mesma quote incrementa `-rN`
+  // (evita UNIQUE cte_emissions_ref_key + dedup Focus no mesmo ref).
+  const bodyRetry = Number(body.retry ?? body.force_retry ?? NaN);
+  let retry = Number.isFinite(bodyRetry) && bodyRetry >= 0 ? Math.floor(bodyRetry) : 0;
+  if (!Number.isFinite(bodyRetry)) {
+    const { count: priorCount, error: countErr } = await supabase
+      .from('cte_emissions')
+      .select('id', { count: 'exact', head: true })
+      .eq('quote_id', quote.id);
+    if (countErr) {
+      return json({ error: 'retry_count_failed', detail: countErr.message }, 500, cors);
+    }
+    retry = priorCount ?? 0;
+  }
+
   // Build payload
   let built;
   try {
@@ -246,6 +264,7 @@ serve(async (req) => {
       serie,
       numero,
       vectra,
+      retry,
       naturezaOperacao:
         typeof body.natureza_operacao === 'string' ? body.natureza_operacao : undefined,
     });
@@ -296,6 +315,7 @@ serve(async (req) => {
   // Map Focus response → status
   const focusStatus = String(focusResp.body.status ?? '');
   let newStatus: string = 'processing';
+  let finalBody = focusResp.body;
   if (focusResp.status === 202 || focusStatus === 'processando_autorizacao')
     newStatus = 'processing';
   else if (focusStatus === 'autorizado') newStatus = 'authorized';
@@ -303,26 +323,55 @@ serve(async (req) => {
   else if (focusStatus === 'erro_autorizacao' || focusResp.status === 422) newStatus = 'rejected';
   else if (focusResp.status === 409) newStatus = 'processing'; // already in flight
 
+  // Homolog: webhook Focus→Hub ainda não dispara UI. Poll curto após processando
+  // pra persistir autorizado/rejeitado sem exigir botão Consultar.
+  if (newStatus === 'processing') {
+    const focus = new FocusClient({ ambiente });
+    for (const waitMs of [2500, 3500, 5000]) {
+      await new Promise((r) => setTimeout(r, waitMs));
+      try {
+        const polled = await focus.consultCte(built.ref);
+        const st = String(polled.body.status ?? '');
+        finalBody = polled.body;
+        if (st === 'autorizado') {
+          newStatus = 'authorized';
+          break;
+        }
+        if (st === 'erro_autorizacao' || st === 'cancelado') {
+          newStatus = st === 'cancelado' ? 'cancelled' : 'rejected';
+          break;
+        }
+      } catch {
+        // keep processing — UI ainda pode Consultar
+      }
+    }
+  }
+
   const isError = focusResp.status >= 400 && focusResp.status !== 409 && focusResp.status !== 422;
 
   await supabase
     .from('cte_emissions')
     .update({
       status: newStatus,
-      response_received: focusResp.body,
-      status_sefaz: focusResp.body.status_sefaz ?? null,
+      response_received: finalBody,
+      status_sefaz: finalBody.status_sefaz ?? null,
+      chave_cte: finalBody.chave ?? null,
+      protocolo: finalBody.protocolo ?? null,
       rejection_code:
-        newStatus === 'rejected' ? String(focusResp.body.codigo_status ?? focusResp.status) : null,
+        newStatus === 'rejected'
+          ? String(finalBody.codigo_status ?? finalBody.status_sefaz ?? focusResp.status)
+          : null,
       rejection_msg:
         newStatus === 'rejected'
-          ? String(focusResp.body.mensagem_sefaz ?? focusResp.body.mensagem ?? '')
+          ? String(finalBody.mensagem_sefaz ?? finalBody.mensagem ?? '')
           : null,
+      data_autorizacao: newStatus === 'authorized' ? new Date().toISOString() : null,
     })
     .eq('id', emission.id);
 
   return json(
     {
-      ok: !isError,
+      ok: !isError && newStatus !== 'rejected',
       emission_id: emission.id,
       ref: built.ref,
       ambiente,
@@ -330,10 +379,10 @@ serve(async (req) => {
       numero,
       status: newStatus,
       focus_status: focusResp.status,
-      focus_body: focusResp.body,
+      focus_body: finalBody,
       warnings: built.warnings,
     },
-    isError ? 502 : 200,
+    isError || newStatus === 'rejected' ? 200 : 200,
     cors
   );
 });

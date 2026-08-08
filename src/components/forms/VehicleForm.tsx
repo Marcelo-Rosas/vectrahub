@@ -37,58 +37,123 @@ import { useVehicleTypesFleetForm } from '@/hooks/useVehicleTypes';
 import { toast } from 'sonner';
 import type { VehicleWithRelations } from '@/hooks/useVehicles';
 import type { Database } from '@/integrations/supabase/types';
-import { validatePlate, zodPlate } from '@/lib/validators';
+import {
+  validatePlate,
+  zodPlate,
+  FOCUS_TIPO_RODADO,
+  FOCUS_TIPO_CARROCERIA,
+} from '@/lib/validators';
 import { calculatePalletsFromVolume } from '@/lib/pallets';
 
 type VehicleInsert = Database['public']['Tables']['vehicles']['Insert'];
 type VehicleUpdate = Database['public']['Tables']['vehicles']['Update'];
 
-const vehicleSchema = z.object({
-  plate: zodPlate,
-  plate_2: z
-    .string()
-    .optional()
-    .refine(
-      (v) => !v || validatePlate(v),
-      'Placa da carreta inválida – use o formato ABC1234 ou ABC1D23 (Mercosul)'
-    ),
-  brand: z.string().optional(),
-  model: z.string().optional(),
-  year: z
-    .string()
-    .optional()
-    .refine((v) => !v || /^\d{4}$/.test(v.trim()), 'Ano inválido – informe 4 dígitos (ex: 2020)'),
-  color: z.string().optional(),
-  renavam: z.string().optional(),
-  vehicle_type_id: z.string().optional(),
-  capacity_kg: z.string().optional(),
-  capacity_m3: z.string().optional(),
-  qtd_pallets: z.string().optional(),
-  driver_id: z.string().optional(),
-  owner_id: z.string().optional(),
-  active: z.boolean(),
-  // ── Dados físicos/fiscais para emissão de MDF-e (modal rodoviário) ──
-  tara_kg: z.string().optional(),
-  tipo_rodado: z.string().optional(),
-  tipo_carroceria: z.string().optional(),
-  uf_licenciamento: z
-    .string()
-    .max(2, 'Use a sigla da UF (ex: SC)')
-    .optional()
-    .transform((v) => v?.toUpperCase()),
-  reboque_tara_kg: z.string().optional(),
-  reboque_capacity_kg: z.string().optional(),
-  reboque_tipo_carroceria: z.string().optional(),
-  reboque_uf_licenciamento: z
-    .string()
-    .max(2, 'Use a sigla da UF (ex: SC)')
-    .optional()
-    .transform((v) => v?.toUpperCase()),
-});
+const vehicleSchema = z
+  .object({
+    plate: zodPlate,
+    plate_2: z
+      .string()
+      .optional()
+      .refine(
+        (v) => !v || validatePlate(v),
+        'Placa da carreta inválida – use o formato ABC1234 ou ABC1D23 (Mercosul)'
+      ),
+    brand: z.string().optional(),
+    model: z.string().optional(),
+    year: z
+      .string()
+      .optional()
+      .refine((v) => !v || /^\d{4}$/.test(v.trim()), 'Ano inválido – informe 4 dígitos (ex: 2020)'),
+    color: z.string().optional(),
+    renavam: z.string().optional(),
+    vehicle_type_id: z.string().optional(),
+    capacity_kg: z.string().optional(),
+    capacity_m3: z.string().optional(),
+    qtd_pallets: z.string().optional(),
+    driver_id: z.string().optional(),
+    owner_id: z.string().optional(),
+    active: z.boolean(),
+    // ── Focus/SEFAZ modal rodoviário (obrig. se veículo ativo) ──
+    tara_kg: z.string().optional(),
+    tipo_rodado: z.string().optional(),
+    tipo_carroceria: z.string().optional(),
+    uf_licenciamento: z
+      .string()
+      .max(2, 'Use a sigla da UF (ex: SC)')
+      .optional()
+      .transform((v) => v?.toUpperCase()),
+    reboque_tara_kg: z.string().optional(),
+    reboque_capacity_kg: z.string().optional(),
+    reboque_tipo_carroceria: z.string().optional(),
+    reboque_uf_licenciamento: z
+      .string()
+      .max(2, 'Use a sigla da UF (ex: SC)')
+      .optional()
+      .transform((v) => v?.toUpperCase()),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.active) return;
+    const tara = data.tara_kg?.trim() ? parseFloat(data.tara_kg) : NaN;
+    if (!Number.isFinite(tara) || tara <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['tara_kg'],
+        message: 'Tara (kg) obrigatória para veículo ativo (MDF-e / Focus)',
+      });
+    }
+    if (!FOCUS_TIPO_RODADO.includes(data.tipo_rodado as (typeof FOCUS_TIPO_RODADO)[number])) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['tipo_rodado'],
+        message: 'Tipo de rodado obrigatório (01–06)',
+      });
+    }
+    if (
+      !FOCUS_TIPO_CARROCERIA.includes(
+        data.tipo_carroceria as (typeof FOCUS_TIPO_CARROCERIA)[number]
+      )
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['tipo_carroceria'],
+        message: 'Tipo de carroceria obrigatório (00–05)',
+      });
+    }
+    if (!data.uf_licenciamento || data.uf_licenciamento.length !== 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['uf_licenciamento'],
+        message: 'UF de licenciamento obrigatória (2 letras)',
+      });
+    }
+    // Reboque: se tem plate_2, exige tara + carroceria reboque
+    if (data.plate_2?.trim()) {
+      const rTara = data.reboque_tara_kg?.trim() ? parseFloat(data.reboque_tara_kg) : NaN;
+      if (!Number.isFinite(rTara) || rTara <= 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['reboque_tara_kg'],
+          message: 'Tara do reboque obrigatória quando há placa da carreta',
+        });
+      }
+      if (
+        data.reboque_tipo_carroceria &&
+        !FOCUS_TIPO_CARROCERIA.includes(
+          data.reboque_tipo_carroceria as (typeof FOCUS_TIPO_CARROCERIA)[number]
+        )
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['reboque_tipo_carroceria'],
+          message: 'Tipo carroceria reboque inválido (00–05)',
+        });
+      }
+    }
+  });
 
 type VehicleFormData = z.infer<typeof vehicleSchema>;
 
-// Tabelas SEFAZ (MDF-e / modal rodoviário)
+// Tabelas SEFAZ / Focus (MDF-e modal rodoviário)
 const TIPO_RODADO_OPTIONS = [
   { value: '01', label: '01 — Truck' },
   { value: '02', label: '02 — Toco' },
@@ -725,7 +790,7 @@ export function VehicleForm({ open, onClose, vehicle }: VehicleFormProps) {
                 Dados Fiscais (MDF-e)
               </p>
               <p className="text-[10px] text-muted-foreground -mt-1">
-                Obrigatórios para emissão de MDF-e do veículo de tração.
+                Obrigatórios (Focus/SEFAZ) para veículo ativo emitir MDF-e.
               </p>
 
               <div className="grid grid-cols-2 gap-3">
@@ -734,7 +799,7 @@ export function VehicleForm({ open, onClose, vehicle }: VehicleFormProps) {
                   name="tipo_rodado"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tipo de rodado</FormLabel>
+                      <FormLabel>Tipo de rodado *</FormLabel>
                       <Select
                         onValueChange={(v) => field.onChange(v === '__none__' ? '' : v)}
                         value={field.value || '__none__'}
@@ -764,7 +829,7 @@ export function VehicleForm({ open, onClose, vehicle }: VehicleFormProps) {
                   name="tipo_carroceria"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tipo de carroceria</FormLabel>
+                      <FormLabel>Tipo de carroceria *</FormLabel>
                       <Select
                         onValueChange={(v) => field.onChange(v === '__none__' ? '' : v)}
                         value={field.value || '__none__'}
@@ -797,7 +862,7 @@ export function VehicleForm({ open, onClose, vehicle }: VehicleFormProps) {
                   name="tara_kg"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tara (kg)</FormLabel>
+                      <FormLabel>Tara (kg) *</FormLabel>
                       <FormControl>
                         <Input type="number" min="0" step="100" placeholder="8500" {...field} />
                       </FormControl>
@@ -810,7 +875,7 @@ export function VehicleForm({ open, onClose, vehicle }: VehicleFormProps) {
                   name="uf_licenciamento"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>UF de licenciamento</FormLabel>
+                      <FormLabel>UF de licenciamento *</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="SC"

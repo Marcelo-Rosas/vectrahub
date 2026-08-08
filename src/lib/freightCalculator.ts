@@ -16,7 +16,11 @@
  */
 
 import { Database } from '@/integrations/supabase/types';
-import { calculateLotacaoProfitability, resolveLotacaoFretePeso } from '@/lib/lotacao-freight-base';
+import {
+  calculateLotacaoProfitability,
+  estimateInsuranceRiskCosts,
+  resolveLotacaoFretePeso,
+} from '@/lib/lotacao-freight-base';
 
 type PriceTableRow = Database['public']['Tables']['price_table_rows']['Row'];
 
@@ -26,7 +30,8 @@ type PriceTableRow = Database['public']['Tables']['price_table_rows']['Row'];
 
 export const FREIGHT_CONSTANTS = {
   CUBAGE_FACTOR_KG_M3: 300,
-  DEFAULT_DAS_PERCENT: 14,
+  /** Fallback DAS — Anexo III faixa inicial (Simples Nacional). Preferir pricing_rules_config. */
+  DEFAULT_DAS_PERCENT: 6,
   DEFAULT_MARKUP_PERCENT: 30,
   DEFAULT_OVERHEAD_PERCENT: 15,
   TARGET_MARGIN_PERCENT: 15,
@@ -84,20 +89,71 @@ export function resolveMargemBrutaDisplay(
   return storedMargemBruta;
 }
 
-/** Lucro alvo lotação = custos diretos × profit_margin_percent (não margem de contribuição). */
+/**
+ * Resultado contábil: margem de contribuição − custos reais de risco.
+ * Snapshots legados gravavam lucro-alvo em resultadoLiquido — preferir recomputo.
+ */
 export function resolveResultadoLiquidoDisplay(
   storedResultado: number | null | undefined,
-  custosDiretos: number,
-  profitMarginPercent: number,
-  margemContribuicaoFallback: number
+  margemContribuicao: number,
+  custosRiscoReal = 0
 ): number {
-  if (custosDiretos > 0 && profitMarginPercent > 0) {
-    return round2(custosDiretos * (profitMarginPercent / 100));
+  if (Number.isFinite(margemContribuicao)) {
+    return round2(margemContribuicao - Math.max(0, custosRiscoReal));
   }
   if (storedResultado != null && Number.isFinite(storedResultado)) {
     return storedResultado;
   }
-  return margemContribuicaoFallback;
+  return 0;
+}
+
+/** Lucro embutido no gross-up = custos diretos × profit_margin_percent. */
+export function resolveLucroAlvoDisplay(
+  custosDiretos: number,
+  profitMarginPercent: number,
+  storedLucroAlvo?: number | null
+): number {
+  if (custosDiretos > 0 && profitMarginPercent > 0) {
+    return round2(custosDiretos * (profitMarginPercent / 100));
+  }
+  if (storedLucroAlvo != null && Number.isFinite(storedLucroAlvo)) {
+    return storedLucroAlvo;
+  }
+  return 0;
+}
+
+type ServicosComponentsSlice = {
+  toll?: number;
+  aluguelMaquinas?: number;
+  tde?: number;
+  tear?: number;
+  conditionalFeesTotal?: number;
+  waitingTimeCost?: number;
+};
+
+/**
+ * Serviços operacionais p/ margem (sem repasse de risco).
+ * Snapshots legados: `custoServicos` incluía Ad Valorem/RCTR-C — recompõe via components.
+ */
+export function resolveCustoServicosOperacionaisDisplay(
+  components: ServicosComponentsSlice | null | undefined,
+  custoServicosStored?: number | null
+): number {
+  const c = components;
+  // Sem conditionalFees: taxas adicionais = markup (receita), não custo operacional.
+  // Aluguel/descarga = repasse (custo) — aluguel entra aqui; descarga é linha à parte.
+  const fromParts = round2(
+    (c?.toll ?? 0) +
+      (c?.aluguelMaquinas ?? 0) +
+      (c?.tde ?? 0) +
+      (c?.tear ?? 0) +
+      (c?.waitingTimeCost ?? 0)
+  );
+  if (c != null) {
+    return fromParts;
+  }
+  const raw = Number(custoServicosStored ?? 0);
+  return Number.isFinite(raw) ? round2(Math.max(0, raw)) : 0;
 }
 
 // ============================================
@@ -362,18 +418,29 @@ export interface FreightCalculationOutput {
     custoMotoristaContratado?: number;
     custoMotoristaReal?: number | null;
     custosDescarga: number;
+    /** Serviços operacionais (sem repasse de risco). */
     custoServicos: number;
     custosDiretos: number;
     receitaLiquida: number;
     margemBruta: number;
     overhead: number;
+    /** Resultado contábil (RL − OH − CD − risco real). */
     resultadoLiquido: number;
+    /** Lucro embutido no gross-up (CD × profit_margin%). */
+    lucroAlvo: number;
+    /** Margem operacional: resultado ÷ FAT × 100. */
     margemPercent: number;
     profitMarginTarget: number;
     regimeFiscal: 'simples_nacional' | 'excesso_sublimite' | 'lucro_presumido' | 'normal';
   };
 
   conditionalFeesBreakdown: Record<string, number>;
+
+  /** Custo real de seguro (prêmio estimado) — não é repasse. */
+  riskCosts?: {
+    items: Array<{ code: string; name: string; cost: number }>;
+    total: number;
+  };
 }
 
 // ============================================
@@ -530,12 +597,17 @@ export interface StoredPricingBreakdown {
     custoMotoristaContratado?: number;
     custoMotoristaReal?: number | null;
     custosDescarga: number;
+    /** Serviços operacionais (sem repasse de risco). */
     custoServicos?: number;
     custosDiretos: number;
     receitaLiquida?: number;
     margemBruta: number;
     overhead: number;
+    /** Resultado contábil (RL − OH − CD − risco real). */
     resultadoLiquido: number;
+    /** Lucro embutido no gross-up (CD × profit_margin%). */
+    lucroAlvo?: number;
+    /** Margem operacional: resultado ÷ FAT × 100. */
     margemPercent: number;
     profitMarginTarget?: number;
     regimeFiscal?: 'simples_nacional' | 'excesso_sublimite' | 'lucro_presumido' | 'normal';
@@ -977,6 +1049,7 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       margemBruta: 0,
       overhead: 0,
       resultadoLiquido: 0,
+      lucroAlvo: 0,
       margemPercent: 0,
       profitMarginTarget: 0,
       regimeFiscal: 'simples_nacional' as const,
@@ -1159,16 +1232,17 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
   const custoMotorista = !isLtl ? fretePesoGolden : baseCost;
   const aluguelMaquinas = round2(input.aluguelMaquinasValue ?? 0);
   const repasseRisco = sumRiskRepasse({ gris, tso, rctrc, adValorem });
-  // DRE v5 (Asset-Light): dispatchFee eh repasse/cobranca do embarcador,
-  // NAO custo direto. Mantida apenas em receitaBruta; removida do
-  // custoServicosOperacionais pra nao inflar custosDiretos.
-  const custoServicosOperacionais = round2(
-    input.tollValue + aluguelMaquinas + conditionalFeesTotal + waitingTimeCost
-  );
-  /** Legado/UI: soma operacional + repasse (repasse não entra no gross-up) */
-  const custoServicos = round2(custoServicosOperacionais + repasseRisco);
+  // CD / gross-up base: motorista + pedágio + espera + aluguel + descarga (repasse real).
+  // Taxas condicionais = markup (receita) — fora do divisor, só imposto (como risco).
+  // dispatchFee: cobrança embarcador, não CD.
+  const custoServicosOperacionais = round2(input.tollValue + aluguelMaquinas + waitingTimeCost);
+  const custoServicos = custoServicosOperacionais;
   const { descargaValue } = resolveDirectCosts(input, 0);
   const custosDiretos = round2(custoMotorista + custoServicosOperacionais + descargaValue);
+  /** Receita fora do divisor: risco + taxas markup (cliente paga; Vectra não repassa 1:1 as taxas). */
+  const receitaForaDivisor = round2(repasseRisco + conditionalFeesTotal);
+  const riskCostsEstimate = estimateInsuranceRiskCosts(input.cargoValue, round2);
+  const custosRiscoReal = riskCostsEstimate.total;
 
   // ICMS percent médio (proporcional por UF quando kmByUf + icmsByUf)
   let icmsPercentForGrossUp = icmsPercent;
@@ -1209,7 +1283,7 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       params.cofinsPercent ?? 0,
       params.irpjEffectivePercent ?? 0,
       params.csllEffectivePercent ?? 0,
-      repasseRisco
+      receitaForaDivisor
     );
 
   // receitaBruta = totalCliente (gross revenue); receitaLiquida = totalCliente - impostos
@@ -1241,6 +1315,7 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
 
   let margemBruta: number;
   let resultadoLiquido: number;
+  let lucroAlvo: number;
   let margemPercent: number;
 
   if (!isLtl) {
@@ -1254,15 +1329,21 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       custosDiretos,
       totalCliente,
       profitMarginPercent: params.profitMarginPercent ?? FREIGHT_CONSTANTS.TARGET_MARGIN_PERCENT,
+      custosRiscoReal,
     });
     margemBruta = lotacaoProfit.margemBruta;
     resultadoLiquido = lotacaoProfit.resultadoLiquido;
+    lucroAlvo = lotacaoProfit.lucroAlvo;
     margemPercent = lotacaoProfit.margemPercent;
   } else {
-    resultadoLiquido = round2(receitaLiquida - overhead - custoMotoristaContratado - descargaValue);
     margemBruta = round2(
-      receitaLiquida - overhead - custoMotoristaAntt - custoServicosOperacionais
+      receitaLiquida - overhead - custoMotoristaAntt - custoServicosOperacionais - descargaValue
     );
+    resultadoLiquido = round2(margemBruta - custosRiscoReal);
+    lucroAlvo =
+      custosDiretos > 0 && profitMarginPercent > 0
+        ? round2(custosDiretos * (profitMarginPercent / 100))
+        : resultadoLiquido;
     margemPercent = totalCliente > 0 ? round2((resultadoLiquido / totalCliente) * 100) : 0;
   }
 
@@ -1287,7 +1368,7 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       params.cofinsPercent ?? 0,
       params.irpjEffectivePercent ?? 0,
       params.csllEffectivePercent ?? 0,
-      repasseRisco
+      receitaForaDivisor
     );
     const ckanGrossValue = ckanGrossUp.totalCliente;
     const ckanTeto = ckanGrossValue * 1.05;
@@ -1395,11 +1476,13 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       margemBruta,
       overhead,
       resultadoLiquido,
+      lucroAlvo,
       margemPercent,
       profitMarginTarget: profitMarginPercent,
       regimeFiscal,
     },
     conditionalFeesBreakdown: input.extras?.conditionalFees?.breakdown ?? {},
+    riskCosts: riskCostsEstimate.total > 0 ? riskCostsEstimate : undefined,
   };
 }
 
@@ -1507,5 +1590,7 @@ export function buildStoredBreakdown(
           output.components.adValorem
       ),
     },
+
+    riskCosts: output.riskCosts,
   };
 }

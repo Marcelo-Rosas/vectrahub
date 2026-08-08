@@ -200,9 +200,9 @@ export default function Operations() {
 
     // Occurrences filter
     if (filterHasOccurrences === true) {
-      result = result.filter((o) => o.occurrences && o.occurrences.length > 0);
+      result = result.filter((o) => (o.occurrence_count ?? o.occurrences?.length ?? 0) > 0);
     } else if (filterHasOccurrences === false) {
-      result = result.filter((o) => !o.occurrences || o.occurrences.length === 0);
+      result = result.filter((o) => (o.occurrence_count ?? o.occurrences?.length ?? 0) === 0);
     }
 
     // Pending docs filter

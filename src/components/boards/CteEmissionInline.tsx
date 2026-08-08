@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileCheck, FileX, Loader2, RefreshCw, Send, Ban, Download } from 'lucide-react';
+import { FileCheck, FileX, Loader2, RefreshCw, Send, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -21,7 +21,6 @@ import {
   useManageCte,
   describeCteStatus,
 } from '@/hooks/useCteEmission';
-import { supabase } from '@/integrations/supabase/client';
 
 interface CteEmissionInlineProps {
   quoteId: string | null | undefined;
@@ -52,24 +51,8 @@ export function CteEmissionInline({ quoteId, readOnly = false }: CteEmissionInli
   const isProcessing = emission?.status === 'processing' || emission?.status === 'sent';
   const isCancelled = emission?.status === 'cancelled';
   const isRejected = emission?.status === 'rejected';
-  const isDraftLike = !emission || isRejected;
-
-  // Fallback para a URL S3 do Focus (response_received) enquanto o webhook não
-  // espelha o DACTE para o storage próprio (TODO F1.9 em focus-webhook).
-  const focusDacteUrl = (emission?.response_received as { caminho_dacte?: string } | null)
-    ?.caminho_dacte;
-
-  async function downloadDacte() {
-    if (emission?.dacte_storage_path) {
-      const [bucket, ...rest] = emission.dacte_storage_path.split('/');
-      const { data } = await supabase.storage.from(bucket).createSignedUrl(rest.join('/'), 300);
-      if (data?.signedUrl) {
-        window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
-        return;
-      }
-    }
-    if (focusDacteUrl) window.open(focusDacteUrl, '_blank', 'noopener,noreferrer');
-  }
+  // Cancelado/rejeitado: permite nova emissão (novo número/ref; backend incrementa -rN).
+  const isDraftLike = !emission || isRejected || isCancelled;
 
   function handleEmit() {
     if (!quoteId) return;
@@ -79,7 +62,8 @@ export function CteEmissionInline({ quoteId, readOnly = false }: CteEmissionInli
 
   function handleCancel() {
     if (!emission) return;
-    manage.mutate({ action: 'cancel', emission_id: emission.id, justificativa });
+    const j = justificativa.trim();
+    manage.mutate({ action: 'cancel', emission_id: emission.id, justificativa: j });
     setCancelOpen(false);
     setJustificativa('');
   }
@@ -119,7 +103,7 @@ export function CteEmissionInline({ quoteId, readOnly = false }: CteEmissionInli
           ) : (
             <Send className="w-3 h-3 mr-1" />
           )}
-          {isRejected ? 'Reenviar' : 'Emitir CT-e'}
+          {isRejected || isCancelled ? 'Reemitir CT-e' : 'Emitir CT-e'}
         </Button>
       )}
 
@@ -144,22 +128,9 @@ export function CteEmissionInline({ quoteId, readOnly = false }: CteEmissionInli
         </Button>
       )}
 
-      {/* Botões pós autorização */}
+      {/* Pós autorização: Cancelar (DACTE oficial só no rodapé OrderCteTab) */}
       {isAuthorized && (
         <>
-          {(emission?.dacte_storage_path || focusDacteUrl) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              onClick={(e) => {
-                e.stopPropagation();
-                void downloadDacte();
-              }}
-            >
-              <Download className="w-3 h-3 mr-1" /> DACTE
-            </Button>
-          )}
           {!readOnly && (
             <Button
               variant="ghost"
@@ -223,17 +194,19 @@ export function CteEmissionInline({ quoteId, readOnly = false }: CteEmissionInli
               id="justificativa"
               value={justificativa}
               onChange={(e) => setJustificativa(e.target.value)}
-              placeholder="Ex.: Cotação cancelada pelo cliente antes do embarque (mín 15 chars)"
+              placeholder="Ex.: Cotacao cancelada pelo cliente antes do embarque"
               maxLength={255}
               onClick={(e) => e.stopPropagation()}
             />
-            <p className="text-xs text-muted-foreground">{justificativa.length}/255</p>
+            <p className="text-xs text-muted-foreground">
+              {justificativa.trim().length}/255 — sem espaço no início/fim (regra SEFAZ xJust)
+            </p>
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Voltar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancel}
-              disabled={justificativa.length < 15 || justificativa.length > 255}
+              disabled={justificativa.trim().length < 15 || justificativa.trim().length > 255}
             >
               Cancelar CT-e
             </AlertDialogAction>

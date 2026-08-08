@@ -67,6 +67,8 @@ const typeLabels: Record<DocumentType, string> = {
   nfe: 'NF-e',
   cte: 'CT-e',
   mdfe: 'MDF-e',
+  ciot: 'CIOT',
+  xml: 'XML',
   pod: 'Comprovante',
   adiantamento: 'Adiantamento',
   analise_gr: 'Análise GR',
@@ -79,6 +81,7 @@ const typeLabels: Record<DocumentType, string> = {
   a_vista_fat: 'À Vista FAT',
   saldo_fat: 'Saldo FAT',
   a_prazo_fat: 'À Prazo FAT',
+  a_vista_pag: 'À Vista PAG',
 };
 
 const typeColors: Record<DocumentType, string> = {
@@ -89,6 +92,8 @@ const typeColors: Record<DocumentType, string> = {
   nfe: 'bg-primary/10 text-primary',
   cte: 'bg-accent text-accent-foreground',
   mdfe: 'bg-primary/10 text-primary',
+  ciot: 'bg-indigo-500/10 text-indigo-600',
+  xml: 'bg-slate-500/10 text-slate-700',
   pod: 'bg-success/10 text-success',
   adiantamento: 'bg-success/10 text-success',
   analise_gr: 'bg-amber-500/10 text-amber-600',
@@ -101,6 +106,7 @@ const typeColors: Record<DocumentType, string> = {
   a_vista_fat: 'bg-emerald-500/10 text-emerald-600',
   saldo_fat: 'bg-emerald-500/10 text-emerald-600',
   a_prazo_fat: 'bg-emerald-500/10 text-emerald-600',
+  a_vista_pag: 'bg-cyan-500/10 text-cyan-600',
 };
 
 const statusConfig = {
@@ -239,6 +245,8 @@ export default function Documents() {
               <SelectItem value="nfe">NF-e</SelectItem>
               <SelectItem value="cte">CT-e</SelectItem>
               <SelectItem value="mdfe">MDF-e</SelectItem>
+              <SelectItem value="ciot">CIOT</SelectItem>
+              <SelectItem value="xml">XML</SelectItem>
               <SelectItem value="pod">Comprovante</SelectItem>
               <SelectItem value="analise_gr">Análise GR</SelectItem>
               <SelectItem value="doc_rota">Doc. Rota</SelectItem>

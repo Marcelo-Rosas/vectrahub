@@ -1,8 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { anttEvidenceToCollectionOrderSnapshot } from '@/lib/risk-antt-evidence';
+import {
+  anttEvidenceToCollectionOrderSnapshot,
+  parseAnttMunicipioUf,
+  resolveAnttRegistryType,
+  anttRegistryToMdfeTipoProprietario,
+} from '@/lib/risk-antt-evidence';
 import type { RiskEvidence } from '@/types/risk';
 
 describe('risk-antt-evidence', () => {
+  it('parseAnttMunicipioUf extrai UF de Município/UF', () => {
+    expect(parseAnttMunicipioUf('Itajaí/SC')).toEqual({ municipio: 'Itajaí', uf: 'SC' });
+    expect(parseAnttMunicipioUf('PAULISTA/PE')).toEqual({ municipio: 'PAULISTA', uf: 'PE' });
+  });
+
+  it('resolveAnttRegistryType lê prefixo do transportador', () => {
+    expect(
+      resolveAnttRegistryType({
+        rntrc_registry_type: null,
+        transportador: 'ETC - Vectra Hub Ltda',
+      })
+    ).toBe('ETC');
+    expect(anttRegistryToMdfeTipoProprietario('ETC')).toBe('2');
+    expect(anttRegistryToMdfeTipoProprietario('TAC')).toBe('1');
+  });
+
   it('mapeia payload do wizard para snapshot da OC', () => {
     const evidence: RiskEvidence = {
       id: 'e1',

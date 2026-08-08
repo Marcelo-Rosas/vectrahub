@@ -1190,7 +1190,7 @@ export type Database = {
             foreignKeyName: 'ciot_operations_service_order_id_fkey';
             columns: ['service_order_id'];
             isOneToOne: false;
-            referencedRelation: 'trip_orders';
+            referencedRelation: 'orders';
             referencedColumns: ['id'];
           },
         ];
@@ -13465,7 +13465,9 @@ export type Database = {
         | 'a_vista_fat'
         | 'saldo_fat'
         | 'a_prazo_fat'
-        | 'a_vista_pag';
+        | 'a_vista_pag'
+        | 'ciot'
+        | 'xml';
       driver_contract_type: 'proprio' | 'agregado' | 'terceiro';
       driver_offer_status: 'pending' | 'sent' | 'accepted' | 'declined' | 'timeout' | 'skipped';
       driver_qualification_status:
@@ -13728,6 +13730,8 @@ export const Constants = {
         'saldo_fat',
         'a_prazo_fat',
         'a_vista_pag',
+        'ciot',
+        'xml',
       ],
       driver_contract_type: ['proprio', 'agregado', 'terceiro'],
       driver_offer_status: ['pending', 'sent', 'accepted', 'declined', 'timeout', 'skipped'],

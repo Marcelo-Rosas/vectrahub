@@ -50,7 +50,11 @@
     "smoke:health": "npx tsx scripts/integration-health.ts",
     "smoke:health:sr": "npx tsx scripts/integration-health.ts --require-sr",
     "smoke:integration": "npx tsx scripts/smoke-integration.ts --report",
-    "smoke:integration:real": "npx tsx scripts/smoke-integration.ts --real --report"
+    "smoke:integration:real": "npx tsx scripts/smoke-integration.ts --real --report",
+    "rntrc:ingest": "npx tsx scripts/ingest-rntrc-open-data.ts",
+    "rntrc:ingest:dry": "npx tsx scripts/ingest-rntrc-open-data.ts --dry-run --limit=50",
+    "nim:chat": "python scripts/nim-chat.py",
+    "nim:models": "python scripts/nim-chat.py --list-models"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

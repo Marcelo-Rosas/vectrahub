@@ -49,7 +49,8 @@ function useMirofishRouteMap() {
       const { data } = await supabase
         .from('mirofish_route_insights')
         .select('route, avg_ticket, ntc_impact')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(500);
       const map: Record<string, { avg_ticket: number | null; ntc_impact: number | null }> = {};
       for (const r of data ?? []) {
         if (!map[r.route]) map[r.route] = { avg_ticket: r.avg_ticket, ntc_impact: r.ntc_impact };

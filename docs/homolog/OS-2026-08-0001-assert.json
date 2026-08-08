@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-08-01T18:31:33.471Z",
+  "os_number": "OS-2026-08-0001",
+  "quote_code": "COT-2026-08-0001",
+  "os_id": "6632e313-a56b-4d5c-88d7-d2b7a709a40b",
+  "stage_at_snapshot": "documentacao",
+  "notes": [
+    "OS sem driver_id/vehicle_plate — PDF usa placeholder motorista + placa frota Hub SVC2F44",
+    "ANTT block = smoke Hub RNTRC (emitente), não consulta do carreteiro da OS"
+  ],
+  "pdf": {
+    "path": "C:\\Users\\marce\\vectra-hub\\docs\\homolog\\OS-2026-08-0001-oc.pdf",
+    "fileName": "OC-HOMOLOG-OS-2026-08-0001.pdf",
+    "bytes": 65581,
+    "ok": [
+      "VECTRA HUB",
+      "62.188.748",
+      "263768406",
+      "98850-9714",
+      "marcelo.rosas@vectracargo.com.br",
+      "JORGE LACERDA",
+      "BOOST EQUIPAMENT",
+      "INOVE ACADEMIA",
+      "CONSULTA ANTT / RNTRC",
+      "059734055",
+      "ATIVO",
+      "EQUIPAMENTOS",
+      "OC-HOMOLOG-OS-2026-08-0001"
+    ],
+    "missing": []
+  },
+  "pass": true
+}

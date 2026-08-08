@@ -10182,7 +10182,9 @@ export type Database = {
         | 'a_vista_fat'
         | 'saldo_fat'
         | 'a_prazo_fat'
-        | 'a_vista_pag';
+        | 'a_vista_pag'
+        | 'ciot'
+        | 'xml';
       driver_contract_type: 'proprio' | 'agregado' | 'terceiro';
       driver_offer_status: 'pending' | 'sent' | 'accepted' | 'declined' | 'timeout' | 'skipped';
       driver_qualification_status:
@@ -10426,6 +10428,8 @@ export const Constants = {
         'saldo_fat',
         'a_prazo_fat',
         'a_vista_pag',
+        'ciot',
+        'xml',
       ],
       driver_contract_type: ['proprio', 'agregado', 'terceiro'],
       driver_offer_status: ['pending', 'sent', 'accepted', 'declined', 'timeout', 'skipped'],

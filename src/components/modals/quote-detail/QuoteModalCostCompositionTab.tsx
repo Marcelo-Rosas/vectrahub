@@ -15,6 +15,7 @@ import { formatCurrency } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import type { StoredPricingBreakdown } from '@/lib/freightCalculator';
 import { resolvePisoAnttCarreteiroReais } from '@/lib/carreteiro-cost';
+import { estimateInsuranceRiskCosts } from '@/lib/lotacao-freight-base';
 
 interface ConditionalFee {
   id: string;
@@ -31,6 +32,8 @@ interface QuoteModalCostCompositionTabProps {
   margemBruta: number;
   overhead: number;
   resultadoLiquido: number;
+  /** Lucro embutido no gross-up (CD × target%). */
+  lucroAlvo?: number;
   margemPercent: number;
   isBelowTarget: boolean;
   /** Receita líquida já ajustada (ex.: desconto comercial / faturamento negociado) */
@@ -61,6 +64,7 @@ export function QuoteModalCostCompositionTab({
   margemBruta,
   overhead,
   resultadoLiquido,
+  lucroAlvo,
   margemPercent,
   isBelowTarget,
   receitaLiquidaDisplay,
@@ -176,14 +180,8 @@ export function QuoteModalCostCompositionTab({
         value: breakdown.components.tear ?? 0,
         field: 'tear',
       });
-    // DRE v5: Taxa de Despacho (NTC) eh repasse/cobranca do embarcador,
-    // entra so na receita bruta. Nao listar entre os custos diretos.
-    if ((breakdown.components.conditionalFeesTotal ?? 0) > 0)
-      composicaoRows.push({
-        label: 'Taxas condicionais',
-        value: breakdown.components.conditionalFeesTotal ?? 0,
-        field: 'conditional_fees',
-      });
+    // Taxas condicionais = markup (receita) — listadas fora dos CD abaixo.
+    // DRE v5: Taxa de Despacho (NTC) eh cobranca embarcador, nao CD.
     if ((breakdown.components.waitingTimeCost ?? 0) > 0)
       composicaoRows.push({
         label: 'Estadia / hora parada',
@@ -233,9 +231,9 @@ export function QuoteModalCostCompositionTab({
         aluguelMaquinasValue +
         tacAdjustment +
         paymentAdjustment +
-        (breakdown.components?.conditionalFeesTotal ?? 0) +
         (breakdown.components?.waitingTimeCost ?? 0) +
         custosDescargaMemoria);
+  const taxasMarkupMemoria = breakdown.components?.conditionalFeesTotal ?? 0;
   const formacaoAllIn = Math.max(0, totalClienteBruto - custosDiretos);
   const receitaLiquidaMemoria =
     breakdown.profitability?.receitaLiquida ??
@@ -416,6 +414,27 @@ export function QuoteModalCostCompositionTab({
                     {formatCurrency(custosDiretos)}
                   </TableCell>
                 </TableRow>
+                {taxasMarkupMemoria > 0 && (
+                  <TableRow>
+                    <TableCell
+                      data-field="conditional_fees"
+                      data-testid="row-conditional_fees-label"
+                      className="text-muted-foreground"
+                    >
+                      <span className="block">Taxas condicionais (markup)</span>
+                      <span className="block text-[10px] font-normal text-muted-foreground">
+                        Receita — fora do divisor; não é repasse 1:1
+                      </span>
+                    </TableCell>
+                    <TableCell
+                      data-field="conditional_fees_valor"
+                      data-testid="row-conditional_fees-value"
+                      className="text-right font-medium tabular-nums"
+                    >
+                      {formatCurrency(taxasMarkupMemoria)}
+                    </TableCell>
+                  </TableRow>
+                )}
                 {formacaoAllIn > 0.01 && (
                   <TableRow>
                     <TableCell
@@ -774,7 +793,7 @@ export function QuoteModalCostCompositionTab({
                   <>
                     <TableRow className="bg-emerald-50/50 dark:bg-emerald-900/10 border-l-4 border-l-emerald-500">
                       <TableCell className="font-semibold">
-                        (+) Repasse de Risco (cobrado do cliente)
+                        (+) Repasse de Risco (já no faturamento)
                       </TableCell>
                       <TableCell className="text-right font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
                         {formatCurrency(grisValue + tsoValue + rctrcValue + adValoremValue)}
@@ -887,35 +906,37 @@ export function QuoteModalCostCompositionTab({
                     </TableCell>
                   </TableRow>
                 )}
-                {/* Custos Reais de Risco (seguro) */}
-                {cargoValue > 0 && (
-                  <>
-                    <TableRow className="bg-amber-50/50 dark:bg-amber-900/10 border-l-4 border-l-amber-500">
-                      <TableCell className="font-semibold">
-                        (-) Custos Reais de Risco (Seguro)
-                      </TableCell>
-                      <TableCell className="text-right font-bold tabular-nums text-destructive">
-                        -{formatCurrency(cargoValue * 0.0003)}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="pl-8 text-muted-foreground">
-                        • RCTR-C (0,015% s/ {formatCurrency(cargoValue)})
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-destructive">
-                        -{formatCurrency(cargoValue * 0.00015)}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="pl-8 text-muted-foreground">
-                        • RC-DC (0,015% s/ {formatCurrency(cargoValue)})
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-destructive">
-                        -{formatCurrency(cargoValue * 0.00015)}
-                      </TableCell>
-                    </TableRow>
-                  </>
-                )}
+                {/* Custos Reais de Risco (seguro) — prêmio, não repasse */}
+                {(() => {
+                  const risk =
+                    breakdown.riskCosts?.total && breakdown.riskCosts.total > 0
+                      ? breakdown.riskCosts
+                      : estimateInsuranceRiskCosts(cargoValue);
+                  if (risk.total <= 0) return null;
+                  return (
+                    <>
+                      <TableRow className="bg-amber-50/50 dark:bg-amber-900/10 border-l-4 border-l-amber-500">
+                        <TableCell className="font-semibold">
+                          (-) Custos Reais de Risco (Seguro)
+                        </TableCell>
+                        <TableCell className="text-right font-bold tabular-nums text-destructive">
+                          -{formatCurrency(risk.total)}
+                        </TableCell>
+                      </TableRow>
+                      {risk.items.map((item) => (
+                        <TableRow key={item.code}>
+                          <TableCell className="pl-8 text-muted-foreground">
+                            • {item.name}
+                            {cargoValue > 0 ? ` (s/ ${formatCurrency(cargoValue)})` : ''}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums text-destructive">
+                            -{formatCurrency(item.cost)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </>
+                  );
+                })()}
                 <TableRow
                   className={cn(
                     'border-t-2',
@@ -934,9 +955,19 @@ export function QuoteModalCostCompositionTab({
                     </Badge>
                   </TableCell>
                 </TableRow>
+                {lucroAlvo != null && lucroAlvo > 0 && (
+                  <TableRow>
+                    <TableCell className="text-muted-foreground">
+                      Lucro alvo (gross-up {targetMarginPercent}% s/ custos diretos)
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {formatCurrency(lucroAlvo)}
+                    </TableCell>
+                  </TableRow>
+                )}
                 <TableRow>
                   <TableCell className="font-semibold">
-                    Margem Operacional (Mínimo Viável: {targetMarginPercent}%)
+                    Margem Operacional (resultado ÷ faturamento)
                   </TableCell>
                   <TableCell className="text-right">
                     <Badge variant={isBelowTarget ? 'destructive' : 'default'}>
@@ -960,15 +991,13 @@ export function QuoteModalCostCompositionTab({
           {/* Nota de Auditoria Financeira */}
           <div className="mt-6 p-4 rounded-md bg-muted/50 border border-muted-foreground/10">
             <p className="text-[11px] leading-relaxed text-muted-foreground italic">
-              <strong>Nota de Auditoria (DRE v5):</strong> GRIS, TSO e RCTR-C são classificados como{' '}
-              <span className="font-semibold text-foreground">Repasse de Risco</span> (receita
-              cobrada do embarcador). Os{' '}
-              <span className="font-semibold text-foreground">Custos Reais de Risco</span>{' '}
-              correspondem ao prêmio de seguro (RCTR-C 0,015% + RC-DC 0,015% sobre o valor da
-              carga). O Resultado Líquido usa modelo{' '}
-              <span className="font-semibold text-foreground">Gross-up (Asset-Light)</span> com
-              Overhead {breakdown.rates?.overheadPercent?.toFixed(2) ?? '—'}% e Margem Alvo{' '}
-              {targetMarginPercent?.toFixed(2) ?? '—'}%.
+              <strong>Nota de Auditoria (DRE v5):</strong> Ad Valorem / GRIS / TSO / RCTR-C cobrados
+              são <span className="font-semibold text-foreground">Repasse de Risco</span> (já no
+              faturamento; não somam ao piso ANTT / carreteiro).{' '}
+              <span className="font-semibold text-foreground">Custos Reais de Risco</span> = prêmio
+              estimado (RCTR-C + RC-DC 0,015% cada s/ valor da carga). Resultado líquido = receita
+              líquida − overhead − custos diretos − risco real. Lucro alvo = custos diretos ×{' '}
+              {targetMarginPercent?.toFixed(0) ?? '—'}% (embutido no preço, separado).
             </p>
           </div>
           {breakdown.meta?.ltlMinWeightApplied && (
@@ -1101,10 +1130,9 @@ export function QuoteModalCostCompositionTab({
             Indicadores de rentabilidade
           </h5>
           <p className="text-[10px] text-muted-foreground mb-3 leading-relaxed">
-            Lotação: gross-up inicia no piso ANTT da calculadora (ceil(km)×CCD+CC, sem over).
-            Referência comercial: max(tabela NTC + over km, piso). Overhead é{' '}
-            <span className="font-medium">custo estrutural</span> (% da receita líquida). Margem de
-            contribuição e margem operacional usam a mesma base (frete golden + serviços NTC).
+            Lotação: gross-up no piso ANTT (ceil(km)×CCD+CC). Repasse de risco = receita (já no
+            FAT), fora do divisor. Resultado contábil deduz custos diretos + prêmio de seguro. Lucro
+            alvo ({targetMarginPercent}% s/ CD) é meta embutida no preço — métrica aparte.
           </p>
           <div className="space-y-2 text-sm">
             {discountValue > 0 && (
@@ -1126,7 +1154,7 @@ export function QuoteModalCostCompositionTab({
               <span className="font-medium tabular-nums">{formatCurrency(margemBruta)}</span>
             </div>
             <p className="text-[10px] text-muted-foreground -mt-1">
-              Receita líquida − overhead − frete peso (golden) − custos de serviço NTC
+              RL − overhead − frete peso (piso/golden) − serviços operacionais NTC (sem repasse)
             </p>
             <div className="flex justify-between items-center gap-2 pt-1 border-t border-border/60">
               <span className="font-semibold">Resultado líquido</span>
@@ -1138,8 +1166,14 @@ export function QuoteModalCostCompositionTab({
               </Badge>
             </div>
             <p className="text-[10px] text-muted-foreground -mt-1">
-              Igual à margem de contribuição (resultado líquido ÷ faturamento ALL-IN)
+              Margem de contribuição − custos reais de risco (prêmio)
             </p>
+            {lucroAlvo != null && lucroAlvo > 0 && (
+              <div className="flex justify-between text-muted-foreground">
+                <span>Lucro alvo (gross-up)</span>
+                <span className="tabular-nums">{formatCurrency(lucroAlvo)}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center gap-2">
               <span className="font-semibold">Margem operacional</span>
               <Badge
@@ -1149,6 +1183,9 @@ export function QuoteModalCostCompositionTab({
                 {margemPercent.toFixed(1)}%
               </Badge>
             </div>
+            <p className="text-[10px] text-muted-foreground -mt-1">
+              Resultado líquido ÷ faturamento (após desconto)
+            </p>
           </div>
         </div>
       )}

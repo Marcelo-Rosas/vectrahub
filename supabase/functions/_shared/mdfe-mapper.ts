@@ -12,7 +12,7 @@
  * No DB access, no network.
  */
 
-import type { VectraConfig } from './cte-mapper.ts';
+import { normalizeRntrcSefaz, type VectraConfig } from './cte-mapper.ts';
 
 export interface VehicleRow {
   id: string;
@@ -26,7 +26,7 @@ export interface VehicleRow {
   capacidade_kg?: number | null;
   capacidade_m3?: number | null;
   tipo_rodado?: string | null; // '01'..'06' (truck/cavalo/etc)
-  tipo_carroceria?: string | null; // '00'..'09'
+  tipo_carroceria?: string | null; // '00'..'05' (MOC MDF-e)
   uf_licenciamento?: string | null;
   // Capacidade (nomes reais da tabela vehicles)
   capacity_kg?: number | null;
@@ -46,6 +46,22 @@ export interface MdfeProprietario {
   ie?: string | null;
   uf?: string | null;
   tipo_proprietario?: number | null; // 0=TAC Agregado, 1=TAC Independente, 2=Outros
+  /** Pagamento frete (Focus pagamentos / SEFAZ 302-303). */
+  payment_prefer?: 'pix' | 'banco' | string | null;
+  pix_key?: string | null;
+  bank_code?: string | null;
+  bank_agency?: string | null;
+  bank_account?: string | null;
+}
+
+/** Pagamento do contrato (Focus modal_rodoviario.pagamentos). */
+export interface MdfePagamento {
+  /** Valor total contrato em R$ (decimal Focus). */
+  valorContrato: number;
+  /** 0=à vista, 1=a prazo */
+  formaPagamento?: 0 | 1;
+  /** Componentes; default frete (04) = valorContrato. */
+  componentes?: Array<{ tipo: string; valor: number; descricao?: string }>;
 }
 
 export interface DriverRow {
@@ -60,6 +76,8 @@ export interface CteRowForMdfe {
   municipio_destino_ibge: number;
   municipio_destino_nome: string;
   uf_destino: string;
+  /** UF de início da prestação no CT-e (carregamento). */
+  uf_origem?: string;
   valor_carga: number; // R$
   peso_kg: number;
 }
@@ -67,6 +85,8 @@ export interface CteRowForMdfe {
 export interface MunicipioCarregamento {
   codigo: number;
   nome: string;
+  /** UF do município — deve bater com uf_inicio (SEFAZ 456). */
+  uf?: string;
 }
 
 /** Seguro da carga (grupo seguros_carga do MDF-e). responsavel_seguro: 1=emitente, 2=contratante. */
@@ -76,7 +96,8 @@ export interface MdfeSeguro {
   nome_seguradora?: string;
   cnpj_seguradora?: string;
   numero_apolice?: string;
-  numero_averbacao?: string;
+  /** Focus: string ou array — SEFAZ nAver obrigatório no rodoviário (rejeição 699). */
+  numero_averbacao?: string | string[];
 }
 
 export interface BuildMdfeInput {
@@ -86,18 +107,41 @@ export interface BuildMdfeInput {
   serie: number;
   numero: number;
   vectra: VectraConfig;
+  retry?: number; // prior emissions → ref CFN-MDFE-…-rN (Focus dedup)
   municipiosCarregamento: MunicipioCarregamento[]; // 1..50 (where cargo was picked up)
   percursoUfs?: string[]; // intermediate UFs between uf_inicio and uf_fim
   /** Apólices ativas (RCTR-C / RC-DC). Responsável = emitente (Vectra). */
   seguros?: MdfeSeguro[];
   /** Proprietário do veículo (do owner vinculado). Ausente = veículo próprio Vectra. */
   proprietario?: MdfeProprietario;
+  /**
+   * Contratante/tomador do frete (infContratante).
+   * SEFAZ 578: obrigatório p/ tpEmit=1 rodoviário sem CIOT/vale-pedágio.
+   */
+  contratante?: { nome: string; cnpj?: string; cpf?: string };
   produtoPredominante?: {
     descricao: string;
     tipoCarga?: string; // tpCarga: 01..14 (default 05 = Carga Geral)
     ncm?: string;
     cean?: string; // GTIN if available
   };
+  /**
+   * CEPs infLotacao (Focus: cep_carregamento / cep_descarregamento).
+   * SEFAZ 726: obrigatório quando modal rodoviário + tpEmit prestador + 1 único DF-e.
+   * Não enviar junto com latitude/longitude.
+   */
+  cepCarregamento?: string;
+  cepDescarregamento?: string;
+  /**
+   * Pagamento frete (SEFAZ 302 lotação / 303 TAC).
+   * Responsável = proprietário (ou omitido se sem dados bancários).
+   */
+  pagamento?: MdfePagamento;
+  /**
+   * CIOT (SEFAZ 304 TAC). Fonte: e-FRETE gratuito → orders.ciot_number.
+   * Focus: modal_rodoviario.ciot[]
+   */
+  ciots?: Array<{ ciot: string; cnpjResponsavel?: string; cpfResponsavel?: string }>;
 }
 
 export interface BuildMdfeResult {
@@ -119,18 +163,101 @@ function cleanMunicipioNome(s: string | null | undefined): string {
   return (s ?? '').replace(/\s*-\s*[A-Za-z]{2}\s*$/, '').trim();
 }
 
+/** RNTRC SEFAZ válido para tag RNTRC do prop: 8 dígitos (ISENTO não aceito neste facet). */
+/** Monta Focus `pagamentos[]` a partir do owner + valor contrato. */
+export function buildMdfePagamentos(
+  prop: MdfeProprietario | undefined,
+  pagamento: MdfePagamento | undefined,
+  warnings: string[]
+): Record<string, unknown>[] | undefined {
+  if (!pagamento || !(pagamento.valorContrato > 0)) {
+    return undefined;
+  }
+  const nome = String(prop?.nome ?? '')
+    .trim()
+    .slice(0, 60);
+  const doc = digits(prop?.cpf_cnpj);
+  if (!nome || (doc.length !== 11 && doc.length !== 14)) {
+    warnings.push('pagamentos omitido — owner sem nome/CPF-CNPJ (SEFAZ 302)');
+    return undefined;
+  }
+
+  const prefer = String(prop?.payment_prefer ?? '').toLowerCase();
+  const pix = String(prop?.pix_key ?? '')
+    .trim()
+    .slice(0, 60);
+  const banco = digits(prop?.bank_code).slice(0, 5);
+  const agencia = String(prop?.bank_agency ?? '')
+    .trim()
+    .slice(0, 10);
+
+  let bancario: Record<string, unknown> | null = null;
+  if (prefer === 'pix' && pix.length >= 2) {
+    bancario = { pix };
+  } else if (prefer === 'banco' && banco.length >= 3 && agencia) {
+    bancario = { numero_banco: banco, numero_agencia: agencia };
+  } else if (pix.length >= 2) {
+    bancario = { pix };
+  } else if (banco.length >= 3 && agencia) {
+    bancario = { numero_banco: banco, numero_agencia: agencia };
+  }
+
+  if (!bancario) {
+    warnings.push('pagamentos omitido — owner sem PIX nem banco+agência (SEFAZ 302/303)');
+    return undefined;
+  }
+
+  const v = Number(pagamento.valorContrato.toFixed(2));
+  const comps =
+    pagamento.componentes && pagamento.componentes.length > 0
+      ? pagamento.componentes.map((c) => ({
+          tipo: c.tipo,
+          valor: Number(Number(c.valor).toFixed(2)),
+          ...(c.descricao ? { descricao: c.descricao.slice(0, 60) } : {}),
+        }))
+      : [{ tipo: '04', valor: v }];
+
+  return [
+    {
+      nome,
+      ...(doc.length === 14 ? { cnpj: doc } : { cpf: doc }),
+      componentes: comps,
+      valor_total_contrato: v,
+      forma_pagamento: pagamento.formaPagamento ?? 0,
+      ...bancario,
+    },
+  ];
+}
+
+function rntrcPropSefaz(raw: string | null | undefined): string | null {
+  const n = normalizeRntrcSefaz(raw);
+  if (/^[0-9]{8}$/.test(n)) return n;
+  return null;
+}
+
 /**
  * Campos do proprietário do veículo de tração, no formato FLAT do
- * modal_rodoviário Focus (sufixo `_proprietario_veiculo`). Só preenche quando o
- * veículo é de terceiro (TAC) — há rntrc ou cpf_cnpj do owner. Veículo próprio
- * Vectra → retorna {} (sem grupo proprietário; Vectra é o transportador via
- * registro_nacional_transporte).
+ * modal_rodoviário Focus (sufixo `_proprietario_veiculo`).
+ * Só emite grupo se houver CPF/CNPJ + RNTRC 8 dígitos — RNTRC vazio → SEFAZ
+ * rejeita pattern `[0-9]{8}`. Sem RNTRC válido → {} (trata como frota própria).
  */
-function buildProprietarioFields(prop: MdfeProprietario | undefined): Record<string, unknown> {
-  const isThirdParty = Boolean(prop && (prop.rntrc || prop.cpf_cnpj));
-  if (!isThirdParty) return {};
+function buildProprietarioFields(
+  prop: MdfeProprietario | undefined,
+  warnings: string[]
+): Record<string, unknown> {
+  if (!prop) return {};
+  const doc = digits(prop.cpf_cnpj);
+  const hasDoc = doc.length === 11 || doc.length === 14;
+  if (!hasDoc && !prop.rntrc) return {};
 
-  const doc = digits(prop!.cpf_cnpj);
+  const rntrc = rntrcPropSefaz(prop.rntrc);
+  if (!rntrc) {
+    warnings.push(
+      `owner.rntrc ausente/inválido (raw=${prop.rntrc ?? ''}) — grupo proprietário omitido; cadastre RNTRC 8 dígitos no owner do veículo`
+    );
+    return {};
+  }
+
   const docField =
     doc.length === 14
       ? { cnpj_proprietario_veiculo: doc }
@@ -139,14 +266,12 @@ function buildProprietarioFields(prop: MdfeProprietario | undefined): Record<str
         : {};
 
   // Ordem do grupo `prop` (XSD MDF-e): CPF|CNPJ, RNTRC, xNome, IE?, tpProp.
-  // NÃO há `UF` neste grupo — SEFAZ rejeita (erro_validacao_schema:
-  // "Element 'UF' not expected. Expected is one of (IE, tpProp)").
   return {
     ...docField,
-    rntrc_proprietario_veiculo: digits(prop!.rntrc),
-    razao_social_proprietario_veiculo: prop!.nome ?? '',
-    ...(prop!.ie ? { inscricao_estadual_proprietario_veiculo: prop!.ie } : {}),
-    tipo_proprietario_veiculo: prop!.tipo_proprietario ?? 2, // 2 = Outros (fallback ETC)
+    rntrc_proprietario_veiculo: rntrc,
+    razao_social_proprietario_veiculo: prop.nome ?? '',
+    ...(prop.ie ? { inscricao_estadual_proprietario_veiculo: prop.ie } : {}),
+    tipo_proprietario_veiculo: prop.tipo_proprietario ?? 2,
   };
 }
 
@@ -165,10 +290,17 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
 
   if (ctes.length === 0) throw new Error('[mdfe-mapper] at least 1 CT-e required');
 
-  // UF início = vectra (origem operação Vectra é sempre SC)
-  // UF fim = última UF presente nos CT-es (heurística — caller pode sobrescrever)
-  const ufInicio = vectra.uf;
-  const ufFim = ctes[ctes.length - 1]?.uf_destino ?? ufInicio;
+  // UFIni/UFFim = rota da carga (CT-e), NÃO a UF do emitente.
+  // SEFAZ 456: cMunCarrega deve pertencer à UFIni (ex.: Fortaleza/CE ≠ uf_inicio=SC).
+  const municipiosCarregamentoEarly = uniqByCode(input.municipiosCarregamento);
+  const ufInicio = String(
+    municipiosCarregamentoEarly[0]?.uf || ctes[0]?.uf_origem || vectra.uf || ''
+  )
+    .toUpperCase()
+    .slice(0, 2);
+  const ufFim = String(ctes[ctes.length - 1]?.uf_destino || ufInicio)
+    .toUpperCase()
+    .slice(0, 2);
 
   // infMunDescarga groups CT-es by destination município
   const grupos = new Map<number, { nome: string; uf: string; ctes: CteRowForMdfe[] }>();
@@ -197,7 +329,7 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
   const vCarga = ctes.reduce((sum, c) => sum + c.valor_carga, 0);
   const pesoBruto = ctes.reduce((sum, c) => sum + c.peso_kg, 0);
 
-  const municipiosCarregamento = uniqByCode(input.municipiosCarregamento);
+  const municipiosCarregamento = municipiosCarregamentoEarly;
   if (municipiosCarregamento.length === 0)
     warnings.push('municipiosCarregamento empty — SEFAZ requires at least 1');
 
@@ -211,14 +343,45 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
   if (!vehicle.tipo_rodado)
     warnings.push('vehicle.tipo_rodado missing — required by SEFAZ (01-06)');
   if (!vehicle.tipo_carroceria)
-    warnings.push('vehicle.tipo_carroceria missing — required by SEFAZ (00-09)');
+    warnings.push('vehicle.tipo_carroceria missing — required by SEFAZ (00-05)');
 
-  const ref = buildMdfeRef(serie, numero);
+  const ref = buildMdfeRef(serie, numero, Number(input.retry ?? 0));
 
-  // Veículo de terceiro (TAC) → exige grupo proprietário + contratante (578).
-  const isTerceiro = Boolean(
-    input.proprietario && (input.proprietario.rntrc || input.proprietario.cpf_cnpj)
-  );
+  const propFields = buildProprietarioFields(input.proprietario, warnings);
+  // Contratante só quando grupo prop realmente vai no payload (RNTRC 8 dígitos).
+  const isTerceiro = Object.keys(propFields).length > 0;
+  // SEFAZ 743: CPF no prop → tpTransp=TAC(2). CNPJ → ETC(1). Sem prop → omite (745).
+  const propDoc = digits(input.proprietario?.cpf_cnpj);
+  const tipoTransporte = !isTerceiro
+    ? undefined
+    : propDoc.length === 11
+      ? 2 // TAC
+      : 1; // ETC (PJ)
+
+  if (!ufInicio || ufInicio.length !== 2) {
+    throw new Error(
+      `[mdfe-mapper] uf_inicio inválida (${ufInicio}) — use UF do município de carregamento (CT-e)`
+    );
+  }
+  if (!ufFim || ufFim.length !== 2) {
+    throw new Error(
+      `[mdfe-mapper] uf_fim inválida (${ufFim ?? ''}) — preencha destination_uf na cotação/cliente`
+    );
+  }
+  for (const m of municipiosCarregamento) {
+    if (m.uf && m.uf.toUpperCase() !== ufInicio) {
+      throw new Error(
+        `[mdfe-mapper] SEFAZ 456: carregamento ${m.nome} (${m.uf}) diverge de uf_inicio=${ufInicio}`
+      );
+    }
+  }
+  for (const m of municipios_descarregamento) {
+    if (!m.codigo || m.codigo < 1000000) {
+      throw new Error(
+        `[mdfe-mapper] municipio_destino_ibge inválido (${m.codigo}) em ${m.nome} — preencha IBGE destino`
+      );
+    }
+  }
 
   const payload: Record<string, unknown> = {
     // === ide ===
@@ -231,10 +394,9 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
     data_emissao: new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 19) + '-03:00',
     uf_inicio: ufInicio,
     uf_fim: ufFim,
-    // tpTransp — chave Focus é `tipo_transporte` (não `tipo_transportador`).
-    // 1=ETC, 2=TAC, 3=CTC. Sem isto, CNPJ de proprietário gera rejeição 744.
-    // tpEmit já vai no campo `emitente` acima; não há `tipo_emitente` no Focus.
-    tipo_transporte: 1, // 1 = ETC (Empresa Transporte Cargas)
+    // tpTransp (`tipo_transporte`): 1=ETC, 2=TAC, 3=CTC.
+    // SEFAZ 745: omitir sem prop. SEFAZ 743: CPF prop → TAC(2); CNPJ → ETC(1).
+    ...(tipoTransporte != null ? { tipo_transporte: tipoTransporte } : {}),
     ...(input.percursoUfs && input.percursoUfs.length > 0
       ? { percursos: input.percursoUfs.map((uf_percurso) => ({ uf_percurso })) }
       : {}),
@@ -258,7 +420,7 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
     // FLAT (sufixo `_veiculo`). Sem esse wrapper → erro
     // `parametros_modal_nao_informados`.
     modal_rodoviario: {
-      registro_nacional_transporte: digits(vectra.rntrc), // RNTRC do transportador (Vectra)
+      registro_nacional_transporte: normalizeRntrcSefaz(vectra.rntrc), // SEFAZ: 8 dígitos | ISENTO
       placa_veiculo: vehicle.plate.toUpperCase(),
       renavam_veiculo: digits(vehicle.renavam),
       tara_veiculo: vehicle.tara_kg ?? 0,
@@ -273,13 +435,57 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
           cpf: cpfMotorista,
         },
       ],
-      // Proprietário (terceiro/TAC) — campos flat; vazio = veículo próprio Vectra.
-      ...buildProprietarioFields(input.proprietario),
-      // Contratante do frete (Vectra/ETC) — obrigatório quando o veículo é de
-      // terceiro (TAC); SEFAZ rejeita 578 sem isto. Veículo próprio → omite.
-      ...(isTerceiro
-        ? { contratantes: [{ nome: vectra.nome.slice(0, 60), cnpj: digits(vectra.cnpj) }] }
-        : {}),
+      // Proprietário (terceiro/TAC) — só com RNTRC 8 dígitos; senão frota própria.
+      ...propFields,
+      // Pagamento frete (SEFAZ 302 lotação / 303 TAC) — Focus pagamentos[]
+      ...(() => {
+        const pags = buildMdfePagamentos(input.proprietario, input.pagamento, warnings);
+        return pags && pags.length > 0 ? { pagamentos: pags } : {};
+      })(),
+      // CIOT (SEFAZ 304) — e-FRETE gratuito; NÃO AILOG pago
+      ...(() => {
+        const list = (input.ciots ?? [])
+          .map((c) => {
+            const n = String(c.ciot ?? '').replace(/\D/g, '');
+            if (n.length < 8) return null;
+            const cnpj = digits(c.cnpjResponsavel);
+            const cpf = digits(c.cpfResponsavel);
+            const row: Record<string, unknown> = { ciot: n.slice(0, 12) };
+            if (cnpj.length === 14) row.cnpj_responsavel = cnpj;
+            else if (cpf.length === 11) row.cpf_responsavel = cpf;
+            else return null;
+            return row;
+          })
+          .filter(Boolean);
+        if (list.length === 0) {
+          if (isTerceiro) {
+            warnings.push(
+              'ciot ausente — TAC/terceiro: gere CIOT gratuito e-FRETE antes do MDF-e (SEFAZ 304)'
+            );
+          }
+          return {};
+        }
+        return { ciot: list };
+      })(),
+      // Contratante: SEFAZ 578 exige ≥1. SEFAZ 741: com prop do veículo,
+      // contratante DEVE = emitente (Vectra). Sem prop → tomador/shipper OK.
+      contratantes: [
+        (() => {
+          if (isTerceiro) {
+            return { nome: vectra.nome.slice(0, 60), cnpj: digits(vectra.cnpj) };
+          }
+          const c = input.contratante;
+          const cnpj = digits(c?.cnpj);
+          const cpf = digits(c?.cpf);
+          if (cnpj.length === 14) {
+            return { nome: (c?.nome || vectra.nome).slice(0, 60), cnpj };
+          }
+          if (cpf.length === 11) {
+            return { nome: (c?.nome || vectra.nome).slice(0, 60), cpf };
+          }
+          return { nome: vectra.nome.slice(0, 60), cnpj: digits(vectra.cnpj) };
+        })(),
+      ],
       ...(vehicle.plate_2
         ? {
             veiculos_reboque: [
@@ -314,11 +520,27 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
     tipo_carga: input.produtoPredominante?.tipoCarga ?? '05', // 05 = Carga Geral (obrigatório)
     descricao_produto: input.produtoPredominante?.descricao ?? 'CARGA GERAL',
     ...(input.produtoPredominante?.ncm
-      ? { codigo_ncm_produto: input.produtoPredominante.ncm }
+      ? { codigo_ncm_produto: digits(input.produtoPredominante.ncm).slice(0, 8) }
       : {}),
     ...(input.produtoPredominante?.cean
       ? { codigo_barras_produto: input.produtoPredominante.cean }
       : {}),
+
+    // === infLotacao (SEFAZ 726) — CEP carrega/descarrega quando 1 DF-e ===
+    ...(() => {
+      const cepCar = digits(input.cepCarregamento).slice(0, 8);
+      const cepDes = digits(input.cepDescarregamento).slice(0, 8);
+      const needsLotacao = ctes.length === 1;
+      if (needsLotacao && cepCar.length === 8 && cepDes.length === 8) {
+        return { cep_carregamento: cepCar, cep_descarregamento: cepDes };
+      }
+      if (needsLotacao) {
+        warnings.push(
+          'infLotacao ausente (1 CT-e) — informe CEPs origem/destino na cotação (SEFAZ 726)'
+        );
+      }
+      return {};
+    })(),
 
     // === seguro da carga (RCTR-C / RC-DC) ===
     ...(input.seguros && input.seguros.length > 0 ? { seguros_carga: input.seguros } : {}),

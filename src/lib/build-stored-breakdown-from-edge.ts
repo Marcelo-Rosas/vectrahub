@@ -128,6 +128,7 @@ export function buildStoredBreakdownFromEdgeResponse(
       margemBruta: response.profitability.margem_bruta,
       overhead: response.profitability.overhead,
       resultadoLiquido: response.profitability.resultado_liquido,
+      lucroAlvo: response.profitability.lucro_alvo,
       margemPercent: response.profitability.margem_percent,
       profitMarginTarget: response.profitability.profit_margin_target,
       regimeFiscal: response.profitability.regime_fiscal,
@@ -148,7 +149,7 @@ export function buildStoredBreakdownFromEdgeResponse(
       targetMarginPercent: response.profitability.profit_margin_target ?? 15,
     },
     conditionalFeesBreakdown: undefined,
-    riskCosts: riskCosts ?? undefined,
+    riskCosts: riskCosts ?? response.risk_costs ?? undefined,
     riskPassThrough: {
       gris: c.gris,
       tso: c.tso,

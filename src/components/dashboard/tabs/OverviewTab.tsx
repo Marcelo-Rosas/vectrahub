@@ -9,7 +9,10 @@ import { Database } from '@/integrations/supabase/types';
 
 type Order = Database['public']['Tables']['orders']['Row'];
 type Occurrence = Database['public']['Tables']['occurrences']['Row'];
-type OrderWithOccurrences = Order & { occurrences: Occurrence[] };
+type OrderWithOccurrences = Order & {
+  occurrences?: Occurrence[];
+  occurrence_count?: number;
+};
 
 interface ChartPoint {
   name: string;

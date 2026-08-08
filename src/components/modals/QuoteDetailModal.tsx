@@ -33,15 +33,8 @@ import { ConvertQuoteModal } from '@/components/modals/ConvertQuoteModal';
 import type { Database, Json } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
 import { usePriceTable } from '@/hooks/usePriceTables';
-import {
-  usePricingParameter,
-  useConditionalFees,
-  usePaymentTerms,
-  usePricingRulesConfig,
-} from '@/hooks/usePricingRules';
-import { resolveTaxRegimeFlags } from '@/lib/tax-regime-resolve';
-import { expectedRegimeLabel, isPricingBreakdownRegimeStale } from '@/lib/pricing-breakdown-stale';
-import { useUpdateQuote } from '@/hooks/useQuotes';
+import { usePricingParameter, useConditionalFees, usePaymentTerms } from '@/hooks/usePricingRules';
+import { useUpdateQuote, useQuote } from '@/hooks/useQuotes';
 import { useQuoteRouteStops } from '@/hooks/useQuoteRouteStops';
 import {
   useCalculateFreight,
@@ -65,11 +58,13 @@ import {
   StoredPricingBreakdown,
   TollPlaza,
   FREIGHT_CONSTANTS,
-  isMarginBelowTarget,
+  resolveCustoServicosOperacionaisDisplay,
+  resolveLucroAlvoDisplay,
   resolveMargemBrutaDisplay,
   resolveResultadoLiquidoDisplay,
   round2,
 } from '@/lib/freightCalculator';
+import { estimateInsuranceRiskCosts } from '@/lib/lotacao-freight-base';
 import {
   Table,
   TableBody,
@@ -99,7 +94,6 @@ import {
   QuoteModalHistoryTab,
 } from '@/components/modals/quote-detail';
 import { AnttFloorBanner } from '@/components/modals/quote-detail/AnttFloorBanner';
-import { QuoteRegimeStaleBanner } from '@/components/modals/quote-detail/QuoteRegimeStaleBanner';
 import { AnttFloorAlertDialog } from '@/components/modals/quote-detail/AnttFloorAlertDialog';
 import { QuoteContractPanel } from '@/components/modals/quote-detail/QuoteContractPanel';
 import { formatCurrency } from '@/lib/formatters';
@@ -131,9 +125,11 @@ const PRICE_EPS_REAIS = 0.01;
 export function QuoteDetailModal({
   open,
   onClose,
-  quote,
+  quote: boardQuote,
   canManage = true,
 }: QuoteDetailModalProps) {
+  const { data: hydratedQuote } = useQuote(open && boardQuote?.id ? boardQuote.id : '');
+  const quote = hydratedQuote ?? boardQuote;
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
   const [isConvertingToFat, setIsConvertingToFat] = useState(false);
@@ -170,7 +166,6 @@ export function QuoteDetailModal({
   const { data: routeStops } = useQuoteRouteStops(open && quote ? quote.id : null);
   const { data: taxRegimeParam } = usePricingParameter('tax_regime_simples');
   const { data: taxRegimeLPParam } = usePricingParameter('tax_regime_lucro_presumido');
-  const { data: pricingRules } = usePricingRulesConfig(true);
   const { data: conditionalFeesData } = useConditionalFees(true);
   const { data: paymentTermsList } = usePaymentTerms(true);
 
@@ -284,26 +279,6 @@ export function QuoteDetailModal({
 
   const { downloadQuotePdf, loading: pdfLoading } = usePdfDownload();
 
-  const expectedTaxRegime = useMemo(
-    () =>
-      resolveTaxRegimeFlags({
-        pricingRules,
-        vehicleTypeId: quote?.vehicle_type_id ?? null,
-        taxRegimeLucroPresumidoParam:
-          taxRegimeLPParam?.value != null ? Number(taxRegimeLPParam.value) : undefined,
-      }),
-    [pricingRules, quote?.vehicle_type_id, taxRegimeLPParam?.value]
-  );
-
-  const isRegimeBreakdownStale = useMemo(() => {
-    if (!quote?.pricing_breakdown) return false;
-    const bd = quote.pricing_breakdown as unknown as StoredPricingBreakdown;
-    return isPricingBreakdownRegimeStale(bd, {
-      lucroPresumido: expectedTaxRegime.regimeLucroPresumido,
-      simplesNacional: expectedTaxRegime.regimeSimplesNacional,
-    });
-  }, [quote?.pricing_breakdown, expectedTaxRegime]);
-
   // Early return AFTER all hooks
   if (!quote) return null;
 
@@ -393,18 +368,10 @@ export function QuoteDetailModal({
   // misturava piso ANTT com frete contratado — ex.: COT-2026-06-0002 mostrava ~R$ 13,5k
   // de margem bruta vs ~R$ 5,8k gravados no motor.
   const c = breakdown?.components;
-  const custoServicosView =
-    breakdown?.profitability?.custoServicos ??
-    (c?.toll ?? 0) +
-      (c?.aluguelMaquinas ?? 0) +
-      (c?.gris ?? 0) +
-      (c?.tso ?? 0) +
-      (c?.rctrc ?? 0) +
-      (c?.adValorem ?? 0) +
-      (c?.tde ?? 0) +
-      (c?.tear ?? 0) +
-      (c?.conditionalFeesTotal ?? 0) +
-      (c?.waitingTimeCost ?? 0);
+  const custoServicosView = resolveCustoServicosOperacionaisDisplay(
+    c,
+    breakdown?.profitability?.custoServicos
+  );
   const receitaLiquidaFromBreakdown =
     receitaLiquidaView ??
     (totalClienteView > 0
@@ -438,18 +405,30 @@ export function QuoteDetailModal({
   const custosDiretosScaled = round2(
     (breakdown?.profitability?.custosDiretos ?? 0) * faturamentoRatio
   );
+  const riscoRealView = round2(
+    (breakdown?.riskCosts?.total ??
+      estimateInsuranceRiskCosts(Number(quote?.cargo_value ?? 0)).total) * faturamentoRatio
+  );
   const resultadoSnapshot = breakdown?.profitability?.resultadoLiquido;
   const resultadoLiquidoView = resolveResultadoLiquidoDisplay(
     resultadoSnapshot != null ? round2(resultadoSnapshot * faturamentoRatio) : null,
+    margemBrutaView,
+    riscoRealView
+  );
+  const lucroAlvoView = resolveLucroAlvoDisplay(
     custosDiretosScaled,
     targetMargin,
-    margemBrutaView
+    breakdown?.profitability?.lucroAlvo != null
+      ? round2(breakdown.profitability.lucroAlvo * faturamentoRatio)
+      : null
   );
-  /** Lucro alvo % sobre custos diretos para ambas modalidades — bate com a meta
-   * `profit_margin_target` (Edge calcula `resultado_liquido = custos_diretos × target%`). */
+  /** Margem operacional = resultado contábil ÷ faturamento negociado. */
   const margemPercentView =
-    custosDiretosScaled > 0 ? round2((resultadoLiquidoView / custosDiretosScaled) * 100) : 0;
-  const isBelowTarget = isMarginBelowTarget(margemPercentView, targetMargin) || margemBrutaView < 0;
+    totalClienteView > 0 ? round2((resultadoLiquidoView / totalClienteView) * 100) : 0;
+  const isBelowTarget =
+    margemBrutaView < 0 ||
+    resultadoLiquidoView < 0 ||
+    (lucroAlvoView > 0 && resultadoLiquidoView + 0.01 < lucroAlvoView);
 
   const financialStripModel = buildQuoteFinancialStripFromBreakdown(breakdown, {
     totalCliente: totalClienteView,
@@ -1086,20 +1065,6 @@ export function QuoteDetailModal({
                 disabled={calculateFreightMutation.isPending || updateQuoteMutation.isPending}
               />
             )}
-            {isRegimeBreakdownStale && canManage && breakdown && (
-              <QuoteRegimeStaleBanner
-                storedRegime={breakdown.profitability?.regimeFiscal ?? 'normal'}
-                expectedLabel={expectedRegimeLabel({
-                  lucroPresumido: expectedTaxRegime.regimeLucroPresumido,
-                  simplesNacional: expectedTaxRegime.regimeSimplesNacional,
-                })}
-                onRecalculate={handleRecalcular}
-                isRecalculating={
-                  calculateFreightMutation.isPending || updateQuoteMutation.isPending
-                }
-                disabled={!quote.price_table_id || !quote.km_distance}
-              />
-            )}
             <div className="flex flex-wrap items-center justify-end gap-2">
               <Button
                 type="button"
@@ -1407,6 +1372,7 @@ export function QuoteDetailModal({
                   margemBruta={margemBrutaView}
                   overhead={overheadScaled}
                   resultadoLiquido={resultadoLiquidoView}
+                  lucroAlvo={lucroAlvoView}
                   margemPercent={margemPercentView}
                   isBelowTarget={isBelowTarget}
                   receitaLiquidaDisplay={receitaLiquidaFromBreakdown ?? undefined}

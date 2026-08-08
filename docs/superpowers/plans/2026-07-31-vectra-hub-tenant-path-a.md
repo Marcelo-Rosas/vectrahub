@@ -437,15 +437,19 @@ git commit -m "chore(hub): script seed tabelas de referencia Cargo para Hub"
 **Files:** none  
 **Produces:** usuário admin no Auth Hub + row `profiles` / role
 
-- [ ] **Step 1: Invite**
+- [x] **Step 1: Invite**
 
 Dashboard Hub → Authentication → Invite user  
 ou Edge `invite-user` após deploy + JWT service.
 
-- [ ] **Step 2: Role admin**
+Já existente no Hub (2026-08-01): `marcelo.rosas@vectracargo.com.br` + outros `@vectracargo.com.br`.
+
+- [x] **Step 2: Role admin**
 
 Inserir/atualizar perfil conforme padrão Cargo (`profiles` + role `admin`).  
 Validar login em app Hub.
+
+Confirmado: `profiles.perfil = 'admin'` + `user_roles.role = 'admin'` para Marcelo; `banned_until` null.
 
 **Test:** login → sidebar comercial abre sem erro RLS.
 
@@ -461,21 +465,29 @@ Validar login em app Hub.
 **Consumes:** anon key + URL Hub  
 **Produces:** URL pública Hub (ex. `https://vectrahub.pages.dev`)
 
-- [ ] **Step 1: Criar Pages project**
+- [x] **Step 1: Criar Pages project**
 
 ```bash
 npx wrangler pages project create vectrahub
 ```
 
-- [ ] **Step 2: Confirmar secrets GitHub `vectrahub`**
+Já existe: `vectrahub.pages.dev` + custom `app.hub.vectracargo.com.br` (deploys recentes OK; bundle aponta `lrbtbrpoklgwaaclbufz`).
+
+- [x] **Step 2: Confirmar secrets GitHub `vectrahub`**
 
 Já criados no Task 0 Step 5. Conferir `VITE_SUPABASE_URL` = `https://lrbtbrpoklgwaaclbufz.supabase.co`.
 
-- [ ] **Step 3: Auth redirect URLs**
+2026-08-03: setados `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `CLOUDFLARE_ACCOUNT_ID`.  
+**Ainda faltam (CI bloqueado):** `CLOUDFLARE_API_TOKEN`, `SUPABASE_ACCESS_TOKEN` (copiar do Cargo ou criar novos).
+
+- [x] **Step 3: Auth redirect URLs**
 
 Adicionar URL Pages Hub em Authentication → Redirect URLs do projeto `lrbtbrpoklgwaaclbufz`.
 
-- [ ] **Step 4: Build local smoke (cwd `vectrahub`)**
+Documentado em `supabase/config.toml` (`site_url` + `vectrahub.pages.dev` + `app.hub…`).  
+**Confirmar no Dashboard** se produção espelha o TOML (config local ≠ auto-push).
+
+- [x] **Step 4: Build local smoke (cwd `vectrahub`)**
 
 ```bash
 $env:VITE_SUPABASE_URL="https://lrbtbrpoklgwaaclbufz.supabase.co"
@@ -486,15 +498,21 @@ npm run dev
 
 Expected: login Hub; `/configuracoes-empresa` mostra VECTRA HUB.
 
+`npm run build` OK (2026-08-03).
+
 - [ ] **Step 5: Disparar deploy**
 
+**Decisão 2026-08-03:** sem `deploy-cloudflare.yml` no Hub. Deploy só via Wrangler:
+
 ```bash
-gh workflow run deploy-cloudflare.yml --repo Marcelo-Rosas/vectrahub
+npm run build
+node scripts/patch-wrangler-pages.mjs
+npx wrangler pages deploy dist --project-name=vectrahub --branch=main
 ```
 
-Ou push em `main` do `vectrahub`.
+Pages já no ar (`vectrahub.pages.dev` / `app.hub.vectracargo.com.br`).
 
-- [ ] **Step 6: Commit docs Hub**
+- [x] **Step 6: Commit docs Hub**
 
 ```bash
 git add docs/HUB_ENV.md
@@ -502,15 +520,16 @@ git commit -m "docs(hub): checklist env e secrets Vectra HUB"
 git push
 ```
 
+`docs/HUB_ENV.md` já no repo (custom domain + secrets checklist).
 ---
 
 ### Task 9: Sync contínuo Cargo → Hub (anti-drift código + schema)
 
-**Files:** política em `vectrahub/docs/HUB_ENV.md`; sem mudar CI Cargo
+**Files:** política em `docs/HUB_ENV.md`; script `scripts/audit-migration-drift.mts`; sem mudar CI Cargo
 
 **Regra:** features compartilhadas entram no Hub via merge/cherry do Cargo; migrations novas rodam no push do `vectrahub` contra `lrbtbrpoklgwaaclbufz`.
 
-- [ ] **Step 1: Modelo sync (já escolhido Task 0)**
+- [x] **Step 1: Modelo sync (já escolhido Task 0)** — documentado em `docs/HUB_ENV.md` § Sync
 
 | Modelo | Quando |
 |---|---|
@@ -518,19 +537,30 @@ git push
 | Merge periódico remote Cargo | Semana 1+ se volume alto |
 | Dual-CI no mesmo monorepo | **Não** — Path A agora = repo separado |
 
-- [ ] **Step 2: Checklist PR Hub**
+- [x] **Step 2: Checklist PR Hub** — em `docs/HUB_ENV.md` (branding OK; feature Cargo→port; drift antes de `db push`)
 
-PR no `vectrahub` que só muda branding Hub: OK.  
-PR que precisa feature do Cargo: primeiro merge Cargo → depois portar Hub.
-
-- [ ] **Step 3: Auditoria migration drift**
+- [x] **Step 3: Auditoria migration drift** (2026-08-03)
 
 ```bash
-npx supabase migration list --project-ref epgedaiukjippepujuzc
-npx supabase migration list --project-ref lrbtbrpoklgwaaclbufz
+npx supabase migration list --linked
+npx tsx scripts/audit-migration-drift.mts
+# → docs/homolog/migration-drift-report.json
 ```
 
-Expected: mesmas versões remote **depois** de portar migrations pro Hub e `db push`.
+Snapshot: `docs/homolog/migration-cargo-remote-versions.json` (Cargo `schema_migrations`).
+
+| Achado | Qtd | Ação |
+|---|---|---|
+| Hub local↔remote matched | 223 | OK |
+| Hub **local-only** (não applied) | 6 | push após repair orphans |
+| Hub **remote orphan** (sem arquivo) | 4 | `migration repair --status reverted` ou stub |
+| Cargo-only (não no Hub) | 13 | cherry se precisar feature |
+| Hub-only (não no Cargo) | 13 | esperado (tenant Hub) |
+
+Orphans Hub: `20260801184437`, `20260801234320`, `20260802000447`, `20260803121419`.  
+Local-only: `20260801184421`, `20260801210000`, `20260802113502`, `20260802115007`, `20260802120000`, `20260803121108` (KPI = remote `…121419` sob outro nome).
+
+**Nota:** orphans Hub **reparados 2026-08-03** (rename local→remote + stub `validation_metadata` + push CIOT/RNTRC). 13 Cargo-only = gymsite — **não cherry** (ver `docs/HUB_ENV.md`).
 
 ---
 
@@ -538,12 +568,14 @@ Expected: mesmas versões remote **depois** de portar migrations pro Hub e `db p
 
 **Produces:** go-live checklist marcado
 
-- [ ] Cotação draft → pending no Kanban Hub
-- [ ] PDF cotação com razão **VECTRA HUB LTDA** / CNPJ Hub
-- [ ] `calculate-freight` retorna valor BRL 2 casas
-- [ ] CT-e homolog (`FOCUS_NFE_AMBIENTE=homolog`) com CNPJ `62.188.748/0001-17`
-- [ ] Confirmar **não** aparece dado do Cargo (quotes count isolado)
-- [ ] WhatsApp: se OpenClaw compartilhado, mensagem identificável como Hub
+- [~] Cotação no Kanban Hub — `COT-2026-08-0001` estágio **ganho** (INOVE); board comercial/RLS OK. Draft→pending: criar nova se quiser fluxo completo.
+- [x] PDF cotação Hub — UI: botão **PDF Detalhado** na COT-2026-08-0001; conteúdo: `scripts/smoke-quote-pdf-hub.mts` → `docs/homolog/cotacao-COT-2026-08-0001-interno.pdf` contém **VECTRA HUB** + CNPJ `62.188.748/0001-17` + IE `263768406` (sem CNPJ Cargo). Header PDF usa fantasia HUB (não “LTDA” no nome impresso).
+- [x] `calculate-freight` vivo no Hub (anon → `UNAUTHORIZED`)
+- [x] CT-e homolog (`FOCUS_NFE_AMBIENTE=homolog`) com CNPJ `62.188.748/0001-17` — live 2026-08-03: `CFN-CTE-COT-2026-08-0001-r8` nº12 **authorized** SEFAZ 100; chave `CTe42260862188748000117…`; assert `docs/homolog/OS-2026-08-0002-cte-mdfe-live.json`
+- [x] Isolamento: Hub quotes/orders = 1; UI Empresa = VECTRA HUB LTDA / CNPJ `62.188.748/0001-17` / IE `263768406`
+- [~] WhatsApp Hub identificável — **CONGELADO** 2026-08-03 (sem `OPENCLAW_*` no Hub; retomar depois com WABA/número Hub)
+
+**Sessão smoke:** login OK em `localhost:8080` (Hub). Prod `app.hub…` ainda em `/auth` neste browser.
 
 ---
 

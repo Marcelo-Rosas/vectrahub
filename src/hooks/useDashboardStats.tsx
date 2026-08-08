@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { asDb, calcConversionRate, filterSupabaseRows } from '@/lib/supabase-utils';
+import { asDb, filterSupabaseRows } from '@/lib/supabase-utils';
 import { supabase } from '@/integrations/supabase/client';
 import { StoredPricingBreakdown, formatRouteUf, ufFromCep } from '@/lib/freightCalculator';
+import { mapToAppError } from '@/lib/errors/AppError';
 
 export interface TrendData {
   value: number;
@@ -20,266 +21,132 @@ export interface DashboardStats {
   conversionTrend: TrendData | null;
 }
 
-// Helper to get start/end of a month
-function getMonthRange(monthsAgo: number) {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth() - monthsAgo, 1);
-  const end = new Date(now.getFullYear(), now.getMonth() - monthsAgo + 1, 0, 23, 59, 59, 999);
-  return { start, end };
+export interface ChartPoint {
+  name: string;
+  value: number;
 }
+
+export interface DashboardKpiPayload extends DashboardStats {
+  conversionChart: ChartPoint[];
+  revenueByClient: ChartPoint[];
+}
+
+const DASHBOARD_KPI_KEY = ['dashboard-kpi'] as const;
+
+function parseTrend(raw: unknown): TrendData | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const t = raw as { value?: unknown; isPositive?: unknown };
+  if (typeof t.value !== 'number' || typeof t.isPositive !== 'boolean') return null;
+  return { value: t.value, isPositive: t.isPositive };
+}
+
+function parseChartPoints(raw: unknown): ChartPoint[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((row) => {
+      if (!row || typeof row !== 'object') return null;
+      const r = row as { name?: unknown; value?: unknown };
+      if (typeof r.name !== 'string') return null;
+      const value = Number(r.value);
+      if (!Number.isFinite(value)) return null;
+      return { name: r.name, value };
+    })
+    .filter((x): x is ChartPoint => x !== null);
+}
+
+async function fetchDashboardKpi(): Promise<DashboardKpiPayload> {
+  const { data, error } = await supabase.rpc('get_dashboard_kpi');
+  if (error) {
+    throw mapToAppError(error, { queryKey: 'dashboard-kpi', rpc: 'get_dashboard_kpi' });
+  }
+
+  const raw = (data ?? {}) as Record<string, unknown>;
+  return {
+    pipelineValue: Number(raw.pipelineValue ?? 0),
+    conversionRate: Number(raw.conversionRate ?? 0),
+    activeOrders: Number(raw.activeOrders ?? 0),
+    deliveriesToday: Number(raw.deliveriesToday ?? 0),
+    pendingDocuments: Number(raw.pendingDocuments ?? 0),
+    criticalAlerts: Number(raw.criticalAlerts ?? 0),
+    pipelineTrend: parseTrend(raw.pipelineTrend),
+    conversionTrend: parseTrend(raw.conversionTrend),
+    conversionChart: parseChartPoints(raw.conversionChart),
+    revenueByClient: parseChartPoints(raw.revenueByClient),
+  };
+}
+
+const kpiQueryOptions = {
+  queryKey: DASHBOARD_KPI_KEY,
+  staleTime: 60_000,
+  refetchInterval: 5 * 60_000,
+  refetchOnWindowFocus: false,
+  queryFn: fetchDashboardKpi,
+} as const;
 
 export function useDashboardStats() {
   return useQuery({
-    queryKey: ['dashboard-stats'],
-    staleTime: 60_000,
-    refetchInterval: 5 * 60_000,
-    refetchOnWindowFocus: false,
-    queryFn: async () => {
-      const currentMonth = getMonthRange(0);
-      const lastMonth = getMonthRange(1);
-
-      // Get pipeline value (quotes not lost or won)
-      const { data: quotes, error: quotesError } = await supabase
-        .from('quotes')
-        .select('value, stage')
-        .not('stage', 'in', '("perdido","ganho")');
-      if (quotesError) throw quotesError;
-
-      const validQuotes = filterSupabaseRows<{ value: number; stage: string }>(quotes);
-      const pipelineValue = validQuotes.reduce((acc, q) => acc + Number(q.value), 0);
-
-      // Get conversion rate for all time
-      const { data: allQuotes, error: allQuotesError } = await supabase
-        .from('quotes')
-        .select('stage, created_at');
-      if (allQuotesError) throw allQuotesError;
-      const validAllQuotes = filterSupabaseRows<{ stage: string; created_at: string }>(allQuotes);
-
-      const totalQuotes = validAllQuotes.length;
-      const wonQuotes = validAllQuotes.filter((q) => q.stage === 'ganho').length;
-      const conversionRate = calcConversionRate(wonQuotes, totalQuotes);
-
-      // Calculate pipeline trend (current month quotes vs last month)
-      const { data: currentMonthQuotes, error: cmqError } = await supabase
-        .from('quotes')
-        .select('value')
-        .gte('created_at', currentMonth.start.toISOString())
-        .lte('created_at', currentMonth.end.toISOString())
-        .not('stage', 'in', '("perdido","ganho")');
-      if (cmqError) throw cmqError;
-
-      const { data: lastMonthQuotes, error: lmqError } = await supabase
-        .from('quotes')
-        .select('value')
-        .gte('created_at', lastMonth.start.toISOString())
-        .lte('created_at', lastMonth.end.toISOString())
-        .not('stage', 'in', '("perdido","ganho")');
-      if (lmqError) throw lmqError;
-
-      const validCurrentMonth = filterSupabaseRows<{ value: number }>(currentMonthQuotes);
-      const validLastMonth = filterSupabaseRows<{ value: number }>(lastMonthQuotes);
-      const currentMonthPipeline = validCurrentMonth.reduce((acc, q) => acc + Number(q.value), 0);
-      const lastMonthPipeline = validLastMonth.reduce((acc, q) => acc + Number(q.value), 0);
-
-      let pipelineTrend: TrendData | null = null;
-      if (lastMonthPipeline > 0) {
-        const pipelineChange =
-          ((currentMonthPipeline - lastMonthPipeline) / lastMonthPipeline) * 100;
-        pipelineTrend = {
-          value: Math.abs(Math.round(pipelineChange)),
-          isPositive: pipelineChange >= 0,
-        };
-      }
-
-      // Calculate conversion trend (current month vs last month)
-      const currentMonthTotal = validAllQuotes.filter((q) => {
-        const date = new Date(q.created_at);
-        return date >= currentMonth.start && date <= currentMonth.end;
-      }).length;
-      const currentMonthWon = validAllQuotes.filter((q) => {
-        const date = new Date(q.created_at);
-        return date >= currentMonth.start && date <= currentMonth.end && q.stage === 'ganho';
-      }).length;
-
-      const lastMonthTotal = validAllQuotes.filter((q) => {
-        const date = new Date(q.created_at);
-        return date >= lastMonth.start && date <= lastMonth.end;
-      }).length;
-      const lastMonthWon = validAllQuotes.filter((q) => {
-        const date = new Date(q.created_at);
-        return date >= lastMonth.start && date <= lastMonth.end && q.stage === 'ganho';
-      }).length;
-
-      const currentConversionRate =
-        currentMonthTotal > 0 ? (currentMonthWon / currentMonthTotal) * 100 : 0;
-      const lastConversionRate = lastMonthTotal > 0 ? (lastMonthWon / lastMonthTotal) * 100 : 0;
-
-      let conversionTrend: TrendData | null = null;
-      if (lastMonthTotal > 0 && currentMonthTotal > 0) {
-        const relativeChange =
-          lastConversionRate > 0
-            ? ((currentConversionRate - lastConversionRate) / lastConversionRate) * 100
-            : 0;
-        conversionTrend = {
-          value: Math.abs(Math.round(relativeChange)),
-          isPositive: relativeChange >= 0,
-        };
-      }
-
-      // Get active orders (not delivered)
-      const { data: activeOrdersData, error: aoError } = await supabase
-        .from('orders')
-        .select('id')
-        .neq('stage', asDb('entregue'));
-      if (aoError) throw aoError;
-
-      const activeOrders = activeOrdersData?.length || 0;
-
-      // Get deliveries today (orders with ETA today)
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      const { data: deliveriesTodayData, error: dtError } = await supabase
-        .from('orders')
-        .select('id')
-        .gte('eta', today.toISOString())
-        .lt('eta', tomorrow.toISOString());
-      if (dtError) throw dtError;
-
-      const deliveriesToday = deliveriesTodayData?.length || 0;
-
-      // Get pending documents (orders without all docs)
-      const { data: ordersWithoutDocs, error: owdError } = await supabase
-        .from('orders')
-        .select('id')
-        .or('has_nfe.eq.false,has_cte.eq.false,has_pod.eq.false')
-        .neq('stage', asDb('entregue'));
-      if (owdError) throw owdError;
-
-      const pendingDocuments = ordersWithoutDocs?.length || 0;
-
-      // Get critical alerts (unresolved critical occurrences)
-      const { data: criticalOccurrences, error: coError } = await supabase
-        .from('occurrences')
-        .select('id')
-        .eq('severity', asDb('critica'))
-        .is('resolved_at', null);
-      if (coError) throw coError;
-
-      const criticalAlerts = criticalOccurrences?.length || 0;
-
-      return {
-        pipelineValue,
-        conversionRate,
-        activeOrders,
-        deliveriesToday,
-        pendingDocuments,
-        criticalAlerts,
-        pipelineTrend,
-        conversionTrend,
-      } as DashboardStats;
-    },
+    ...kpiQueryOptions,
+    select: (d): DashboardStats => ({
+      pipelineValue: d.pipelineValue,
+      conversionRate: d.conversionRate,
+      activeOrders: d.activeOrders,
+      deliveriesToday: d.deliveriesToday,
+      pendingDocuments: d.pendingDocuments,
+      criticalAlerts: d.criticalAlerts,
+      pipelineTrend: d.pipelineTrend,
+      conversionTrend: d.conversionTrend,
+    }),
   });
 }
 
 export function useRecentOrders(limit = 5) {
   return useQuery({
     queryKey: ['recent-orders', limit],
+    staleTime: 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('orders')
         .select(
           `
           *,
-          occurrences (*)
+          occurrences(count)
         `
         )
         .order('updated_at', { ascending: false })
         .limit(limit);
 
-      if (error) throw error;
-      return data;
-    },
-  });
-}
-
-export function useConversionChartData() {
-  return useQuery({
-    queryKey: ['conversion-chart'],
-    queryFn: async () => {
-      // Get quotes grouped by month for last 6 months
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-      const { data: quotes, error } = await supabase
-        .from('quotes')
-        .select('stage, created_at')
-        .gte('created_at', sixMonthsAgo.toISOString());
-      if (error) throw error;
-
-      const validQuotesConv = filterSupabaseRows<{ stage: string; created_at: string }>(quotes);
-
-      // Group by month (keep stable ordering for the last 6 months)
-      const monthKeys: string[] = [];
-      const monthLabels: Record<string, string> = {};
-      const monthlyData: Record<string, { total: number; won: number }> = {};
-
-      for (let i = 5; i >= 0; i--) {
-        const d = new Date();
-        d.setMonth(d.getMonth() - i);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        const label = d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
-        monthKeys.push(key);
-        monthLabels[key] = label;
-        monthlyData[key] = { total: 0, won: 0 };
+      if (error) {
+        throw mapToAppError(error, { queryKey: 'recent-orders' });
       }
 
-      validQuotesConv.forEach((quote) => {
-        const qd = new Date(quote.created_at);
-        const key = `${qd.getFullYear()}-${String(qd.getMonth() + 1).padStart(2, '0')}`;
-        if (!monthlyData[key]) return;
-        monthlyData[key].total++;
-        if (quote.stage === 'ganho') monthlyData[key].won++;
-      });
+      type Row = Record<string, unknown> & {
+        occurrences?: { count: number }[] | null;
+      };
 
-      return monthKeys.map((key) => {
-        const data = monthlyData[key];
+      return filterSupabaseRows<Row>(data).map((row) => {
+        const count = Number(row.occurrences?.[0]?.count ?? 0);
+        const { occurrences: _occ, ...rest } = row;
         return {
-          name: monthLabels[key],
-          value: data && data.total > 0 ? Math.round((data.won / data.total) * 100) : 0,
+          ...rest,
+          occurrence_count: count,
+          occurrences: [] as never[],
         };
       });
     },
   });
 }
 
+export function useConversionChartData() {
+  return useQuery({
+    ...kpiQueryOptions,
+    select: (d) => d.conversionChart,
+  });
+}
+
 export function useRevenueByClientData() {
   return useQuery({
-    queryKey: ['revenue-by-client'],
-    queryFn: async () => {
-      const { data: orders, error } = await supabase
-        .from('orders')
-        .select('client_name, value')
-        .eq('stage', asDb('entregue'));
-      if (error) throw error;
-
-      const validOrdersRev = filterSupabaseRows<{ client_name: string | null; value: number }>(
-        orders
-      );
-      const clientRevenue: Record<string, number> = {};
-      validOrdersRev.forEach((order) => {
-        const client = order.client_name ?? 'Sem cliente';
-        clientRevenue[client] = (clientRevenue[client] || 0) + Number(order.value);
-      });
-
-      // Sort and get top 5
-      return Object.entries(clientRevenue)
-        .map(([name, value]) => ({ name, value }))
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 5);
-    },
+    ...kpiQueryOptions,
+    select: (d) => d.revenueByClient,
   });
 }
 

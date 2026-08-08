@@ -29,7 +29,7 @@ import { Database } from '@/integrations/supabase/types';
 import { zodCpf, zodCnpj, zodPhone, zodCep } from '@/lib/validators';
 import { MaskedInput } from '@/components/ui/masked-input';
 import { CnpjLookupError, lookupCnpj, pickLegalRepresentative } from '@/lib/cnpjLookup';
-import { lookupIe } from '@/lib/ieLookup';
+import { IeLookupError, lookupIe } from '@/lib/ieLookup';
 import {
   Select,
   SelectContent,
@@ -186,7 +186,7 @@ export function ShipperForm({ open, onClose, shipper, onSelectExisting }: Shippe
     try {
       const r = await lookupIe(cnpj, uf);
       if (!r) {
-        toast.error('IE não encontrada (verifique CNPJ/UF ou a configuração da API)');
+        toast.error('Preencha CNPJ e UF válidos para buscar a Inscrição Estadual');
         return;
       }
       if (r.ie) {
@@ -198,6 +198,12 @@ export function ShipperForm({ open, onClose, shipper, onSelectExisting }: Shippe
         form.setValue('state_registration', '', { shouldDirty: true });
         toast.success('Não contribuinte de ICMS — sem IE');
       }
+    } catch (e) {
+      const msg =
+        e instanceof IeLookupError || e instanceof Error
+          ? e.message
+          : 'IE não encontrada (verifique CNPJ/UF ou a configuração da API)';
+      toast.error(msg);
     } finally {
       setIsLookingUpIe(false);
     }
