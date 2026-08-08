@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { FileDown, FileText, Loader2, Plus, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -85,6 +87,23 @@ export function CollectionOrderSection({ order, shipperPreview }: CollectionOrde
   });
   const hasSecondSender = !!additionalShipperPreview?.name?.trim();
 
+  // Cadastro do embarcador principal — usado para pré-preencher número/bairro/
+  // complemento no Wizard da OC (fonte da verdade é o cadastro do remetente).
+  const shipperId = (order as Order & { shipper_id?: string | null }).shipper_id ?? null;
+  const { data: senderCadastro } = useQuery({
+    queryKey: ['shipper-cadastro-oc', shipperId],
+    enabled: !!shipperId,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('shippers')
+        .select('address_number, address_neighborhood, address_complement')
+        .eq('id', shipperId!)
+        .maybeSingle();
+      return data;
+    },
+  });
+
   const [cancelTarget, setCancelTarget] = useState<{ id: string; number: string } | null>(null);
   const [cancelReason, setCancelReason] = useState('');
 
@@ -96,16 +115,15 @@ export function CollectionOrderSection({ order, shipperPreview }: CollectionOrde
 
   const openIssueDialog = () => {
     setAdditionalInfo(order.notes ?? '');
-    // Numero, complemento e bairro sao dados da OPERACAO de coleta — nao do
-    // cadastro do shipper. Sempre comecam vazios e o operador preenche pra
-    // esse embarque especifico (mesmo shipper pode coletar em enderecos
-    // diferentes). NAO sao persistidos no cadastro.
-    setSenderNumber('');
-    setSenderComplement('');
-    setSenderNeighborhood('');
-    setSender2Number('');
-    setSender2Complement('');
-    setSender2Neighborhood('');
+    // Numero/bairro/complemento vem pré-preenchidos do cadastro do embarcador.
+    // O operador pode ajustar caso a coleta seja em endereço diferente — o
+    // ajuste fica apenas no snapshot da OC (não altera o cadastro).
+    setSenderNumber(senderCadastro?.address_number ?? '');
+    setSenderComplement(senderCadastro?.address_complement ?? '');
+    setSenderNeighborhood(senderCadastro?.address_neighborhood ?? '');
+    setSender2Number(additionalShipperPreview?.address_number ?? '');
+    setSender2Complement(additionalShipperPreview?.address_complement ?? '');
+    setSender2Neighborhood(additionalShipperPreview?.address_neighborhood ?? '');
     setIssueOpen(true);
   };
 
@@ -288,8 +306,8 @@ export function CollectionOrderSection({ order, shipperPreview }: CollectionOrde
               <div className="text-xs font-medium text-foreground">
                 Remetente 1 — endereço de coleta
                 <span className="block text-muted-foreground font-normal mt-0.5">
-                  Preencha número, bairro e complemento desta operação. Ficam apenas no snapshot da
-                  OC.
+                  Pré-preenchido do cadastro do embarcador. Ajuste se a coleta for em endereço
+                  diferente — o ajuste fica apenas no snapshot da OC.
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">

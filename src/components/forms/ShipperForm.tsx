@@ -50,6 +50,9 @@ const shipperSchema = z.object({
   email: z.string().email('E-mail inválido').optional().or(z.literal('')),
   phone: zodPhone,
   address: z.string().optional(),
+  address_number: z.string().max(20, 'Número muito longo').optional(),
+  address_neighborhood: z.string().max(100, 'Bairro muito longo').optional(),
+  address_complement: z.string().max(100, 'Complemento muito longo').optional(),
   city: z.string().optional(),
   state: z
     .string()
@@ -107,6 +110,9 @@ export function ShipperForm({ open, onClose, shipper, onSelectExisting }: Shippe
       email: '',
       phone: '',
       address: '',
+      address_number: '',
+      address_neighborhood: '',
+      address_complement: '',
       city: '',
       state: '',
       zip_code: '',
@@ -129,6 +135,9 @@ export function ShipperForm({ open, onClose, shipper, onSelectExisting }: Shippe
         email: shipper.email || '',
         phone: shipper.phone || '',
         address: shipper.address || '',
+        address_number: shipper.address_number || '',
+        address_neighborhood: shipper.address_neighborhood || '',
+        address_complement: shipper.address_complement || '',
         city: shipper.city || '',
         state: shipper.state || '',
         zip_code: shipper.zip_code || '',
@@ -148,6 +157,9 @@ export function ShipperForm({ open, onClose, shipper, onSelectExisting }: Shippe
         email: '',
         phone: '',
         address: '',
+        address_number: '',
+        address_neighborhood: '',
+        address_complement: '',
         city: '',
         state: '',
         zip_code: '',
@@ -225,6 +237,9 @@ export function ShipperForm({ open, onClose, shipper, onSelectExisting }: Shippe
 
       // Endereco — agora com bairro/numero/complemento separados
       safeSet('address', result.address);
+      safeSet('address_number', result.address_number);
+      safeSet('address_neighborhood', result.address_neighborhood);
+      safeSet('address_complement', result.address_complement);
       safeSet('city', result.city);
       safeSet('state', result.state);
       safeSet('zip_code', result.zip_code);
@@ -281,9 +296,8 @@ export function ShipperForm({ open, onClose, shipper, onSelectExisting }: Shippe
             efr: cnpjResult.efr,
             share_capital: cnpjResult.share_capital,
             partners: cnpjResult.partners,
-            address_number: cnpjResult.address_number,
-            address_complement: cnpjResult.address_complement,
-            address_neighborhood: cnpjResult.address_neighborhood,
+            // address_number/complement/neighborhood agora sao campos editaveis
+            // do form (baseFields) — nao sobrescrever aqui.
             cnpj_lookup_at: new Date().toISOString(),
           }
         : {};
@@ -296,6 +310,9 @@ export function ShipperForm({ open, onClose, shipper, onSelectExisting }: Shippe
         email: data.email || null,
         phone: data.phone || null,
         address: data.address || null,
+        address_number: data.address_number || null,
+        address_neighborhood: data.address_neighborhood || null,
+        address_complement: data.address_complement || null,
         city: data.city || null,
         state: data.state || null,
         zip_code: data.zip_code || null,
@@ -532,14 +549,58 @@ export function ShipperForm({ open, onClose, shipper, onSelectExisting }: Shippe
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Endereço</FormLabel>
+                  <FormLabel>Logradouro</FormLabel>
                   <FormControl>
-                    <Input placeholder="Rua, número, bairro" {...field} />
+                    <Input placeholder="Rua / Avenida" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="address_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Número</FormLabel>
+                    <FormControl>
+                      <Input placeholder="495" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address_neighborhood"
+                render={({ field }) => (
+                  <FormItem className="col-span-2">
+                    <FormLabel>Bairro</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Centro" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address_complement"
+                render={({ field }) => (
+                  <FormItem className="col-span-3">
+                    <FormLabel>Complemento</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Galpão 2, sala 3" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="grid grid-cols-3 gap-4">
               <FormField
