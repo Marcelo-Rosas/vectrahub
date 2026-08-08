@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, FileCheck2, FileDown, Loader2 } from 'lucide-react';
+import { Download, FileCheck2, FileDown, Loader2, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CteEmissionInline } from '@/components/boards/CteEmissionInline';
@@ -18,11 +18,13 @@ import { mergePdfBlobs } from '@/lib/mergePdfBlobs';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { SendAverbaMsEmailModal } from '@/components/modals/SendAverbaMsEmailModal';
 
 const TOMADOR_LABELS = ['Remetente', 'Expedidor', 'Recebedor', 'Destinatário', 'Outros'];
 
 interface OrderCteTabProps {
   quoteId: string | null | undefined;
+  vehiclePlate?: string | null;
   canManage: boolean;
 }
 
@@ -167,11 +169,12 @@ function emissionToPayload(
   };
 }
 
-export function OrderCteTab({ quoteId, canManage }: OrderCteTabProps) {
+export function OrderCteTab({ quoteId, vehiclePlate, canManage }: OrderCteTabProps) {
   const { data: emissions = [], isLoading } = useCteEmissionsByQuote(quoteId);
   const { data: company } = useCompanySettings();
   const [generating, setGenerating] = useState(false);
   const [downloadingDacte, setDownloadingDacte] = useState(false);
+  const [averbaOpen, setAverbaOpen] = useState(false);
 
   const active = emissions.filter((e) => e.status !== 'cancelled');
   const authorized = active
@@ -343,6 +346,17 @@ export function OrderCteTab({ quoteId, canManage }: OrderCteTabProps) {
                   : 'Baixar PDF (Vectra)'}
               </Button>
             )}
+            {canManage && (
+              <Button
+                variant="secondary"
+                onClick={() => setAverbaOpen(true)}
+                disabled={busy}
+                className="gap-2"
+              >
+                <Mail className="w-4 h-4" />
+                Enviar averbação MS
+              </Button>
+            )}
           </div>
           {authorized.length > 1 && (
             <p className="text-xs text-muted-foreground">
@@ -370,6 +384,17 @@ export function OrderCteTab({ quoteId, canManage }: OrderCteTabProps) {
           autorização da SEFAZ, os botões <strong>DACTE oficial</strong> e{' '}
           <strong>Baixar PDF (Vectra)</strong> ficam disponíveis.
         </p>
+      )}
+
+      {quoteId && (
+        <SendAverbaMsEmailModal
+          open={averbaOpen}
+          onClose={() => setAverbaOpen(false)}
+          quoteId={quoteId}
+          quoteCode={quoteCode}
+          vehiclePlate={vehiclePlate}
+          authorized={authorized}
+        />
       )}
     </div>
   );

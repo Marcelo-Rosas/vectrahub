@@ -1811,7 +1811,11 @@ export function OrderDetailModal({
               </TabsContent>
 
               <TabsContent value="cte" className="m-0 space-y-4">
-                <OrderCteTab quoteId={order.quote_id ?? order.quote?.id} canManage={canManage} />
+                <OrderCteTab
+                  quoteId={order.quote_id ?? order.quote?.id}
+                  vehiclePlate={order.vehicle_plate}
+                  canManage={canManage}
+                />
               </TabsContent>
 
               <TabsContent value="vpo" className="m-0 space-y-4">

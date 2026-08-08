@@ -73,6 +73,9 @@ verify_jwt = false  # Gateway 401 Invalid JWT; função valida Authorization man
 [functions.send-quote-email]
 verify_jwt = false  # Gateway 401 Invalid JWT; função valida Authorization manualmente
 
+[functions.send-averba-ms-email]
+verify_jwt = false  # Gateway 401 Invalid JWT; função valida Authorization manualmente
+
 [functions.generate-quote-email-pdf]
 verify_jwt = false  # Gateway 401 Invalid JWT; função valida Authorization manualmente
 
