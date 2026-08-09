@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>ROTA — OS-2026-08-0003 — AC7 (preview v1)</title>
+    <style>
+      :root {
+        --navy: #1b2a4a;
+        --navy-dark: #121c34;
+        --orange: #e8751a;
+        --orange-light: #f9c896;
+        --text: #1e232d;
+        --muted: #646e82;
+        --light: #f6f8fb;
+        --border: #c8ced6;
+        --white: #fff;
+        --page-w: 210mm;
+        --ml: 12mm;
+        --mr: 12mm;
+        --cw: 186mm;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background: #c5ccd6;
+        font-family: Helvetica, Arial, sans-serif;
+        color: var(--text);
+      }
+      .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: var(--navy);
+        color: #fff;
+        padding: 10px 16px;
+        font-size: 12px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .toolbar b { color: var(--orange-light); }
+      .toolbar span { opacity: 0.85; }
+      .sheet {
+        width: var(--page-w);
+        min-height: 297mm;
+        margin: 16px auto 32px;
+        background: #fff;
+        box-shadow: 0 8px 28px rgba(0,0,0,.22);
+        position: relative;
+        padding-bottom: 14mm;
+      }
+      header.doc {
+        height: 28mm;
+        background: var(--navy);
+        color: #fff;
+        display: flex;
+        padding: 3mm var(--ml) 0;
+        position: relative;
+      }
+      header.doc::after {
+        content: "";
+        position: absolute;
+        left: 0; right: 0; bottom: -2mm;
+        height: 2mm;
+        background: var(--orange);
+      }
+      .logo {
+        width: 22mm; height: 22mm;
+        object-fit: contain;
+        background: #fff;
+        border-radius: 1mm;
+        flex-shrink: 0;
+      }
+      .issuer { margin-left: 4mm; padding-top: 1mm; }
+      .issuer h1 { font-size: 11pt; letter-spacing: 0.2px; }
+      .issuer p { font-size: 7pt; color: #c8d7eb; line-height: 1.45; font-weight: 400; }
+      .doc-meta {
+        margin-left: auto;
+        text-align: right;
+        padding-top: 1mm;
+      }
+      .doc-meta .kind {
+        font-size: 13pt;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+      }
+      .doc-meta .num {
+        font-size: 7.5pt;
+        color: var(--orange-light);
+        margin-top: 1.2mm;
+      }
+      .doc-meta .sub { font-size: 7pt; color: #c8d7eb; margin-top: 0.8mm; }
+
+      .body { padding: 7mm var(--ml) 0; }
+      .payer {
+        font-size: 7.5pt;
+        font-weight: 700;
+        color: var(--navy);
+        margin-bottom: 3mm;
+      }
+
+      .sec {
+        background: var(--navy);
+        color: #fff;
+        font-size: 8pt;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-align: center;
+        height: 5.5mm;
+        line-height: 5.5mm;
+        margin-bottom: 0;
+      }
+      .box {
+        border: 0.25mm solid var(--border);
+        margin-bottom: 3mm;
+      }
+      .row {
+        display: flex;
+        min-height: 14mm;
+      }
+      .row + .row { border-top: 0.25mm solid var(--border); }
+      .cell {
+        flex: 1;
+        padding: 1.6mm 2mm 2mm;
+        border-left: 0.25mm solid var(--border);
+        min-width: 0;
+      }
+      .cell:first-child { border-left: 0; }
+      .cell .lbl {
+        font-size: 7pt;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+      .cell .val {
+        font-size: 9pt;
+        margin-top: 1.2mm;
+        text-transform: uppercase;
+        line-height: 1.25;
+      }
+      .cell.wide { flex: 1.6; }
+
+      .uf-bar {
+        display: flex;
+        align-items: center;
+        gap: 2mm;
+        flex-wrap: wrap;
+        padding: 3mm 2.5mm;
+      }
+      .uf {
+        min-width: 14mm;
+        text-align: center;
+        font-weight: 700;
+        font-size: 10pt;
+        padding: 1.6mm 2.4mm;
+        border-radius: 1mm;
+        color: #fff;
+      }
+      .uf.ini { background: var(--orange); }
+      .uf.mid { background: #3a3a3a; }
+      .uf.fim { background: var(--navy); }
+      .arrow { color: var(--orange); font-weight: 700; font-size: 12pt; }
+      .uf-note {
+        font-size: 7.5pt;
+        color: var(--muted);
+        padding: 0 2.5mm 2.5mm;
+      }
+
+      table.plazas {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 8pt;
+      }
+      table.plazas thead th {
+        background: var(--orange);
+        color: #fff;
+        font-weight: 700;
+        padding: 1.8mm 2mm;
+        text-align: left;
+      }
+      table.plazas thead th.r,
+      table.plazas td.r { text-align: right; }
+      table.plazas thead th.c,
+      table.plazas td.c { text-align: center; width: 8mm; }
+      table.plazas tbody td {
+        padding: 1.5mm 2mm;
+        border-bottom: 0.2mm solid var(--border);
+        vertical-align: top;
+      }
+      table.plazas tbody tr:nth-child(even) { background: #f9f9f9; }
+      table.plazas tfoot td {
+        padding: 2mm;
+        font-weight: 700;
+        background: var(--light);
+        border-top: 0.4mm solid var(--navy);
+      }
+
+      .note {
+        background: #fff3e8;
+        border-left: 1mm solid var(--orange);
+        padding: 2.5mm 3mm;
+        font-size: 8pt;
+        line-height: 1.45;
+        color: #444;
+        margin-bottom: 3mm;
+      }
+      .note b { color: var(--navy); }
+
+      footer.doc {
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        height: 9mm;
+        background: var(--navy);
+        color: #b4c3d7;
+        font-size: 6.5pt;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 0 var(--ml) 3mm;
+      }
+      footer.doc::before {
+        content: "";
+        position: absolute;
+        left: 0; right: 0; top: 0;
+        height: 1mm;
+        background: var(--orange);
+      }
+
+      .preview-flag {
+        margin: 3mm 0 0;
+        font-size: 7pt;
+        color: #888;
+        text-align: center;
+      }
+
+      @media print {
+        .toolbar { display: none; }
+        body { background: #fff; }
+        .sheet { margin: 0; box-shadow: none; }
+        @page { size: A4; margin: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <div><b>PREVIEW v1</b> — PDF Rota p/ motorista · layout = COT / OC / CTR</div>
+      <span>Abrir no browser · Ctrl+P p/ A4 · praças = amostra (WebRouter real na v2)</span>
+    </div>
+
+    <article class="sheet">
+      <header class="doc">
+        <img
+          class="logo"
+          src="../../public/brand/logo_vectra_focus_200.png"
+          alt="Vectra"
+          onerror="this.style.background='#e8751a';this.style.color='#fff';this.alt='V'"
+        />
+        <div class="issuer">
+          <h1>VECTRA HUB LTDA</h1>
+          <p>
+            CNPJ: 62.188.748/0001-17&nbsp;&nbsp;&nbsp;IE: 263768406<br />
+            RODOVIA JORGE LACERDA, 725 - ITAJAI/SC<br />
+            Fone: (47) 98850-9714&nbsp;&nbsp;&nbsp;E-mail: marcelo.rosas@vectracargo.com.br
+          </p>
+        </div>
+        <div class="doc-meta">
+          <div class="kind">ROTA</div>
+          <div class="num">No OS-2026-08-0003</div>
+          <div class="sub">Emissao: 09/08/2026</div>
+          <div class="sub">Usuario: Marcelo Rosas</div>
+        </div>
+      </header>
+
+      <div class="body">
+        <p class="payer">Pagador do frete: AC7 COMERCIO DE ARTIGOS ESPORTIVOS LTDA</p>
+
+        <div class="sec">IDENTIFICACAO</div>
+        <div class="box">
+          <div class="row">
+            <div class="cell">
+              <div class="lbl">Ordem de servico</div>
+              <div class="val">OS-2026-08-0003</div>
+            </div>
+            <div class="cell">
+              <div class="lbl">Cotacao</div>
+              <div class="val">COT-2026-08-0002</div>
+            </div>
+            <div class="cell" style="flex:0.55">
+              <div class="lbl">Tipo frete</div>
+              <div class="val">CIF</div>
+            </div>
+            <div class="cell" style="flex:0.9">
+              <div class="lbl">ANTT</div>
+              <div class="val">—</div>
+            </div>
+            <div class="cell">
+              <div class="lbl">Emissao</div>
+              <div class="val">09/08/2026</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="cell wide">
+              <div class="lbl">Motorista / proprietario</div>
+              <div class="val">Silvio Adriano</div>
+            </div>
+            <div class="cell" style="flex:0.8">
+              <div class="lbl">Placa</div>
+              <div class="val">QJL1771</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="cell">
+              <div class="lbl">Veiculo</div>
+              <div class="val">IVECO ECTECTOR</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">PERCURSO UF</div>
+        <div class="box">
+          <div class="uf-bar">
+            <span class="uf ini">SC</span>
+            <span class="arrow">→</span>
+            <span class="uf mid">PR</span>
+            <span class="arrow">→</span>
+            <span class="uf mid">SP</span>
+            <span class="arrow">→</span>
+            <span class="uf mid">MG</span>
+            <span class="arrow">→</span>
+            <span class="uf mid">BA</span>
+            <span class="arrow">→</span>
+            <span class="uf fim">PE</span>
+          </div>
+          <p class="uf-note">
+            Origem <b>SC</b> · destinos <b>BA</b> + <b>PE</b> · intermediarias MDF-e (UFPer, sem inicio/fim):
+            <b>PR · SP · MG · BA</b>
+            &nbsp;— regra SEFAZ 663 / <code>uf-percurso.ts</code> (grafo de divisas + hint WebRouter).
+          </p>
+        </div>
+
+        <div class="sec">ROTEIRO</div>
+        <div class="box">
+          <div class="row">
+            <div class="cell" style="flex:0.4">
+              <div class="lbl">Seq</div>
+              <div class="val">01</div>
+            </div>
+            <div class="cell" style="flex:0.7">
+              <div class="lbl">Tipo</div>
+              <div class="val">Origem</div>
+            </div>
+            <div class="cell wide">
+              <div class="lbl">Local</div>
+              <div class="val">Navegantes / Itajai — SC</div>
+            </div>
+            <div class="cell">
+              <div class="lbl">UF</div>
+              <div class="val">SC</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="cell" style="flex:0.4">
+              <div class="lbl">Seq</div>
+              <div class="val">02</div>
+            </div>
+            <div class="cell" style="flex:0.7">
+              <div class="lbl">Tipo</div>
+              <div class="val">Destino</div>
+            </div>
+            <div class="cell wide">
+              <div class="lbl">Local</div>
+              <div class="val">Denver Empreendimentos — BA</div>
+            </div>
+            <div class="cell">
+              <div class="lbl">UF</div>
+              <div class="val">BA</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="cell" style="flex:0.4">
+              <div class="lbl">Seq</div>
+              <div class="val">03</div>
+            </div>
+            <div class="cell" style="flex:0.7">
+              <div class="lbl">Tipo</div>
+              <div class="val">Destino</div>
+            </div>
+            <div class="cell wide">
+              <div class="lbl">Local</div>
+              <div class="val">Ervino Binow Junior — BA</div>
+            </div>
+            <div class="cell">
+              <div class="lbl">UF</div>
+              <div class="val">BA</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="cell" style="flex:0.4">
+              <div class="lbl">Seq</div>
+              <div class="val">04</div>
+            </div>
+            <div class="cell" style="flex:0.7">
+              <div class="lbl">Tipo</div>
+              <div class="val">Destino</div>
+            </div>
+            <div class="cell wide">
+              <div class="lbl">Local</div>
+              <div class="val">Self It Academias Holding — PE</div>
+            </div>
+            <div class="cell">
+              <div class="lbl">UF</div>
+              <div class="val">PE</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">VALE PEDAGIO / TAG</div>
+        <div class="box">
+          <div class="row">
+            <div class="cell">
+              <div class="lbl">Emissor</div>
+              <div class="val">SemParar</div>
+            </div>
+            <div class="cell">
+              <div class="lbl">TAG</div>
+              <div class="val">0737371360</div>
+            </div>
+            <div class="cell">
+              <div class="lbl">Tipo vale</div>
+              <div class="val">01 — TAG</div>
+            </div>
+            <div class="cell">
+              <div class="lbl">Eixos</div>
+              <div class="val">03</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="cell">
+              <div class="lbl">Km previsto</div>
+              <div class="val">2.847 km</div>
+            </div>
+            <div class="cell">
+              <div class="lbl">Pracas</div>
+              <div class="val">12 (amostra)</div>
+            </div>
+            <div class="cell">
+              <div class="lbl">Total pratica</div>
+              <div class="val">R$ 1.842,60</div>
+            </div>
+            <div class="cell">
+              <div class="lbl">Total TAG</div>
+              <div class="val">R$ 1.658,34</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">PRACAS DE PEDAGIO</div>
+        <div class="box" style="border-bottom: 0; margin-bottom: 0">
+          <table class="plazas">
+            <thead>
+              <tr>
+                <th class="c">#</th>
+                <th>Praca</th>
+                <th>Cidade / UF</th>
+                <th class="r">Valor</th>
+                <th class="r">TAG</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="c">1</td>
+                <td>Pedágio BR-101 Norte</td>
+                <td>Joinville / SC</td>
+                <td class="r">R$ 18,40</td>
+                <td class="r">R$ 16,56</td>
+              </tr>
+              <tr>
+                <td class="c">2</td>
+                <td>Pedágio São José dos Pinhais</td>
+                <td>São José dos Pinhais / PR</td>
+                <td class="r">R$ 22,10</td>
+                <td class="r">R$ 19,89</td>
+              </tr>
+              <tr>
+                <td class="c">3</td>
+                <td>Pedágio Registro</td>
+                <td>Registro / SP</td>
+                <td class="r">R$ 31,20</td>
+                <td class="r">R$ 28,08</td>
+              </tr>
+              <tr>
+                <td class="c">4</td>
+                <td>Pedágio Jacareí</td>
+                <td>Jacareí / SP</td>
+                <td class="r">R$ 19,80</td>
+                <td class="r">R$ 17,82</td>
+              </tr>
+              <tr>
+                <td class="c">5</td>
+                <td>Pedágio Extrema</td>
+                <td>Extrema / MG</td>
+                <td class="r">R$ 24,50</td>
+                <td class="r">R$ 22,05</td>
+              </tr>
+              <tr>
+                <td class="c">6</td>
+                <td>Pedágio Feira de Santana</td>
+                <td>Feira de Santana / BA</td>
+                <td class="r">R$ 16,90</td>
+                <td class="r">R$ 15,21</td>
+              </tr>
+              <tr>
+                <td class="c">7</td>
+                <td>Pedágio Recife Sul</td>
+                <td>Jaboatão / PE</td>
+                <td class="r">R$ 14,70</td>
+                <td class="r">R$ 13,23</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" class="r">Total (7 praças · amostra)</td>
+                <td class="r">R$ 147,60</td>
+                <td class="r">R$ 132,84</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="note" style="margin-top: 3mm">
+          <b>Orientacao ao motorista:</b> passar somente na pista TAG (SemParar). Nao pagar em dinheiro
+          nas pracas listadas. Conferir placa <b>QJL1771</b> e TAG <b>0737371360</b> antes de sair.
+          Desvio de rota fora deste percurso UF pode gerar recusa de averbacao / MDF-e. Em pane de TAG,
+          ligar operacional Vectra: (47) 98850-9714.
+        </div>
+
+        <p class="preview-flag">
+          PREVIEW v1 · dados OS-2026-08-0003 ilustrativos · pracas nao sao o dump WebRouter real ·
+          aprovar layout antes de gerar PDF jsPDF
+        </p>
+      </div>
+
+      <footer class="doc">
+        <span>VECTRA HUB LTDA - (47) 98850-9714 | marcelo.rosas@vectracargo.com.br</span>
+        <span>Pagina 1/1</span>
+      </footer>
+    </article>
+  </body>
+</html>

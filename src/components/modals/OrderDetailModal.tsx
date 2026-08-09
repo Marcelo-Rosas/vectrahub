@@ -35,6 +35,7 @@ import {
   UserX,
   Unlink,
   Ticket,
+  FileDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,16 +72,19 @@ import { CRITICALITY_CONFIG } from '@/types/risk';
 import { useOccurrencesByOrder, useResolveOccurrence } from '@/hooks/useOccurrences';
 import { useVehicleByPlate } from '@/hooks/useVehicles';
 import { useUpdateOrder, useOrder, type OrderWithOccurrences } from '@/hooks/useOrders';
+import { useQuoteRouteStops } from '@/hooks/useQuoteRouteStops';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEnsureFinancialDocument } from '@/hooks/useEnsureFinancialDocument';
 import { useTripsForOrder, useLinkOrderToTrip, useUnlinkOrderFromTrip } from '@/hooks/useTrips';
 import { useDocumentsByOrder } from '@/hooks/useDocuments';
 import { useOrderReconciliation } from '@/hooks/useReconciliation';
 import { useAuth } from '@/hooks/useAuth';
+import { useGenerateRotaPdf } from '@/hooks/useGenerateRotaPdf';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
 import { StoredPricingBreakdown, TollPlaza } from '@/lib/freightCalculator';
+import { extractUfFromText } from '@/lib/uf-percurso';
 import {
   Table,
   TableBody,
@@ -216,6 +220,7 @@ export function OrderDetailModal({
   canManage = true,
 }: OrderDetailModalProps) {
   const { user } = useAuth();
+  const { downloadRotaPdf, loading: rotaPdfLoading } = useGenerateRotaPdf();
   // Board list is slim — hydrate full row (occurrences, quote.pricing_breakdown) on open
   const { data: hydratedOrder } = useOrder(open && boardOrder?.id ? boardOrder.id : '');
   const order = hydratedOrder ?? boardOrder;
@@ -243,6 +248,7 @@ export function OrderDetailModal({
   const tripId = order?.trip_id ?? (tripForOrder as { id?: string } | null)?.id ?? undefined;
   const { data: tripRiskEval } = useRiskEvaluationByEntity('trip', tripId);
   const quoteIdForFiscal = order?.quote_id ?? order?.quote?.id ?? null;
+  const { data: quoteRouteStops = [] } = useQuoteRouteStops(open ? quoteIdForFiscal : null);
   const { data: cteEmissions = [] } = useCteEmissionsByQuote(quoteIdForFiscal);
   const nfeDocCount = (orderDocuments ?? []).filter(
     (d) => d.type === 'nfe' && Boolean(d.nfe_key)
@@ -419,11 +425,33 @@ export function OrderDetailModal({
     const axes = orderAxes ?? undefined;
     setIsRecalculatingToll(true);
     try {
+      const seen = new Set<string>([originCep, destinationCep]);
+      const waypoints = quoteRouteStops
+        .slice()
+        .sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0))
+        .map((s) => {
+          const cep = String(s.cep || '')
+            .replace(/\D/g, '')
+            .slice(0, 8);
+          if (cep.length !== 8 || seen.has(cep)) return null;
+          seen.add(cep);
+          return { cep, city_uf: s.city_uf ?? undefined, label: s.name ?? undefined };
+        })
+        .filter((w): w is { cep: string; city_uf?: string; label?: string } => w != null);
+
+      const originUf =
+        extractUfFromText(String(order.origin || order.quote?.origin || '')) ?? undefined;
+      const destinationUf =
+        extractUfFromText(String(order.destination || order.quote?.destination || '')) ?? undefined;
+
       const { data, error } = await supabase.functions.invoke('calculate-distance-webrouter', {
         body: {
           origin_cep: originCep,
           destination_cep: destinationCep,
+          origin_uf: originUf,
+          destination_uf: destinationUf,
           axes_count: axes,
+          waypoints,
         },
       });
       if (error || !data?.success) {
@@ -432,6 +460,9 @@ export function OrderDetailModal({
         return;
       }
       const toll = Number(data.data?.toll) || 0;
+      const tollTag = Number(data.data?.toll_tag) || toll;
+      const kmDistance = Number(data.data?.km_distance) || null;
+      const kmByUf = data.data?.km_by_uf as Record<string, number> | undefined;
       const plazas: TollPlaza[] = Array.isArray(data.data?.toll_plazas)
         ? data.data.toll_plazas
         : [];
@@ -451,6 +482,7 @@ export function OrderDetailModal({
         meta: {
           ...baseMeta,
           tollPlazas: plazas,
+          kmByUf: kmByUf && typeof kmByUf === 'object' ? kmByUf : current?.meta?.kmByUf,
           antt: current?.meta?.antt
             ? {
                 ...current.meta.antt,
@@ -499,11 +531,16 @@ export function OrderDetailModal({
         id: order.id,
         updates: {
           toll_value: toll,
+          ...(kmDistance != null && Number.isFinite(kmDistance) ? { km_distance: kmDistance } : {}),
           pricing_breakdown: updated as unknown as typeof order.pricing_breakdown,
         },
       });
+      const via =
+        waypoints.length > 0
+          ? ` via ${waypoints.length} parada${waypoints.length === 1 ? '' : 's'}`
+          : '';
       toast.success(
-        `Pedágio recalculado: R$ ${toll.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${plazas.length} praças)`
+        `Rota atualizada${via}: R$ ${toll.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} prática / R$ ${Number(tollTag).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TAG · ${plazas.length} praças${kmDistance != null ? ` · ${kmDistance} km` : ''}`
       );
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     } catch (e) {
@@ -518,6 +555,7 @@ export function OrderDetailModal({
     orderAxes,
     originCep,
     destinationCep,
+    quoteRouteStops,
     updateOrderMutation,
     queryClient,
   ]);
@@ -1531,69 +1569,84 @@ export function OrderDetailModal({
                     </AlertDescription>
                   </Alert>
                 )}
-                {canManage && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    {hasCeps ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleRecalculateToll}
-                        disabled={isRecalculatingToll}
-                      >
-                        {isRecalculatingToll ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : (
-                          <RefreshCw className="w-4 h-4 mr-2" />
-                        )}
-                        Recalcular pedágio
-                      </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => void downloadRotaPdf(order, tollPlazas)}
+                    disabled={rotaPdfLoading}
+                  >
+                    {rotaPdfLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
                     ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Preencha CEPs de origem e destino para recalcular o pedágio.
-                      </p>
+                      <FileDown className="w-4 h-4 mr-2" />
                     )}
-                    {!isEditingToll ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setIsEditingToll(true);
-                          setManualTollValue(
-                            order.toll_value != null ? String(Number(order.toll_value)) : ''
-                          );
-                        }}
-                      >
-                        <Pencil className="w-4 h-4 mr-2" />
-                        Editar valor manualmente
-                      </Button>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="Valor pedágio (R$)"
-                          className="w-36"
-                          value={manualTollValue}
-                          onChange={(e) => setManualTollValue(e.target.value)}
-                        />
-                        <Button size="sm" onClick={handleSaveManualToll}>
-                          Salvar
-                        </Button>
+                    Baixar PDF Rota
+                  </Button>
+                  {canManage && (
+                    <>
+                      {hasCeps ? (
                         <Button
-                          variant="ghost"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleRecalculateToll}
+                          disabled={isRecalculatingToll}
+                        >
+                          {isRecalculatingToll ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          ) : (
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                          )}
+                          Recalcular pedágio
+                        </Button>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Preencha CEPs de origem e destino para recalcular o pedágio.
+                        </p>
+                      )}
+                      {!isEditingToll ? (
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => {
-                            setIsEditingToll(false);
-                            setManualTollValue('');
+                            setIsEditingToll(true);
+                            setManualTollValue(
+                              order.toll_value != null ? String(Number(order.toll_value)) : ''
+                            );
                           }}
                         >
-                          Cancelar
+                          <Pencil className="w-4 h-4 mr-2" />
+                          Editar valor manualmente
                         </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder="Valor pedágio (R$)"
+                            className="w-36"
+                            value={manualTollValue}
+                            onChange={(e) => setManualTollValue(e.target.value)}
+                          />
+                          <Button size="sm" onClick={handleSaveManualToll}>
+                            Salvar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setIsEditingToll(false);
+                              setManualTollValue('');
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
                 {tollPlazas.length > 0 ? (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">

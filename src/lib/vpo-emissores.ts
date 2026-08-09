@@ -87,6 +87,34 @@ export function tipoValeFromLookup(lookup: VpoVehicleLookup | null): '01' | '04'
   return '04';
 }
 
+/** Modalidade SemParar/WebRouter ValePedagio — NÃO confundir com tipoVale 01/04 (MDF-e). */
+export const VPO_TIPOS_VIAGEM = ['ESTENDIDA', 'PLANEJADA', 'CUSTOMIZADA'] as const;
+export type VpoTipoViagem = (typeof VPO_TIPOS_VIAGEM)[number];
+export const DEFAULT_VPO_TIPO_VIAGEM: VpoTipoViagem = 'ESTENDIDA';
+
+export function normalizeVpoTipoViagem(raw: unknown): VpoTipoViagem | null {
+  const s = String(raw ?? '')
+    .trim()
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Z]/g, '');
+  if (!s) return null;
+  if (s.includes('ESTENDIDA') || s.includes('EXTENDED')) return 'ESTENDIDA';
+  if (s.includes('PLANEJADA') || s.includes('FIXA') || s.includes('PLANNED')) return 'PLANEJADA';
+  if (s.includes('CUSTOMIZADA') || s.includes('CUSTOM') || s.includes('FLEX')) return 'CUSTOMIZADA';
+  return (VPO_TIPOS_VIAGEM as readonly string[]).includes(s) ? (s as VpoTipoViagem) : null;
+}
+
+export function labelVpoTipoViagem(tipo: string | null | undefined): string {
+  const n = normalizeVpoTipoViagem(tipo);
+  if (n === 'ESTENDIDA') return 'Rota Estendida';
+  if (n === 'PLANEJADA') return 'Rota Planejada';
+  if (n === 'CUSTOMIZADA') return 'Rota Customizada';
+  const t = String(tipo ?? '').trim();
+  return t || '—';
+}
+
 export function resolveIdVpo(
   record:
     | {

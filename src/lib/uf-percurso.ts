@@ -1,6 +1,6 @@
 /**
- * Percurso MDF-e (UFPer) — UFs intermediárias entre UFIni e UFFim.
- * Espelho UI/PDF: `src/lib/uf-percurso.ts` (manter em sync).
+ * Percurso MDF-e (UFPer) + helpers PDF Rota.
+ * Espelho de `supabase/functions/_shared/uf-percurso.ts` — manter em sync.
  *
  * SEFAZ 663:
  *  - UFs fronteiriças / mesma UF → NÃO informar percurso
@@ -41,6 +41,8 @@ const UF_BORDERS: Record<string, string[]> = {
   SE: ['AL', 'BA'],
   TO: ['BA', 'GO', 'MA', 'MT', 'PA', 'PI'],
 };
+
+const UF_ALT = Object.keys(UF_BORDERS).join('|');
 
 function normUf(u: string | null | undefined): string {
   return String(u ?? '')
@@ -90,7 +92,7 @@ export function caminhoUfs(ufInicio: string, ufFim: string): string[] {
 /** UFs intermediárias (sem início/fim) — payload MDF-e percursos. */
 export function percursoIntermediario(ufInicio: string, ufFim: string): string[] {
   const path = caminhoUfs(ufInicio, ufFim);
-  if (path.length <= 2) return []; // mesma UF ou fronteira direta
+  if (path.length <= 2) return [];
   return path.slice(1, -1);
 }
 
@@ -124,14 +126,12 @@ export function resolveMdfePercursoUfs(
     return { percurso: [], source: 'adjacent', emptyReason: 'fronteira_ou_mesma_uf' };
   }
 
-  // Hint WebRouter: limpa, remove extremos, valida caminho completo
   const cleaned = hintUfs.map(normUf).filter((u) => u.length === 2);
   const withoutEnds = cleaned.filter((u, i, arr) => {
     if (u === ini && i === 0) return false;
     if (u === fim && i === arr.length - 1) return false;
     return u !== ini && u !== fim;
   });
-  // Dedup consecutive
   const dedup: string[] = [];
   for (const u of withoutEnds) {
     if (dedup[dedup.length - 1] !== u) dedup.push(u);
@@ -146,5 +146,64 @@ export function resolveMdfePercursoUfs(
     percurso: bfs,
     source: 'bfs',
     emptyReason: bfs.length === 0 ? 'sem_caminho_divisas' : undefined,
+  };
+}
+
+/** Última UF BR como palavra isolada (evita AC em ACADEMIAS / IT em SELF IT). */
+export function extractUfFromText(value: string | null | undefined): string | null {
+  const text = String(value ?? '').toUpperCase();
+  const matches = text.match(new RegExp(`\\b(${UF_ALT})\\b`, 'g'));
+  if (!matches?.length) return null;
+  return matches[matches.length - 1];
+}
+
+function dedupConsecutive(ufs: string[]): string[] {
+  const out: string[] = [];
+  for (const u of ufs) {
+    if (out[out.length - 1] !== u) out.push(u);
+  }
+  return out;
+}
+
+export type RotaUfChain = {
+  ini: string | null;
+  fim: string | null;
+  mid: string[];
+  full: string[];
+  destUfs: string[];
+  source: 'adjacent' | 'webrouter' | 'bfs' | 'none';
+};
+
+/** Cadeia UF para PDF Rota (origem + destinos + hint praças WebRouter). */
+export function buildRotaUfChain(input: {
+  origin?: string | null;
+  destination?: string | null;
+  stopCityUfs?: Array<string | null | undefined>;
+  plazaUfs?: Array<string | null | undefined>;
+}): RotaUfChain {
+  const ini = extractUfFromText(input.origin);
+  const destUfs: string[] = [];
+  for (const raw of [...(input.stopCityUfs ?? []), input.destination]) {
+    const u = extractUfFromText(raw);
+    if (u && u !== ini && !destUfs.includes(u)) destUfs.push(u);
+  }
+  const fim = destUfs[destUfs.length - 1] ?? extractUfFromText(input.destination) ?? ini;
+  if (!ini || !fim) {
+    const full = [ini, fim].filter((u): u is string => Boolean(u));
+    return { ini, fim: fim ?? null, mid: [], full, destUfs, source: 'none' };
+  }
+
+  const hint = (input.plazaUfs ?? [])
+    .map((u) => extractUfFromText(u) ?? normUf(u))
+    .filter((u) => u.length === 2);
+  const resolved = resolveMdfePercursoUfs(ini, fim, hint);
+  const full = dedupConsecutive([ini, ...resolved.percurso, ...(fim !== ini ? [fim] : [])]);
+  return {
+    ini,
+    fim,
+    mid: resolved.percurso,
+    full,
+    destUfs,
+    source: resolved.source,
   };
 }

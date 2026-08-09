@@ -26,11 +26,15 @@ import { useEmitVpo } from '@/hooks/useEmitVpo';
 import { formatCnpjDisplay } from '@/lib/formatters';
 import type { VpoEmissionRecord } from '@/lib/freightCalculator';
 import {
+  DEFAULT_VPO_TIPO_VIAGEM,
   fornecedoraCnpjOf,
+  labelVpoTipoViagem,
   lookupVpoVehicleByPlate,
+  normalizeVpoTipoViagem,
   resolveIdVpo,
   tipoValeFromLookup,
   VPO_EMISSOR_INFO,
+  type VpoTipoViagem,
 } from '@/lib/vpo-emissores';
 import { toast } from 'sonner';
 
@@ -90,6 +94,7 @@ export function OrderVpoTab({
     tollValue != null && Number(tollValue) > 0 ? String(Number(tollValue)) : ''
   );
   const [tipoVale, setTipoVale] = useState<'01' | '04'>('01');
+  const [tipoViagem, setTipoViagem] = useState<VpoTipoViagem>(DEFAULT_VPO_TIPO_VIAGEM);
   const [marking, setMarking] = useState(false);
 
   useEffect(() => {
@@ -122,6 +127,10 @@ export function OrderVpoTab({
     if (vpoEmission.tipoVale === '01' || vpoEmission.tipoVale === '04') {
       setTipoVale(vpoEmission.tipoVale);
     }
+    const tv =
+      normalizeVpoTipoViagem(vpoEmission.tipoViagem) ||
+      normalizeVpoTipoViagem(vpoEmission.recibo?.tipo);
+    if (tv) setTipoViagem(tv);
     if (vpoEmission.valorReais != null) setValorVpo(String(vpoEmission.valorReais));
   }, [vpoEmission]);
 
@@ -200,7 +209,7 @@ export function OrderVpoTab({
             onClick={() => {
               if (!canEmit) return;
               void emitVpo
-                .mutateAsync()
+                .mutateAsync({ tipoViagem })
                 .then((res) => {
                   const id = resolveIdVpo(res);
                   if (id) setIdVpo(id);
@@ -273,7 +282,9 @@ export function OrderVpoTab({
               Placa <strong className="font-mono">{vehicleVpo.plate}</strong> cadastrada em{' '}
               <strong>{emissorInfo?.nome}</strong> — TAG {vehicleVpo.tag} ativa
               {vehicleVpo.nomeProprietario ? ` · ${vehicleVpo.nomeProprietario}` : ''}. Emitir VPO
-              revisita a rota no WebRouter e grava o IDVPO (idANTT).
+              revisita a rota no WebRouter e grava o IDVPO (idANTT). <strong>Rota Estendida</strong>{' '}
+              (padrão): praça já passada na coleta não perde crédito — sobra vira benefício após
+              vigência.
             </>
           ) : vehiclePlate ? (
             <>
@@ -439,7 +450,7 @@ export function OrderVpoTab({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Tipo vale-pedágio</Label>
+                <Label>Tipo vale-pedágio (MDF-e)</Label>
                 <Select
                   value={tipoVale}
                   onValueChange={(v) => setTipoVale(v as '01' | '04')}
@@ -453,6 +464,28 @@ export function OrderVpoTab({
                     <SelectItem value="04">04 — Placa</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Tipo rota VPO (SemParar)</Label>
+                <Select
+                  value={tipoViagem}
+                  onValueChange={(v) => setTipoViagem(v as VpoTipoViagem)}
+                  disabled={!canManage || Boolean(persistedIdVpo)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ESTENDIDA">Rota Estendida</SelectItem>
+                    <SelectItem value="PLANEJADA">Rota Planejada</SelectItem>
+                    <SelectItem value="CUSTOMIZADA">Rota Customizada</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground">
+                  {tipoViagem === 'ESTENDIDA'
+                    ? 'Coleta já passou praça → Estendida evita perda do crédito.'
+                    : `Atual: ${labelVpoTipoViagem(tipoViagem)}. Planejada trava praça; praça já passada perde valor.`}
+                </p>
               </div>
             </div>
           </div>

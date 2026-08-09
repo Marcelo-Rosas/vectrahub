@@ -2,10 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { cardQueryKey } from '@/lib/card-mapping';
 import { toast } from 'sonner';
+import { DEFAULT_VPO_TIPO_VIAGEM, type VpoTipoViagem } from '@/lib/vpo-emissores';
 
 export type EmitVpoResponse = {
   success: boolean;
   error?: string;
+  status?: string;
   emissor?: string;
   tag?: string | null;
   idANTT?: string | null;
@@ -16,6 +18,7 @@ export type EmitVpoResponse = {
   cnpjFornecedora?: string;
   cnpjPagador?: string;
   tipoVale?: '01' | '04';
+  tipoViagem?: string | null;
   valorReais?: number;
   pedagiosCount?: number;
   idRota?: number | null;
@@ -23,19 +26,33 @@ export type EmitVpoResponse = {
   emittedAt?: string;
   idANTTEmpty?: boolean;
   mensagem?: string | null;
+  tollTag?: number;
+  tollPratica?: number;
 };
 
 export function useEmitVpo(orderId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (opts?: { tipoViagem?: VpoTipoViagem }) => {
       const data = await invokeEdgeFunction<EmitVpoResponse>('emit-vpo', {
-        body: { order_id: orderId },
+        body: {
+          order_id: orderId,
+          tipoViagem: opts?.tipoViagem || DEFAULT_VPO_TIPO_VIAGEM,
+        },
         requireAuth: true,
       });
       if (!data?.success) {
-        throw new Error(data?.error || 'Falha ao emitir VPO');
+        const tag =
+          data?.tollTag != null && Number.isFinite(Number(data.tollTag))
+            ? Number(data.tollTag)
+            : null;
+        const tagTxt =
+          tag != null
+            ? ` · TAG R$ ${tag.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            : '';
+        const statusTxt = data?.status && data.status !== data.error ? ` (${data.status})` : '';
+        throw new Error(`${data?.error || 'Falha ao emitir VPO'}${statusTxt}${tagTxt}`);
       }
       return data;
     },

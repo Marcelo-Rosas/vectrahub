@@ -49,6 +49,7 @@ export interface OrderWithOccurrences extends Order {
     | (Pick<
         Quote,
         | 'id'
+        | 'quote_code'
         | 'shipper_name'
         | 'shipper_id'
         | 'client_name'
@@ -122,6 +123,7 @@ const ORDER_DETAIL_SELECT = `
   driver:drivers!orders_driver_id_fkey (id, name, cpf, cnh, contract_type, rntrc_registry_type),
   quote:quotes (
     id,
+    quote_code,
     shipper_name,
     shipper_id,
     client_name,

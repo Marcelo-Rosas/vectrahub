@@ -34,14 +34,60 @@ function pad2(n: number): string {
   return String(n).padStart(2, '0');
 }
 
-/** dd/MM/yyyy HH:mm:ss */
-export function formatBrDateTime(d: Date): string {
-  return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+/** America/Sao_Paulo wall clock (UTC-3, sem DST). Deno Edge = UTC. */
+function spParts(d: Date): {
+  y: number;
+  m: number;
+  day: number;
+  h: number;
+  min: number;
+  s: number;
+} {
+  const shifted = new Date(d.getTime() - 3 * 60 * 60 * 1000);
+  return {
+    y: shifted.getUTCFullYear(),
+    m: shifted.getUTCMonth() + 1,
+    day: shifted.getUTCDate(),
+    h: shifted.getUTCHours(),
+    min: shifted.getUTCMinutes(),
+    s: shifted.getUTCSeconds(),
+  };
 }
 
-/** dd/MM/yyyy HH:mm */
+/** dd/MM/yyyy HH:mm:ss (horário Brasília) */
+export function formatBrDateTime(d: Date): string {
+  const p = spParts(d);
+  return `${pad2(p.day)}/${pad2(p.m)}/${p.y} ${pad2(p.h)}:${pad2(p.min)}:${pad2(p.s)}`;
+}
+
+/** dd/MM/yyyy HH:mm (horário Brasília) */
 export function formatBrDateMinute(d: Date): string {
-  return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+  const p = spParts(d);
+  return `${pad2(p.day)}/${pad2(p.m)}/${p.y} ${pad2(p.h)}:${pad2(p.min)}`;
+}
+
+/** SemParar recusa dataInicio no passado (DATA_INVALIDA). */
+export function resolveVpoViagemWindow(opts: {
+  pickup?: Date | null;
+  eta?: Date | null;
+  now?: Date;
+}): { inicio: Date; fim: Date } {
+  const now = opts.now ?? new Date();
+  const startFloor = new Date(now.getTime() + 2 * 60 * 1000);
+  let inicio =
+    opts.pickup && !Number.isNaN(opts.pickup.getTime())
+      ? new Date(opts.pickup.getTime())
+      : new Date(startFloor);
+  if (inicio.getTime() < startFloor.getTime()) inicio = new Date(startFloor);
+
+  let fim =
+    opts.eta && !Number.isNaN(opts.eta.getTime())
+      ? new Date(opts.eta.getTime())
+      : new Date(inicio.getTime() + 7 * 24 * 60 * 60 * 1000);
+  if (fim.getTime() <= inicio.getTime() + 60 * 60 * 1000) {
+    fim = new Date(inicio.getTime() + 7 * 24 * 60 * 60 * 1000);
+  }
+  return { inicio, fim };
 }
 
 export function interpolatePassagem(start: Date, end: Date, index: number, total: number): string {
@@ -75,6 +121,64 @@ export type CriarViagemResult = {
   idANTT: string | null;
   codigoCliente: string | null;
 };
+
+/** Recibo de compra VPO — GET getReciboViagem / POST emitirReciboViagem. Sem PDF binário. */
+export type ReciboViagem = {
+  id: number | null;
+  emissor: string | null;
+  idViagemOSA: number | null;
+  codigoViagemOSA: string | null;
+  descricaoCategoria: string | null;
+  cnpjEmissor: string | null;
+  nomeEmissor: string | null;
+  cnpjTransportador: string | null;
+  nomeTransportador: string | null;
+  dataCompra: string | null;
+  dataHoraExportacao: string | null;
+  dataViagem: string | null;
+  urlLogo: string | null;
+  nomeRota: string | null;
+  status: string | null;
+  tipo: string | null;
+  valorTotal: number | null;
+};
+
+export function parseReciboViagem(raw: unknown): ReciboViagem | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const num = (v: unknown): number | null => {
+    if (v == null || v === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+  const str = (v: unknown): string | null => (v == null || v === '' ? null : String(v));
+  const recibo: ReciboViagem = {
+    id: num(o.id),
+    emissor: str(o.emissor),
+    idViagemOSA: num(o.idViagemOSA),
+    codigoViagemOSA: str(o.codigoViagemOSA),
+    descricaoCategoria: str(o.descricaoCategoria),
+    cnpjEmissor: str(o.cnpjEmissor),
+    nomeEmissor: str(o.nomeEmissor),
+    cnpjTransportador: str(o.cnpjTransportador),
+    nomeTransportador: str(o.nomeTransportador),
+    dataCompra: str(o.dataCompra),
+    dataHoraExportacao: str(o.dataHoraExportacao),
+    dataViagem: str(o.dataViagem),
+    urlLogo: str(o.urlLogo),
+    nomeRota: str(o.nomeRota),
+    status: str(o.status),
+    tipo: str(o.tipo),
+    valorTotal: num(o.valorTotal),
+  };
+  const hasSignal =
+    recibo.status != null ||
+    recibo.valorTotal != null ||
+    recibo.id != null ||
+    recibo.codigoViagemOSA != null ||
+    recibo.dataCompra != null;
+  return hasSignal ? recibo : null;
+}
 
 async function vpoPost<T>(path: string, body: unknown): Promise<T> {
   const apiKey = getEnv('WEBROUTER_API_KEY');
@@ -163,6 +267,8 @@ export async function consultarVeiculoEmissores(params: {
 export type CriarViagemInput = {
   emissor: string;
   tipoTag?: string;
+  /** SemParar: ESTENDIDA | PLANEJADA | CUSTOMIZADA. Default ESTENDIDA. */
+  tipoViagem?: string;
   dataInicio: Date;
   dataFim: Date;
   placa: string;
@@ -220,11 +326,26 @@ export async function criarViagem(input: CriarViagemInput): Promise<CriarViagemR
     }));
 
   const placaFmt = formatPlateForVpo(input.placa);
+  const tipoViagem =
+    String(input.tipoViagem || 'ESTENDIDA')
+      .trim()
+      .toUpperCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Z]/g, '') || 'ESTENDIDA';
+  const dataInicioFmt = formatBrDateTime(input.dataInicio);
+  const dataFimFmt = formatBrDateTime(input.dataFim);
   const payload = {
     emissor: input.emissor,
     tipoTag: input.tipoTag || 'INDEFINIDO',
-    dataInicio: formatBrDateTime(input.dataInicio),
-    dataFim: formatBrDateTime(input.dataFim),
+    tipoViagem,
+    tipo: tipoViagem,
+    dataInicio: dataInicioFmt,
+    dataFim: dataFimFmt,
+    dataInicioViagem: dataInicioFmt,
+    dataFimViagem: dataFimFmt,
+    dataExpiracao: dataFimFmt,
+    emissaoAutomaticaVPO: true,
     placa: placaFmt,
     rota: {
       id: input.idRota || 0,
@@ -284,6 +405,55 @@ export async function criarViagem(input: CriarViagemInput): Promise<CriarViagemR
     idANTT: raw.idANTT != null && String(raw.idANTT).trim() ? String(raw.idANTT).trim() : null,
     codigoCliente: raw.codigoCliente != null ? String(raw.codigoCliente) : null,
   };
+}
+
+export async function getReciboViagem(idViagemAILog: number): Promise<ReciboViagem | null> {
+  const apiKey = getEnv('WEBROUTER_API_KEY');
+  if (!apiKey) throw new Error('WEBROUTER_API_KEY not configured');
+  if (!idViagemAILog) throw new Error('idViagemAILog obrigatório');
+
+  const res = await fetch(`${VPO_BASE}/api/getReciboViagem/${idViagemAILog}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      chaveAcesso: apiKey,
+      'User-Agent': 'vectra-hub/vpo',
+    },
+  });
+  const text = await res.text();
+  let json: unknown = {};
+  try {
+    json = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(`ValePedagio getReciboViagem resposta inválida (HTTP ${res.status})`);
+  }
+  if (!res.ok) {
+    const msg =
+      typeof json === 'object' && json && 'mensagem' in json
+        ? String((json as { mensagem?: unknown }).mensagem || '')
+        : text.slice(0, 200);
+    throw new Error(msg || `ValePedagio getReciboViagem HTTP ${res.status}`);
+  }
+  return parseReciboViagem(json);
+}
+
+export async function emitirReciboViagem(params: {
+  emissor: string;
+  idViagem: number;
+  idViagemAILog: number;
+  embarcador: { documento: string; razaoSocial: string };
+}): Promise<ReciboViagem | null> {
+  const raw = await vpoPost<unknown>('/api/emitirReciboViagem', {
+    emissor: params.emissor,
+    idViagem: params.idViagem,
+    idViagemAILog: params.idViagemAILog,
+    embarcador: {
+      documento: digits(params.embarcador.documento),
+      razaoSocial: params.embarcador.razaoSocial,
+    },
+  });
+  return parseReciboViagem(raw);
 }
 
 export { VPO_EMISSORES };

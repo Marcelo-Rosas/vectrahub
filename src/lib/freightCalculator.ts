@@ -16,6 +16,7 @@
  */
 
 import { Database } from '@/integrations/supabase/types';
+import type { VpoReciboViagem } from '@/lib/vpo-recibo';
 import {
   calculateLotacaoProfitability,
   estimateInsuranceRiskCosts,
@@ -475,11 +476,15 @@ export interface VpoEmissionRecord {
   cnpjFornecedora?: string;
   cnpjPagador?: string;
   tipoVale?: '01' | '04';
+  /** SemParar: ESTENDIDA | PLANEJADA | CUSTOMIZADA. Recibo.tipo. */
+  tipoViagem?: string | null;
   valorReais?: number;
   pedagiosCount?: number;
   idRota?: number | null;
   kmDistance?: number;
   emittedAt?: string;
+  /** Recibo AILOG getReciboViagem / emitirReciboViagem (JSON, sem PDF). */
+  recibo?: VpoReciboViagem | null;
 }
 
 export interface StoredPricingBreakdown {

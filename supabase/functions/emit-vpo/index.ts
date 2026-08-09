@@ -9,7 +9,14 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { fetchCompanySettings } from '../_shared/company-settings.ts';
 import { axesToCategoriaVeiculo, calculateRouteDistanceFull } from '../_shared/webrouter-client.ts';
-import { consultarVeiculoEmissores, criarViagem } from '../_shared/vale-pedagio-client.ts';
+import {
+  consultarVeiculoEmissores,
+  criarViagem,
+  emitirReciboViagem,
+  formatBrDateTime,
+  getReciboViagem,
+  resolveVpoViagemWindow,
+} from '../_shared/vale-pedagio-client.ts';
 
 const FORNECEDORA_CNPJ: Record<string, string> = {
   SEMPARAR: '04088208000165',
@@ -18,6 +25,10 @@ const FORNECEDORA_CNPJ: Record<string, string> = {
   MOVEMAIS: '13485710000107',
   REPOM: '03007231000110',
 };
+
+/** Conta AILOG/SemParar do VPO = Cargo (saldo). MDF-e/CT-e emitente continua Hub. */
+const VPO_EMBARCADOR_CNPJ_DEFAULT = '59650913000104';
+const VPO_EMBARCADOR_RAZAO_DEFAULT = 'VECTRA CARGO LTDA';
 
 function jsonResponse(body: unknown, status: number, cors: Record<string, string>) {
   return new Response(JSON.stringify(body), {
@@ -30,10 +41,10 @@ function digits(v: string | null | undefined): string {
   return String(v ?? '').replace(/\D/g, '');
 }
 
-function parseDate(value: string | null | undefined, fallback: Date): Date {
-  if (!value) return fallback;
+function parseDate(value: string | null | undefined): Date | null {
+  if (!value) return null;
   const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? fallback : d;
+  return Number.isNaN(d.getTime()) ? null : d;
 }
 
 Deno.serve(async (req) => {
@@ -48,9 +59,30 @@ Deno.serve(async (req) => {
   }
 
   let orderId = '';
+  let tipoViagemReq = 'ESTENDIDA';
   try {
-    const body = (await req.json()) as { order_id?: string; orderId?: string };
+    const body = (await req.json()) as {
+      order_id?: string;
+      orderId?: string;
+      tipoViagem?: string;
+    };
     orderId = String(body.order_id || body.orderId || '').trim();
+    const rawTipo = String(body.tipoViagem || 'ESTENDIDA')
+      .trim()
+      .toUpperCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Z]/g, '');
+    if (rawTipo.includes('PLANEJADA') || rawTipo.includes('FIXA')) tipoViagemReq = 'PLANEJADA';
+    else if (
+      rawTipo.includes('CUSTOMIZADA') ||
+      rawTipo.includes('CUSTOM') ||
+      rawTipo.includes('FLEX')
+    ) {
+      tipoViagemReq = 'CUSTOMIZADA';
+    } else {
+      tipoViagemReq = 'ESTENDIDA';
+    }
   } catch {
     return jsonResponse({ success: false, error: 'Invalid JSON body' }, 400, cors);
   }
@@ -124,6 +156,22 @@ Deno.serve(async (req) => {
       );
     }
 
+    const waypointCeps: string[] = [];
+    const seenCep = new Set<string>([originCep, destCep]);
+    if (order.quote_id) {
+      const { data: stops } = await supabase
+        .from('quote_route_stops')
+        .select('sequence, cep')
+        .eq('quote_id', order.quote_id)
+        .order('sequence', { ascending: true });
+      for (const s of stops ?? []) {
+        const cep = digits(s.cep).slice(0, 8);
+        if (cep.length !== 8 || seenCep.has(cep)) continue;
+        waypointCeps.push(cep);
+        seenCep.add(cep);
+      }
+    }
+
     const company = await fetchCompanySettings<{
       cnpj?: string;
       legal_name?: string;
@@ -133,6 +181,16 @@ Deno.serve(async (req) => {
     const companyName = String(company?.legal_name || company?.trade_name || 'VECTRA HUB LTDA');
     if (companyCnpj.length !== 14) {
       return jsonResponse({ success: false, error: 'company_settings sem CNPJ válido' }, 200, cors);
+    }
+
+    const embarcadorCnpj = digits(
+      Deno.env.get('VPO_EMBARCADOR_CNPJ') || VPO_EMBARCADOR_CNPJ_DEFAULT
+    );
+    const embarcadorNome =
+      String(Deno.env.get('VPO_EMBARCADOR_RAZAO') || VPO_EMBARCADOR_RAZAO_DEFAULT).trim() ||
+      VPO_EMBARCADOR_RAZAO_DEFAULT;
+    if (embarcadorCnpj.length !== 14) {
+      return jsonResponse({ success: false, error: 'VPO_EMBARCADOR_CNPJ inválido' }, 200, cors);
     }
 
     const { data: vehicle } = await supabase
@@ -152,7 +210,7 @@ Deno.serve(async (req) => {
     const ownerDoc = digits(owner?.cpf_cnpj || vehicle?.cpf_cnpj_proprietario || companyCnpj);
     const ownerRntrc = String(owner?.rntrc || vehicle?.rntrc_proprietario || '').replace(/\D/g, '');
 
-    const embarcador = { documento: companyCnpj, razaoSocial: companyName };
+    const embarcador = { documento: embarcadorCnpj, razaoSocial: embarcadorNome };
     const transportador = {
       documento: ownerDoc || companyCnpj,
       rntrc: ownerRntrc || Deno.env.get('VECTRA_RNTRC') || '',
@@ -160,7 +218,7 @@ Deno.serve(async (req) => {
     };
 
     console.log(
-      `[emit-vpo] ${order.os_number} plate=${plate} axes=${axesCount} ${originCep}→${destCep}`
+      `[emit-vpo] ${order.os_number} plate=${plate} axes=${axesCount} embarcador=${embarcadorCnpj} hub=${companyCnpj} ${originCep}→[${waypointCeps.join(',')}]→${destCep}`
     );
 
     const { match: vehicleVpo, tentativas } = await consultarVeiculoEmissores({
@@ -180,7 +238,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const route = await calculateRouteDistanceFull(originCep, destCep, [], axesCount);
+    const route = await calculateRouteDistanceFull(originCep, destCep, waypointCeps, axesCount);
     if (!route.success) {
       return jsonResponse(
         { success: false, error: `Falha ao revisitar rota: ${route.error}` },
@@ -201,12 +259,48 @@ Deno.serve(async (req) => {
       console.warn(`[emit-vpo] ${missingAilog}/${route.toll_plazas.length} praças sem idAilog`);
     }
 
-    const pickup = parseDate(order.pickup_date, new Date());
-    pickup.setHours(0, 0, 0, 0);
-    const fim = parseDate(order.eta, new Date(pickup.getTime() + 7 * 24 * 60 * 60 * 1000));
-    if (fim.getTime() <= pickup.getTime()) {
-      fim.setTime(pickup.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const tollTagReais = Math.round(route.toll_tag_centavos || route.toll_total_centavos) / 100;
+    const tollPraticaReais = Math.round(route.toll_total_centavos || route.toll_tag_centavos) / 100;
+    const currentBreakdownPre =
+      order.pricing_breakdown && typeof order.pricing_breakdown === 'object'
+        ? (order.pricing_breakdown as Record<string, unknown>)
+        : {};
+    const currentMetaPre =
+      currentBreakdownPre.meta && typeof currentBreakdownPre.meta === 'object'
+        ? (currentBreakdownPre.meta as Record<string, unknown>)
+        : {};
+    const routeBreakdown = {
+      ...currentBreakdownPre,
+      calculatedAt:
+        typeof currentBreakdownPre.calculatedAt === 'string'
+          ? currentBreakdownPre.calculatedAt
+          : new Date().toISOString(),
+      version: currentBreakdownPre.version || '4.0',
+      status: currentBreakdownPre.status || 'OK',
+      meta: {
+        ...currentMetaPre,
+        tollPlazas: route.toll_plazas,
+      },
+    };
+    const { error: routeUpdErr } = await supabase
+      .from('orders')
+      .update({
+        toll_value: tollPraticaReais,
+        km_distance: route.km_distance,
+        pricing_breakdown: routeBreakdown,
+      })
+      .eq('id', orderId);
+    if (routeUpdErr) {
+      console.warn('[emit-vpo] persist rota failed', routeUpdErr);
     }
+
+    const { inicio: pickup, fim } = resolveVpoViagemWindow({
+      pickup: parseDate(order.pickup_date),
+      eta: parseDate(order.eta),
+    });
+    console.log(
+      `[emit-vpo] janela ${formatBrDateTime(pickup)} → ${formatBrDateTime(fim)} (pickup_os=${order.pickup_date} eta=${order.eta})`
+    );
 
     const categoria =
       vehicleVpo.idCategoria && /^\d+$/.test(vehicleVpo.idCategoria)
@@ -216,6 +310,7 @@ Deno.serve(async (req) => {
     const viagem = await criarViagem({
       emissor: vehicleVpo.emissor,
       tipoTag: 'INDEFINIDO',
+      tipoViagem: tipoViagemReq,
       dataInicio: pickup,
       dataFim: fim,
       placa: plate,
@@ -239,6 +334,13 @@ Deno.serve(async (req) => {
           success: false,
           error: viagem.mensagem || `criarViagem status=${viagem.status}`,
           status: viagem.status,
+          tollTag: tollTagReais,
+          tollPratica: tollPraticaReais,
+          pedagiosCount: route.toll_plazas.length,
+          km_distance: route.km_distance,
+          waypoints: waypointCeps,
+          dataInicio: formatBrDateTime(pickup),
+          dataFim: formatBrDateTime(fim),
         },
         200,
         cors
@@ -251,7 +353,25 @@ Deno.serve(async (req) => {
       (viagem.idViagemOSA ? String(viagem.idViagemOSA) : '') ||
       (viagem.idViagemAILog ? String(viagem.idViagemAILog) : '');
 
-    const tollReais = Math.round(route.toll_tag_centavos || route.toll_total_centavos) / 100;
+    let recibo = null;
+    if (viagem.idViagemAILog) {
+      try {
+        recibo = await getReciboViagem(viagem.idViagemAILog);
+        if (!recibo || String(recibo.status || '').toUpperCase() !== 'SUCESSO') {
+          recibo =
+            (await emitirReciboViagem({
+              emissor: vehicleVpo.emissor,
+              idViagem: viagem.idViagemOSA || viagem.idViagemAILog,
+              idViagemAILog: viagem.idViagemAILog,
+              embarcador,
+            })) || recibo;
+        }
+      } catch (reciboErr) {
+        console.warn('[emit-vpo] recibo WebRouter failed', reciboErr);
+      }
+    }
+
+    const tollReais = tollTagReais;
     const vpoRecord = {
       emissor: vehicleVpo.emissor,
       tag: vehicleVpo.tag,
@@ -261,13 +381,15 @@ Deno.serve(async (req) => {
       codigoViagem: viagem.codigoViagem,
       idVpo,
       cnpjFornecedora: FORNECEDORA_CNPJ[vehicleVpo.emissor] || '',
-      cnpjPagador: companyCnpj,
+      cnpjPagador: embarcadorCnpj,
       tipoVale: vehicleVpo.tag ? '01' : '04',
+      tipoViagem: recibo?.tipo || tipoViagemReq,
       valorReais: tollReais,
       pedagiosCount: route.toll_plazas.length,
       idRota: route.id_rota,
       kmDistance: route.km_distance,
       emittedAt: new Date().toISOString(),
+      recibo,
     };
 
     const currentBreakdown =
