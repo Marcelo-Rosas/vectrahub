@@ -36,6 +36,7 @@ import { usePriceTable } from '@/hooks/usePriceTables';
 import { usePricingParameter, useConditionalFees, usePaymentTerms } from '@/hooks/usePricingRules';
 import { useUpdateQuote, useQuote } from '@/hooks/useQuotes';
 import { useQuoteRouteStops } from '@/hooks/useQuoteRouteStops';
+import { useOrdersByQuoteId, useSyncQuoteRouteToOrders } from '@/hooks/useSyncQuoteRouteToOrders';
 import {
   useCalculateFreight,
   buildStoredBreakdownFromEdgeResponse,
@@ -132,6 +133,7 @@ export function QuoteDetailModal({
   const quote = hydratedQuote ?? boardQuote;
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
+  const [isSyncRouteDialogOpen, setIsSyncRouteDialogOpen] = useState(false);
   const [isConvertingToFat, setIsConvertingToFat] = useState(false);
   const [anttDialog, setAnttDialog] = useState<{
     open: boolean;
@@ -160,6 +162,8 @@ export function QuoteDetailModal({
   const updateQuoteMutation = useUpdateQuote();
   const calculateFreightMutation = useCalculateFreight();
   const processQuotePaymentProofMutation = useProcessQuotePaymentProof();
+  const syncQuoteRouteToOrders = useSyncQuoteRouteToOrders();
+  const { data: linkedOrders = [] } = useOrdersByQuoteId(open && quote?.id ? quote.id : null);
 
   // All hooks MUST be called before any conditional returns
   const { data: priceTable } = usePriceTable(quote?.price_table_id || '');
@@ -1045,6 +1049,10 @@ export function QuoteDetailModal({
                   ? 'Atualizar — valor abaixo do Piso ANTT!'
                   : 'Recalcular memória de cálculo'
               }
+              linkedOsCount={linkedOrders.length}
+              linkedOsLabel={linkedOrders.map((o) => o.os_number).join(', ') || null}
+              isSyncingRouteToOs={syncQuoteRouteToOrders.isPending}
+              onSyncRouteToOs={() => setIsSyncRouteDialogOpen(true)}
             />
           </div>
 
@@ -1599,6 +1607,77 @@ export function QuoteDetailModal({
         onApply={handleApplyAnttFloor}
         onCancel={() => setAnttDialog({ open: false, suggestedValue: 0, piso: 0 })}
       />
+
+      <AlertDialog
+        open={isSyncRouteDialogOpen}
+        onOpenChange={(open) => {
+          if (!syncQuoteRouteToOrders.isPending) setIsSyncRouteDialogOpen(open);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Atualizar OS com rota da cotação?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>
+                  Vai sobrescrever na(s) OS vinculada(s) apenas{' '}
+                  <span className="font-medium text-foreground">km + praças + pedágio</span> a
+                  partir desta COT. Frete e ANTT não mudam.
+                </p>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>
+                    Destino:{' '}
+                    <span className="font-mono text-foreground">
+                      {linkedOrders.map((o) => o.os_number).join(', ') || '—'}
+                    </span>
+                  </li>
+                  <li>
+                    COT:{' '}
+                    <span className="font-mono text-foreground">
+                      {quote.km_distance != null ? `${Number(quote.km_distance)} km` : '—'} ·{' '}
+                      {tollPlazas.length} praças ·{' '}
+                      {formatCurrency(tollPlazas.reduce((s, p) => s + (Number(p.valor) || 0), 0))}
+                    </span>
+                  </li>
+                </ul>
+                <p>
+                  VPO local será zerado (`has_vpo` / meta.vpo) para permitir nova emissão. VPO já
+                  comprado no SemParar não cancela pela API — baixa/estorno manual se couber.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={syncQuoteRouteToOrders.isPending}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={syncQuoteRouteToOrders.isPending || tollPlazas.length === 0}
+              onClick={(e) => {
+                e.preventDefault();
+                void syncQuoteRouteToOrders
+                  .mutateAsync({
+                    id: quote.id,
+                    quote_code: quote.quote_code,
+                    km_distance: quote.km_distance,
+                    toll_value: quote.toll_value,
+                    pricing_breakdown: quote.pricing_breakdown,
+                  })
+                  .then(() => setIsSyncRouteDialogOpen(false));
+              }}
+            >
+              {syncQuoteRouteToOrders.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Atualizando…
+                </>
+              ) : (
+                'Confirmar atualização'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Dialog de valor sugerido — aparece quando recálculo diverge do valor negociado (maior ou menor) */}
       <AlertDialog open={suggestedValueDialog.open}>

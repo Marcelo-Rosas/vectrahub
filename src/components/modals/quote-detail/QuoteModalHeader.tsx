@@ -1,4 +1,4 @@
-import { Route, Pencil, ArrowRightLeft, Receipt, Loader2, RefreshCw } from 'lucide-react';
+import { Route, Pencil, ArrowRightLeft, Receipt, Loader2, RefreshCw, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -23,6 +23,11 @@ interface QuoteModalHeaderProps {
   anttFloorBlocked?: boolean;
   /** Tooltip dinâmico para o botão Recalcular */
   recalcularTitle?: string;
+  /** OS vinculadas — botão sync rota/pedágio */
+  linkedOsCount?: number;
+  linkedOsLabel?: string | null;
+  isSyncingRouteToOs?: boolean;
+  onSyncRouteToOs?: () => void;
 }
 
 export function QuoteModalHeader({
@@ -43,7 +48,13 @@ export function QuoteModalHeader({
   showRecalcular,
   anttFloorBlocked = false,
   recalcularTitle,
+  linkedOsCount = 0,
+  linkedOsLabel = null,
+  isSyncingRouteToOs = false,
+  onSyncRouteToOs,
 }: QuoteModalHeaderProps) {
+  const showSyncOs = canManage && linkedOsCount > 0 && Boolean(onSyncRouteToOs);
+
   return (
     <>
       <div className="flex items-start justify-between gap-4">
@@ -110,29 +121,55 @@ export function QuoteModalHeader({
         </div>
       </div>
 
-      {canManage && canConvert && (
-        <div className="flex gap-2 mt-3">
-          <Button variant="outline" size="sm" onClick={onConvertToOS} className="gap-1.5">
-            <ArrowRightLeft className="w-3.5 h-3.5" />
-            Converter para OS
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onConvertToFAT}
-            disabled={isConvertingToFat || anttFloorBlocked}
-            title={anttFloorBlocked ? 'Resolva o Piso ANTT antes de faturar' : undefined}
-            className="gap-1.5"
-          >
-            {isConvertingToFat ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Receipt className="w-3.5 h-3.5" />
-            )}
-            Converter para FAT
-          </Button>
+      {(canManage && canConvert) || showSyncOs ? (
+        <div className="flex gap-2 mt-3 flex-wrap">
+          {canManage && canConvert && (
+            <>
+              <Button variant="outline" size="sm" onClick={onConvertToOS} className="gap-1.5">
+                <ArrowRightLeft className="w-3.5 h-3.5" />
+                Converter para OS
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onConvertToFAT}
+                disabled={isConvertingToFat || anttFloorBlocked}
+                title={anttFloorBlocked ? 'Resolva o Piso ANTT antes de faturar' : undefined}
+                className="gap-1.5"
+              >
+                {isConvertingToFat ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Receipt className="w-3.5 h-3.5" />
+                )}
+                Converter para FAT
+              </Button>
+            </>
+          )}
+          {showSyncOs && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onSyncRouteToOs}
+              disabled={isSyncingRouteToOs}
+              title={
+                linkedOsLabel
+                  ? `Copia km + praças + pedágio da COT → ${linkedOsLabel}. Zera VPO local para reemitir.`
+                  : 'Copia km + praças + pedágio da COT para a(s) OS vinculada(s)'
+              }
+              className="gap-1.5"
+            >
+              {isSyncingRouteToOs ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Truck className="w-3.5 h-3.5" />
+              )}
+              Atualizar OS (rota/pedágio)
+              {linkedOsCount > 1 ? ` · ${linkedOsCount}` : ''}
+            </Button>
+          )}
         </div>
-      )}
+      ) : null}
     </>
   );
 }
