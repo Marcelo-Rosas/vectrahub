@@ -569,10 +569,33 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
     [anttFloorFlags]
   );
 
-  // Filtrar tabelas pela modalidade (lotação → só lotação; fracionado → só fracionado)
+  // Tabelas operacionais: active + NTC (parceiro fica fora até pack pronto).
+  // Fracionado → NTC Fracionado; Lotação → Referencial.
   const priceTablesFiltered =
-    priceTables?.filter((t) => !watchedFreightModality || t.modality === watchedFreightModality) ??
-    [];
+    priceTables?.filter((t) => {
+      if (!t.active) return false;
+      if (t.methodology === 'fracionado_parceiro') return false;
+      if (!watchedFreightModality) return true;
+      return t.modality === watchedFreightModality;
+    }) ?? [];
+
+  const pickDefaultTableId = useCallback(
+    (modality: 'lotacao' | 'fracionado'): string => {
+      const pool =
+        priceTables?.filter((t) => {
+          if (!t.active) return false;
+          if (t.methodology === 'fracionado_parceiro') return false;
+          return t.modality === modality;
+        }) ?? [];
+      if (modality === 'fracionado') {
+        const ntc = pool.find((t) => t.methodology === 'fracionado_ntc');
+        return ntc?.id || pool[0]?.id || '';
+      }
+      const lot = pool.find((t) => t.methodology === 'lotacao');
+      return lot?.id || pool[0]?.id || '';
+    },
+    [priceTables]
+  );
   const watchedOrigin = form.watch('origin');
   const watchedDestination = form.watch('destination');
   const watchedWeight = form.watch('weight');
@@ -667,6 +690,28 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
       form.setValue('freight_modality', derived);
     }
   }, [selectedPriceTable?.methodology, form]);
+
+  // Nova cotação / troca modalidade: se Select ficou sem tabela, puxa NTC operacional.
+  useEffect(() => {
+    if (!priceTables?.length) return;
+    if (isEditing && form.getValues('price_table_id')) return;
+    const modality = (form.getValues('freight_modality') || 'lotacao') as 'lotacao' | 'fracionado';
+    const currentId = form.getValues('price_table_id');
+    const stillValid =
+      currentId &&
+      priceTables.some(
+        (t) =>
+          t.id === currentId &&
+          t.active &&
+          t.methodology !== 'fracionado_parceiro' &&
+          t.modality === modality
+      );
+    if (stillValid) return;
+    const nextId = pickDefaultTableId(modality);
+    if (nextId && nextId !== currentId) {
+      form.setValue('price_table_id', nextId);
+    }
+  }, [priceTables, pickDefaultTableId, form, isEditing]);
 
   const kmRounded = kmBand;
 
@@ -1999,6 +2044,10 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
                       isLoadingDestinationCep={isLoadingDestinationCep}
                       isCalculatingKm={isCalculatingKm}
                       priceTablesFiltered={priceTablesFiltered}
+                      onFreightModalityChange={(modality) => {
+                        form.setValue('freight_modality', modality);
+                        form.setValue('price_table_id', pickDefaultTableId(modality));
+                      }}
                       vehicleTypes={vehicleTypes ?? []}
                       paymentTerms={paymentTerms ?? []}
                       weightUnit={weightUnit}
@@ -2501,9 +2550,9 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
                               <FormLabel>Modalidade de Frete</FormLabel>
                               <Select
                                 onValueChange={(v) => {
-                                  field.onChange(v);
-                                  // Limpar tabela ao mudar modalidade (tabela pode ser de outra modalidade)
-                                  form.setValue('price_table_id', '');
+                                  const modality = v as 'lotacao' | 'fracionado';
+                                  field.onChange(modality);
+                                  form.setValue('price_table_id', pickDefaultTableId(modality));
                                 }}
                                 value={field.value || ''}
                               >
@@ -2548,17 +2597,23 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {priceTablesFiltered.map((table) => (
-                                    <SelectItem key={table.id} value={table.id}>
-                                      {table.name} (
-                                      {isPriceTableMethodology(table.methodology)
-                                        ? METHODOLOGY_LABELS[table.methodology]
-                                        : table.modality === 'lotacao'
-                                          ? 'Lotação'
-                                          : 'Fracionado'}
-                                      )
-                                    </SelectItem>
-                                  ))}
+                                  {priceTablesFiltered.length === 0 ? (
+                                    <div className="px-2 py-3 text-xs text-muted-foreground">
+                                      Nenhuma tabela NTC ativa para esta modalidade.
+                                    </div>
+                                  ) : (
+                                    priceTablesFiltered.map((table) => (
+                                      <SelectItem key={table.id} value={table.id}>
+                                        {table.name} (
+                                        {isPriceTableMethodology(table.methodology)
+                                          ? METHODOLOGY_LABELS[table.methodology]
+                                          : table.modality === 'lotacao'
+                                            ? 'Lotação'
+                                            : 'Fracionado'}
+                                        )
+                                      </SelectItem>
+                                    ))
+                                  )}
                                 </SelectContent>
                               </Select>
                               <FormMessage />

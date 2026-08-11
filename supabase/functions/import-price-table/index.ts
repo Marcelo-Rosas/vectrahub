@@ -327,6 +327,7 @@ Deno.serve(async (req) => {
         .insert({
           name: priceTable.name.trim(),
           modality: priceTable.modality,
+          methodology: priceTable.modality === 'fracionado' ? 'fracionado_ntc' : 'lotacao',
           valid_from: priceTable.valid_from || null,
           valid_until: priceTable.valid_until || null,
           active: false, // Will set active later if needed
