@@ -17,6 +17,8 @@ interface RequestBody {
   cc?: string | string[];
   bcc?: string | string[];
   vehiclePlate?: string;
+  /** Observação no corpo do e-mail (ex.: desconsiderar envio anterior). */
+  message?: string;
 }
 
 type CteRow = {
@@ -156,7 +158,12 @@ Deno.serve(async (req) => {
       content: bytesToBase64(csvBytes),
     });
 
-    const html = buildAverbaMsHtml({ quoteCode, plate: plate || '—', rows });
+    const html = buildAverbaMsHtml({
+      quoteCode,
+      plate: plate || '—',
+      rows,
+      message: typeof body.message === 'string' ? body.message : undefined,
+    });
     const emailPayload = {
       from: resendFrom,
       to,

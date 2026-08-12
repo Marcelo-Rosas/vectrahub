@@ -44,6 +44,19 @@ describe('splitFreightProportional', () => {
     expect(Number(parts.reduce((a, b) => a + b, 0).toFixed(2))).toBe(26000);
     expect(Math.max(...parts)).toBeLessThan(26000);
   });
+
+  it('OS-0005: 2 embarcadores diferentes — rateio por km soma 26000', () => {
+    // KONNEN Itajaí→Fortaleza 3782.8 · BUCKLER SBC→Fortaleza 2935.8
+    const parts = splitFreightProportional(26000, [3782.8, 2935.8]);
+    expect(parts).toEqual([14638.88, 11361.12]);
+    expect(Number(parts.reduce((a, b) => a + b, 0).toFixed(2))).toBe(26000);
+  });
+
+  it('OS-0005: rateia valor de mercadoria 340902.90 pelo mesmo km', () => {
+    const parts = splitFreightProportional(340902.9, [3782.8, 2935.8]);
+    expect(Number(parts.reduce((a, b) => a + b, 0).toFixed(2))).toBe(340902.9);
+    expect(parts.every((p) => p > 0)).toBe(true);
+  });
 });
 
 describe('nfeNumeroFromChave', () => {

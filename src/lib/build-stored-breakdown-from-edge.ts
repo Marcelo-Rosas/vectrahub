@@ -67,6 +67,8 @@ export function buildStoredBreakdownFromEdgeResponse(
         .lotacao_piso_com_over,
       lotacaoFreteTabelaComOverKm: (response.meta as { lotacao_frete_tabela_com_over_km?: number })
         .lotacao_frete_tabela_com_over_km,
+      cubageFactor: response.meta.cubage_factor,
+      originalWeightKg: (response.meta as { original_weight_kg?: number }).original_weight_kg,
     },
     weights: {
       cubageWeight: cubKg,

@@ -217,7 +217,7 @@ Deno.serve(async (req) => {
     }
 
     // VEC-126: pricing_parameters depreciado — pricing_rules_config é a única fonte de verdade
-    const cubageFactor = FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3;
+    let cubageFactor = FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3;
     const dasPercent = hasHubFiscal
       ? (input.das_percent ??
         resolveRule('das_percent', vehicleTypeIdForRules) ??
@@ -281,26 +281,12 @@ Deno.serve(async (req) => {
     fallbacksApplied.push(`methodology: ${methodology}`);
 
     // =====================================================
-    // CALCULATE WEIGHTS
+    // CALCULATE WEIGHTS — max(kg, m³ × fator de cubagem); sem trava de 1 t
     // =====================================================
 
-    const cubageWeightKg = input.volume_m3 * cubageFactor;
-    let billableWeightKg = Math.max(input.weight_kg, cubageWeightKg);
-
-    // Trava Fracionado: mínimo 1.000 kg para viabilidade
-    let ltlMinWeightApplied = false;
     const originalWeightKg = input.weight_kg;
-    if (input.price_table_id) {
-      const { data: ptModality } = await supabase
-        .from('price_tables')
-        .select('modality')
-        .eq('id', input.price_table_id)
-        .maybeSingle();
-      if (ptModality?.modality === 'fracionado' && billableWeightKg < 1000) {
-        billableWeightKg = 1000;
-        ltlMinWeightApplied = true;
-      }
-    }
+    let cubageWeightKg = input.volume_m3 * cubageFactor;
+    let billableWeightKg = Math.max(input.weight_kg, cubageWeightKg);
 
     // =====================================================
     // GET PRICE TABLE ROW
@@ -380,6 +366,7 @@ Deno.serve(async (req) => {
       gris_min: number;
       gris_min_cargo_limit: number;
       dispatch_fee: number;
+      cubage_factor: number;
     };
 
     let ltlParams: LtlParams | null = null;
@@ -403,6 +390,7 @@ Deno.serve(async (req) => {
           gris_min: Number(ltlRow.gris_min ?? 9.28),
           gris_min_cargo_limit: Number(ltlRow.gris_min_cargo_limit ?? 3093.81),
           dispatch_fee: Number(ltlRow.dispatch_fee ?? 102.9),
+          cubage_factor: Number(ltlRow.cubage_factor ?? FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3),
         };
       } else {
         // Fallback NTC Dez/25
@@ -414,8 +402,15 @@ Deno.serve(async (req) => {
           gris_min: 9.28,
           gris_min_cargo_limit: 3093.81,
           dispatch_fee: 102.9,
+          cubage_factor: FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3,
         };
         fallbacksApplied.push('ltl_parameters: usando fallback NTC Dez/25');
+      }
+
+      if (ltlParams.cubage_factor > 0) {
+        cubageFactor = ltlParams.cubage_factor;
+        cubageWeightKg = input.volume_m3 * cubageFactor;
+        billableWeightKg = Math.max(input.weight_kg, cubageWeightKg);
       }
     }
 
@@ -693,6 +688,8 @@ Deno.serve(async (req) => {
     }
 
     const ntc_base = frete_peso + frete_valor + gris + tso + dispatchFee;
+    // ntc_base = pacote comercial NTC (peso + risco + despacho). NÃO é PAG/base motorista.
+    // Base motorista fracionado = frete_peso (kg × R$/kg). Repasse de risco = receita Hub.
 
     // Base para taxas condicionais que aplicam sobre frete: mantém comportamento anterior
     // (correction + markup) para não alterar cobrança de fees já cadastrados
@@ -1217,8 +1214,7 @@ Deno.serve(async (req) => {
       antt_calculated_at: new Date().toISOString(),
       ...(anttMetaForResponse && { antt: anttMetaForResponse }),
       ...(anttFloorForced && { antt_floor_forced: true }),
-      ...(ltlMinWeightApplied && { ltl_min_weight_applied: true }),
-      ...(ltlMinWeightApplied && { original_weight_kg: roundCurrency(originalWeightKg) }),
+      original_weight_kg: roundCurrency(originalWeightKg),
     };
 
     const components: FreightComponents = {
@@ -1269,15 +1265,15 @@ Deno.serve(async (req) => {
       total_cliente: roundCurrency(totalCliente),
     };
 
-    const custoMotoristaAnttKpi =
-      modality === 'lotacao'
-        ? roundCurrency(lotacaoFreteMeta?.pisoAntt ?? pisoAnttCarreteiro)
-        : roundCurrency(custoMotoristaAntt);
+    const custoMotoristaAnttKpi = roundCurrency(lotacaoFreteMeta?.pisoAntt ?? pisoAnttCarreteiro);
+    const custoMotoristaPag =
+      modality === 'fracionado' ? roundCurrency(custoMotoristaContratado) : custoMotoristaAnttKpi;
 
     const profitability: FreightProfitability = {
       // Campos legados — mantidos para compatibilidade durante migração (VEC-121)
       custos_carreteiro: roundCurrency(custoMotoristaContratado),
-      custo_motorista: custoMotoristaAnttKpi,
+      // Fracionado: PAG = frete peso NTC. Lotação: KPI de piso ANTT.
+      custo_motorista: custoMotoristaPag,
       // Novos campos semânticos (VEC-121)
       custo_motorista_contratado: roundCurrency(custoMotoristaContratado),
       custo_motorista_antt: custoMotoristaAnttKpi,

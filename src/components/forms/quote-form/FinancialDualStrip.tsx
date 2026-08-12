@@ -43,20 +43,12 @@ export function FinancialDualStrip({
           <p className="text-xl font-bold tabular-nums text-amber-950 dark:text-amber-100">
             {formatCurrency(pag.motorista)}
           </p>
-          {(pag.pedagio > 0 || pag.repasse > 0) && (
+          {pag.pedagio > 0 && (
             <ul className="mt-2 space-y-0.5 text-[10px] text-amber-800/90 dark:text-amber-400/80 tabular-nums">
-              {pag.pedagio > 0 && (
-                <li className="flex justify-between gap-2">
-                  <span>Pedágio (ref.)</span>
-                  <span>{formatCurrency(pag.pedagio)}</span>
-                </li>
-              )}
-              {pag.repasse > 0 && (
-                <li className="flex justify-between gap-2">
-                  <span>Repasse risco (info)</span>
-                  <span>{formatCurrency(pag.repasse)}</span>
-                </li>
-              )}
+              <li className="flex justify-between gap-2">
+                <span>Pedágio (ref.)</span>
+                <span>{formatCurrency(pag.pedagio)}</span>
+              </li>
             </ul>
           )}
           {pag.tabelaReferencia != null && pag.tabelaReferencia > 0 && (
@@ -112,6 +104,12 @@ export function FinancialDualStrip({
                 : fat.regimeFiscal
                   ? ' · após DAS e ICMS'
                   : ''}
+            </p>
+          )}
+          {pag.repasse > 0 && (
+            <p className="mt-2 flex justify-between gap-2 text-[10px] text-muted-foreground tabular-nums">
+              <span>Repasse risco (Hub)</span>
+              <span>{formatCurrency(pag.repasse)}</span>
             </p>
           )}
         </div>

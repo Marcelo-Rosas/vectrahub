@@ -130,7 +130,9 @@ export function PricingStep({
         : 0)) ||
     0;
   const pisoAnttComOver = pisoAnttRaw ?? m?.lotacaoPisoComOver;
-  const pagMotoristaBase = p?.custoMotoristaContratado ?? c?.baseCost ?? 0;
+  const pagMotoristaBase = isLotacao
+    ? (p?.custoMotoristaContratado ?? c?.baseCost ?? 0)
+    : (c?.baseCost ?? p?.custoMotoristaContratado ?? 0);
   const freteTabelaReferencia = m?.fretePesoOriginal ?? m?.lotacaoFreteTabelaComOverKm ?? 0;
   const tabelaAcimaDoPisoNoCalculo =
     isLotacao && pisoAnttComOver > 0 && freteTabelaReferencia > pisoAnttComOver * 1.05;

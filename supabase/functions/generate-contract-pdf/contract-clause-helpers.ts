@@ -86,6 +86,14 @@ export function ctrCodeFromQuoteCode(quoteCode: string | null | undefined): stri
   return `CTR-${code}`;
 }
 
+/** Contratos emitidos antes da regra CTR canônica (prefixo COT no filename). */
+export function isLegacyContractFilename(fileName: string | null | undefined): boolean {
+  const name = String(fileName ?? '').trim();
+  if (!name) return false;
+  if (/^CTR-/i.test(name)) return false;
+  return /^COT-/i.test(name) || /_contrato_v/i.test(name);
+}
+
 /** Slug da razão social do pagador para nome de arquivo (ASCII, maiúsculo). */
 export function slugifyPayer(name: string | null | undefined): string {
   return String(name ?? '')

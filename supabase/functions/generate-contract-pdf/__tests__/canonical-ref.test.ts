@@ -3,6 +3,7 @@ import {
   buildCanonicalFilename,
   buildCanonicalReference,
   ctrCodeFromQuoteCode,
+  isLegacyContractFilename,
   slugifyPayer,
 } from '../contract-clause-helpers.ts';
 
@@ -30,6 +31,16 @@ describe('slugifyPayer', () => {
 
   it('retorna vazio quando nome ausente', () => {
     expect(slugifyPayer('')).toBe('');
+  });
+});
+
+describe('isLegacyContractFilename', () => {
+  it('detecta contrato legado com prefixo COT', () => {
+    expect(isLegacyContractFilename('COT-2026-08-0002_contrato_v3.pdf')).toBe(true);
+  });
+
+  it('não marca contrato canônico CTR', () => {
+    expect(isLegacyContractFilename('CTR-2026-08-0007-v2-EL_TIANGUA_LTDA.pdf')).toBe(false);
   });
 });
 

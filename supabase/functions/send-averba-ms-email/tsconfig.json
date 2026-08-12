@@ -7,9 +7,9 @@
     "skipLibCheck": true,
     "strict": false,
     "allowImportingTsExtensions": true,
-    "baseUrl": "../../../",
     "paths": {
-      "@supabase/supabase-js": ["node_modules/@supabase/supabase-js"]
+      "*": ["../../../*"],
+      "@supabase/supabase-js": ["../../../node_modules/@supabase/supabase-js"]
     }
   },
   "include": ["./**/*.ts", "./ambient.d.ts", "../_shared/deno.d.ts"]

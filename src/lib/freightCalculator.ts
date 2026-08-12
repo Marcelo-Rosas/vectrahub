@@ -202,6 +202,8 @@ export interface FreightCalculationInput {
     grisMin: number;
     grisMinCargoLimit: number;
     dispatchFee: number;
+    /** kg/m³ — NTC Fracionado; default 300 se omitido */
+    cubageFactor?: number;
   };
 
   /** Piso ANTT carreteiro (R$) — fórmula calculadora ceil(km)×CCD+CC. Em lotação, base seca do gross-up. */
@@ -325,6 +327,7 @@ export interface FreightCalculationOutput {
     kmStatus: 'OK' | 'OUT_OF_RANGE';
     marginStatus: 'ABOVE_TARGET' | 'BELOW_TARGET' | 'AT_TARGET' | 'UNKNOWN';
     marginPercent: number;
+    /** kg/m³ usado no peso cubado (NTC Fracionado: ltl_parameters.cubage_factor) */
     cubageFactor: number;
     cubageWeightKg: number;
     billableWeightKg: number;
@@ -515,10 +518,12 @@ export interface StoredPricingBreakdown {
     /** KM por UF (para restauração e recálculo ICMS proporcional) */
     kmByUf?: Record<string, number>;
 
-    /** Trava 1t aplicada no fracionado */
+    /** Trava 1t (legado). Fracionado atual usa só fator de cubagem. */
     ltlMinWeightApplied?: boolean;
-    /** Peso real informado (antes da trava 1t) */
+    /** Peso real informado (kg) */
     originalWeightKg?: number;
+    /** kg/m³ usado no peso cubado */
+    cubageFactor?: number;
     regimeSimplesNacional?: boolean;
     excessoSublimite?: boolean;
     regimeLucroPresumido?: boolean;
@@ -1116,19 +1121,18 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
     return r;
   }
 
-  // ---- STEP 1: PESO FATURÁVEL ----
-  const cubageWeightKg = round2(input.volumeM3 * params.cubageFactor);
-  let billableWeightKg = Math.max(input.weightKg, cubageWeightKg);
-
-  // Trava Fracionado: mínimo 1.000 kg para viabilidade
-  const ltlMinWeightApplied = input.modality === 'fracionado' && billableWeightKg < 1000;
-  if (ltlMinWeightApplied) {
-    billableWeightKg = 1000;
-  }
+  // ---- STEP 1: PESO FATURÁVEL (fator de cubagem; sem trava de 1 t) ----
+  const isLtl = input.modality === 'fracionado';
+  const cubageFactor = isLtl
+    ? (input.ltlParams?.cubageFactor ??
+      params.cubageFactor ??
+      FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3)
+    : (params.cubageFactor ?? FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3);
+  const cubageWeightKg = round2(input.volumeM3 * cubageFactor);
+  const billableWeightKg = Math.max(input.weightKg, cubageWeightKg);
   const originalWeightKg = input.weightKg;
 
   // ---- STEP 2: BASE COST (branch por modalidade) ----
-  const isLtl = input.modality === 'fracionado';
   let baseCost: number;
   let dispatchFee = 0;
 
@@ -1423,12 +1427,11 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       kmStatus: 'OK',
       marginStatus,
       marginPercent: margemPercent,
-      cubageFactor: params.cubageFactor,
+      cubageFactor,
       cubageWeightKg,
       billableWeightKg,
       kmBandUsed,
       icmsBreakdownByUf,
-      ltlMinWeightApplied: ltlMinWeightApplied || undefined,
       originalWeightKg,
       anttFloorApplied: anttFloorApplied || undefined,
       anttCostBaseUsed: lotacaoFreteMeta?.anttCostBaseUsed || undefined,
@@ -1498,8 +1501,9 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       custosCarreteiro: !isLtl ? round2(custoMotorista + input.tollValue) : custoMotorista,
       // VEC-121: campos semânticos novos
       // - Antt: piso legal mínimo (= piso ANTT quando aplicado, senão = baseCost/frete_peso)
-      // - Contratado: NTC base (frete_peso) — o que o motorista recebe em condição padrão
+      // - Contratado: NTC frete peso (fracionado: kg×R$/kg; lotação: golden/piso)
       // - Real: valor negociado na OS (alimentado externamente após fechamento)
+      // Repasse GRIS/TSO/RCTR-C/Ad Valorem NÃO entra aqui — é receita da Hub (receitaForaDivisor).
       custoMotoristaAntt,
       custoMotoristaContratado,
       custoMotoristaReal: null,
@@ -1543,6 +1547,7 @@ export function buildStoredBreakdown(
       kmBandUsed: output.meta.kmBandUsed,
       ltlMinWeightApplied: output.meta.ltlMinWeightApplied,
       originalWeightKg: output.meta.originalWeightKg,
+      cubageFactor: output.meta.cubageFactor,
       regimeSimplesNacional: input.pricingParams?.regimeSimplesNacional,
       excessoSublimite: input.pricingParams?.excessoSublimite,
       selectedConditionalFeeIds: input.extras?.conditionalFees?.ids,

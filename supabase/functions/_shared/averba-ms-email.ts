@@ -85,6 +85,8 @@ export function buildAverbaMsHtml(input: {
   quoteCode: string;
   plate: string;
   rows: AverbaMsRow[];
+  /** Texto livre do operador — inserido após a saudação. */
+  message?: string | null;
 }): string {
   const rowsHtml = input.rows
     .map(
@@ -97,9 +99,19 @@ export function buildAverbaMsHtml(input: {
         </tr>`
     )
     .join('');
+  const note = String(input.message ?? '')
+    .trim()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+  const noteHtml = note
+    ? `<p style="margin:12px 0;padding:10px 12px;background:#fff8e6;border-left:3px solid #e6a800;white-space:pre-wrap">${note.replace(/\n/g, '<br/>')}</p>`
+    : '';
   return `<!DOCTYPE html>
 <html><body style="font-family:Arial,sans-serif;color:#1e2330;font-size:14px">
   <p>Boa tarde,</p>
+  ${noteHtml}
   <p>Segue averbação <strong>manual Fairfax / MS</strong> da cotação <strong>${input.quoteCode}</strong>, placa <strong>${input.plate || '—'}</strong>.</p>
   <p>CT-es autorizados SEFAZ (XML + planilha em anexo):</p>
   <table style="border-collapse:collapse;font-size:13px">

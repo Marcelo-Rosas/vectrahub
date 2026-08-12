@@ -5,17 +5,37 @@ import { Badge } from '@/components/ui/badge';
 import { useQuoteContract, useGenerateContract } from '@/hooks/useQuoteContract';
 import { openDocument, downloadDocument } from '@/lib/storage';
 import { toast } from '@/hooks/use-toast';
+import {
+  buildCanonicalReference,
+  ctrCodeFromQuoteCode,
+  isLegacyContractFilename,
+  resolveFreightPayerName,
+} from '@/lib/canonical-doc-ref';
 
 interface QuoteContractPanelProps {
   quoteId: string;
   stage: string;
+  quoteCode?: string | null;
+  freightType?: string | null;
+  clientName?: string | null;
+  shipperName?: string | null;
 }
 
-export function QuoteContractPanel({ quoteId, stage }: QuoteContractPanelProps) {
+export function QuoteContractPanel({
+  quoteId,
+  stage,
+  quoteCode,
+  freightType,
+  clientName,
+  shipperName,
+}: QuoteContractPanelProps) {
   const { data: contract, isLoading, isFetching, refetch } = useQuoteContract(quoteId);
   const generateContract = useGenerateContract(quoteId);
   const [isOpening, setIsOpening] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const payerName = resolveFreightPayerName(freightType, clientName, shipperName);
+  const canonicalRef = buildCanonicalReference(ctrCodeFromQuoteCode(quoteCode), payerName);
 
   useEffect(() => {
     const onFocus = () => void refetch();
@@ -108,13 +128,18 @@ export function QuoteContractPanel({ quoteId, stage }: QuoteContractPanelProps) 
     ? new Date(contract.generated_at).toLocaleString('pt-BR')
     : '—';
 
+  const isLegacyContract = isLegacyContractFilename(contract.pdf_file_name);
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
           <FileSignature className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium">Versão {contract.version}</span>
+          <span className="text-sm font-medium">{canonicalRef}</span>
         </div>
+        <Badge variant="outline" className="text-xs">
+          Versão {contract.version}
+        </Badge>
         <Badge variant="outline" className="text-xs">
           {contract.signature_status === 'pending'
             ? 'Aguardando assinatura'
@@ -132,6 +157,22 @@ export function QuoteContractPanel({ quoteId, stage }: QuoteContractPanelProps) 
           </span>
         )}
       </div>
+
+      {isLegacyContract && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>
+            Este contrato usa nomenclatura antiga (COT). Clique em <strong>Re-emitir</strong> para
+            gerar com a sigla <strong>CTR</strong> e o pagador no documento.
+          </span>
+        </div>
+      )}
+
+      {contract.pdf_file_name && (
+        <p className="text-xs text-muted-foreground truncate" title={contract.pdf_file_name}>
+          Arquivo: {contract.pdf_file_name}
+        </p>
+      )}
 
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant="outline" onClick={handleOpen} disabled={isOpening}>

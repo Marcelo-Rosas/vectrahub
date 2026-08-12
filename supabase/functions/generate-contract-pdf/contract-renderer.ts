@@ -373,7 +373,7 @@ export async function renderContractPdf(ctx: {
   // ── Header ───────────────────────────────────────────────────────────────────
   await w.drawContractHeader(
     'CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE RODOVIÁRIO DE CARGAS',
-    `Referência: ${canonicalRef}  —  Versão ${version}`,
+    `Nº ${canonicalRef}  —  Versão ${version}`,
     LOGO_BASE64
   );
 

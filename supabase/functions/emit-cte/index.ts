@@ -4,7 +4,9 @@
  *
  * Body: { quote_id: string, natureza_operacao?: string }
  *
- * 1 NF → 1 CT-e. N NFs com destinatários distintos → N CT-es (frete rateado).
+ * 1 NF → 1 CT-e.
+ * N NFs (destinatários e/ou emitentes distintos) → N CT-es com frete rateado por km.
+ * Soma das parcelas = frete contratado (order.value ?? quote.value).
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -18,7 +20,11 @@ import {
   type QuoteRow,
   type PartyRow,
 } from '../_shared/cte-mapper.ts';
-import { nfeNumeroFromChave, splitFreightProportional } from '../_shared/cte-nfe-split.ts';
+import {
+  nfeEmitCnpjFromChave,
+  nfeNumeroFromChave,
+  splitFreightProportional,
+} from '../_shared/cte-nfe-split.ts';
 import { calculateRouteDistance } from '../_shared/webrouter-client.ts';
 
 function envOrThrow(key: string): string {
@@ -125,15 +131,117 @@ function partyFromNfeMeta(meta: Record<string, unknown>, nfeKey: string): PartyR
   };
 }
 
+type ShipperPoolEntry = {
+  party: PartyRow;
+  originCep: string;
+  originLabel: string;
+  emitCteVia: string;
+};
+
 type NfeLeg = {
   nfe_key: string;
   nfe_numero: string;
   dest: PartyRow;
+  shipper: PartyRow;
+  origin_cep: string;
+  origin_label: string;
   cargo_value: number;
   weight: number;
   valor_prestacao: number;
   km_negociado: number;
 };
+
+function partyToRow(row: Record<string, unknown>): PartyRow {
+  return {
+    id: String(row.id ?? ''),
+    name: String(row.name ?? ''),
+    cnpj: row.cnpj ? digits(row.cnpj) : null,
+    cpf: row.cpf ? digits(row.cpf) : null,
+    state_registration: row.state_registration ? String(row.state_registration) : null,
+    ie_indicator: Number(row.ie_indicator ?? 1) || 1,
+    ibge_code: row.ibge_code != null ? Number(row.ibge_code) : null,
+    address: row.address ? String(row.address) : '',
+    address_number: row.address_number ? String(row.address_number) : 'S/N',
+    address_complement: row.address_complement ? String(row.address_complement) : null,
+    address_neighborhood: row.address_neighborhood ? String(row.address_neighborhood) : '',
+    city: row.city ? String(row.city) : '',
+    state: row.state ? String(row.state).toUpperCase() : '',
+    zip_code: digits(row.zip_code),
+    phone: row.phone ? digits(row.phone) : null,
+  };
+}
+
+/** Pool: embarcador principal + additional_shippers (CEP de coleta da cotação quando houver). */
+async function buildShipperPool(
+  supabase: ReturnType<typeof createClient>,
+  mainShipper: Record<string, unknown>,
+  quote: QuoteRow & {
+    additional_shippers?: unknown;
+    origin?: string | null;
+    origin_cep?: string | null;
+  }
+): Promise<ShipperPoolEntry[]> {
+  const pool: ShipperPoolEntry[] = [
+    {
+      party: partyToRow(mainShipper),
+      originCep: digits(quote.origin_cep) || digits(mainShipper.zip_code),
+      originLabel: String(quote.origin || `${mainShipper.city ?? ''} - ${mainShipper.state ?? ''}`),
+      emitCteVia: String(mainShipper.emit_cte_via ?? 'cfn'),
+    },
+  ];
+  const add = Array.isArray(quote.additional_shippers) ? quote.additional_shippers : [];
+  for (const raw of add) {
+    if (!raw || typeof raw !== 'object') continue;
+    const a = raw as Record<string, unknown>;
+    const sid = a.shipper_id ? String(a.shipper_id) : '';
+    let row: Record<string, unknown> | null = null;
+    if (sid) {
+      const { data } = await supabase.from('shippers').select('*').eq('id', sid).maybeSingle();
+      row = data as Record<string, unknown> | null;
+    }
+    if (!row) {
+      const cnpj = digits(a.cnpj);
+      if (cnpj.length === 14) {
+        const { data } = await supabase.from('shippers').select('*').eq('cnpj', cnpj).maybeSingle();
+        row = data as Record<string, unknown> | null;
+      }
+    }
+    if (!row) continue;
+    const cepOverride = digits(a.cep);
+    pool.push({
+      party: partyToRow(row),
+      originCep: cepOverride.length === 8 ? cepOverride : digits(row.zip_code),
+      originLabel: String(a.city_uf || a.name || `${row.city ?? ''} - ${row.state ?? ''}`),
+      emitCteVia: String(row.emit_cte_via ?? 'cfn'),
+    });
+  }
+  return pool;
+}
+
+function resolveShipperForNfe(
+  nfeKey: string,
+  meta: Record<string, unknown>,
+  pool: ShipperPoolEntry[],
+  fallback: ShipperPoolEntry
+): ShipperPoolEntry {
+  const emitCnpj =
+    nfeEmitCnpjFromChave(nfeKey) ||
+    digits(meta.emitente_cnpj || meta.cnpj_emitente || meta.remetente_cnpj);
+  if (emitCnpj.length === 14) {
+    const hitExact = pool.find((p) => digits(p.party.cnpj) === emitCnpj);
+    if (hitExact) return hitExact;
+    // Filial diferente (mesma raiz CNPJ 8 dígitos) — comum em multi-embarcador Cargo
+    const root = emitCnpj.slice(0, 8);
+    const hitRoot = pool.find((p) => digits(p.party.cnpj).slice(0, 8) === root);
+    if (hitRoot) return hitRoot;
+  }
+  const remId = meta.remetente_shipper_id ? String(meta.remetente_shipper_id) : '';
+  if (remId) {
+    const hit = pool.find((p) => p.party.id === remId);
+    if (hit) return hit;
+  }
+  return fallback;
+}
 
 async function emitOneCte(input: {
   supabase: ReturnType<typeof createClient>;
@@ -369,7 +477,7 @@ serve(async (req) => {
       supabase.from('clients').select('*').eq('id', quote.client_id).single(),
       supabase
         .from('orders')
-        .select('id, value')
+        .select('id, value, cargo_value, weight')
         .eq('quote_id', quote.id)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -378,12 +486,13 @@ serve(async (req) => {
   if (shipErr || !shipper) return json({ error: 'shipper_not_found' }, 404, cors);
   if (clientErr || !client) return json({ error: 'client_not_found' }, 404, cors);
 
-  const shipperRoute = (shipper as { emit_cte_via?: string }).emit_cte_via ?? 'active';
+  // Hub: default CFN. Só bloqueia se explicitamente 'active' ou 'none'.
+  const shipperRoute = (shipper as { emit_cte_via?: string }).emit_cte_via ?? 'cfn';
   if (shipperRoute !== 'cfn') {
     return json(
       {
         error: 'shipper_not_routed_to_cfn',
-        detail: `Shipper ${shipper.name} routed to '${shipperRoute}' — emit via that system or migrate router to 'cfn'.`,
+        detail: `Shipper ${shipper.name} routed to '${shipperRoute}' — migrate router to 'cfn'.`,
         emit_cte_via: shipperRoute,
       },
       422,
@@ -429,7 +538,7 @@ serve(async (req) => {
     return json({ error: 'vectra_config_missing', detail: String(err) }, 500, cors);
   }
 
-  const nfeKeys = (Array.isArray(quote.nfe_keys) ? quote.nfe_keys : [])
+  const nfeKeysFromQuote = (Array.isArray(quote.nfe_keys) ? quote.nfe_keys : [])
     .map((k) => digits(k))
     .filter((k) => k.length === 44);
 
@@ -441,12 +550,41 @@ serve(async (req) => {
         .eq('type', 'nfe')
     : { data: [] as Array<{ nfe_key: string | null; validation_metadata: unknown }> };
 
+  const nfeKeysFromDocs = (nfeDocs ?? [])
+    .map((d) => digits(d.nfe_key))
+    .filter((k) => k.length === 44);
+
+  // Prefer cotação; completa com chaves já validadas nos documentos da OS
+  const nfeKeys = [...new Set([...nfeKeysFromQuote, ...nfeKeysFromDocs])];
+
+  // Persist back if cotação estava vazia e docs têm chave (evita single 26k sem rateio)
+  if (nfeKeysFromQuote.length === 0 && nfeKeys.length > 0) {
+    await supabase.from('quotes').update({ nfe_keys: nfeKeys }).eq('id', quote.id);
+  }
+
   const docByKey = new Map<string, Record<string, unknown>>();
   for (const d of nfeDocs ?? []) {
     const k = digits(d.nfe_key);
     if (k.length === 44 && d.validation_metadata && typeof d.validation_metadata === 'object') {
       docByKey.set(k, d.validation_metadata as Record<string, unknown>);
     }
+  }
+
+  const additionalShippersCount = Array.isArray(quote.additional_shippers)
+    ? quote.additional_shippers.length
+    : 0;
+  const expectedRemitters = 1 + additionalShippersCount;
+  if (expectedRemitters >= 2 && nfeKeys.length < expectedRemitters) {
+    return json(
+      {
+        error: 'multi_shipper_nfe_required',
+        detail: `Há ${expectedRemitters} embarcadores; valide ${expectedRemitters} NF-e (chaves) antes de emitir para ratear o frete. Encontradas: ${nfeKeys.length}.`,
+        expected_shippers: expectedRemitters,
+        nfe_keys_found: nfeKeys.length,
+      },
+      422,
+      cors
+    );
   }
 
   const naturezaOperacao =
@@ -470,7 +608,23 @@ serve(async (req) => {
 
   if (nfeKeys.length >= 2) {
     const missing: string[] = [];
-    const rawLegs: Array<{ key: string; meta: Record<string, unknown>; dest: PartyRow }> = [];
+    const shipperPool = await buildShipperPool(
+      supabase,
+      shipper as Record<string, unknown>,
+      quote as QuoteRow & {
+        additional_shippers?: unknown;
+        origin?: string | null;
+        origin_cep?: string | null;
+      }
+    );
+    const defaultShipperEntry = shipperPool[0]!;
+
+    const rawLegs: Array<{
+      key: string;
+      meta: Record<string, unknown>;
+      dest: PartyRow;
+      remitter: ShipperPoolEntry;
+    }> = [];
     for (const key of nfeKeys) {
       const meta = docByKey.get(key);
       if (!meta) {
@@ -482,7 +636,8 @@ serve(async (req) => {
         missing.push(key);
         continue;
       }
-      rawLegs.push({ key, meta, dest });
+      const remitter = resolveShipperForNfe(key, meta, shipperPool, defaultShipperEntry);
+      rawLegs.push({ key, meta, dest, remitter });
     }
     if (missing.length) {
       return json(
@@ -495,8 +650,30 @@ serve(async (req) => {
       );
     }
 
+    const notCfn = [
+      ...new Map(
+        rawLegs
+          .filter((l) => l.remitter.emitCteVia !== 'cfn')
+          .map((l) => [l.remitter.party.id, l.remitter] as const)
+      ).values(),
+    ];
+    if (notCfn.length) {
+      return json(
+        {
+          error: 'shipper_not_routed_to_cfn',
+          detail: notCfn.map((s) => `${s.party.name} routed to '${s.emitCteVia}'`).join('; '),
+          shippers: notCfn.map((s) => ({
+            id: s.party.id,
+            name: s.party.name,
+            emit_cte_via: s.emitCteVia,
+          })),
+        },
+        422,
+        cors
+      );
+    }
+
     const freightTotal = Number(order?.value ?? quote.value ?? 0);
-    const originCep = digits(quote.origin_cep);
     const quoteKm = Number(quote.km_distance ?? 0);
     const quoteDestUf =
       String(quote.destination_uf || '')
@@ -520,6 +697,7 @@ serve(async (req) => {
     async function kmNegociadoForLeg(l: {
       dest: PartyRow;
       meta: Record<string, unknown>;
+      remitter: ShipperPoolEntry;
     }): Promise<number> {
       const stored = Number(l.meta.km_negociado ?? 0);
       if (stored > 0) return stored;
@@ -538,9 +716,20 @@ serve(async (req) => {
       const destUf = String(l.dest.state ?? '')
         .toUpperCase()
         .slice(0, 2);
-      if (quoteKm > 0 && destUf && quoteDestUf && destUf === quoteDestUf) return quoteKm;
+      // Mesmo destinatário + vários remetentes: NÃO reutilizar quoteKm inteiro em todas as pernas
+      const distinctRemitters = new Set(rawLegs.map((x) => digits(x.remitter.party.cnpj)));
+      if (
+        distinctRemitters.size <= 1 &&
+        quoteKm > 0 &&
+        destUf &&
+        quoteDestUf &&
+        destUf === quoteDestUf
+      ) {
+        return quoteKm;
+      }
 
-      const destCep = digits(l.dest.zip_code);
+      const originCep = digits(l.remitter.originCep);
+      const destCep = digits(l.dest.zip_code) || digits(quote.destination_cep);
       if (originCep.length === 8 && destCep.length === 8) {
         const wr = await calculateRouteDistance(originCep, destCep);
         if (wr.success && wr.km_distance > 0) return wr.km_distance;
@@ -553,13 +742,19 @@ serve(async (req) => {
       kms.push(await kmNegociadoForLeg(l));
     }
     const missingKm = rawLegs
-      .map((l, i) => ({ dest: l.dest.name, nfe: l.meta.nfe_numero, km: kms[i] }))
+      .map((l, i) => ({
+        dest: l.dest.name,
+        rem: l.remitter.party.name,
+        nfe: l.meta.nfe_numero,
+        km: kms[i],
+      }))
       .filter((x) => !(x.km > 0));
     if (missingKm.length) {
       return json(
         {
           error: 'km_destinatario_missing',
-          detail: 'Sem km negociado/calculado para ratear o frete entre os destinatários.',
+          detail:
+            'Sem km negociado/calculado para ratear o frete (origem do embarcador → destino da NF).',
           missing: missingKm,
         },
         422,
@@ -567,25 +762,52 @@ serve(async (req) => {
       );
     }
 
+    const parts = splitFreightProportional(freightTotal, kms);
+
+    // Valor/peso da mercadoria: meta.valor_nf / peso_kg; se faltar, rateia cargo_value/weight da COT/OS pelo mesmo km
+    const cargoTotal = Number(
+      (order as { cargo_value?: number | null } | null)?.cargo_value ?? quote.cargo_value ?? 0
+    );
+    const weightTotal = Number(
+      (order as { weight?: number | null } | null)?.weight ?? quote.weight ?? 0
+    );
+    const nfCargoRaw = rawLegs.map((l) => Number(l.meta.valor_nf ?? 0));
+    const nfWeightRaw = rawLegs.map((l) => Number(l.meta.peso_kg ?? 0));
+    const useCargoSplit = cargoTotal > 0 && nfCargoRaw.every((v) => !(v > 0));
+    const useWeightSplit = weightTotal > 0 && nfWeightRaw.every((v) => !(v > 0));
+    const cargoParts = useCargoSplit ? splitFreightProportional(cargoTotal, kms) : nfCargoRaw;
+    const weightParts = useWeightSplit ? splitFreightProportional(weightTotal, kms) : nfWeightRaw;
+
     if (order?.id) {
       for (let i = 0; i < rawLegs.length; i++) {
         await supabase
           .from('documents')
           .update({
-            validation_metadata: { ...rawLegs[i].meta, km_negociado: kms[i] },
+            validation_metadata: {
+              ...rawLegs[i].meta,
+              km_negociado: kms[i],
+              valor_prestacao_sugerido: parts[i],
+              valor_nf: cargoParts[i] > 0 ? cargoParts[i] : rawLegs[i].meta.valor_nf,
+              peso_kg: weightParts[i] > 0 ? weightParts[i] : rawLegs[i].meta.peso_kg,
+              remetente_cnpj: rawLegs[i].remitter.party.cnpj,
+              remetente_nome: rawLegs[i].remitter.party.name,
+              remetente_shipper_id: rawLegs[i].remitter.party.id,
+            },
           })
           .eq('order_id', order.id)
           .eq('nfe_key', rawLegs[i].key);
       }
     }
 
-    const parts = splitFreightProportional(freightTotal, kms);
     const legs: NfeLeg[] = rawLegs.map((l, i) => ({
       nfe_key: l.key,
       nfe_numero: String(l.meta.nfe_numero ?? nfeNumeroFromChave(l.key)),
       dest: l.dest,
-      cargo_value: Number(l.meta.valor_nf ?? 0),
-      weight: Number(l.meta.peso_kg ?? 0),
+      shipper: l.remitter.party,
+      origin_cep: l.remitter.originCep,
+      origin_label: l.remitter.originLabel,
+      cargo_value: cargoParts[i] ?? 0,
+      weight: weightParts[i] ?? 0,
       valor_prestacao: parts[i] ?? 0,
       km_negociado: kms[i] ?? 0,
     }));
@@ -607,13 +829,23 @@ serve(async (req) => {
     const emissions = [];
     for (const leg of toEmit) {
       const dest = await resolveIbge(await enrichDestIe(leg.dest));
+      const remitterPatched = await ensurePartyIe(
+        supabase,
+        await resolveIbge(leg.shipper as unknown as Record<string, unknown>),
+        'shippers'
+      );
       const destIbge = dest.ibge_code ?? null;
       const destUf = dest.state || null;
+      const rem = (remitterPatched ?? leg.shipper) as PartyRow;
       const quoteLeg: QuoteRow = {
         ...quotePatched,
         nfe_keys: [leg.nfe_key],
         cargo_value: leg.cargo_value,
         weight: leg.weight,
+        origin_cep: leg.origin_cep,
+        origin: leg.origin_label || rem.city,
+        origin_uf: rem.state,
+        origin_ibge: rem.ibge_code ?? null,
         destination_ibge: destIbge,
         destination_uf: destUf,
         destination: dest.city,
@@ -628,7 +860,7 @@ serve(async (req) => {
         ambiente,
         vectra,
         quote: quoteLeg,
-        shipper: shipperPatched as PartyRow,
+        shipper: rem,
         client: dest,
         orderId: order?.id ?? null,
         orderValue: null,
@@ -641,6 +873,7 @@ serve(async (req) => {
         ...result,
         nfe_key: leg.nfe_key,
         nfe_numero: leg.nfe_numero,
+        rem_name: rem.name,
         dest_name: dest.name,
         valor_total: leg.valor_prestacao,
         km_negociado: leg.km_negociado,
@@ -649,10 +882,15 @@ serve(async (req) => {
 
     const anyRejected = emissions.some((e) => !e.ok || e.status === 'rejected');
     const first = emissions[0];
+    const sumPrest = Number(
+      emissions.reduce((a, e) => a + Number(e.valor_total ?? 0), 0).toFixed(2)
+    );
     return json(
       {
         ok: !anyRejected,
         count: emissions.length,
+        freight_total: freightTotal,
+        freight_sum_emitted: sumPrest,
         emissions,
         emission_id: first?.emission_id,
         ref: first?.ref,

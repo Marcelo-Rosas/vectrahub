@@ -39,12 +39,14 @@ export function SendAverbaMsEmailModal({
 }: SendAverbaMsEmailModalProps) {
   const [to, setTo] = useState(formatEmailList(AVERBA_MS_TO_DEFAULT));
   const [cc, setCc] = useState(formatEmailList(AVERBA_MS_CC_DEFAULT));
+  const [message, setMessage] = useState('');
   const send = useSendAverbaMsEmail();
 
   useEffect(() => {
     if (open) {
       setTo(formatEmailList(AVERBA_MS_TO_DEFAULT));
       setCc(formatEmailList(AVERBA_MS_CC_DEFAULT));
+      setMessage('');
     }
   }, [open]);
 
@@ -56,6 +58,7 @@ export function SendAverbaMsEmailModal({
       to: toList,
       cc: parseEmailList(cc),
       vehiclePlate: vehiclePlate ?? undefined,
+      message: message.trim() || undefined,
     });
     onClose();
   }
@@ -94,6 +97,21 @@ export function SendAverbaMsEmailModal({
               );
             })}
           </ul>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="averba-message">Mensagem (corpo do e-mail)</Label>
+          <Textarea
+            id="averba-message"
+            rows={3}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Ex.: Favor desconsiderar o e-mail anterior — CT-es reemitidos com valor de mercadoria corrigido."
+            maxLength={2000}
+          />
+          <p className="text-[11px] text-muted-foreground">
+            Opcional. Aparece logo após a saudação, antes da tabela.
+          </p>
         </div>
 
         <div className="space-y-2">

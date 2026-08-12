@@ -14,8 +14,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { formatCurrency } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import type { StoredPricingBreakdown } from '@/lib/freightCalculator';
+import { resolveCustoServicosOperacionaisDisplay } from '@/lib/freightCalculator';
 import { resolvePisoAnttCarreteiroReais } from '@/lib/carreteiro-cost';
 import { estimateInsuranceRiskCosts } from '@/lib/lotacao-freight-base';
+import { resolveBaseMotoristaFracionadoReais } from '@/lib/quote-financial-strip';
 
 interface ConditionalFee {
   id: string;
@@ -50,6 +52,7 @@ interface QuoteModalCostCompositionTabProps {
   onSaveAntt?: () => Promise<void>;
   /** Valor da carga (NF) para cálculo do seguro real */
   cargoValue?: number;
+  freightModality?: 'lotacao' | 'fracionado' | string | null;
   /** Callback to recalculate freight (v4 → v5 upgrade) */
   onRecalculate?: () => void;
   isRecalculating?: boolean;
@@ -78,6 +81,7 @@ export function QuoteModalCostCompositionTab({
   hasAnttCalc,
   onSaveAntt,
   cargoValue = 0,
+  freightModality,
   onRecalculate,
   isRecalculating = false,
 }: QuoteModalCostCompositionTabProps) {
@@ -115,7 +119,11 @@ export function QuoteModalCostCompositionTab({
     (breakdown.totals.irpj ?? 0) > 0 ||
     (breakdown.totals.csll ?? 0) > 0;
   const isLucroPresumido = regimeFiscal === 'lucro_presumido' || hasFederalTaxLines;
-  const custoEfetivoMotorista = breakdown.components?.baseFreight ?? 0;
+  const isFracionado =
+    freightModality === 'fracionado' || breakdown.meta?.ltlMinWeightApplied === true;
+  const custoEfetivoMotorista = isFracionado
+    ? resolveBaseMotoristaFracionadoReais(breakdown)
+    : (breakdown.components?.baseFreight ?? 0);
   const custoMotoristaPisoAntt =
     resolvePisoAnttCarreteiroReais(breakdown) ||
     pisoAnttTotal ||
@@ -129,12 +137,16 @@ export function QuoteModalCostCompositionTab({
   const tearValue = breakdown.components?.tear ?? 0;
   const aluguelMaquinasValue = breakdown.components?.aluguelMaquinas ?? 0;
   const adValoremValue = breakdown.components?.adValorem ?? 0;
+  const dispatchFeeValue = breakdown.components?.dispatchFee ?? 0;
 
-  const baseFreight = breakdown.components?.baseFreight ?? 0;
+  const baseFreight = isFracionado
+    ? resolveBaseMotoristaFracionadoReais(breakdown)
+    : (breakdown.components?.baseFreight ?? 0);
   const pedagioMemoria = breakdown.components?.toll ?? 0;
-  const subtotalMotorista = baseFreight + pedagioMemoria;
-  const anttFloorApplied = breakdown.meta?.anttFloorApplied === true;
+  const subtotalMotorista = isFracionado ? baseFreight : baseFreight + pedagioMemoria;
+  const anttFloorApplied = !isFracionado && breakdown.meta?.anttFloorApplied === true;
   const fretePesoOriginal = breakdown.meta?.fretePesoOriginal ?? 0;
+  const repasseRiscoMemoria = grisValue + tsoValue + rctrcValue + adValoremValue;
 
   const composicaoRows: { label: string; value: number; field: string }[] = [];
   if (breakdown.components) {
@@ -143,30 +155,6 @@ export function QuoteModalCostCompositionTab({
         label: 'Aluguel de Máquinas',
         value: breakdown.components.aluguelMaquinas ?? 0,
         field: 'aluguel_maquinas',
-      });
-    if ((breakdown.components.rctrc ?? 0) > 0)
-      composicaoRows.push({
-        label: `RCTR-C (${breakdown.rates?.costValuePercent?.toFixed(2) ?? 0}%)`,
-        value: breakdown.components.rctrc ?? 0,
-        field: 'rctrc',
-      });
-    if ((breakdown.components.gris ?? 0) > 0)
-      composicaoRows.push({
-        label: `GRIS (${breakdown.rates?.grisPercent?.toFixed(2) ?? 0}%)`,
-        value: breakdown.components.gris ?? 0,
-        field: 'gris',
-      });
-    if ((breakdown.components.tso ?? 0) > 0)
-      composicaoRows.push({
-        label: `TSO (${breakdown.rates?.tsoPercent?.toFixed(2) ?? 0}%)`,
-        value: breakdown.components.tso ?? 0,
-        field: 'tso',
-      });
-    if (adValoremValue > 0)
-      composicaoRows.push({
-        label: `Ad Valorem (${breakdown.rates?.adValoremPercent?.toFixed(3) ?? '0.030'}%)`,
-        value: adValoremValue,
-        field: 'ad_valorem',
       });
     if ((breakdown.components.tde ?? 0) > 0)
       composicaoRows.push({
@@ -181,7 +169,7 @@ export function QuoteModalCostCompositionTab({
         field: 'tear',
       });
     // Taxas condicionais = markup (receita) — listadas fora dos CD abaixo.
-    // DRE v5: Taxa de Despacho (NTC) eh cobranca embarcador, nao CD.
+    // GRIS/TSO/RCTR-C/Ad Valorem = repasse Hub (FAT), não base motorista.
     if ((breakdown.components.waitingTimeCost ?? 0) > 0)
       composicaoRows.push({
         label: 'Estadia / hora parada',
@@ -215,17 +203,16 @@ export function QuoteModalCostCompositionTab({
       field: 'custos_descarga',
     });
 
-  const custoServicosPb = breakdown.profitability?.custoServicos;
+  const custoServicosPb = resolveCustoServicosOperacionaisDisplay(
+    breakdown.components,
+    breakdown.profitability?.custoServicos
+  );
   const custosDiretos =
     breakdown.profitability?.custosDiretos ??
     (custoServicosPb != null
       ? baseFreight + custoServicosPb + custosDescargaMemoria
       : baseFreight +
         pedagioMemoria +
-        rctrcValue +
-        grisValue +
-        tsoValue +
-        adValoremValue +
         tdeValue +
         tearValue +
         aluguelMaquinasValue +
@@ -328,7 +315,7 @@ export function QuoteModalCostCompositionTab({
                     data-testid="row-frete-base-label"
                     className="text-muted-foreground"
                   >
-                    Frete Base
+                    {isFracionado ? 'Frete Peso (NTC Fracionado)' : 'Frete Base'}
                     {anttFloorApplied && (
                       <span className="ml-1 text-xs text-amber-600 font-medium">
                         (Piso ANTT aplicado — MP 1.343/2026)
@@ -343,7 +330,7 @@ export function QuoteModalCostCompositionTab({
                     {formatCurrency(baseFreight)}
                   </TableCell>
                 </TableRow>
-                {pedagioMemoria > 0 && (
+                {!isFracionado && pedagioMemoria > 0 && (
                   <TableRow>
                     <TableCell
                       data-field="pedagio"
@@ -367,9 +354,15 @@ export function QuoteModalCostCompositionTab({
                     data-testid="row-subtotal-motorista-label"
                     className="font-semibold text-primary"
                   >
-                    <span className="block">Subtotal Motorista (Base de Negociação)</span>
+                    <span className="block">
+                      {isFracionado
+                        ? 'Base motorista (frete peso NTC)'
+                        : 'Subtotal Motorista (Base de Negociação)'}
+                    </span>
                     <span className="block text-[10px] font-normal text-muted-foreground">
-                      Frete + pedágio — referência com motorista, não soma ao ALL-IN
+                      {isFracionado
+                        ? 'kg faturável × R$/kg da faixa — sem GRIS/TSO/RCTR-C/despacho'
+                        : 'Frete + pedágio — referência com motorista, não soma ao ALL-IN'}
                     </span>
                   </TableCell>
                   <TableCell
@@ -380,6 +373,24 @@ export function QuoteModalCostCompositionTab({
                     {formatCurrency(subtotalMotorista)}
                   </TableCell>
                 </TableRow>
+                {isFracionado && pedagioMemoria > 0 && (
+                  <TableRow>
+                    <TableCell
+                      data-field="pedagio"
+                      data-testid="row-pedagio-label"
+                      className="text-muted-foreground"
+                    >
+                      Pedágio (custo operacional)
+                    </TableCell>
+                    <TableCell
+                      data-field="pedagio_valor"
+                      data-testid="row-pedagio-value"
+                      className="text-right font-medium tabular-nums"
+                    >
+                      {formatCurrency(pedagioMemoria)}
+                    </TableCell>
+                  </TableRow>
+                )}
                 {composicaoRows.map((r) => (
                   <TableRow key={r.label}>
                     <TableCell
@@ -414,6 +425,48 @@ export function QuoteModalCostCompositionTab({
                     {formatCurrency(custosDiretos)}
                   </TableCell>
                 </TableRow>
+                {repasseRiscoMemoria > 0 && (
+                  <TableRow>
+                    <TableCell
+                      data-field="repasse_risco"
+                      data-testid="row-repasse-risco-label"
+                      className="text-muted-foreground"
+                    >
+                      <span className="block">Repasse de risco (Vectra HUB)</span>
+                      <span className="block text-[10px] font-normal text-muted-foreground">
+                        GRIS/TSO/RCTR-C/Ad Valorem — já no FAT, não é PAG do motorista
+                      </span>
+                    </TableCell>
+                    <TableCell
+                      data-field="repasse_risco_valor"
+                      data-testid="row-repasse-risco-value"
+                      className="text-right font-medium tabular-nums"
+                    >
+                      {formatCurrency(repasseRiscoMemoria)}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {isFracionado && dispatchFeeValue > 0 && (
+                  <TableRow>
+                    <TableCell
+                      data-field="dispatch_fee"
+                      data-testid="row-dispatch-fee-label"
+                      className="text-muted-foreground"
+                    >
+                      <span className="block">Taxa de despacho (NTC)</span>
+                      <span className="block text-[10px] font-normal text-muted-foreground">
+                        Cobrança ao embarcador — não entra na base motorista
+                      </span>
+                    </TableCell>
+                    <TableCell
+                      data-field="dispatch_fee_valor"
+                      data-testid="row-dispatch-fee-value"
+                      className="text-right font-medium tabular-nums"
+                    >
+                      {formatCurrency(dispatchFeeValue)}
+                    </TableCell>
+                  </TableRow>
+                )}
                 {taxasMarkupMemoria > 0 && (
                   <TableRow>
                     <TableCell
@@ -848,13 +901,20 @@ export function QuoteModalCostCompositionTab({
                 </TableRow>
                 <TableRow>
                   <TableCell className="pl-8 text-muted-foreground">
-                    • Custo Motorista (Piso ANTT / carreteiro)
+                    {isFracionado
+                      ? '• Custo Motorista (frete peso NTC)'
+                      : '• Custo Motorista (Piso ANTT / carreteiro)'}
                   </TableCell>
                   <TableCell className="text-right tabular-nums text-destructive">
-                    -{formatCurrency(custoMotoristaPisoAntt)}
+                    -
+                    {formatCurrency(
+                      isFracionado
+                        ? custoEfetivoMotorista
+                        : custoMotoristaPisoAntt || custoEfetivoMotorista
+                    )}
                   </TableCell>
                 </TableRow>
-                {custoEfetivoMotorista > custoMotoristaPisoAntt + 0.01 && (
+                {!isFracionado && custoEfetivoMotorista > custoMotoristaPisoAntt + 0.01 && (
                   <TableRow>
                     <TableCell className="pl-8 text-muted-foreground text-xs">
                       • Frete peso contratado (NTC, ref. gross-up)
@@ -1000,16 +1060,24 @@ export function QuoteModalCostCompositionTab({
               {targetMarginPercent?.toFixed(0) ?? '—'}% (embutido no preço, separado).
             </p>
           </div>
-          {breakdown.meta?.ltlMinWeightApplied && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Trava de 1 Tonelada Aplicada:</strong> Peso real informado foi{' '}
-                {breakdown.meta.originalWeightKg} kg, mas o cálculo de custo usou o mínimo de 1.000
-                kg para viabilidade operacional do fracionado.
-              </AlertDescription>
-            </Alert>
-          )}
+          {(() => {
+            const cubado = breakdown.weights?.cubageWeight ?? 0;
+            const pesoReal = breakdown.meta?.originalWeightKg ?? 0;
+            const faturavel = breakdown.weights?.billableWeight ?? cubado;
+            const fator = breakdown.meta?.cubageFactor ?? 300;
+            if (cubado <= pesoReal + 0.01) return null;
+            return (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Peso cubado aplicado:</strong> volume × fator {fator} kg/m³ ={' '}
+                  {cubado.toLocaleString('pt-BR')} kg, maior que o peso real
+                  {pesoReal > 0 ? ` (${pesoReal.toLocaleString('pt-BR')} kg)` : ''}. Peso faturável
+                  = {faturavel.toLocaleString('pt-BR')} kg.
+                </AlertDescription>
+              </Alert>
+            );
+          })()}
         </TabsContent>
 
         <TabsContent value="custos" className="mt-4 space-y-4">

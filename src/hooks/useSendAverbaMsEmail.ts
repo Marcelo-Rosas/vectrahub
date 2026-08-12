@@ -8,6 +8,8 @@ export interface SendAverbaMsEmailParams {
   cc?: string[];
   bcc?: string[];
   vehiclePlate?: string;
+  /** Texto livre no corpo do e-mail. */
+  message?: string;
 }
 
 export function useSendAverbaMsEmail() {

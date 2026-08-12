@@ -10,11 +10,43 @@ import {
   type StoredPricingBreakdown,
 } from '@/lib/freightCalculator';
 
-/** PAG ao carreteiro: piso ANTT em lotação; não escala com desconto comercial no FAT. */
+/**
+ * NTC Fracionado: base motorista = frete peso (kg faturável × R$/kg da faixa).
+ * Não usa piso ANTT (só lotação) nem snapshot legado `ntc_base`
+ * (peso + GRIS + TSO + RCTR-C + despacho — receita da Hub, não PAG).
+ */
+export function resolveBaseMotoristaFracionadoReais(
+  breakdown: StoredPricingBreakdown | FreightCalculationOutput
+): number {
+  const c = breakdown.components;
+  const p = breakdown.profitability;
+  const baseCost = Number(c?.baseCost ?? 0);
+  if (baseCost > 0) return round2(baseCost);
+  const risk = sumRiskRepasse({
+    gris: c?.gris,
+    tso: c?.tso,
+    rctrc: c?.rctrc,
+    adValorem: c?.adValorem,
+  });
+  const dispatch = Number(c?.dispatchFee ?? 0);
+  const packaged = Number(p?.custoMotoristaContratado ?? p?.custosCarreteiro ?? 0);
+  if (packaged > 0 && risk + dispatch > 0.01) {
+    const peso = round2(packaged - risk - dispatch);
+    if (peso > 0) return peso;
+  }
+  if (packaged > 0) return round2(packaged);
+  return round2(Number(p?.custoMotorista ?? c?.baseFreight ?? 0));
+}
+
+/** PAG ao carreteiro: piso ANTT em lotação; NTC frete peso em fracionado. */
 function resolvePagMotoristaReais(
   breakdown: StoredPricingBreakdown | FreightCalculationOutput,
-  anttApplied: boolean
+  anttApplied: boolean,
+  modality?: 'lotacao' | 'fracionado'
 ): number {
+  if (modality === 'fracionado') {
+    return resolveBaseMotoristaFracionadoReais(breakdown);
+  }
   const p = breakdown.profitability;
   const c = breakdown.components;
   if (anttApplied) {
@@ -72,13 +104,15 @@ export function buildQuoteFinancialStripFromCalculation(
   const totalBruto = t?.totalCliente ?? 0;
   const totalCliente = Math.max(0, totalBruto - discount);
 
-  const anttApplied = m?.anttCostBaseUsed === true || m?.anttFloorApplied === true;
+  const isFracionado = options?.modality === 'fracionado';
+  const anttApplied =
+    !isFracionado && (m?.anttCostBaseUsed === true || m?.anttFloorApplied === true);
   const pisoAntt =
     readMetaAnttPisoCarreteiro(m) ||
     Number(m?.anttPisoCarreteiro ?? 0) ||
     Number(p?.custoMotoristaAntt ?? 0);
   const freteTabelaRef = m?.fretePesoOriginal ?? m?.lotacaoFreteTabelaComOverKm ?? 0;
-  const motorista = resolvePagMotoristaReais(calculation, anttApplied);
+  const motorista = resolvePagMotoristaReais(calculation, anttApplied, options?.modality);
 
   const receitaLiquida =
     p?.receitaLiquida ??
@@ -162,11 +196,13 @@ export function buildQuoteFinancialStripFromBreakdown(
   const totalCliente = options.totalCliente;
   if (totalCliente <= 0) return null;
 
-  const anttApplied = m?.anttCostBaseUsed === true || m?.anttFloorApplied === true;
+  const isFracionado = options.modality === 'fracionado';
+  const anttApplied =
+    !isFracionado && (m?.anttCostBaseUsed === true || m?.anttFloorApplied === true);
   const pisoAntt = resolvePisoAnttCarreteiroReais(breakdown);
   const freteTabelaRef = m?.fretePesoOriginal ?? m?.lotacaoFreteTabelaComOverKm ?? 0;
   /** Custos operacionais (PAG) não reduzem com desconto comercial no FAT. */
-  const motorista = resolvePagMotoristaReais(breakdown, anttApplied);
+  const motorista = resolvePagMotoristaReais(breakdown, anttApplied, options.modality);
   const pedagio = round2(c?.toll ?? 0);
   const repasse = sumRiskRepasse({
     gris: c?.gris,

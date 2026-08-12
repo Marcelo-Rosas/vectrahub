@@ -60,7 +60,7 @@ export function useCreateShipper() {
     mutationFn: async (shipper: ShipperInsert) => {
       const { data, error } = await supabase
         .from('shippers')
-        .insert(asInsert(shipper))
+        .insert(asInsert({ ...shipper, emit_cte_via: shipper.emit_cte_via ?? 'cfn' }))
         .select()
         .single();
 

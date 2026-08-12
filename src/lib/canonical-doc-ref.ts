@@ -34,6 +34,25 @@ export function slugifyPayer(name: string | null | undefined): string {
     .slice(0, 80);
 }
 
+/**
+ * Deriva o código CTR do contrato a partir do `quote_code` (1:1 com a cotação).
+ * `COT-2026-08-0002` → `CTR-2026-08-0002`.
+ */
+export function ctrCodeFromQuoteCode(quoteCode: string | null | undefined): string {
+  const code = String(quoteCode ?? '').trim();
+  if (!code) return 'CTR';
+  if (/^COT-/i.test(code)) return code.replace(/^COT-/i, 'CTR-');
+  return `CTR-${code}`;
+}
+
+/** Contratos emitidos antes da regra CTR canônica (prefixo COT no filename). */
+export function isLegacyContractFilename(fileName: string | null | undefined): boolean {
+  const name = String(fileName ?? '').trim();
+  if (!name) return false;
+  if (/^CTR-/i.test(name)) return false;
+  return /^COT-/i.test(name) || /_contrato_v/i.test(name);
+}
+
 /** Referência exibida no documento: `CÓDIGO — RAZÃO SOCIAL DO PAGADOR`. */
 export function buildCanonicalReference(
   code: string | null | undefined,

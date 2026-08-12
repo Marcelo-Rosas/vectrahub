@@ -7,10 +7,10 @@
     "skipLibCheck": true,
     "strict": false,
     "allowImportingTsExtensions": true,
-    "baseUrl": "../../../",
     "paths": {
-      "@supabase/supabase-js": ["node_modules/@supabase/supabase-js"],
-      "pdf-lib": ["node_modules/pdf-lib"]
+      "*": ["../../../*"],
+      "@supabase/supabase-js": ["../../../node_modules/@supabase/supabase-js"],
+      "pdf-lib": ["../../../node_modules/pdf-lib"]
     }
   },
   "include": ["./**/*.ts", "../_shared/deno.d.ts"]

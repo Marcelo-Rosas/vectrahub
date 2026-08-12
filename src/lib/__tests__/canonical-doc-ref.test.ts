@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   buildCanonicalFilename,
   buildCanonicalReference,
+  ctrCodeFromQuoteCode,
+  isLegacyContractFilename,
   resolveFreightPayerName,
   slugifyPayer,
 } from '@/lib/canonical-doc-ref';
@@ -27,6 +29,22 @@ describe('resolveFreightPayerName', () => {
 describe('slugifyPayer', () => {
   it('normaliza acentos e espaços', () => {
     expect(slugifyPayer('AC7 Comércio de Artigos LTDA')).toBe('AC7_COMERCIO_DE_ARTIGOS_LTDA');
+  });
+});
+
+describe('ctrCodeFromQuoteCode', () => {
+  it('troca COT- por CTR- mantendo o número', () => {
+    expect(ctrCodeFromQuoteCode('COT-2026-08-0007')).toBe('CTR-2026-08-0007');
+  });
+});
+
+describe('isLegacyContractFilename', () => {
+  it('detecta filename legado COT_contrato', () => {
+    expect(isLegacyContractFilename('COT-2026-08-0002_contrato_v3.pdf')).toBe(true);
+  });
+
+  it('aceita filename canônico CTR', () => {
+    expect(isLegacyContractFilename('CTR-2026-08-0007-v2-EL_TIANGUA_LTDA.pdf')).toBe(false);
   });
 });
 

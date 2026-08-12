@@ -50,7 +50,10 @@ import { resolvePisoAnttCarreteiroReais } from '@/lib/carreteiro-cost';
 import { resolveAnttRsKm, resolvePisoAnttTotalReais } from '@/lib/antt-rs-km';
 import { enrichStoredBreakdownAnttMeta } from '@/lib/enrich-breakdown-antt-meta';
 import { mergeBreakdownWithNegotiatedDiscount } from '@/lib/quote-breakdown-utils';
-import { buildQuoteFinancialStripFromBreakdown } from '@/lib/quote-financial-strip';
+import {
+  buildQuoteFinancialStripFromBreakdown,
+  resolveBaseMotoristaFracionadoReais,
+} from '@/lib/quote-financial-strip';
 import { QuoteComplianceStrip } from '@/components/forms/quote-form/FinancialDualStrip';
 import { supabase } from '@/integrations/supabase/client';
 import { asDb, asInsert, filterSupabaseRows, filterSupabaseSingle } from '@/lib/supabase-utils';
@@ -331,19 +334,23 @@ export function QuoteDetailModal({
     receitaLiquidaSnapshot != null ? round2(receitaLiquidaSnapshot * faturamentoRatio) : null;
 
   const priceTableModality = (priceTable as { modality?: string } | null)?.modality;
+  const isFracionado =
+    quote?.freight_modality === 'fracionado' || priceTableModality === 'fracionado';
   const custosCarreteiroView =
     breakdown?.profitability?.custosCarreteiro ??
     (breakdown?.profitability as { custos_carreteiro?: number } | undefined)?.custos_carreteiro ??
     null;
   const pisoAnttCarreteiroView = resolvePisoAnttCarreteiroReais(breakdown);
   const custoMotoristaContratadoView =
-    breakdown?.profitability?.custoMotoristaContratado ??
-    breakdown?.profitability?.custosCarreteiro ??
-    (breakdown?.profitability as { custoMotorista?: number } | undefined)?.custoMotorista ??
-    custosCarreteiroView;
+    isFracionado && breakdown
+      ? resolveBaseMotoristaFracionadoReais(breakdown)
+      : (breakdown?.profitability?.custoMotoristaContratado ??
+        breakdown?.profitability?.custosCarreteiro ??
+        (breakdown?.profitability as { custoMotorista?: number } | undefined)?.custoMotorista ??
+        custosCarreteiroView);
   /** Lotação: exibir piso ANTT carreteiro (sem over %), alinhado à aba Custos. */
   const custoMotoristaView =
-    priceTableModality === 'lotacao' && pisoAnttCarreteiroView > 0
+    !isFracionado && priceTableModality === 'lotacao' && pisoAnttCarreteiroView > 0
       ? pisoAnttCarreteiroView
       : custoMotoristaContratadoView;
   const pisoAnttView = resolvePisoAnttTotalReais({
@@ -440,9 +447,9 @@ export function QuoteDetailModal({
     faturamentoRatio,
     targetMarginPercent: targetMargin,
     modality:
-      priceTableModality === 'fracionado'
+      quote?.freight_modality === 'fracionado' || priceTableModality === 'fracionado'
         ? 'fracionado'
-        : priceTableModality === 'lotacao'
+        : quote?.freight_modality === 'lotacao' || priceTableModality === 'lotacao'
           ? 'lotacao'
           : undefined,
   });
@@ -1394,6 +1401,7 @@ export function QuoteDetailModal({
                   hasAnttCalc={!!anttCalc}
                   onSaveAntt={handleSaveAntt}
                   cargoValue={Number(quote?.cargo_value) || 0}
+                  freightModality={quote?.freight_modality ?? priceTableModality}
                   onRecalculate={handleRecalcular}
                   isRecalculating={
                     calculateFreightMutation.isPending || updateQuoteMutation.isPending
@@ -1533,7 +1541,14 @@ export function QuoteDetailModal({
                       <label className="text-sm font-medium text-foreground mb-2 block">
                         Contrato
                       </label>
-                      <QuoteContractPanel quoteId={quote.id} stage={quote.stage} />
+                      <QuoteContractPanel
+                        quoteId={quote.id}
+                        stage={quote.stage}
+                        quoteCode={quote.quote_code}
+                        freightType={quote.freight_type}
+                        clientName={quote.client_name}
+                        shipperName={quote.shipper_name}
+                      />
                     </div>
 
                     <div>

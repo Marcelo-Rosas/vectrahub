@@ -6,6 +6,7 @@ import { renderContractPdf } from './contract-renderer.ts';
 import {
   buildCanonicalFilename,
   ctrCodeFromQuoteCode,
+  isLegacyContractFilename,
   resolveContractContratante,
 } from './contract-clause-helpers.ts';
 
@@ -32,7 +33,8 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Check idempotency: return existing contract if it exists and not forcing
+    // Check idempotency: return existing contract if it exists and not forcing.
+    // Contratos legados (filename COT-..._contrato_vN) são reemitidos automaticamente.
     if (!force_regenerate) {
       const { data: existing } = await sb
         .from('quote_contracts')
@@ -42,7 +44,7 @@ Deno.serve(async (req: Request) => {
         .limit(1)
         .maybeSingle();
 
-      if (existing) {
+      if (existing && !isLegacyContractFilename(existing.pdf_file_name)) {
         const { data: signedUrl } = await sb.storage
           .from('documents')
           .createSignedUrl(existing.pdf_storage_path, 300);
