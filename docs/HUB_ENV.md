@@ -166,19 +166,21 @@ PDF espelho Vectra (`Baixar PDF (Vectra)`) usa logo local `src/assets/logo_vectr
 
 ### MDF-e — averbação no seguro (SEFAZ 699)
 
-Rodoviário exige `numero_averbacao` (nAver) em `seguros_carga`. Fontes no `emit-mdfe`:
+Rodoviário exige `numero_averbacao` (nAver) em `seguros_carga`. Resolução em `_shared/mdfe-seguro-resolver.ts`:
 
-1. `averbacoes` do CT-e (`status=averbado`)
-2. `risk_policies.metadata.numero_averbacao` (ou `averbacao`)
-3. Secret `VECTRA_SEGURO_NAVER`
-4. **Homolog only:** nAver = apólice ramo **55** `1005500008136` (Averba / estipulante VECTRA CARGO `59.650.913/0001-04`)
+1. `averbacoes` do CT-e (`status=averbado`) — AT&M
+2. `risk_policies.metadata.numero_averbacao`
+3. **Fairfax / averbação manual MS** (`averbacao_modo=email_ms`): proposta como nAver até protocolo AT&M
+4. Secret `VECTRA_SEGURO_NAVER`
 
-Apólices Averba (Berkley):
+Apólices VECTRA HUB (Fairfax, Declaração 0171/2026):
 
-| Ramo | Apólice | Uso MDF-e |
-|------|---------|-----------|
-| 54 | 1005400015107 | omitir se 55 ativa |
-| 55 | 1005500008136 | preferida (RCFDC) |
+| Ramo | Proposta | Uso MDF-e |
+|------|----------|-----------|
+| RCTR-C | 63434060699 | omitir se RC-DC ativa |
+| RC-DC | 63433997322 | preferida (RCFDC inclui RCTR-C) |
+
+Seguradora: Fairfax Brasil `10.793.428/0001-92`. Averbação manual: e-mail MS/Fairfax (cobertura OK); nAver = proposta até AT&M set/2026.
 
 ```bash
 # Opcional — override nAver real (produção / pós-averbação AT&M)

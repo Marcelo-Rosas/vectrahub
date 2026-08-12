@@ -36,6 +36,7 @@ import {
 import { resolveMdfePercursoUfs } from '../_shared/uf-percurso.ts';
 import { calculateRouteDistanceFull } from '../_shared/webrouter-client.ts';
 import { extractNcmFromNfeXml, extractNcmFromPdfBytes } from '../_shared/nfe-extract.ts';
+import { resolveMdfeSeguros } from '../_shared/mdfe-seguro-resolver.ts';
 
 function envOrThrow(key: string): string {
   const v = Deno.env.get(key);
@@ -305,12 +306,11 @@ serve(async (req) => {
   }
 
   // Seguro da carga: apólices ativas (RCTR-C / RC-DC). Responsável = emitente (Vectra).
-  // SEFAZ 699: nAver obrigatório no rodoviário. Fontes (ordem):
-  //   1) averbacoes do CT-e vinculado
-  //   2) risk_policies.metadata.numero_averbacao|averbacao
-  //   3) secret VECTRA_SEGURO_NAVER (homolog / fallback operacional)
-  // Se 54+55 ativas → só 55 (RCFDC; 54 já incluso — CNSP/prática Berkley).
-  const BERKLEY_CNPJ = '07021544000189';
+  // SEFAZ 699: nAver obrigatório no rodoviário. Fontes (ordem — ver mdfe-seguro-resolver):
+  //   1) averbacoes AT&M do CT-e
+  //   2) risk_policies.metadata.numero_averbacao
+  //   3) proposta Fairfax (averbacao_modo=email_ms) — averbação manual MS até AT&M
+  //   4) secret VECTRA_SEGURO_NAVER
   const { data: averbRows } = await supabase
     .from('averbacoes')
     .select('numero_averbacao, cte_emission_id, status')
@@ -323,94 +323,31 @@ serve(async (req) => {
         .slice(0, 40)
     )
     .filter(Boolean);
-  // Apólices Averba (estipulante VECTRA CARGO 59.650.913/0001-04):
-  //   ramo 54 → 1005400015107 | ramo 55 → 1005500008136
-  // Homolog sem nAver real: usa nApol 55 como nAver (teste SEFAZ).
+
   const naverEnv = String(Deno.env.get('VECTRA_SEGURO_NAVER') ?? '')
     .replace(/\s/g, '')
     .slice(0, 40);
-  const HOMOLOG_NAVER_DEFAULT = '1005500008136';
 
   const ambienteEarly = (Deno.env.get('FOCUS_NFE_AMBIENTE') as FocusAmbiente) ?? 'homolog';
 
   const { data: policies } = await supabase
     .from('risk_policies')
-    .select('code, insurer, metadata')
+    .select('code, policy_type, insurer, metadata')
     .eq('is_active', true);
 
-  let policyRows = (policies ?? []).filter(
-    (pol: any) => (pol.metadata?.status ?? '') !== 'em_emissao'
-  );
-  // Preferência explícita pelas apólices Averba conhecidas
-  const PREFERRED = new Set(['1005500008136', '1005400015107']);
-  if (policyRows.some((p: any) => PREFERRED.has(String(p.code ?? '').replace(/\D/g, '')))) {
-    policyRows = policyRows.filter((p: any) =>
-      PREFERRED.has(String(p.code ?? '').replace(/\D/g, ''))
-    );
-  }
-  const has55 = policyRows.some((p: any) => {
-    const c = String(p.code ?? '').replace(/\D/g, '');
-    return c.startsWith('10055') || c === '55';
+  const seguros = resolveMdfeSeguros({
+    policies: (policies ?? []) as any[],
+    naverFromCte,
+    naverEnvOverride: naverEnv || undefined,
+    ambiente: ambienteEarly === 'homolog' ? 'homolog' : 'prod',
   });
-  const has54 = policyRows.some((p: any) => {
-    const c = String(p.code ?? '').replace(/\D/g, '');
-    return c.startsWith('10054') || c === '54';
-  });
-  if (has54 && has55) {
-    policyRows = policyRows.filter((p: any) => {
-      const c = String(p.code ?? '').replace(/\D/g, '');
-      return c.startsWith('10055');
-    });
-  }
-
-  const seguros: Array<{
-    responsavel_seguro: '1';
-    nome_seguradora: string;
-    cnpj_seguradora: string;
-    numero_apolice: string;
-    numero_averbacao: string;
-  }> = [];
-
-  for (const pol of policyRows as any[]) {
-    const apolice = String(pol.code ?? '').replace(/\D/g, '');
-    const insurer = String(pol.insurer ?? 'Berkley International do Brasil');
-    const cnpjSeg =
-      String(pol.metadata?.insurer_cnpj ?? '').replace(/\D/g, '') ||
-      (/berkley/i.test(insurer) || !pol.insurer ? BERKLEY_CNPJ : '');
-    const fromMeta = String(pol.metadata?.numero_averbacao ?? pol.metadata?.averbacao ?? '')
-      .replace(/\s/g, '')
-      .slice(0, 40);
-    // Homolog: nAver ← nApol 55 se nada cadastrado (portal Averba só lista apólice).
-    const homologFallback =
-      ambienteEarly === 'homolog' ? naverEnv || HOMOLOG_NAVER_DEFAULT || apolice : '';
-    const averbacao = naverFromCte[0] || fromMeta || naverEnv || homologFallback;
-    if (!averbacao || !apolice || !cnpjSeg) continue;
-    seguros.push({
-      responsavel_seguro: '1',
-      nome_seguradora: insurer.slice(0, 30),
-      cnpj_seguradora: cnpjSeg,
-      numero_apolice: apolice,
-      numero_averbacao: averbacao,
-    });
-  }
-
-  // Sem row em risk_policies → injeta apólice 55 Averba (homolog / estipulante Cargo)
-  if (seguros.length === 0 && ambienteEarly === 'homolog') {
-    seguros.push({
-      responsavel_seguro: '1',
-      nome_seguradora: 'Berkley International do Brasi',
-      cnpj_seguradora: BERKLEY_CNPJ,
-      numero_apolice: '1005500008136',
-      numero_averbacao: naverEnv || HOMOLOG_NAVER_DEFAULT,
-    });
-  }
 
   if (seguros.length === 0) {
     return json(
       {
         error: 'seguro_incompleto',
         detail:
-          'SEFAZ 699: seguro rodoviário exige nAver. Cadastre numero_averbacao em risk_policies.metadata, averbe o CT-e, ou defina secret VECTRA_SEGURO_NAVER. Apólices Averba Cargo 59.650.913/0001-04: 54=1005400015107 / 55=1005500008136.',
+          'SEFAZ 699: seguro rodoviário exige nAver. Cadastre apólices Fairfax em risk_policies (propostas 63434060699 RCTR-C / 63433997322 RC-DC), averbe o CT-e via AT&M, ou defina VECTRA_SEGURO_NAVER. Averbação manual MS usa proposta como nAver até protocolo AT&M.',
       },
       422,
       cors
