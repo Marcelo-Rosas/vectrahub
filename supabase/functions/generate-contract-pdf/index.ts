@@ -3,6 +3,12 @@ import { createClient } from '@supabase/supabase-js';
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { fetchCompanySettings } from '../_shared/company-settings.ts';
 import { renderContractPdf } from './contract-renderer.ts';
+import {
+  buildCanonicalFilename,
+  ctrCodeFromQuoteCode,
+  isLegacyContractFilename,
+  resolveContractContratante,
+} from './contract-clause-helpers.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -27,7 +33,8 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Check idempotency: return existing contract if it exists and not forcing
+    // Check idempotency: return existing contract if it exists and not forcing.
+    // Contratos legados (filename COT-..._contrato_vN) são reemitidos automaticamente.
     if (!force_regenerate) {
       const { data: existing } = await sb
         .from('quote_contracts')
@@ -37,7 +44,7 @@ Deno.serve(async (req: Request) => {
         .limit(1)
         .maybeSingle();
 
-      if (existing) {
+      if (existing && !isLegacyContractFilename(existing.pdf_file_name)) {
         const { data: signedUrl } = await sb.storage
           .from('documents')
           .createSignedUrl(existing.pdf_storage_path, 300);
@@ -62,6 +69,7 @@ Deno.serve(async (req: Request) => {
       .select(
         `
         id, quote_code, client_id, client_name, client_email,
+        freight_type, shipper_id, shipper_name,
         origin, destination, cargo_type, weight, volume,
         value, payment_term_id, estimated_loading_date, validity_date,
         advance_due_date, balance_due_date, stage,
@@ -69,6 +77,12 @@ Deno.serve(async (req: Request) => {
         payment_terms:payment_term_id (name, days, advance_percent),
         clients:client_id (
           name, cnpj, address, city, state, zip_code, zip_code_mask,
+          state_registration, legal_representative_name,
+          legal_representative_cpf, legal_representative_role,
+          address_number, address_complement, address_neighborhood
+        ),
+        shippers:shipper_id (
+          name, cnpj, address, city, state, zip_code,
           state_registration, legal_representative_name,
           legal_representative_cpf, legal_representative_role,
           address_number, address_complement, address_neighborhood
@@ -121,7 +135,10 @@ Deno.serve(async (req: Request) => {
     // Upload to storage
     const timestamp = Date.now();
     const storagePath = `contracts/${quote_id}/v${version}-${timestamp}.pdf`;
-    const fileName = `${quote.quote_code ?? quote_id}_contrato_v${version}.pdf`;
+    // Nome canônico: CTR-AAAA-MM-####-vN-RAZAO_SOCIAL_DO_PAGADOR.pdf
+    const ctrCode = ctrCodeFromQuoteCode(quote.quote_code as string | null | undefined);
+    const payerName = resolveContractContratante(quote as Record<string, unknown>).name;
+    const fileName = buildCanonicalFilename(`${ctrCode}-v${version}`, payerName);
 
     const { error: uploadError } = await sb.storage
       .from('documents')

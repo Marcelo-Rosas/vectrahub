@@ -33,6 +33,7 @@ import { useOrderReconciliation } from '@/hooks/useReconciliation';
 import { useProcessPaymentProof } from '@/hooks/usePaymentProofs';
 import { supabase } from '@/integrations/supabase/client';
 import { asInsert } from '@/lib/supabase-utils';
+import { isCarreteiroRealBelowFloor } from '@/lib/carreteiro-cost';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { OrderWithOccurrences } from '@/hooks/useOrders';
@@ -116,9 +117,17 @@ export function CarreteiroTab({ order, canManage }: CarreteiroTabProps) {
   const diff =
     carreteiroRealValue != null && anttValue != null ? carreteiroRealValue - anttValue : null;
 
+  const belowFloor = isCarreteiroRealBelowFloor(carreteiroRealValue, anttValue);
+
   const handleSaveCarreteiroReal = async () => {
     if (carreteiroRealValue == null) {
       toast.error('Informe o valor do carreteiro');
+      return;
+    }
+    if (isCarreteiroRealBelowFloor(carreteiroRealValue, anttValue)) {
+      toast.error(
+        `Valor negociado abaixo do piso ANTT (${formatCurrency(anttValue!)}). Negocie ≥ piso.`
+      );
       return;
     }
     try {
@@ -127,8 +136,9 @@ export function CarreteiroTab({ order, canManage }: CarreteiroTabProps) {
         updates: { carreteiro_real: carreteiroRealValue },
       });
       toast.success('Valor do carreteiro salvo');
-    } catch {
-      toast.error('Erro ao salvar valor do carreteiro');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao salvar valor do carreteiro';
+      toast.error(msg);
     }
   };
 
@@ -325,15 +335,21 @@ export function CarreteiroTab({ order, canManage }: CarreteiroTabProps) {
             <p className="text-xs text-muted-foreground mb-0.5">Diferença</p>
             {diff != null ? (
               <div className="flex items-center gap-1">
-                {diff > 0 ? (
+                {diff < 0 ? (
+                  <TrendingDown className="w-4 h-4 text-destructive" />
+                ) : diff > 0 ? (
                   <TrendingUp className="w-4 h-4 text-warning-foreground" />
                 ) : (
-                  <TrendingDown className="w-4 h-4 text-success" />
+                  <CheckCircle2 className="w-4 h-4 text-success" />
                 )}
                 <p
                   className={cn(
                     'text-lg font-bold',
-                    diff > 0 ? 'text-warning-foreground' : 'text-success'
+                    diff < 0
+                      ? 'text-destructive'
+                      : diff > 0
+                        ? 'text-warning-foreground'
+                        : 'text-success'
                   )}
                 >
                   {formatCurrency(Math.abs(diff))}
@@ -365,9 +381,11 @@ export function CarreteiroTab({ order, canManage }: CarreteiroTabProps) {
                   <p
                     className={cn(
                       'font-semibold',
-                      anttValue != null && Number(order.carreteiro_real) > anttValue
-                        ? 'text-warning-foreground'
-                        : 'text-success'
+                      anttValue != null && Number(order.carreteiro_real) < anttValue
+                        ? 'text-destructive'
+                        : anttValue != null && Number(order.carreteiro_real) > anttValue
+                          ? 'text-warning-foreground'
+                          : 'text-success'
                     )}
                   >
                     R${' '}
@@ -404,14 +422,23 @@ export function CarreteiroTab({ order, canManage }: CarreteiroTabProps) {
                   value={carreteiroRealCents}
                   onValueChange={(rawValue) => setCarreteiroRealCents(rawValue)}
                   placeholder="0,00"
-                  className="h-10 pl-10"
+                  className={cn(
+                    'h-10 pl-10',
+                    belowFloor && 'border-destructive focus-visible:ring-destructive'
+                  )}
                 />
               </div>
+              {belowFloor && anttValue != null && (
+                <p className="text-xs text-destructive mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  Abaixo do piso ANTT ({formatCurrency(anttValue)}). Salvar bloqueado.
+                </p>
+              )}
             </div>
             <Button
               size="default"
               onClick={handleSaveCarreteiroReal}
-              disabled={updateOrderMutation.isPending}
+              disabled={updateOrderMutation.isPending || belowFloor || carreteiroRealValue == null}
               className="gap-2 h-10"
             >
               {updateOrderMutation.isPending ? (

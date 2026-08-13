@@ -67,6 +67,8 @@ export function buildStoredBreakdownFromEdgeResponse(
         .lotacao_piso_com_over,
       lotacaoFreteTabelaComOverKm: (response.meta as { lotacao_frete_tabela_com_over_km?: number })
         .lotacao_frete_tabela_com_over_km,
+      cubageFactor: response.meta.cubage_factor,
+      originalWeightKg: (response.meta as { original_weight_kg?: number }).original_weight_kg,
     },
     weights: {
       cubageWeight: cubKg,
@@ -128,6 +130,7 @@ export function buildStoredBreakdownFromEdgeResponse(
       margemBruta: response.profitability.margem_bruta,
       overhead: response.profitability.overhead,
       resultadoLiquido: response.profitability.resultado_liquido,
+      lucroAlvo: response.profitability.lucro_alvo,
       margemPercent: response.profitability.margem_percent,
       profitMarginTarget: response.profitability.profit_margin_target,
       regimeFiscal: response.profitability.regime_fiscal,
@@ -148,7 +151,7 @@ export function buildStoredBreakdownFromEdgeResponse(
       targetMarginPercent: response.profitability.profit_margin_target ?? 15,
     },
     conditionalFeesBreakdown: undefined,
-    riskCosts: riskCosts ?? undefined,
+    riskCosts: riskCosts ?? response.risk_costs ?? undefined,
     riskPassThrough: {
       gris: c.gris,
       tso: c.tso,

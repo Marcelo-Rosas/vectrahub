@@ -32,10 +32,10 @@ export function usePdfDownload() {
         supabase
           .from('quotes')
           .select(
-            `id, quote_code, client_name, origin, destination, value, cargo_type, weight, volume,
-             km_distance, estimated_loading_date, validity_date, notes, created_at, updated_at,
-             pricing_breakdown, freight_modality, freight_type, payment_method,
-             payment_terms(name)`
+            `id, quote_code, client_name, client_id, client_email, origin, destination, origin_cep, destination_cep, value,
+             cargo_type, weight, volume, km_distance, estimated_loading_date, validity_date, notes,
+             created_at, updated_at, pricing_breakdown, freight_modality, freight_type, payment_method,
+             shipper_id, shipper_name, shipper_email, payment_terms(name)`
           )
           .eq('id', quoteId)
           .single(),
@@ -44,6 +44,34 @@ export function usePdfDownload() {
       if (quoteError || !quoteRow) {
         throw new Error(quoteError?.message || 'Cotação não encontrada.');
       }
+
+      const [{ data: stopsRows }, shipperResult, clientResult] = await Promise.all([
+        supabase
+          .from('quote_route_stops')
+          .select('sequence, stop_type, name, cnpj, cep, city_uf, label, planned_km_from_prev')
+          .eq('quote_id', quoteId)
+          .order('sequence', { ascending: true }),
+        quoteRow.shipper_id
+          ? supabase
+              .from('shippers')
+              .select(
+                `name, cnpj, cpf, contact_name, phone, email, city, state, address,
+                 address_number, address_neighborhood, zip_code`
+              )
+              .eq('id', quoteRow.shipper_id)
+              .maybeSingle()
+          : Promise.resolve({ data: null, error: null }),
+        quoteRow.client_id
+          ? supabase
+              .from('clients')
+              .select(
+                `name, cnpj, cpf, contact_name, phone, email, city, state, address,
+                 address_number, address_neighborhood, zip_code`
+              )
+              .eq('id', quoteRow.client_id)
+              .maybeSingle()
+          : Promise.resolve({ data: null, error: null }),
+      ]);
 
       const anttResult = anttCheck as {
         is_below_antt_floor?: boolean;
@@ -75,6 +103,8 @@ export function usePdfDownload() {
           client_name: quoteRow.client_name ?? '—',
           origin: quoteRow.origin,
           destination: quoteRow.destination,
+          origin_cep: quoteRow.origin_cep,
+          destination_cep: quoteRow.destination_cep,
           value: quoteRow.value,
           cargo_type: quoteRow.cargo_type,
           weight: quoteRow.weight,
@@ -99,6 +129,28 @@ export function usePdfDownload() {
           pricing_breakdown: breakdown,
           freight_modality: quoteRow.freight_modality as 'lotacao' | 'fracionado' | null,
           freight_type: quoteRow.freight_type ?? null,
+          client: clientResult.data
+            ? {
+                ...clientResult.data,
+                cpf: clientResult.data.cpf != null ? String(clientResult.data.cpf) : null,
+              }
+            : quoteRow.client_name
+              ? { name: quoteRow.client_name, email: quoteRow.client_email }
+              : null,
+          client_email_fallback: quoteRow.client_email,
+          shipper: shipperResult.data ?? null,
+          shipper_name_fallback: quoteRow.shipper_name,
+          shipper_email_fallback: quoteRow.shipper_email,
+          route_stops: (stopsRows ?? []).map((s) => ({
+            sequence: s.sequence,
+            stop_type: s.stop_type,
+            name: s.name,
+            cnpj: s.cnpj,
+            cep: s.cep,
+            city_uf: s.city_uf,
+            label: s.label,
+            planned_km_from_prev: s.planned_km_from_prev,
+          })),
           antt_compliance: anttResult?.is_below_antt_floor
             ? { piso: anttResult.piso ?? 0, below: true, modality: '' }
             : undefined,

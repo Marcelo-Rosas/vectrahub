@@ -26,7 +26,7 @@ export function useCiotOperations(orderId?: string) {
       const { data, error } = await supabase
         .from('ciot_operations')
         .select('*')
-        .eq('service_order_id', orderId)
+        .eq('service_order_id', orderId!)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

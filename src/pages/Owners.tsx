@@ -35,6 +35,19 @@ import {
 
 type Owner = Database['public']['Tables']['owners']['Row'];
 
+/** Colunas ANTT/MDF-e (podem ainda não estar nos tipos gerados). */
+type OwnerAnttCols = {
+  rntrc?: string | null;
+  uf?: string | null;
+  tipo_proprietario?: number | null;
+};
+
+const TIPO_PROP_LABEL: Record<number, string> = {
+  0: 'TAC Agreg.',
+  1: 'TAC Indep.',
+  2: 'Outros',
+};
+
 export default function Owners() {
   const { user } = useAuth();
   const { canWrite } = useUserRole();
@@ -191,94 +204,128 @@ export default function Owners() {
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                     Localização
                   </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                    ANTT / MDF-e
+                  </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
                     Ações
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {owners?.map((owner) => (
-                  <tr key={owner.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Building2 className="w-5 h-5 text-primary" />
+                {owners?.map((owner) => {
+                  const antt = owner as Owner & OwnerAnttCols;
+                  const tipoLabel =
+                    antt.tipo_proprietario != null
+                      ? (TIPO_PROP_LABEL[antt.tipo_proprietario] ??
+                        `Tipo ${antt.tipo_proprietario}`)
+                      : null;
+                  return (
+                    <tr key={owner.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <Building2 className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-foreground">{owner.name}</p>
+                              {!owner.active && (
+                                <Badge variant="secondary" className="text-xs">
+                                  Inativo
+                                </Badge>
+                              )}
+                            </div>
+                            {owner.notes && (
+                              <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                                {owner.notes}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium text-foreground">{owner.name}</p>
-                            {!owner.active && (
-                              <Badge variant="secondary" className="text-xs">
-                                Inativo
+                      </td>
+                      <td className="px-4 py-3 text-foreground font-mono text-sm">
+                        {owner.cpf_cnpj || '-'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          {owner.phone && (
+                            <div className="flex items-center gap-2 text-sm text-foreground">
+                              <Phone className="w-3.5 h-3.5 text-muted-foreground" />
+                              {owner.phone}
+                            </div>
+                          )}
+                          {owner.email && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Mail className="w-3.5 h-3.5" />
+                              {owner.email}
+                            </div>
+                          )}
+                          {!owner.phone && !owner.email && '-'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {owner.city || owner.state ? (
+                          <div className="flex items-center gap-2 text-sm text-foreground">
+                            <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+                            {[owner.city, owner.state].filter(Boolean).join(' - ')}
+                          </div>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {antt.rntrc || antt.uf || tipoLabel ? (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {antt.rntrc && (
+                              <Badge variant="outline" className="font-mono text-[10px]">
+                                {antt.rntrc}
+                              </Badge>
+                            )}
+                            {antt.uf && (
+                              <Badge variant="secondary" className="text-[10px]">
+                                UF {antt.uf}
+                              </Badge>
+                            )}
+                            {tipoLabel && (
+                              <Badge variant="secondary" className="text-[10px]">
+                                {tipoLabel}
                               </Badge>
                             )}
                           </div>
-                          {owner.notes && (
-                            <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                              {owner.notes}
-                            </p>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          {canManageOwners && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => handleEdit(owner)}
+                                aria-label="Editar proprietário"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:text-destructive"
+                                onClick={() => setDeletingOwner(owner)}
+                                aria-label="Excluir proprietário"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </>
                           )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-foreground font-mono text-sm">
-                      {owner.cpf_cnpj || '-'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="space-y-1">
-                        {owner.phone && (
-                          <div className="flex items-center gap-2 text-sm text-foreground">
-                            <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-                            {owner.phone}
-                          </div>
-                        )}
-                        {owner.email && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Mail className="w-3.5 h-3.5" />
-                            {owner.email}
-                          </div>
-                        )}
-                        {!owner.phone && !owner.email && '-'}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {owner.city || owner.state ? (
-                        <div className="flex items-center gap-2 text-sm text-foreground">
-                          <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
-                          {[owner.city, owner.state].filter(Boolean).join(' - ')}
-                        </div>
-                      ) : (
-                        '-'
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        {canManageOwners && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleEdit(owner)}
-                              aria-label="Editar proprietário"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive"
-                              onClick={() => setDeletingOwner(owner)}
-                              aria-label="Excluir proprietário"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

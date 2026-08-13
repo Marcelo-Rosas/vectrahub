@@ -2,21 +2,11 @@
 /**
  * emit-cte: build and submit a CT-e (modelo 57) to Focus NFe.
  *
- * Body: { quote_id: string, expedidor_id?: string, recebedor_id?: string,
- *         natureza_operacao?: string }
+ * Body: { quote_id: string, natureza_operacao?: string }
  *
- * Flow:
- *  1. Auth: caller must be authenticated (Supabase JWT). RBAC enforced via
- *     RLS on cte_emissions (only admin/financeiro can INSERT).
- *  2. Load quote + shipper + client rows.
- *  3. Resolve missing IBGE codes via ibge-lookup (BrasilAPI/ViaCEP).
- *  4. Allocate (serie, numero) atomically via next_cte_numero RPC.
- *  5. Build payload via cte-mapper.
- *  6. POST Focus /v2/cte?ref=<ref>.
- *  7. Persist cte_emissions (status=processing|sent).
- *  8. Return { id, ref, status, focus_status, focus_body, warnings }.
- *
- * Webhook focus-webhook will later update status to authorized|rejected.
+ * 1 NF → 1 CT-e.
+ * N NFs (destinatários e/ou emitentes distintos) → N CT-es com frete rateado por km.
+ * Soma das parcelas = frete contratado (order.value ?? quote.value).
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -30,11 +20,21 @@ import {
   type QuoteRow,
   type PartyRow,
 } from '../_shared/cte-mapper.ts';
+import {
+  nfeEmitCnpjFromChave,
+  nfeNumeroFromChave,
+  splitFreightProportional,
+} from '../_shared/cte-nfe-split.ts';
+import { calculateRouteDistance } from '../_shared/webrouter-client.ts';
 
 function envOrThrow(key: string): string {
   const v = Deno.env.get(key);
   if (!v) throw new Error(`[emit-cte] missing env: ${key}`);
   return v;
+}
+
+function digits(s: unknown): string {
+  return String(s ?? '').replace(/\D/g, '');
 }
 
 function buildVectraConfig(): VectraConfig {
@@ -58,37 +58,46 @@ function buildVectraConfig(): VectraConfig {
   };
 }
 
-/**
- * Resolve a IE de uma parte (shipper/client) marcada contribuinte (ie_indicator=1)
- * mas sem state_registration, via SintegrAPI, e persiste no cadastro (self-healing).
- * Se a API diz não-contribuinte (sem IE ativa na UF) → corrige ie_indicator=9.
- * Degrada sem erro: se a consulta falha, devolve a parte inalterada.
- */
 async function ensurePartyIe(
   supabase: ReturnType<typeof createClient>,
   party: Record<string, unknown> | null,
   table: 'shippers' | 'clients'
 ): Promise<Record<string, unknown> | null> {
   if (!party) return party;
-  const indicator = Number(party.ie_indicator ?? 0);
-  const hasIe = party.state_registration && String(party.state_registration).trim() !== '';
+  const rawIe = String(party.state_registration ?? '').trim();
+  const hasIe = rawIe !== '' && !/^isento$/i.test(rawIe);
   const cnpj = String(party.cnpj ?? '').replace(/\D/g, '');
   const uf = String(party.state ?? '')
     .toUpperCase()
     .slice(0, 2);
-  if (indicator !== 1 || hasIe || cnpj.length !== 14 || uf.length !== 2) return party;
+  if (hasIe || cnpj.length !== 14 || uf.length !== 2) return party;
 
   const r = await lookupIeByCnpj(cnpj, uf);
   if (!r) return party;
   if (r.ie) {
-    await supabase.from(table).update({ state_registration: r.ie }).eq('id', party.id);
-    return { ...party, state_registration: r.ie };
+    await supabase
+      .from(table)
+      .update({ state_registration: r.ie, ie_indicator: 1 })
+      .eq('id', party.id);
+    return { ...party, state_registration: r.ie, ie_indicator: 1 };
   }
   if (r.naoContribuinte) {
     await supabase.from(table).update({ ie_indicator: 9 }).eq('id', party.id);
-    return { ...party, ie_indicator: 9 };
+    return { ...party, ie_indicator: 9, state_registration: null };
   }
   return party;
+}
+
+async function enrichDestIe(party: PartyRow): Promise<PartyRow> {
+  const cnpj = digits(party.cnpj);
+  const uf = String(party.state ?? '')
+    .toUpperCase()
+    .slice(0, 2);
+  const rawIe = String(party.state_registration ?? '').trim();
+  if (rawIe || cnpj.length !== 14 || uf.length !== 2) return party;
+  const r = await lookupIeByCnpj(cnpj, uf);
+  if (r?.ie) return { ...party, state_registration: r.ie, ie_indicator: 1 };
+  return { ...party, ie_indicator: 9 };
 }
 
 function json(body: unknown, status = 200, cors: Record<string, string> = {}): Response {
@@ -98,13 +107,323 @@ function json(body: unknown, status = 200, cors: Record<string, string> = {}): R
   });
 }
 
+function partyFromNfeMeta(meta: Record<string, unknown>, nfeKey: string): PartyRow | null {
+  const name = String(meta.destinatario_nome ?? '').trim();
+  if (!name) return null;
+  const cnpj = digits(meta.destinatario_cnpj);
+  const cpf = digits(meta.destinatario_cpf);
+  return {
+    id: `nfe-${nfeKey.slice(-12)}`,
+    name,
+    cnpj: cnpj.length === 14 ? cnpj : null,
+    cpf: cpf.length === 11 ? cpf : null,
+    state_registration: meta.destinatario_ie ? String(meta.destinatario_ie) : null,
+    ie_indicator: Number(meta.destinatario_ie_indicator ?? 9) || 9,
+    ibge_code: null,
+    address: meta.endereco ? String(meta.endereco) : '',
+    address_number: meta.numero ? String(meta.numero) : 'S/N',
+    address_complement: meta.complemento ? String(meta.complemento) : null,
+    address_neighborhood: meta.bairro ? String(meta.bairro) : '',
+    city: meta.cidade ? String(meta.cidade) : '',
+    state: meta.uf ? String(meta.uf).toUpperCase() : '',
+    zip_code: digits(meta.cep),
+    phone: digits(meta.telefone) || null,
+  };
+}
+
+type ShipperPoolEntry = {
+  party: PartyRow;
+  originCep: string;
+  originLabel: string;
+  emitCteVia: string;
+};
+
+type NfeLeg = {
+  nfe_key: string;
+  nfe_numero: string;
+  dest: PartyRow;
+  shipper: PartyRow;
+  origin_cep: string;
+  origin_label: string;
+  cargo_value: number;
+  weight: number;
+  valor_prestacao: number;
+  km_negociado: number;
+};
+
+function partyToRow(row: Record<string, unknown>): PartyRow {
+  return {
+    id: String(row.id ?? ''),
+    name: String(row.name ?? ''),
+    cnpj: row.cnpj ? digits(row.cnpj) : null,
+    cpf: row.cpf ? digits(row.cpf) : null,
+    state_registration: row.state_registration ? String(row.state_registration) : null,
+    ie_indicator: Number(row.ie_indicator ?? 1) || 1,
+    ibge_code: row.ibge_code != null ? Number(row.ibge_code) : null,
+    address: row.address ? String(row.address) : '',
+    address_number: row.address_number ? String(row.address_number) : 'S/N',
+    address_complement: row.address_complement ? String(row.address_complement) : null,
+    address_neighborhood: row.address_neighborhood ? String(row.address_neighborhood) : '',
+    city: row.city ? String(row.city) : '',
+    state: row.state ? String(row.state).toUpperCase() : '',
+    zip_code: digits(row.zip_code),
+    phone: row.phone ? digits(row.phone) : null,
+  };
+}
+
+/** Pool: embarcador principal + additional_shippers (CEP de coleta da cotação quando houver). */
+async function buildShipperPool(
+  supabase: ReturnType<typeof createClient>,
+  mainShipper: Record<string, unknown>,
+  quote: QuoteRow & {
+    additional_shippers?: unknown;
+    origin?: string | null;
+    origin_cep?: string | null;
+  }
+): Promise<ShipperPoolEntry[]> {
+  const pool: ShipperPoolEntry[] = [
+    {
+      party: partyToRow(mainShipper),
+      originCep: digits(quote.origin_cep) || digits(mainShipper.zip_code),
+      originLabel: String(quote.origin || `${mainShipper.city ?? ''} - ${mainShipper.state ?? ''}`),
+      emitCteVia: String(mainShipper.emit_cte_via ?? 'cfn'),
+    },
+  ];
+  const add = Array.isArray(quote.additional_shippers) ? quote.additional_shippers : [];
+  for (const raw of add) {
+    if (!raw || typeof raw !== 'object') continue;
+    const a = raw as Record<string, unknown>;
+    const sid = a.shipper_id ? String(a.shipper_id) : '';
+    let row: Record<string, unknown> | null = null;
+    if (sid) {
+      const { data } = await supabase.from('shippers').select('*').eq('id', sid).maybeSingle();
+      row = data as Record<string, unknown> | null;
+    }
+    if (!row) {
+      const cnpj = digits(a.cnpj);
+      if (cnpj.length === 14) {
+        const { data } = await supabase.from('shippers').select('*').eq('cnpj', cnpj).maybeSingle();
+        row = data as Record<string, unknown> | null;
+      }
+    }
+    if (!row) continue;
+    const cepOverride = digits(a.cep);
+    pool.push({
+      party: partyToRow(row),
+      originCep: cepOverride.length === 8 ? cepOverride : digits(row.zip_code),
+      originLabel: String(a.city_uf || a.name || `${row.city ?? ''} - ${row.state ?? ''}`),
+      emitCteVia: String(row.emit_cte_via ?? 'cfn'),
+    });
+  }
+  return pool;
+}
+
+function resolveShipperForNfe(
+  nfeKey: string,
+  meta: Record<string, unknown>,
+  pool: ShipperPoolEntry[],
+  fallback: ShipperPoolEntry
+): ShipperPoolEntry {
+  const emitCnpj =
+    nfeEmitCnpjFromChave(nfeKey) ||
+    digits(meta.emitente_cnpj || meta.cnpj_emitente || meta.remetente_cnpj);
+  if (emitCnpj.length === 14) {
+    const hitExact = pool.find((p) => digits(p.party.cnpj) === emitCnpj);
+    if (hitExact) return hitExact;
+    // Filial diferente (mesma raiz CNPJ 8 dígitos) — comum em multi-embarcador Cargo
+    const root = emitCnpj.slice(0, 8);
+    const hitRoot = pool.find((p) => digits(p.party.cnpj).slice(0, 8) === root);
+    if (hitRoot) return hitRoot;
+  }
+  const remId = meta.remetente_shipper_id ? String(meta.remetente_shipper_id) : '';
+  if (remId) {
+    const hit = pool.find((p) => p.party.id === remId);
+    if (hit) return hit;
+  }
+  return fallback;
+}
+
+async function emitOneCte(input: {
+  supabase: ReturnType<typeof createClient>;
+  userId: string;
+  ambiente: FocusAmbiente;
+  vectra: VectraConfig;
+  quote: QuoteRow;
+  shipper: PartyRow;
+  client: PartyRow;
+  orderId: string | null;
+  orderValue: number | string | null;
+  retry: number;
+  nfeNumero?: string | null;
+  valorPrestacao?: number | null;
+  naturezaOperacao?: string;
+}): Promise<{
+  ok: boolean;
+  emission_id?: string;
+  ref?: string;
+  serie?: number;
+  numero?: number;
+  status: string;
+  focus_status?: number;
+  focus_body?: Record<string, unknown>;
+  warnings?: string[];
+  error?: string;
+  detail?: string;
+}> {
+  const { data: numeroData, error: numeroErr } = await input.supabase.rpc('next_cte_numero', {
+    p_ambiente: input.ambiente,
+    p_serie: 1,
+  });
+  if (numeroErr || numeroData == null) {
+    return {
+      ok: false,
+      status: 'rejected',
+      error: 'numero_alloc_failed',
+      detail: numeroErr?.message,
+    };
+  }
+  const numero = Number(numeroData);
+  const serie = 1;
+
+  let built;
+  try {
+    built = buildCtePayload({
+      quote: input.quote,
+      shipper: input.shipper,
+      client: input.client,
+      serie,
+      numero,
+      vectra: input.vectra,
+      retry: input.retry,
+      orderValue: input.valorPrestacao != null ? null : input.orderValue,
+      valorPrestacao: input.valorPrestacao,
+      nfeNumero: input.nfeNumero,
+      naturezaOperacao: input.naturezaOperacao,
+    });
+  } catch (err) {
+    return { ok: false, status: 'rejected', error: 'mapper_failed', detail: String(err) };
+  }
+
+  const { data: emission, error: insErr } = await input.supabase
+    .from('cte_emissions')
+    .insert({
+      order_id: input.orderId,
+      quote_id: input.quote.id,
+      ref: built.ref,
+      ambiente: input.ambiente,
+      serie,
+      numero,
+      status: 'sent',
+      tomador_tipo: input.quote.tomador_tipo,
+      cfop: built.payload.cfop,
+      payload_sent: built.payload,
+      created_by: input.userId,
+    })
+    .select()
+    .single();
+  if (insErr || !emission) {
+    return { ok: false, status: 'rejected', error: 'persist_failed', detail: insErr?.message };
+  }
+
+  let focusResp;
+  try {
+    const focus = new FocusClient({ ambiente: input.ambiente });
+    focusResp = await focus.emitCte(built.ref, built.payload);
+  } catch (err) {
+    await input.supabase
+      .from('cte_emissions')
+      .update({
+        status: 'rejected',
+        rejection_code: 'focus_network',
+        rejection_msg: String(err),
+        response_received: { error: String(err) },
+      })
+      .eq('id', emission.id);
+    return {
+      ok: false,
+      emission_id: emission.id,
+      ref: built.ref,
+      serie,
+      numero,
+      status: 'rejected',
+      error: 'focus_unreachable',
+      detail: String(err),
+    };
+  }
+
+  const focusStatus = String(focusResp.body.status ?? '');
+  let newStatus: string = 'processing';
+  let finalBody = focusResp.body;
+  if (focusResp.status === 202 || focusStatus === 'processando_autorizacao')
+    newStatus = 'processing';
+  else if (focusStatus === 'autorizado') newStatus = 'authorized';
+  else if (focusStatus === 'cancelado') newStatus = 'cancelled';
+  else if (focusStatus === 'erro_autorizacao' || focusResp.status === 422) newStatus = 'rejected';
+  else if (focusResp.status === 409) newStatus = 'processing';
+
+  if (newStatus === 'processing') {
+    const focus = new FocusClient({ ambiente: input.ambiente });
+    for (const waitMs of [2500, 3500, 5000]) {
+      await new Promise((r) => setTimeout(r, waitMs));
+      try {
+        const polled = await focus.consultCte(built.ref);
+        const st = String(polled.body.status ?? '');
+        finalBody = polled.body;
+        if (st === 'autorizado') {
+          newStatus = 'authorized';
+          break;
+        }
+        if (st === 'erro_autorizacao' || st === 'cancelado') {
+          newStatus = st === 'cancelado' ? 'cancelled' : 'rejected';
+          break;
+        }
+      } catch {
+        /* UI ainda pode Consultar */
+      }
+    }
+  }
+
+  const isError = focusResp.status >= 400 && focusResp.status !== 409 && focusResp.status !== 422;
+
+  await input.supabase
+    .from('cte_emissions')
+    .update({
+      status: newStatus,
+      response_received: finalBody,
+      status_sefaz: finalBody.status_sefaz ?? null,
+      chave_cte: finalBody.chave ?? null,
+      protocolo: finalBody.protocolo ?? null,
+      rejection_code:
+        newStatus === 'rejected'
+          ? String(finalBody.codigo_status ?? finalBody.status_sefaz ?? focusResp.status)
+          : null,
+      rejection_msg:
+        newStatus === 'rejected'
+          ? String(finalBody.mensagem_sefaz ?? finalBody.mensagem ?? '')
+          : null,
+      data_autorizacao: newStatus === 'authorized' ? new Date().toISOString() : null,
+    })
+    .eq('id', emission.id);
+
+  return {
+    ok: !isError && newStatus !== 'rejected',
+    emission_id: emission.id,
+    ref: built.ref,
+    serie,
+    numero,
+    status: newStatus,
+    focus_status: focusResp.status,
+    focus_body: finalBody,
+    warnings: built.warnings,
+  };
+}
+
 serve(async (req) => {
   const cors = getCorsHeaders(req);
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405, cors);
 
-  // Auth: validate caller JWT
   const authHeader = req.headers.get('authorization') ?? '';
   if (!authHeader.startsWith('Bearer ')) {
     return json({ error: 'unauthorized' }, 401, cors);
@@ -115,10 +434,7 @@ serve(async (req) => {
   const serviceRoleKey = envOrThrow('SUPABASE_SERVICE_ROLE_KEY');
   const anonKey = envOrThrow('SUPABASE_ANON_KEY');
 
-  // Service-role client: full access (we run inside trusted edge fn)
   const supabase = createClient(supabaseUrl, serviceRoleKey);
-
-  // User-scoped client: verify identity + check RLS will permit insert
   const userClient = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: `Bearer ${userJwt}` } },
   });
@@ -128,7 +444,6 @@ serve(async (req) => {
   }
   const userId = userData.user.id;
 
-  // Parse body
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -138,7 +453,6 @@ serve(async (req) => {
   const quoteId = String(body.quote_id ?? '');
   if (!quoteId) return json({ error: 'quote_id_required' }, 400, cors);
 
-  // Load quote
   const { data: quote, error: quoteErr } = await supabase
     .from('quotes')
     .select('*')
@@ -149,9 +463,7 @@ serve(async (req) => {
   }
   if (!quote.client_id) return json({ error: 'quote_missing_client_id' }, 422, cors);
   if (!quote.shipper_id) return json({ error: 'quote_missing_shipper_id' }, 422, cors);
-  // F2.6: tomador_tipo derivado de freight_type quando ausente, e persistido.
-  // FOB = frete por conta do destinatário → tomador 3 (Destinatário).
-  // CIF = frete por conta do remetente   → tomador 0 (Remetente).
+
   let tomadorTipo = quote.tomador_tipo;
   if (tomadorTipo == null) {
     const ft = String(quote.freight_type ?? 'FOB').toUpperCase();
@@ -159,23 +471,28 @@ serve(async (req) => {
     await supabase.from('quotes').update({ tomador_tipo: tomadorTipo }).eq('id', quote.id);
   }
 
-  // Load shipper + client
-  const [{ data: shipper, error: shipErr }, { data: client, error: clientErr }] = await Promise.all(
-    [
+  const [{ data: shipper, error: shipErr }, { data: client, error: clientErr }, { data: order }] =
+    await Promise.all([
       supabase.from('shippers').select('*').eq('id', quote.shipper_id).single(),
       supabase.from('clients').select('*').eq('id', quote.client_id).single(),
-    ]
-  );
+      supabase
+        .from('orders')
+        .select('id, value, cargo_value, weight')
+        .eq('quote_id', quote.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
   if (shipErr || !shipper) return json({ error: 'shipper_not_found' }, 404, cors);
   if (clientErr || !client) return json({ error: 'client_not_found' }, 404, cors);
 
-  // F2.3 Gate: route by shipper.emit_cte_via — prevents double-issuance with Active
-  const shipperRoute = (shipper as { emit_cte_via?: string }).emit_cte_via ?? 'active';
+  // Hub: default CFN. Só bloqueia se explicitamente 'active' ou 'none'.
+  const shipperRoute = (shipper as { emit_cte_via?: string }).emit_cte_via ?? 'cfn';
   if (shipperRoute !== 'cfn') {
     return json(
       {
         error: 'shipper_not_routed_to_cfn',
-        detail: `Shipper ${shipper.name} routed to '${shipperRoute}' — emit via that system or migrate router to 'cfn'.`,
+        detail: `Shipper ${shipper.name} routed to '${shipperRoute}' — migrate router to 'cfn'.`,
         emit_cte_via: shipperRoute,
       },
       422,
@@ -183,12 +500,9 @@ serve(async (req) => {
     );
   }
 
-  // Resolve missing IBGE for shipper/client via BrasilAPI/ViaCEP
-  // + resolve/persist IE faltante (contribuinte sem state_registration) via SintegrAPI.
   const shipperPatched = await ensurePartyIe(supabase, await resolveIbge(shipper), 'shippers');
   const clientPatched = await ensurePartyIe(supabase, await resolveIbge(client), 'clients');
 
-  // Resolve missing IBGE for origin/destination CEPs
   let originIbge = quote.origin_ibge;
   let originUf = quote.origin_uf;
   if (!originIbge && quote.origin_cep) {
@@ -216,7 +530,6 @@ serve(async (req) => {
     destination_uf: destinationUf,
   };
 
-  // Vectra config + ambiente
   const ambiente = (Deno.env.get('FOCUS_NFE_AMBIENTE') as FocusAmbiente) ?? 'homolog';
   let vectra: VectraConfig;
   try {
@@ -225,122 +538,405 @@ serve(async (req) => {
     return json({ error: 'vectra_config_missing', detail: String(err) }, 500, cors);
   }
 
-  // Allocate next numero (atomic via RPC)
-  const { data: numeroData, error: numeroErr } = await supabase.rpc('next_cte_numero', {
-    p_ambiente: ambiente,
-    p_serie: 1,
-  });
-  if (numeroErr || numeroData == null) {
-    return json({ error: 'numero_alloc_failed', detail: numeroErr?.message }, 500, cors);
-  }
-  const numero = Number(numeroData);
-  const serie = 1;
+  const nfeKeysFromQuote = (Array.isArray(quote.nfe_keys) ? quote.nfe_keys : [])
+    .map((k) => digits(k))
+    .filter((k) => k.length === 44);
 
-  // Build payload
-  let built;
-  try {
-    built = buildCtePayload({
-      quote: quotePatched,
-      shipper: shipperPatched as PartyRow,
-      client: clientPatched as PartyRow,
-      serie,
-      numero,
-      vectra,
-      naturezaOperacao:
-        typeof body.natureza_operacao === 'string' ? body.natureza_operacao : undefined,
-    });
-  } catch (err) {
-    return json({ error: 'mapper_failed', detail: String(err) }, 500, cors);
+  const { data: nfeDocs } = order?.id
+    ? await supabase
+        .from('documents')
+        .select('nfe_key, file_name, validation_metadata')
+        .eq('order_id', order.id)
+        .eq('type', 'nfe')
+    : { data: [] as Array<{ nfe_key: string | null; validation_metadata: unknown }> };
+
+  const nfeKeysFromDocs = (nfeDocs ?? [])
+    .map((d) => digits(d.nfe_key))
+    .filter((k) => k.length === 44);
+
+  // Prefer cotação; completa com chaves já validadas nos documentos da OS
+  const nfeKeys = [...new Set([...nfeKeysFromQuote, ...nfeKeysFromDocs])];
+
+  // Persist back if cotação estava vazia e docs têm chave (evita single 26k sem rateio)
+  if (nfeKeysFromQuote.length === 0 && nfeKeys.length > 0) {
+    await supabase.from('quotes').update({ nfe_keys: nfeKeys }).eq('id', quote.id);
   }
 
-  // Insert cte_emissions row (status=sent) BEFORE Focus call (audit even if Focus fails)
-  const { data: emission, error: insErr } = await supabase
+  const docByKey = new Map<string, Record<string, unknown>>();
+  for (const d of nfeDocs ?? []) {
+    const k = digits(d.nfe_key);
+    if (k.length === 44 && d.validation_metadata && typeof d.validation_metadata === 'object') {
+      docByKey.set(k, d.validation_metadata as Record<string, unknown>);
+    }
+  }
+
+  const additionalShippersCount = Array.isArray(quote.additional_shippers)
+    ? quote.additional_shippers.length
+    : 0;
+  const expectedRemitters = 1 + additionalShippersCount;
+  if (expectedRemitters >= 2 && nfeKeys.length < expectedRemitters) {
+    return json(
+      {
+        error: 'multi_shipper_nfe_required',
+        detail: `Há ${expectedRemitters} embarcadores; valide ${expectedRemitters} NF-e (chaves) antes de emitir para ratear o frete. Encontradas: ${nfeKeys.length}.`,
+        expected_shippers: expectedRemitters,
+        nfe_keys_found: nfeKeys.length,
+      },
+      422,
+      cors
+    );
+  }
+
+  const naturezaOperacao =
+    typeof body.natureza_operacao === 'string' ? body.natureza_operacao : undefined;
+
+  const { data: existingEmissions } = await supabase
     .from('cte_emissions')
-    .insert({
-      order_id: null,
-      quote_id: quote.id,
-      ref: built.ref,
-      ambiente,
-      serie,
-      numero,
-      status: 'sent',
-      tomador_tipo: quote.tomador_tipo,
-      cfop: built.payload.cfop,
-      payload_sent: built.payload,
-      created_by: userId,
-    })
-    .select()
-    .single();
-  if (insErr || !emission) {
-    return json({ error: 'persist_failed', detail: insErr?.message }, 500, cors);
+    .select('id, status, ref, payload_sent, chave_cte')
+    .eq('quote_id', quote.id);
+
+  const activeNfeKeys = new Set<string>();
+  for (const e of existingEmissions ?? []) {
+    if (!['authorized', 'sent', 'processing'].includes(String(e.status))) continue;
+    const nfes = (e.payload_sent as { nfes?: Array<{ chave_nfe?: string }> } | null)?.nfes;
+    if (!Array.isArray(nfes)) continue;
+    for (const n of nfes) {
+      const k = digits(n?.chave_nfe);
+      if (k.length === 44) activeNfeKeys.add(k);
+    }
   }
 
-  // POST Focus
-  let focusResp;
-  try {
-    const focus = new FocusClient({ ambiente });
-    focusResp = await focus.emitCte(built.ref, built.payload);
-  } catch (err) {
-    await supabase
+  if (nfeKeys.length >= 2) {
+    const missing: string[] = [];
+    const shipperPool = await buildShipperPool(
+      supabase,
+      shipper as Record<string, unknown>,
+      quote as QuoteRow & {
+        additional_shippers?: unknown;
+        origin?: string | null;
+        origin_cep?: string | null;
+      }
+    );
+    const defaultShipperEntry = shipperPool[0]!;
+
+    const rawLegs: Array<{
+      key: string;
+      meta: Record<string, unknown>;
+      dest: PartyRow;
+      remitter: ShipperPoolEntry;
+    }> = [];
+    for (const key of nfeKeys) {
+      const meta = docByKey.get(key);
+      if (!meta) {
+        missing.push(key);
+        continue;
+      }
+      const dest = partyFromNfeMeta(meta, key);
+      if (!dest) {
+        missing.push(key);
+        continue;
+      }
+      const remitter = resolveShipperForNfe(key, meta, shipperPool, defaultShipperEntry);
+      rawLegs.push({ key, meta, dest, remitter });
+    }
+    if (missing.length) {
+      return json(
+        {
+          error: 'nfe_destinatario_missing',
+          detail: `NF sem destinatário no documento: ${missing.join(', ')}`,
+        },
+        422,
+        cors
+      );
+    }
+
+    const notCfn = [
+      ...new Map(
+        rawLegs
+          .filter((l) => l.remitter.emitCteVia !== 'cfn')
+          .map((l) => [l.remitter.party.id, l.remitter] as const)
+      ).values(),
+    ];
+    if (notCfn.length) {
+      return json(
+        {
+          error: 'shipper_not_routed_to_cfn',
+          detail: notCfn.map((s) => `${s.party.name} routed to '${s.emitCteVia}'`).join('; '),
+          shippers: notCfn.map((s) => ({
+            id: s.party.id,
+            name: s.party.name,
+            emit_cte_via: s.emitCteVia,
+          })),
+        },
+        422,
+        cors
+      );
+    }
+
+    const freightTotal = Number(order?.value ?? quote.value ?? 0);
+    const quoteKm = Number(quote.km_distance ?? 0);
+    const quoteDestUf =
+      String(quote.destination_uf || '')
+        .toUpperCase()
+        .slice(0, 2) ||
+      (String(quote.destination || '').match(/\b([A-Z]{2})\s*$/i)?.[1] ?? '').toUpperCase();
+
+    const { data: routeStops } = await supabase
+      .from('quote_route_stops')
+      .select('name, cnpj, cep, city_uf, planned_km_from_prev, metadata')
+      .eq('quote_id', quote.id)
+      .order('sequence', { ascending: true });
+
+    const norm = (s: unknown) =>
+      String(s ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '');
+
+    async function kmNegociadoForLeg(l: {
+      dest: PartyRow;
+      meta: Record<string, unknown>;
+      remitter: ShipperPoolEntry;
+    }): Promise<number> {
+      const stored = Number(l.meta.km_negociado ?? 0);
+      if (stored > 0) return stored;
+
+      const destName = norm(l.dest.name);
+      const destCnpj = digits(l.dest.cnpj);
+      const stop = (routeStops ?? []).find((s) => {
+        if (destCnpj && digits(s.cnpj) === destCnpj) return true;
+        const sn = norm(s.name);
+        if (!sn || !destName) return false;
+        return sn.includes(destName.slice(0, 10)) || destName.includes(sn.slice(0, 10));
+      });
+      const stopKm = Number(stop?.planned_km_from_prev ?? 0);
+      if (stopKm > 0) return stopKm;
+
+      const destUf = String(l.dest.state ?? '')
+        .toUpperCase()
+        .slice(0, 2);
+      // Mesmo destinatário + vários remetentes: NÃO reutilizar quoteKm inteiro em todas as pernas
+      const distinctRemitters = new Set(rawLegs.map((x) => digits(x.remitter.party.cnpj)));
+      if (
+        distinctRemitters.size <= 1 &&
+        quoteKm > 0 &&
+        destUf &&
+        quoteDestUf &&
+        destUf === quoteDestUf
+      ) {
+        return quoteKm;
+      }
+
+      const originCep = digits(l.remitter.originCep);
+      const destCep = digits(l.dest.zip_code) || digits(quote.destination_cep);
+      if (originCep.length === 8 && destCep.length === 8) {
+        const wr = await calculateRouteDistance(originCep, destCep);
+        if (wr.success && wr.km_distance > 0) return wr.km_distance;
+      }
+      return 0;
+    }
+
+    const kms: number[] = [];
+    for (const l of rawLegs) {
+      kms.push(await kmNegociadoForLeg(l));
+    }
+    const missingKm = rawLegs
+      .map((l, i) => ({
+        dest: l.dest.name,
+        rem: l.remitter.party.name,
+        nfe: l.meta.nfe_numero,
+        km: kms[i],
+      }))
+      .filter((x) => !(x.km > 0));
+    if (missingKm.length) {
+      return json(
+        {
+          error: 'km_destinatario_missing',
+          detail:
+            'Sem km negociado/calculado para ratear o frete (origem do embarcador → destino da NF).',
+          missing: missingKm,
+        },
+        422,
+        cors
+      );
+    }
+
+    const parts = splitFreightProportional(freightTotal, kms);
+
+    // Valor/peso da mercadoria: meta.valor_nf / peso_kg; se faltar, rateia cargo_value/weight da COT/OS pelo mesmo km
+    const cargoTotal = Number(
+      (order as { cargo_value?: number | null } | null)?.cargo_value ?? quote.cargo_value ?? 0
+    );
+    const weightTotal = Number(
+      (order as { weight?: number | null } | null)?.weight ?? quote.weight ?? 0
+    );
+    const nfCargoRaw = rawLegs.map((l) => Number(l.meta.valor_nf ?? 0));
+    const nfWeightRaw = rawLegs.map((l) => Number(l.meta.peso_kg ?? 0));
+    const useCargoSplit = cargoTotal > 0 && nfCargoRaw.every((v) => !(v > 0));
+    const useWeightSplit = weightTotal > 0 && nfWeightRaw.every((v) => !(v > 0));
+    const cargoParts = useCargoSplit ? splitFreightProportional(cargoTotal, kms) : nfCargoRaw;
+    const weightParts = useWeightSplit ? splitFreightProportional(weightTotal, kms) : nfWeightRaw;
+
+    if (order?.id) {
+      for (let i = 0; i < rawLegs.length; i++) {
+        await supabase
+          .from('documents')
+          .update({
+            validation_metadata: {
+              ...rawLegs[i].meta,
+              km_negociado: kms[i],
+              valor_prestacao_sugerido: parts[i],
+              valor_nf: cargoParts[i] > 0 ? cargoParts[i] : rawLegs[i].meta.valor_nf,
+              peso_kg: weightParts[i] > 0 ? weightParts[i] : rawLegs[i].meta.peso_kg,
+              remetente_cnpj: rawLegs[i].remitter.party.cnpj,
+              remetente_nome: rawLegs[i].remitter.party.name,
+              remetente_shipper_id: rawLegs[i].remitter.party.id,
+            },
+          })
+          .eq('order_id', order.id)
+          .eq('nfe_key', rawLegs[i].key);
+      }
+    }
+
+    const legs: NfeLeg[] = rawLegs.map((l, i) => ({
+      nfe_key: l.key,
+      nfe_numero: String(l.meta.nfe_numero ?? nfeNumeroFromChave(l.key)),
+      dest: l.dest,
+      shipper: l.remitter.party,
+      origin_cep: l.remitter.originCep,
+      origin_label: l.remitter.originLabel,
+      cargo_value: cargoParts[i] ?? 0,
+      weight: weightParts[i] ?? 0,
+      valor_prestacao: parts[i] ?? 0,
+      km_negociado: kms[i] ?? 0,
+    }));
+
+    const toEmit = legs.filter((l) => !activeNfeKeys.has(l.nfe_key));
+    if (toEmit.length === 0) {
+      return json(
+        {
+          ok: true,
+          skipped: true,
+          detail: 'all_nfe_already_emitted',
+          count: legs.length,
+        },
+        200,
+        cors
+      );
+    }
+
+    const emissions = [];
+    for (const leg of toEmit) {
+      const dest = await resolveIbge(await enrichDestIe(leg.dest));
+      const remitterPatched = await ensurePartyIe(
+        supabase,
+        await resolveIbge(leg.shipper as unknown as Record<string, unknown>),
+        'shippers'
+      );
+      const destIbge = dest.ibge_code ?? null;
+      const destUf = dest.state || null;
+      const rem = (remitterPatched ?? leg.shipper) as PartyRow;
+      const quoteLeg: QuoteRow = {
+        ...quotePatched,
+        nfe_keys: [leg.nfe_key],
+        cargo_value: leg.cargo_value,
+        weight: leg.weight,
+        origin_cep: leg.origin_cep,
+        origin: leg.origin_label || rem.city,
+        origin_uf: rem.state,
+        origin_ibge: rem.ibge_code ?? null,
+        destination_ibge: destIbge,
+        destination_uf: destUf,
+        destination: dest.city,
+        destination_cep: dest.zip_code,
+      };
+      const retry = (existingEmissions ?? []).filter((e) =>
+        String(e.ref ?? '').includes(`-NF${leg.nfe_numero}`)
+      ).length;
+      const result = await emitOneCte({
+        supabase,
+        userId,
+        ambiente,
+        vectra,
+        quote: quoteLeg,
+        shipper: rem,
+        client: dest,
+        orderId: order?.id ?? null,
+        orderValue: null,
+        retry,
+        nfeNumero: leg.nfe_numero,
+        valorPrestacao: leg.valor_prestacao,
+        naturezaOperacao,
+      });
+      emissions.push({
+        ...result,
+        nfe_key: leg.nfe_key,
+        nfe_numero: leg.nfe_numero,
+        rem_name: rem.name,
+        dest_name: dest.name,
+        valor_total: leg.valor_prestacao,
+        km_negociado: leg.km_negociado,
+      });
+    }
+
+    const anyRejected = emissions.some((e) => !e.ok || e.status === 'rejected');
+    const first = emissions[0];
+    const sumPrest = Number(
+      emissions.reduce((a, e) => a + Number(e.valor_total ?? 0), 0).toFixed(2)
+    );
+    return json(
+      {
+        ok: !anyRejected,
+        count: emissions.length,
+        freight_total: freightTotal,
+        freight_sum_emitted: sumPrest,
+        emissions,
+        emission_id: first?.emission_id,
+        ref: first?.ref,
+        ambiente,
+        serie: first?.serie,
+        numero: first?.numero,
+        status: first?.status,
+        focus_status: first?.focus_status,
+        focus_body: first?.focus_body,
+        warnings: first?.warnings ?? [],
+      },
+      200,
+      cors
+    );
+  }
+
+  const bodyRetry = Number(body.retry ?? body.force_retry ?? NaN);
+  let retry = Number.isFinite(bodyRetry) && bodyRetry >= 0 ? Math.floor(bodyRetry) : 0;
+  if (!Number.isFinite(bodyRetry)) {
+    const { count: priorCount, error: countErr } = await supabase
       .from('cte_emissions')
-      .update({
-        status: 'rejected',
-        rejection_code: 'focus_network',
-        rejection_msg: String(err),
-        response_received: { error: String(err) },
-      })
-      .eq('id', emission.id);
-    return json({ error: 'focus_unreachable', detail: String(err) }, 502, cors);
+      .select('id', { count: 'exact', head: true })
+      .eq('quote_id', quote.id);
+    if (countErr) {
+      return json({ error: 'retry_count_failed', detail: countErr.message }, 500, cors);
+    }
+    retry = priorCount ?? 0;
   }
 
-  // Map Focus response → status
-  const focusStatus = String(focusResp.body.status ?? '');
-  let newStatus: string = 'processing';
-  if (focusResp.status === 202 || focusStatus === 'processando_autorizacao')
-    newStatus = 'processing';
-  else if (focusStatus === 'autorizado') newStatus = 'authorized';
-  else if (focusStatus === 'cancelado') newStatus = 'cancelled';
-  else if (focusStatus === 'erro_autorizacao' || focusResp.status === 422) newStatus = 'rejected';
-  else if (focusResp.status === 409) newStatus = 'processing'; // already in flight
+  const result = await emitOneCte({
+    supabase,
+    userId,
+    ambiente,
+    vectra,
+    quote: quotePatched,
+    shipper: shipperPatched as PartyRow,
+    client: clientPatched as PartyRow,
+    orderId: order?.id ?? null,
+    orderValue: order?.value ?? null,
+    retry,
+    naturezaOperacao,
+  });
 
-  const isError = focusResp.status >= 400 && focusResp.status !== 409 && focusResp.status !== 422;
-
-  await supabase
-    .from('cte_emissions')
-    .update({
-      status: newStatus,
-      response_received: focusResp.body,
-      status_sefaz: focusResp.body.status_sefaz ?? null,
-      rejection_code:
-        newStatus === 'rejected' ? String(focusResp.body.codigo_status ?? focusResp.status) : null,
-      rejection_msg:
-        newStatus === 'rejected'
-          ? String(focusResp.body.mensagem_sefaz ?? focusResp.body.mensagem ?? '')
-          : null,
-    })
-    .eq('id', emission.id);
-
-  return json(
-    {
-      ok: !isError,
-      emission_id: emission.id,
-      ref: built.ref,
-      ambiente,
-      serie,
-      numero,
-      status: newStatus,
-      focus_status: focusResp.status,
-      focus_body: focusResp.body,
-      warnings: built.warnings,
-    },
-    isError ? 502 : 200,
-    cors
-  );
+  return json(result, 200, cors);
 });
 
-// ---------------------------------------------------------------------------
-// IBGE resolution helper
-// ---------------------------------------------------------------------------
 async function resolveIbge<
   T extends { ibge_code?: number | null; zip_code?: string | null; state?: string | null },
 >(party: T): Promise<T> {

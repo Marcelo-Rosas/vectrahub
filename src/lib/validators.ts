@@ -162,3 +162,63 @@ export const zodPlate = z
   .string()
   .min(1, 'Placa obrigatória')
   .refine(validatePlate, 'Placa inválida – use o formato ABC1234 ou ABC1D23 (Mercosul)');
+
+// ─── RNTRC / Focus MDF-e (SEFAZ) ───────────────────────────────────────────────
+// Pattern SEFAZ: `[0-9]{8}|ISENTO`. Portal ANTT às vezes mostra 9 dígitos c/ zero.
+
+/**
+ * Normaliza RNTRC para facet SEFAZ CT-e/MDF-e (`[0-9]{8}|ISENTO`).
+ * Portal ANTT frequentemente exibe 9 dígitos (ex.: 002353222, 059734055).
+ * Espelha `normalizeRntrcSefaz` em `supabase/functions/_shared/cte-mapper.ts`.
+ */
+export function normalizeRntrcSefaz(raw: string | null | undefined): string {
+  const trimmed = String(raw ?? '').trim();
+  if (!trimmed) return '';
+  if (/^ISENTO$/i.test(trimmed)) return 'ISENTO';
+  const d = digits(trimmed);
+  if (d.length === 8) return d;
+  if (d.length === 9 && d.startsWith('0')) {
+    // ANTT 9 dig c/ zero à esquerda → SEFAZ = 8 (drop 1 zero). Ex.: 059734055→59734055
+    // NÃO strip all zeros (002353222→2353222 pad 02353222 ≠ portal).
+    return d.slice(1);
+  }
+  if (d.length > 8) {
+    const stripped = d.replace(/^0+/, '');
+    if (stripped.length === 8) return stripped;
+    if (stripped.length > 8) return stripped.slice(-8);
+    return d.slice(-8);
+  }
+  if (d.length === 0) return '';
+  return d.padStart(8, '0');
+}
+
+/**
+ * Máscara input RNTRC (cadastro/ANTT): até 9 dígitos ou ISENTO.
+ * Guarda valor do portal; SEFAZ 8 dig só no emit (`normalizeRntrcSefaz`).
+ */
+export function maskRntrcInput(raw: string): string {
+  const v = String(raw ?? '');
+  if (!v) return '';
+  const letters = v.replace(/[^a-zA-Z]/g, '').toUpperCase();
+  if (letters.length > 0 && 'ISENTO'.startsWith(letters)) {
+    return letters === 'ISENTO' ? 'ISENTO' : letters;
+  }
+  if (/^ISENTO$/i.test(v.trim())) return 'ISENTO';
+  return digits(v).slice(0, 9);
+}
+
+/** Vazio OK; 8–9 dígitos (ANTT) ou ISENTO. */
+export const zodRntrcOptional = z
+  .string()
+  .optional()
+  .transform((v) => maskRntrcInput(v ?? ''))
+  .refine(
+    (v) => v === '' || v === 'ISENTO' || /^[0-9]{8,9}$/.test(v),
+    'RNTRC inválido — 8 ou 9 dígitos (ANTT) ou ISENTO'
+  );
+
+/** Códigos Focus/SEFAZ — tipo rodado veículo tração (01–06). */
+export const FOCUS_TIPO_RODADO = ['01', '02', '03', '04', '05', '06'] as const;
+
+/** Códigos Focus/SEFAZ — tipo carroceria (00–05, MOC MDF-e). */
+export const FOCUS_TIPO_CARROCERIA = ['00', '01', '02', '03', '04', '05'] as const;

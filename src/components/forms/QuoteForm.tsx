@@ -64,6 +64,12 @@ import {
   resolvePricingRule,
   type PricingRuleConfig,
 } from '@/hooks/usePricingRules';
+import {
+  isPriceTableMethodology,
+  METHODOLOGY_LABELS,
+  modalityFromMethodology,
+  type PriceTableMethodology,
+} from '@/lib/pricingMethodology';
 import { usePriceTableRowByKmRange, usePriceTableRows } from '@/hooks/usePriceTableRows';
 import {
   AdditionalFeesSection,
@@ -99,6 +105,7 @@ import {
   isMarginBelowTarget,
   type FreightCalculationOutput,
 } from '@/lib/freightCalculator';
+import { negotiatedQuoteValue } from '@/lib/quote-breakdown-utils';
 import { resolveLotacaoKmOverPercent } from '@/lib/lotacao-freight-base';
 import { buildStoredBreakdownFromEdgeResponse } from '@/hooks/useCalculateFreight';
 import { useEdgeFreightPreview } from '@/hooks/use-edge-freight-preview';
@@ -562,10 +569,33 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
     [anttFloorFlags]
   );
 
-  // Filtrar tabelas pela modalidade (lotação → só lotação; fracionado → só fracionado)
+  // Tabelas operacionais: active + NTC (parceiro fica fora até pack pronto).
+  // Fracionado → NTC Fracionado; Lotação → Referencial.
   const priceTablesFiltered =
-    priceTables?.filter((t) => !watchedFreightModality || t.modality === watchedFreightModality) ??
-    [];
+    priceTables?.filter((t) => {
+      if (!t.active) return false;
+      if (t.methodology === 'fracionado_parceiro') return false;
+      if (!watchedFreightModality) return true;
+      return t.modality === watchedFreightModality;
+    }) ?? [];
+
+  const pickDefaultTableId = useCallback(
+    (modality: 'lotacao' | 'fracionado'): string => {
+      const pool =
+        priceTables?.filter((t) => {
+          if (!t.active) return false;
+          if (t.methodology === 'fracionado_parceiro') return false;
+          return t.modality === modality;
+        }) ?? [];
+      if (modality === 'fracionado') {
+        const ntc = pool.find((t) => t.methodology === 'fracionado_ntc');
+        return ntc?.id || pool[0]?.id || '';
+      }
+      const lot = pool.find((t) => t.methodology === 'lotacao');
+      return lot?.id || pool[0]?.id || '';
+    },
+    [priceTables]
+  );
   const watchedOrigin = form.watch('origin');
   const watchedDestination = form.watch('destination');
   const watchedWeight = form.watch('weight');
@@ -652,6 +682,37 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
   const selectedPriceTable: PriceTableRow | null =
     (priceTables?.find((t) => t.id === watchedPriceTableId) as PriceTableRow | undefined) ?? null;
 
+  useEffect(() => {
+    const meth = selectedPriceTable?.methodology;
+    if (!isPriceTableMethodology(meth)) return;
+    const derived = modalityFromMethodology(meth);
+    if (form.getValues('freight_modality') !== derived) {
+      form.setValue('freight_modality', derived);
+    }
+  }, [selectedPriceTable?.methodology, form]);
+
+  // Nova cotação / troca modalidade: se Select ficou sem tabela, puxa NTC operacional.
+  useEffect(() => {
+    if (!priceTables?.length) return;
+    if (isEditing && form.getValues('price_table_id')) return;
+    const modality = (form.getValues('freight_modality') || 'lotacao') as 'lotacao' | 'fracionado';
+    const currentId = form.getValues('price_table_id');
+    const stillValid =
+      currentId &&
+      priceTables.some(
+        (t) =>
+          t.id === currentId &&
+          t.active &&
+          t.methodology !== 'fracionado_parceiro' &&
+          t.modality === modality
+      );
+    if (stillValid) return;
+    const nextId = pickDefaultTableId(modality);
+    if (nextId && nextId !== currentId) {
+      form.setValue('price_table_id', nextId);
+    }
+  }, [priceTables, pickDefaultTableId, form, isEditing]);
+
   const kmRounded = kmBand;
 
   // Label da faixa de km (a partir do km_distance + price_table_rows) para o badge
@@ -697,13 +758,21 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
   }, [pricingRules]);
   const resolvedPricingParams = useMemo(() => {
     const vtId = debounced.vehicleTypeId || undefined;
-    const regimeSimplesVal = resolvePricingRule(pricingRules, 'regime_simples_nacional', vtId, 1);
+    const methodology: PriceTableMethodology = isPriceTableMethodology(
+      selectedPriceTable?.methodology
+    )
+      ? selectedPriceTable.methodology
+      : debounced.freightModality === 'fracionado'
+        ? 'fracionado_ntc'
+        : 'lotacao';
+    const scope = { methodology, vehicleTypeId: vtId };
+    const regimeSimplesVal = resolvePricingRule(pricingRules, 'regime_simples_nacional', scope, 1);
     const regimeSimplesNacional = (regimeSimplesVal ?? 1) === 1;
-    const excessoVal = resolvePricingRule(pricingRules, 'excesso_sublimite', vtId, 0);
-    const pisPercent = resolvePricingRule(pricingRules, 'pis_percent', vtId, 0);
-    const cofinsPercent = resolvePricingRule(pricingRules, 'cofins_percent', vtId, 0);
+    const excessoVal = resolvePricingRule(pricingRules, 'excesso_sublimite', scope, 0);
+    const pisPercent = resolvePricingRule(pricingRules, 'pis_percent', scope, 0);
+    const cofinsPercent = resolvePricingRule(pricingRules, 'cofins_percent', scope, 0);
     let regimeLucroPresumido =
-      resolvePricingRule(pricingRules, 'regime_lucro_presumido', vtId, 0) === 1;
+      resolvePricingRule(pricingRules, 'regime_lucro_presumido', scope, 0) === 1;
     if (
       !regimeLucroPresumido &&
       !regimeSimplesNacional &&
@@ -714,45 +783,50 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
 
     return {
       taxRegimeSimples,
-      dasPercent: resolvePricingRule(pricingRules, 'das_percent', vtId, 14),
-      markupPercent: resolvePricingRule(pricingRules, 'markup_percent', vtId, 30),
-      overheadPercent: resolvePricingRule(pricingRules, 'overhead_percent', vtId, 15),
+      methodology,
+      dasPercent: resolvePricingRule(pricingRules, 'das_percent', scope, 6),
+      markupPercent: resolvePricingRule(pricingRules, 'markup_percent', scope, 30),
+      overheadPercent: resolvePricingRule(pricingRules, 'overhead_percent', scope, 15),
       profitMarginLotacaoPercent:
-        resolvePricingRule(pricingRules, 'profit_margin_lotacao_percent', vtId) ??
-        resolvePricingRule(pricingRules, 'profit_margin_percent', vtId, 15),
+        resolvePricingRule(pricingRules, 'profit_margin_lotacao_percent', scope) ??
+        resolvePricingRule(pricingRules, 'profit_margin_percent', scope, 15),
       profitMarginFracionadoPercent:
-        resolvePricingRule(pricingRules, 'profit_margin_fracionado_percent', vtId) ??
-        resolvePricingRule(pricingRules, 'profit_margin_percent', vtId, 15),
+        resolvePricingRule(pricingRules, 'profit_margin_fracionado_percent', scope) ??
+        resolvePricingRule(pricingRules, 'profit_margin_percent', scope, 15),
+      profitMarginParceiroPercent: resolvePricingRule(
+        pricingRules,
+        'profit_margin_parceiro_fracionado_percent',
+        scope,
+        15
+      ),
       get profitMarginPercent() {
-        return debounced.freightModality === 'fracionado'
-          ? this.profitMarginFracionadoPercent
-          : this.profitMarginLotacaoPercent;
+        if (methodology === 'fracionado_parceiro') return this.profitMarginParceiroPercent;
+        if (methodology === 'fracionado_ntc') return this.profitMarginFracionadoPercent;
+        return this.profitMarginLotacaoPercent;
       },
       get targetMarginPercent() {
-        return debounced.freightModality === 'fracionado'
-          ? this.profitMarginFracionadoPercent
-          : this.profitMarginLotacaoPercent;
+        return this.profitMarginPercent;
       },
       regimeSimplesNacional,
       excessoSublimite: (excessoVal ?? 0) === 1,
       regimeLucroPresumido,
       pisPercent,
       cofinsPercent,
-      irpjEffectivePercent: resolvePricingRule(pricingRules, 'irpj_effective_percent', vtId, 0),
-      csllEffectivePercent: resolvePricingRule(pricingRules, 'csll_effective_percent', vtId, 0),
-      grisPercent: resolvePricingRule(pricingRules, 'gris_percent', vtId, 0.3),
-      tsoPercent: resolvePricingRule(pricingRules, 'tso_percent', vtId, 0.15),
-      costValuePercent: resolvePricingRule(pricingRules, 'cost_value_percent', vtId, 0.3),
-      tdePercent: resolvePricingRule(pricingRules, 'tde_percent', vtId, 20),
-      tearPercent: resolvePricingRule(pricingRules, 'tear_percent', vtId, 20),
-      overLotacaoPercent: resolvePricingRule(pricingRules, 'over_lotacao_percent', vtId, 0),
+      irpjEffectivePercent: resolvePricingRule(pricingRules, 'irpj_effective_percent', scope, 0),
+      csllEffectivePercent: resolvePricingRule(pricingRules, 'csll_effective_percent', scope, 0),
+      grisPercent: resolvePricingRule(pricingRules, 'gris_percent', scope, 0.3),
+      tsoPercent: resolvePricingRule(pricingRules, 'tso_percent', scope, 0.15),
+      costValuePercent: resolvePricingRule(pricingRules, 'cost_value_percent', scope, 0.3),
+      tdePercent: resolvePricingRule(pricingRules, 'tde_percent', scope, 20),
+      tearPercent: resolvePricingRule(pricingRules, 'tear_percent', scope, 20),
+      overLotacaoPercent: resolvePricingRule(pricingRules, 'over_lotacao_percent', scope, 0),
       overLotacaoKmPercent: resolveLotacaoKmOverPercent(debouncedKmBand, (key) =>
-        resolvePricingRule(pricingRules, key, vtId)
+        resolvePricingRule(pricingRules, key, scope)
       ),
       adValoremLotacaoPercent: resolvePricingRule(
         pricingRules,
         'ad_valorem_lotacao_percent',
-        vtId,
+        scope,
         0.03
       ),
     };
@@ -762,6 +836,7 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
     debouncedKmBand,
     taxRegimeSimples,
     debounced.freightModality,
+    selectedPriceTable?.methodology,
   ]);
 
   // ANTT floor rate (Piso mínimo carreteiro) - Tabela A / Carga Geral
@@ -1754,10 +1829,11 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
         toll_value: data.toll || null,
         cargo_value: data.cargo_value || null,
         discount_value: data.discount || 0,
-        value: Math.max(
-          0,
-          (useStoredPricing ? storedValue : calculationResult.totals.totalCliente) -
-            (data.discount || 0)
+        value: negotiatedQuoteValue(
+          useStoredPricing
+            ? Number(pricingBreakdown?.totals?.totalCliente) || storedValue
+            : calculationResult.totals.totalCliente,
+          data.discount || 0
         ),
         pricing_breakdown: {
           ...pricingBreakdown,
@@ -1968,6 +2044,10 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
                       isLoadingDestinationCep={isLoadingDestinationCep}
                       isCalculatingKm={isCalculatingKm}
                       priceTablesFiltered={priceTablesFiltered}
+                      onFreightModalityChange={(modality) => {
+                        form.setValue('freight_modality', modality);
+                        form.setValue('price_table_id', pickDefaultTableId(modality));
+                      }}
                       vehicleTypes={vehicleTypes ?? []}
                       paymentTerms={paymentTerms ?? []}
                       weightUnit={weightUnit}
@@ -2470,9 +2550,9 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
                               <FormLabel>Modalidade de Frete</FormLabel>
                               <Select
                                 onValueChange={(v) => {
-                                  field.onChange(v);
-                                  // Limpar tabela ao mudar modalidade (tabela pode ser de outra modalidade)
-                                  form.setValue('price_table_id', '');
+                                  const modality = v as 'lotacao' | 'fracionado';
+                                  field.onChange(modality);
+                                  form.setValue('price_table_id', pickDefaultTableId(modality));
                                 }}
                                 value={field.value || ''}
                               >
@@ -2497,19 +2577,43 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Tabela de Preços</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || ''}>
+                              <Select
+                                onValueChange={(id) => {
+                                  field.onChange(id);
+                                  const table = priceTables?.find((t) => t.id === id);
+                                  const meth = table?.methodology;
+                                  if (isPriceTableMethodology(meth)) {
+                                    form.setValue(
+                                      'freight_modality',
+                                      modalityFromMethodology(meth)
+                                    );
+                                  }
+                                }}
+                                value={field.value || ''}
+                              >
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Selecionar tabela..." />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {priceTablesFiltered.map((table) => (
-                                    <SelectItem key={table.id} value={table.id}>
-                                      {table.name} (
-                                      {table.modality === 'lotacao' ? 'Lotação' : 'Fracionado'})
-                                    </SelectItem>
-                                  ))}
+                                  {priceTablesFiltered.length === 0 ? (
+                                    <div className="px-2 py-3 text-xs text-muted-foreground">
+                                      Nenhuma tabela NTC ativa para esta modalidade.
+                                    </div>
+                                  ) : (
+                                    priceTablesFiltered.map((table) => (
+                                      <SelectItem key={table.id} value={table.id}>
+                                        {table.name} (
+                                        {isPriceTableMethodology(table.methodology)
+                                          ? METHODOLOGY_LABELS[table.methodology]
+                                          : table.modality === 'lotacao'
+                                            ? 'Lotação'
+                                            : 'Fracionado'}
+                                        )
+                                      </SelectItem>
+                                    ))
+                                  )}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -2517,6 +2621,24 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
                           )}
                         />
                       </div>
+
+                      {isPriceTableMethodology(selectedPriceTable?.methodology) && (
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                          <span>Pack de regras:</span>
+                          <Badge variant="secondary">
+                            {METHODOLOGY_LABELS[selectedPriceTable.methodology]}
+                          </Badge>
+                          {selectedPriceTable.methodology === 'fracionado_parceiro' && (
+                            <span>
+                              Margem parceiro:{' '}
+                              {Number(
+                                resolvedPricingParams.profitMarginParceiroPercent ?? 15
+                              ).toFixed(2)}
+                              %
+                            </span>
+                          )}
+                        </div>
+                      )}
 
                       <div className="grid grid-cols-3 gap-4">
                         <FormField

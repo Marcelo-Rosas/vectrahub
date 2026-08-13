@@ -1,3 +1,4 @@
+/// <reference path="../_shared/deno.d.ts" />
 /**
  * antt-rntrc-check  v3.0.0
  * Consulta RNTRC (Por Transportador / Por Veículo), CIOT Agregado e VPO
@@ -243,6 +244,9 @@ interface DeltaResult {
   hiddenFields: Record<string, string>;
 }
 
+const DELTA_NEXT =
+  '\\|\\d+\\|(?:updatePanel|hiddenField|scriptBlock|pageRedirect|asyncPostBackControlIDs|postBackControlIDs|updatePanelIDs|childUpdatePanelIDs|panelsToRefreshIDs|asyncPostBackTimeout|formAction|dataItem|dataItemJson|arrayDeclaration|expandoAttribute|onSubmit|focus|scriptStartupBlock|scriptDispose)\\|';
+
 function parseDeltaFull(delta: string): DeltaResult {
   const panels: Record<string, string> = {};
   const hiddenFields: Record<string, string> = {};
@@ -251,11 +255,8 @@ function parseDeltaFull(delta: string): DeltaResult {
     hiddenFields[m[1]] = m[2];
   }
 
-  // Captura updatePanel até o próximo registro reconhecido (lookahead).
-  // Tipos cobertos: updatePanel, hiddenField, scriptBlock, pageRedirect, e
-  // demais tipos comuns do PageRequestManager do ASP.NET AJAX.
-  const PANEL_RE =
-    /\|updatePanel\|([^|]+)\|([\s\S]*?)(?=\|\d+\|(?:updatePanel|hiddenField|scriptBlock|pageRedirect|asyncPostBackControlIDs|postBackControlIDs|updatePanelIDs|childUpdatePanelIDs|panelsToRefreshIDs|asyncPostBackTimeout|formAction|dataItem|dataItemJson|arrayDeclaration|expandoAttribute|onSubmit|focus|scriptStartupBlock|scriptDispose)\|)/g;
+  // Captura updatePanel até o próximo registro OU fim do delta (último painel).
+  const PANEL_RE = new RegExp(`\\|updatePanel\\|([^|]+)\\|([\\s\\S]*?)(?=${DELTA_NEXT}|$)`, 'g');
   for (const m of delta.matchAll(PANEL_RE)) {
     panels[m[1]] = m[2];
   }
@@ -269,10 +270,31 @@ function parseDelta(delta: string): Record<string, string> {
 
 /** Extracts UpdatePanel HTML or falls back to raw response. */
 function extractPanelHtml(responseText: string, ct: string): string {
-  const isDelta = ct.includes('text/plain') || /^\d+\|/.test(responseText);
+  const isDelta =
+    ct.includes('text/plain') ||
+    /^\d+\|/.test(responseText) ||
+    responseText.includes('|updatePanel|');
   if (!isDelta) return responseText;
   const panels = parseDelta(responseText);
-  return Object.keys(panels).length > 0 ? Object.values(panels).join('') : responseText;
+  const ids = Object.keys(panels);
+  if (ids.length === 0) return responseText;
+
+  // Prefer painel com resultado da grade; evita ficar só no Corpo_updPnlTipoConsulta.
+  const withResult = ids.find((id) =>
+    /gvResultadoPesquisa|lblMsg|Resultado/i.test(panels[id] ?? '')
+  );
+  if (withResult) return panels[withResult];
+
+  // Junta todos — parser de resultado ainda vasculha raw se preciso
+  return ids.map((id) => panels[id]).join('\n');
+}
+
+/** HTML efetivo p/ parse: painéis + fallback no delta cru (grade pode estar fora do painel preferido). */
+function htmlForRntrcParse(responseText: string, ct: string): string {
+  const fromPanels = extractPanelHtml(responseText, ct);
+  if (/Corpo_gvResultadoPesquisa|gvResultadoPesquisa/i.test(fromPanels)) return fromPanels;
+  if (/Corpo_gvResultadoPesquisa|gvResultadoPesquisa/i.test(responseText)) return responseText;
+  return fromPanels || responseText;
 }
 
 // ─── COMPROVANTE URL EXTRACTOR ────────────────────────────────────────────────
@@ -343,7 +365,11 @@ function extractRntrcResult(
         .find((c) => /^(TAC|ETC)$/i.test(c.trim()))
         ?.trim()
         .toUpperCase();
-      const rntrcRegistryType = (registryTypeCell || null) as 'TAC' | 'ETC' | null;
+      // Coluna Transportador costuma vir "ETC - Razão Social" / "TAC - Nome"
+      const fromTransportador = (transportador ?? '').match(/^\s*(TAC|ETC)\s*[-–—]/i)?.[1];
+      const rntrcRegistryType = (registryTypeCell ||
+        (fromTransportador ? fromTransportador.toUpperCase() : null) ||
+        null) as 'TAC' | 'ETC' | null;
       let situacao: 'regular' | 'irregular';
       if (/^ATIVO$/.test(situRaw)) {
         situacao = 'regular';
@@ -620,9 +646,28 @@ async function consultaRntrc(
     // Sempre sincroniza o radio com o tipo desejado antes do POST de consulta.
     tokens = await switchRntrcMode(tokens, tipoConsulta, signal);
 
-    const altchaPayload = await fetchAltchaAndSolve(RNTRC_URL, signal);
+    let altchaPayload = await fetchAltchaAndSolve(RNTRC_URL, signal);
+    if (!altchaPayload && attempt < 2) {
+      console.warn('[antt] altcha vazio — retry attempt');
+      continue;
+    }
+    if (!altchaPayload) {
+      return {
+        situacao: 'indeterminado',
+        rntrc: null,
+        is_stub: false,
+        message: 'Captcha ANTT (ALTCHA) indisponível — tente de novo em alguns segundos',
+      };
+    }
 
-    console.log('[antt] POST RNTRC tipo=', tipoConsulta, 'attempt=', attempt);
+    console.log(
+      '[antt] POST RNTRC tipo=',
+      tipoConsulta,
+      'attempt=',
+      attempt,
+      'plate=',
+      plate || '(none)'
+    );
     const { viewState, viewStateGen, eventValidation, altchaUrl, cookies } = tokens;
     const formBody = new URLSearchParams({
       ctl00$ScriptManagerMain: 'ctl00$ScriptManagerMain|ctl00$Corpo$btnConsulta',
@@ -638,7 +683,7 @@ async function consultaRntrc(
       ctl00$Corpo$rbTipoConsulta: tipoConsulta,
       ctl00$Corpo$txtRNTRC: rntrc ?? '',
       ctl00$Corpo$txtCpfCnpj: cpfCnpj,
-      ...(altchaPayload ? { altcha: altchaPayload } : {}),
+      altcha: altchaPayload,
       ctl00$Corpo$btnConsulta: 'Consultar',
       __ASYNCPOST: 'true',
     });
@@ -677,17 +722,35 @@ async function consultaRntrc(
       continue;
     }
 
-    const resultHtml = extractPanelHtml(responseText, ct);
+    // Só painel de tipo (sem grade) = postback não consultou — retry fresco
+    const onlyTipoPanel =
+      panelIds.length > 0 &&
+      panelIds.every((id) => /TipoConsulta|Panel1/i.test(id)) &&
+      !/gvResultadoPesquisa/i.test(responseText);
+    if (onlyTipoPanel && attempt < 2) {
+      console.warn('[antt] delta só TipoConsulta sem grade — retry');
+      continue;
+    }
+
+    const resultHtml = htmlForRntrcParse(responseText, ct);
     console.log('[antt] RNTRC resultHtml[:500]=', resultHtml.slice(0, 500));
 
     const parsed = extractRntrcResult(resultHtml, tipoConsulta === '3');
-    console.log('[antt] RNTRC parsed=', JSON.stringify(parsed));
+    // Segunda chance: parse no delta cru
+    const parsed2 =
+      parsed.situacao === 'indeterminado'
+        ? extractRntrcResult(responseText, tipoConsulta === '3')
+        : parsed;
+    const finalParsed = parsed2.situacao !== 'indeterminado' ? parsed2 : parsed;
+    console.log('[antt] RNTRC parsed=', JSON.stringify(finalParsed));
 
-    if (parsed.situacao === 'indeterminado') {
-      parsed.message = `ct=${ct}; preview=${responseText.slice(0, 300)}`;
+    if (finalParsed.situacao === 'indeterminado') {
+      finalParsed.message = onlyTipoPanel
+        ? 'Portal ANTT não retornou grade (só painel de tipo). Tente de novo.'
+        : `ct=${ct}; panels=${panelIds.join(',') || 'none'}; preview=${responseText.slice(0, 180)}`;
     }
 
-    return { ...parsed, is_stub: false };
+    return { ...finalParsed, is_stub: false };
   }
 
   // Should never reach here (loop always returns or throws)
@@ -948,7 +1011,9 @@ edgeServe(async (req: Request): Promise<Response> => {
       );
     }
   }
-  if (operation === 'rntrc' || operation === 'veiculo' || operation === 'vpo') {
+  // Por Transportador (rntrc/tipo=1) não exige placa — cadastro Owner/CNPJ.
+  // Por Veículo / VPO exigem placa.
+  if (operation === 'veiculo' || operation === 'vpo') {
     if (!plate || plate.length < 7) {
       return new Response(JSON.stringify({ error: 'Placa do veículo inválida' }), {
         status: 400,

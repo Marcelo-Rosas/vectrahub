@@ -79,11 +79,12 @@ async function resolveTaxRates(sb: ReturnType<typeof createClient>): Promise<Tax
   const allRules = await fetchPricingRulesConfig(sb, true);
   const fallbackKeys: string[] = [];
 
-  const isLP = (resolvePricingRuleBackend(allRules, 'regime_lucro_presumido') ?? 0) === 1;
-  const isSN = (resolvePricingRuleBackend(allRules, 'regime_simples_nacional') ?? 0) === 1;
+  const scope = { methodology: 'lotacao' as const, vehicleTypeId: null as string | null };
+  const isLP = (resolvePricingRuleBackend(allRules, 'regime_lucro_presumido', scope) ?? 0) === 1;
+  const isSN = (resolvePricingRuleBackend(allRules, 'regime_simples_nacional', scope) ?? 0) === 1;
 
   function resolveRate(key: keyof typeof LP_DEFAULTS): number {
-    const dbValue = resolvePricingRuleBackend(allRules, key);
+    const dbValue = resolvePricingRuleBackend(allRules, key, scope);
     if (dbValue === undefined) {
       fallbackKeys.push(key);
       return LP_DEFAULTS[key];

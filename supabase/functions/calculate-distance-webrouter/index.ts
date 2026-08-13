@@ -136,6 +136,19 @@ function normalizeUf(v: string | undefined): string | undefined {
   return /^[A-Z]{2}$/.test(s) ? s : undefined;
 }
 
+/** "Vitoria da Conquista - BA" → { cidade, uf: "BA" }. Não usar slice(0,2) ("VI"). */
+function parseCityUf(cityUf?: string): { cidade?: string; uf?: string } | undefined {
+  const s = (cityUf || '').trim();
+  if (!s) return undefined;
+  const m = s.match(/^(.*?)[\s,/\-]*([A-Za-z]{2})$/);
+  if (m && /^[A-Z]{2}$/i.test(m[2])) {
+    const cidade = m[1].replace(/[\s,\-]+$/g, '').trim();
+    return { cidade: cidade || undefined, uf: m[2].toUpperCase() };
+  }
+  if (/^[A-Z]{2}$/i.test(s)) return { uf: s.toUpperCase() };
+  return { cidade: s };
+}
+
 /**
  * Extract km per UF from WebRouter response.
  * Priority: 1) ordemRoteiro, 2) pathSegments/resumoEstados, 3) tollPlazas, 4) geographic 50/50.
@@ -302,18 +315,25 @@ Deno.serve(async (req) => {
         : undefined;
 
     const enderecos: ReturnType<typeof buildAddress>[] = [
-      buildAddress(originCep, 0, originAddrFinal),
+      buildAddress(originCep, 1, originAddrFinal),
     ];
     waypoints.forEach((wp, i) => {
       const addr = addrs[i + 1];
+      const parsed = parseCityUf(wp.city_uf);
       const opts = addr
         ? { cidade: addr.localidade, uf: addr.uf }
-        : wp.city_uf
-          ? { cidade: '', uf: wp.city_uf }
+        : parsed
+          ? { cidade: parsed.cidade || '', uf: parsed.uf || '' }
           : undefined;
-      enderecos.push(buildAddress(wp.cep, i + 1, opts));
+      enderecos.push(buildAddress(wp.cep, i + 2, opts));
     });
-    enderecos.push(buildAddress(destinationCep, enderecos.length, destinationAddrFinal));
+    enderecos.push(
+      buildAddress(
+        destinationCep,
+        enderecos.length + 1,
+        destinationAddrFinal || parseCityUf(body.destination_uf)
+      )
+    );
 
     const webRouterBody = {
       autenticacao: { chaveAcesso: apiKey },
@@ -324,8 +344,9 @@ Deno.serve(async (req) => {
           perfilVeiculo: 'CAMINHAO',
           tipoCombustivel: 'DIESEL',
           tipoVeiculo: 'CAMINHAO',
-          tipoRota: 'RAPIDA',
+          tipoCaminho: 'RAPIDA',
           priorizarRodovias: true,
+          retornaURLmapa: true,
         },
       },
       salvarRota: false,

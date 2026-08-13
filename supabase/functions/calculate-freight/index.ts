@@ -30,6 +30,7 @@ import {
 import { resolveAnttCargoTypeForPiso } from '../_shared/antt-cargo-type-map.ts';
 import {
   calculateLotacaoProfitability,
+  estimateInsuranceRiskCosts,
   LOTACAO_OVER_ANTT_KEY,
   resolveLotacaoFretePeso,
   resolveLotacaoKmOverPercent,
@@ -167,12 +168,39 @@ Deno.serve(async (req) => {
 
     const { data: allRules } = await supabase
       .from('pricing_rules_config')
-      .select('key, value, vehicle_type_id, min_value, max_value')
+      .select('key, value, vehicle_type_id, min_value, max_value, methodology')
       .eq('is_active', true);
+
+    type PriceTableMethodology = 'lotacao' | 'fracionado_ntc' | 'fracionado_parceiro';
+    let methodology: PriceTableMethodology = 'lotacao';
+    let modality: 'lotacao' | 'fracionado' = 'lotacao';
+
+    if (input.price_table_id) {
+      const { data: ptEarly } = await supabase
+        .from('price_tables')
+        .select('modality, methodology, ad_valorem_lotacao_percent')
+        .eq('id', input.price_table_id)
+        .maybeSingle();
+      if (ptEarly?.modality === 'fracionado') modality = 'fracionado';
+      const m = ptEarly?.methodology;
+      if (m === 'lotacao' || m === 'fracionado_ntc' || m === 'fracionado_parceiro') {
+        methodology = m;
+      } else if (!m) {
+        return new Response(JSON.stringify({ error: 'Tabela sem methodology' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    const hasHubFiscal = methodology === 'lotacao' || methodology === 'fracionado_ntc';
 
     function resolveRule(key: string, vtId: string | null | undefined): number | undefined {
       if (!allRules?.length) return undefined;
-      const byKey = allRules.filter((r: { key: string }) => r.key === key);
+      const byKey = allRules.filter(
+        (r: { key: string; methodology?: string }) =>
+          r.key === key && (r.methodology ?? 'lotacao') === methodology
+      );
       if (byKey.length === 0) return undefined;
       const vehicleRule = vtId
         ? byKey.find((r: { vehicle_type_id: string | null }) => r.vehicle_type_id === vtId)
@@ -189,38 +217,54 @@ Deno.serve(async (req) => {
     }
 
     // VEC-126: pricing_parameters depreciado — pricing_rules_config é a única fonte de verdade
-    const cubageFactor = FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3;
-    const dasPercent =
-      input.das_percent ??
-      resolveRule('das_percent', vehicleTypeIdForRules) ??
-      FREIGHT_CONSTANTS.DEFAULT_DAS_PERCENT;
-    const markupPercent =
-      input.markup_percent ??
-      resolveRule('markup_percent', vehicleTypeIdForRules) ??
-      FREIGHT_CONSTANTS.DEFAULT_MARKUP_PERCENT;
-    const overheadPercent =
-      input.overhead_percent ??
-      resolveRule('overhead_percent', vehicleTypeIdForRules) ??
-      FREIGHT_CONSTANTS.DEFAULT_OVERHEAD_PERCENT;
+    let cubageFactor = FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3;
+    const dasPercent = hasHubFiscal
+      ? (input.das_percent ??
+        resolveRule('das_percent', vehicleTypeIdForRules) ??
+        FREIGHT_CONSTANTS.DEFAULT_DAS_PERCENT)
+      : 0;
+    const markupPercent = hasHubFiscal
+      ? (input.markup_percent ??
+        resolveRule('markup_percent', vehicleTypeIdForRules) ??
+        FREIGHT_CONSTANTS.DEFAULT_MARKUP_PERCENT)
+      : 0;
+    const overheadPercent = hasHubFiscal
+      ? (input.overhead_percent ??
+        resolveRule('overhead_percent', vehicleTypeIdForRules) ??
+        FREIGHT_CONSTANTS.DEFAULT_OVERHEAD_PERCENT)
+      : 0;
 
-    const regimeSimplesNacional =
-      input.regime_simples_nacional ??
-      (resolveRule('regime_simples_nacional', vehicleTypeIdForRules) ?? 1) === 1;
-    const excessoSublimite =
-      input.excesso_sublimite ??
-      (resolveRule('excesso_sublimite', vehicleTypeIdForRules) ?? 0) === 1;
+    const regimeSimplesNacional = hasHubFiscal
+      ? (input.regime_simples_nacional ??
+        (resolveRule('regime_simples_nacional', vehicleTypeIdForRules) ?? 1) === 1)
+      : false;
+    const excessoSublimite = hasHubFiscal
+      ? (input.excesso_sublimite ??
+        (resolveRule('excesso_sublimite', vehicleTypeIdForRules) ?? 0) === 1)
+      : false;
 
-    const pisPercent = input.pis_percent ?? resolveRule('pis_percent', vehicleTypeIdForRules) ?? 0;
-    const cofinsPercent =
-      input.cofins_percent ?? resolveRule('cofins_percent', vehicleTypeIdForRules) ?? 0;
-    const irpjEffectivePercent =
-      input.irpj_percent ?? resolveRule('irpj_effective_percent', vehicleTypeIdForRules) ?? 0;
-    const csllEffectivePercent =
-      input.csll_percent ?? resolveRule('csll_effective_percent', vehicleTypeIdForRules) ?? 0;
-    let regimeLucroPresumido =
-      input.regime_lucro_presumido ??
-      (resolveRule('regime_lucro_presumido', vehicleTypeIdForRules) ?? 0) === 1;
-    if (!regimeLucroPresumido && !regimeSimplesNacional && (pisPercent > 0 || cofinsPercent > 0)) {
+    const pisPercent = hasHubFiscal
+      ? (input.pis_percent ?? resolveRule('pis_percent', vehicleTypeIdForRules) ?? 0)
+      : 0;
+    const cofinsPercent = hasHubFiscal
+      ? (input.cofins_percent ?? resolveRule('cofins_percent', vehicleTypeIdForRules) ?? 0)
+      : 0;
+    const irpjEffectivePercent = hasHubFiscal
+      ? (input.irpj_percent ?? resolveRule('irpj_effective_percent', vehicleTypeIdForRules) ?? 0)
+      : 0;
+    const csllEffectivePercent = hasHubFiscal
+      ? (input.csll_percent ?? resolveRule('csll_effective_percent', vehicleTypeIdForRules) ?? 0)
+      : 0;
+    let regimeLucroPresumido = hasHubFiscal
+      ? (input.regime_lucro_presumido ??
+        (resolveRule('regime_lucro_presumido', vehicleTypeIdForRules) ?? 0) === 1)
+      : false;
+    if (
+      hasHubFiscal &&
+      !regimeLucroPresumido &&
+      !regimeSimplesNacional &&
+      (pisPercent > 0 || cofinsPercent > 0)
+    ) {
       regimeLucroPresumido = true;
     }
 
@@ -234,28 +278,15 @@ Deno.serve(async (req) => {
 
     // NTC Lotação Dez/25: correctionFactor e markup não aplicados ao frete peso
     fallbacksApplied.push('ntc_mode: correctionFactor/markup ignored');
+    fallbacksApplied.push(`methodology: ${methodology}`);
 
     // =====================================================
-    // CALCULATE WEIGHTS
+    // CALCULATE WEIGHTS — max(kg, m³ × fator de cubagem); sem trava de 1 t
     // =====================================================
 
-    const cubageWeightKg = input.volume_m3 * cubageFactor;
-    let billableWeightKg = Math.max(input.weight_kg, cubageWeightKg);
-
-    // Trava Fracionado: mínimo 1.000 kg para viabilidade
-    let ltlMinWeightApplied = false;
     const originalWeightKg = input.weight_kg;
-    if (input.price_table_id) {
-      const { data: ptModality } = await supabase
-        .from('price_tables')
-        .select('modality')
-        .eq('id', input.price_table_id)
-        .maybeSingle();
-      if (ptModality?.modality === 'fracionado' && billableWeightKg < 1000) {
-        billableWeightKg = 1000;
-        ltlMinWeightApplied = true;
-      }
-    }
+    let cubageWeightKg = input.volume_m3 * cubageFactor;
+    let billableWeightKg = Math.max(input.weight_kg, cubageWeightKg);
 
     // =====================================================
     // GET PRICE TABLE ROW
@@ -290,19 +321,16 @@ Deno.serve(async (req) => {
       adValoremResolved ?? FREIGHT_CONSTANTS.DEFAULT_AD_VALOREM_LOTACAO_PERCENT;
 
     // =====================================================
-    // DETECT MODALITY (lotacao vs fracionado)
+    // DETECT MODALITY / METHODOLOGY (already resolved above from price_tables)
     // =====================================================
 
-    let modality: 'lotacao' | 'fracionado' = 'lotacao';
-
+    // Per-table ad_valorem takes precedence over pricing_rules_config
     if (input.price_table_id) {
       const { data: ptData } = await supabase
         .from('price_tables')
-        .select('modality, ad_valorem_lotacao_percent')
+        .select('ad_valorem_lotacao_percent')
         .eq('id', input.price_table_id)
         .maybeSingle();
-      if (ptData?.modality === 'fracionado') modality = 'fracionado';
-      // Per-table ad_valorem takes precedence over global pricing_rules_config
       const tableAdValorem = toFiniteNumber(ptData?.ad_valorem_lotacao_percent);
       if (tableAdValorem != null) {
         adValoremLotacaoPercent = tableAdValorem;
@@ -312,15 +340,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Resolving target margin based on modality
-    const profitMarginPercent =
-      resolveRule(
-        modality === 'fracionado'
+    const marginKey =
+      methodology === 'fracionado_parceiro'
+        ? 'profit_margin_parceiro_fracionado_percent'
+        : methodology === 'fracionado_ntc'
           ? 'profit_margin_fracionado_percent'
-          : 'profit_margin_lotacao_percent',
-        vehicleTypeIdForRules
-      ) ??
-      resolveRule('profit_margin_percent', vehicleTypeIdForRules) ??
+          : 'profit_margin_lotacao_percent';
+
+    const profitMarginPercent =
+      resolveRule(marginKey, vehicleTypeIdForRules) ??
+      (methodology === 'lotacao'
+        ? resolveRule('profit_margin_percent', vehicleTypeIdForRules)
+        : undefined) ??
       FREIGHT_CONSTANTS.TARGET_MARGIN_PERCENT;
 
     // =====================================================
@@ -335,6 +366,7 @@ Deno.serve(async (req) => {
       gris_min: number;
       gris_min_cargo_limit: number;
       dispatch_fee: number;
+      cubage_factor: number;
     };
 
     let ltlParams: LtlParams | null = null;
@@ -358,6 +390,7 @@ Deno.serve(async (req) => {
           gris_min: Number(ltlRow.gris_min ?? 9.28),
           gris_min_cargo_limit: Number(ltlRow.gris_min_cargo_limit ?? 3093.81),
           dispatch_fee: Number(ltlRow.dispatch_fee ?? 102.9),
+          cubage_factor: Number(ltlRow.cubage_factor ?? FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3),
         };
       } else {
         // Fallback NTC Dez/25
@@ -369,8 +402,15 @@ Deno.serve(async (req) => {
           gris_min: 9.28,
           gris_min_cargo_limit: 3093.81,
           dispatch_fee: 102.9,
+          cubage_factor: FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3,
         };
         fallbacksApplied.push('ltl_parameters: usando fallback NTC Dez/25');
+      }
+
+      if (ltlParams.cubage_factor > 0) {
+        cubageFactor = ltlParams.cubage_factor;
+        cubageWeightKg = input.volume_m3 * cubageFactor;
+        billableWeightKg = Math.max(input.weight_kg, cubageWeightKg);
       }
     }
 
@@ -648,6 +688,8 @@ Deno.serve(async (req) => {
     }
 
     const ntc_base = frete_peso + frete_valor + gris + tso + dispatchFee;
+    // ntc_base = pacote comercial NTC (peso + risco + despacho). NÃO é PAG/base motorista.
+    // Base motorista fracionado = frete_peso (kg × R$/kg). Repasse de risco = receita Hub.
 
     // Base para taxas condicionais que aplicam sobre frete: mantém comportamento anterior
     // (correction + markup) para não alterar cobrança de fees já cadastrados
@@ -934,21 +976,21 @@ Deno.serve(async (req) => {
     // do embarcador, NAO custo direto. Mantida apenas em receitaBrutaPreTac;
     // removida do custoServicosOperacionais pra nao inflar custosDiretos
     // (e portanto o "lucro alvo" calculado por custosDiretos x targetPercent).
+    // CD: motorista + pedágio/NTC + espera + aluguel + descarga (repasse real).
+    // Taxas condicionais = markup (receita) — fora do divisor c/ risco.
     const custoServicosOperacionais = roundCurrency(
-      toll +
-        tde +
-        tear +
-        conditionalFeesTotal +
-        waitingTimeCost +
-        aluguelMaquinasValue +
-        tacAdjustment +
-        paymentAdjustment
+      toll + tde + tear + waitingTimeCost + aluguelMaquinasValue + tacAdjustment + paymentAdjustment
     );
-    /** Soma exibida (operacional + repasse); repasse não entra no divisor do gross-up (v5). */
-    const custoServicos = roundCurrency(custoServicosOperacionais + repasseRisco);
+    const custoServicos = custoServicosOperacionais;
     const custoMotoristaContratado = fretePesoForGrossUp;
     const custosDescarga = descargaValue;
     const custosDiretos = custoMotoristaContratado + custoServicosOperacionais + custosDescarga;
+    const receitaForaDivisor = roundCurrency(repasseRisco + conditionalFeesTotal);
+    const riskCostsEstimate = estimateInsuranceRiskCosts(
+      Number(input.cargo_value ?? 0),
+      roundCurrency
+    );
+    const custosRiscoReal = riskCostsEstimate.total;
 
     let regimeFiscal: 'simples_nacional' | 'excesso_sublimite' | 'lucro_presumido' | 'normal';
     let icmsNoDivisor: boolean;
@@ -1015,7 +1057,21 @@ Deno.serve(async (req) => {
       totalCliente = roundCurrency(receitaFinal + das + icms + pis + cofins + irpj + csll);
     } else {
       const totalClienteCore = roundCurrency(custosDiretos / (1 - taxaBruta));
-      totalCliente = roundCurrency(totalClienteCore + repasseRisco);
+      let taxaImpostos = 0;
+      if (regimeFiscal === 'lucro_presumido') {
+        taxaImpostos =
+          (pisPercent + cofinsPercent + irpjEffectivePercent + csllEffectivePercent + icmsPercent) /
+          100;
+      } else if (icmsNoDivisor) {
+        taxaImpostos = (dasPercent + icmsPercent) / 100;
+      } else {
+        taxaImpostos = dasPercent / 100;
+      }
+      const receitaForaComImpostos =
+        receitaForaDivisor > 0 && taxaImpostos < 1
+          ? receitaForaDivisor / (1 - taxaImpostos)
+          : receitaForaDivisor;
+      totalCliente = roundCurrency(totalClienteCore + receitaForaComImpostos);
       if (regimeFiscal === 'lucro_presumido') {
         das = 0;
         pis = roundCurrency(totalCliente * (pisPercent / 100));
@@ -1038,6 +1094,7 @@ Deno.serve(async (req) => {
 
     let margemBruta: number;
     let resultadoLiquido: number;
+    let lucroAlvo: number;
     let margemPercent: number;
 
     if (modality === 'lotacao') {
@@ -1052,19 +1109,23 @@ Deno.serve(async (req) => {
           custosDiretos,
           totalCliente,
           profitMarginPercent,
+          custosRiscoReal,
         },
         roundCurrency
       );
       margemBruta = lotacaoProfit.margemBruta;
       resultadoLiquido = lotacaoProfit.resultadoLiquido;
+      lucroAlvo = lotacaoProfit.lucroAlvo;
       margemPercent = lotacaoProfit.margemPercent;
     } else {
-      resultadoLiquido = roundCurrency(
-        receitaLiquida - overhead - custoMotoristaContratado - custosDescarga
-      );
       margemBruta = roundCurrency(
-        receitaLiquida - overhead - custoMotoristaAntt - custoServicosOperacionais
+        receitaLiquida - overhead - custoMotoristaAntt - custoServicosOperacionais - custosDescarga
       );
+      resultadoLiquido = roundCurrency(margemBruta - custosRiscoReal);
+      lucroAlvo =
+        custosDiretos > 0 && profitMarginPercent > 0
+          ? roundCurrency(custosDiretos * (profitMarginPercent / 100))
+          : resultadoLiquido;
       margemPercent = totalCliente > 0 ? roundCurrency((resultadoLiquido / totalCliente) * 100) : 0;
     }
 
@@ -1097,7 +1158,7 @@ Deno.serve(async (req) => {
         cofinsPercent,
         irpjEffectivePercent,
         csllEffectivePercent,
-        repasseRisco
+        receitaForaDivisor
       );
       ckanBenchmarkGross = ckanGrossUp.totalCliente;
     }
@@ -1153,8 +1214,7 @@ Deno.serve(async (req) => {
       antt_calculated_at: new Date().toISOString(),
       ...(anttMetaForResponse && { antt: anttMetaForResponse }),
       ...(anttFloorForced && { antt_floor_forced: true }),
-      ...(ltlMinWeightApplied && { ltl_min_weight_applied: true }),
-      ...(ltlMinWeightApplied && { original_weight_kg: roundCurrency(originalWeightKg) }),
+      original_weight_kg: roundCurrency(originalWeightKg),
     };
 
     const components: FreightComponents = {
@@ -1205,15 +1265,15 @@ Deno.serve(async (req) => {
       total_cliente: roundCurrency(totalCliente),
     };
 
-    const custoMotoristaAnttKpi =
-      modality === 'lotacao'
-        ? roundCurrency(lotacaoFreteMeta?.pisoAntt ?? pisoAnttCarreteiro)
-        : roundCurrency(custoMotoristaAntt);
+    const custoMotoristaAnttKpi = roundCurrency(lotacaoFreteMeta?.pisoAntt ?? pisoAnttCarreteiro);
+    const custoMotoristaPag =
+      modality === 'fracionado' ? roundCurrency(custoMotoristaContratado) : custoMotoristaAnttKpi;
 
     const profitability: FreightProfitability = {
       // Campos legados — mantidos para compatibilidade durante migração (VEC-121)
       custos_carreteiro: roundCurrency(custoMotoristaContratado),
-      custo_motorista: custoMotoristaAnttKpi,
+      // Fracionado: PAG = frete peso NTC. Lotação: KPI de piso ANTT.
+      custo_motorista: custoMotoristaPag,
       // Novos campos semânticos (VEC-121)
       custo_motorista_contratado: roundCurrency(custoMotoristaContratado),
       custo_motorista_antt: custoMotoristaAnttKpi,
@@ -1225,6 +1285,7 @@ Deno.serve(async (req) => {
       margem_bruta: margemBruta,
       overhead,
       resultado_liquido: resultadoLiquido,
+      lucro_alvo: lucroAlvo,
       margem_percent: margemPercent,
       profit_margin_target: profitMarginPercent,
       regime_fiscal: regimeFiscal,
@@ -1252,6 +1313,13 @@ Deno.serve(async (req) => {
           components.gris + components.tso + components.rctrc + components.ad_valorem
         ),
       },
+      risk_costs:
+        riskCostsEstimate.total > 0
+          ? {
+              items: riskCostsEstimate.items,
+              total: riskCostsEstimate.total,
+            }
+          : undefined,
     };
 
     console.log('[calculate-freight] Complete:', {

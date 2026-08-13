@@ -57,9 +57,11 @@ export function shipperRecordToPartyData(
     phone: (shipper?.phone as string) ?? null,
     email: (shipper?.email as string) ?? entry?.email ?? null,
     address: (shipper?.address as string) ?? null,
-    address_number: null,
-    address_complement: null,
-    address_neighborhood: null,
+    // Numero/bairro/complemento vem do cadastro do embarcador (fonte da verdade).
+    // O operador pode ajustar por embarque especifico via override no Wizard da OC.
+    address_number: (shipper?.address_number as string) ?? null,
+    address_complement: (shipper?.address_complement as string) ?? null,
+    address_neighborhood: (shipper?.address_neighborhood as string) ?? null,
     zip_code:
       normalizeCep(entry?.cep) ??
       normalizeCep(shipper?.zip_code) ??

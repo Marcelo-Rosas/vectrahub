@@ -16,7 +16,12 @@
  */
 
 import { Database } from '@/integrations/supabase/types';
-import { calculateLotacaoProfitability, resolveLotacaoFretePeso } from '@/lib/lotacao-freight-base';
+import type { VpoReciboViagem } from '@/lib/vpo-recibo';
+import {
+  calculateLotacaoProfitability,
+  estimateInsuranceRiskCosts,
+  resolveLotacaoFretePeso,
+} from '@/lib/lotacao-freight-base';
 
 type PriceTableRow = Database['public']['Tables']['price_table_rows']['Row'];
 
@@ -26,7 +31,8 @@ type PriceTableRow = Database['public']['Tables']['price_table_rows']['Row'];
 
 export const FREIGHT_CONSTANTS = {
   CUBAGE_FACTOR_KG_M3: 300,
-  DEFAULT_DAS_PERCENT: 14,
+  /** Fallback DAS — Anexo III faixa inicial (Simples Nacional). Preferir pricing_rules_config. */
+  DEFAULT_DAS_PERCENT: 6,
   DEFAULT_MARKUP_PERCENT: 30,
   DEFAULT_OVERHEAD_PERCENT: 15,
   TARGET_MARGIN_PERCENT: 15,
@@ -84,20 +90,71 @@ export function resolveMargemBrutaDisplay(
   return storedMargemBruta;
 }
 
-/** Lucro alvo lotação = custos diretos × profit_margin_percent (não margem de contribuição). */
+/**
+ * Resultado contábil: margem de contribuição − custos reais de risco.
+ * Snapshots legados gravavam lucro-alvo em resultadoLiquido — preferir recomputo.
+ */
 export function resolveResultadoLiquidoDisplay(
   storedResultado: number | null | undefined,
-  custosDiretos: number,
-  profitMarginPercent: number,
-  margemContribuicaoFallback: number
+  margemContribuicao: number,
+  custosRiscoReal = 0
 ): number {
-  if (custosDiretos > 0 && profitMarginPercent > 0) {
-    return round2(custosDiretos * (profitMarginPercent / 100));
+  if (Number.isFinite(margemContribuicao)) {
+    return round2(margemContribuicao - Math.max(0, custosRiscoReal));
   }
   if (storedResultado != null && Number.isFinite(storedResultado)) {
     return storedResultado;
   }
-  return margemContribuicaoFallback;
+  return 0;
+}
+
+/** Lucro embutido no gross-up = custos diretos × profit_margin_percent. */
+export function resolveLucroAlvoDisplay(
+  custosDiretos: number,
+  profitMarginPercent: number,
+  storedLucroAlvo?: number | null
+): number {
+  if (custosDiretos > 0 && profitMarginPercent > 0) {
+    return round2(custosDiretos * (profitMarginPercent / 100));
+  }
+  if (storedLucroAlvo != null && Number.isFinite(storedLucroAlvo)) {
+    return storedLucroAlvo;
+  }
+  return 0;
+}
+
+type ServicosComponentsSlice = {
+  toll?: number;
+  aluguelMaquinas?: number;
+  tde?: number;
+  tear?: number;
+  conditionalFeesTotal?: number;
+  waitingTimeCost?: number;
+};
+
+/**
+ * Serviços operacionais p/ margem (sem repasse de risco).
+ * Snapshots legados: `custoServicos` incluía Ad Valorem/RCTR-C — recompõe via components.
+ */
+export function resolveCustoServicosOperacionaisDisplay(
+  components: ServicosComponentsSlice | null | undefined,
+  custoServicosStored?: number | null
+): number {
+  const c = components;
+  // Sem conditionalFees: taxas adicionais = markup (receita), não custo operacional.
+  // Aluguel/descarga = repasse (custo) — aluguel entra aqui; descarga é linha à parte.
+  const fromParts = round2(
+    (c?.toll ?? 0) +
+      (c?.aluguelMaquinas ?? 0) +
+      (c?.tde ?? 0) +
+      (c?.tear ?? 0) +
+      (c?.waitingTimeCost ?? 0)
+  );
+  if (c != null) {
+    return fromParts;
+  }
+  const raw = Number(custoServicosStored ?? 0);
+  return Number.isFinite(raw) ? round2(Math.max(0, raw)) : 0;
 }
 
 // ============================================
@@ -145,6 +202,8 @@ export interface FreightCalculationInput {
     grisMin: number;
     grisMinCargoLimit: number;
     dispatchFee: number;
+    /** kg/m³ — NTC Fracionado; default 300 se omitido */
+    cubageFactor?: number;
   };
 
   /** Piso ANTT carreteiro (R$) — fórmula calculadora ceil(km)×CCD+CC. Em lotação, base seca do gross-up. */
@@ -268,6 +327,7 @@ export interface FreightCalculationOutput {
     kmStatus: 'OK' | 'OUT_OF_RANGE';
     marginStatus: 'ABOVE_TARGET' | 'BELOW_TARGET' | 'AT_TARGET' | 'UNKNOWN';
     marginPercent: number;
+    /** kg/m³ usado no peso cubado (NTC Fracionado: ltl_parameters.cubage_factor) */
     cubageFactor: number;
     cubageWeightKg: number;
     billableWeightKg: number;
@@ -362,18 +422,29 @@ export interface FreightCalculationOutput {
     custoMotoristaContratado?: number;
     custoMotoristaReal?: number | null;
     custosDescarga: number;
+    /** Serviços operacionais (sem repasse de risco). */
     custoServicos: number;
     custosDiretos: number;
     receitaLiquida: number;
     margemBruta: number;
     overhead: number;
+    /** Resultado contábil (RL − OH − CD − risco real). */
     resultadoLiquido: number;
+    /** Lucro embutido no gross-up (CD × profit_margin%). */
+    lucroAlvo: number;
+    /** Margem operacional: resultado ÷ FAT × 100. */
     margemPercent: number;
     profitMarginTarget: number;
     regimeFiscal: 'simples_nacional' | 'excesso_sublimite' | 'lucro_presumido' | 'normal';
   };
 
   conditionalFeesBreakdown: Record<string, number>;
+
+  /** Custo real de seguro (prêmio estimado) — não é repasse. */
+  riskCosts?: {
+    items: Array<{ code: string; name: string; cost: number }>;
+    total: number;
+  };
 }
 
 // ============================================
@@ -387,6 +458,36 @@ export interface TollPlaza {
   valor: number;
   valorTag: number;
   ordemPassagem: number;
+  idAilog?: number;
+  idCNP?: string;
+  codigo?: string;
+  idSemParar?: string;
+  idConectcar?: string;
+  idVeloe?: string;
+  idMoveMais?: string;
+  idRepom?: string;
+}
+
+export interface VpoEmissionRecord {
+  emissor: string;
+  tag?: string | null;
+  idANTT?: string | null;
+  idViagemAILog?: number | null;
+  idViagemOSA?: number | null;
+  codigoViagem?: string | null;
+  idVpo?: string | null;
+  cnpjFornecedora?: string;
+  cnpjPagador?: string;
+  tipoVale?: '01' | '04';
+  /** SemParar: ESTENDIDA | PLANEJADA | CUSTOMIZADA. Recibo.tipo. */
+  tipoViagem?: string | null;
+  valorReais?: number;
+  pedagiosCount?: number;
+  idRota?: number | null;
+  kmDistance?: number;
+  emittedAt?: string;
+  /** Recibo AILOG getReciboViagem / emitirReciboViagem (JSON, sem PDF). */
+  recibo?: VpoReciboViagem | null;
 }
 
 export interface StoredPricingBreakdown {
@@ -411,13 +512,18 @@ export interface StoredPricingBreakdown {
     // Praças de pedágio retornadas pelo WebRouter
     tollPlazas?: TollPlaza[];
 
+    /** Emissão VPO (WebRouter criarViagem) persistida na OS. */
+    vpo?: VpoEmissionRecord;
+
     /** KM por UF (para restauração e recálculo ICMS proporcional) */
     kmByUf?: Record<string, number>;
 
-    /** Trava 1t aplicada no fracionado */
+    /** Trava 1t (legado). Fracionado atual usa só fator de cubagem. */
     ltlMinWeightApplied?: boolean;
-    /** Peso real informado (antes da trava 1t) */
+    /** Peso real informado (kg) */
     originalWeightKg?: number;
+    /** kg/m³ usado no peso cubado */
+    cubageFactor?: number;
     regimeSimplesNacional?: boolean;
     excessoSublimite?: boolean;
     regimeLucroPresumido?: boolean;
@@ -530,12 +636,17 @@ export interface StoredPricingBreakdown {
     custoMotoristaContratado?: number;
     custoMotoristaReal?: number | null;
     custosDescarga: number;
+    /** Serviços operacionais (sem repasse de risco). */
     custoServicos?: number;
     custosDiretos: number;
     receitaLiquida?: number;
     margemBruta: number;
     overhead: number;
+    /** Resultado contábil (RL − OH − CD − risco real). */
     resultadoLiquido: number;
+    /** Lucro embutido no gross-up (CD × profit_margin%). */
+    lucroAlvo?: number;
+    /** Margem operacional: resultado ÷ FAT × 100. */
     margemPercent: number;
     profitMarginTarget?: number;
     regimeFiscal?: 'simples_nacional' | 'excesso_sublimite' | 'lucro_presumido' | 'normal';
@@ -977,6 +1088,7 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       margemBruta: 0,
       overhead: 0,
       resultadoLiquido: 0,
+      lucroAlvo: 0,
       margemPercent: 0,
       profitMarginTarget: 0,
       regimeFiscal: 'simples_nacional' as const,
@@ -1009,19 +1121,18 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
     return r;
   }
 
-  // ---- STEP 1: PESO FATURÁVEL ----
-  const cubageWeightKg = round2(input.volumeM3 * params.cubageFactor);
-  let billableWeightKg = Math.max(input.weightKg, cubageWeightKg);
-
-  // Trava Fracionado: mínimo 1.000 kg para viabilidade
-  const ltlMinWeightApplied = input.modality === 'fracionado' && billableWeightKg < 1000;
-  if (ltlMinWeightApplied) {
-    billableWeightKg = 1000;
-  }
+  // ---- STEP 1: PESO FATURÁVEL (fator de cubagem; sem trava de 1 t) ----
+  const isLtl = input.modality === 'fracionado';
+  const cubageFactor = isLtl
+    ? (input.ltlParams?.cubageFactor ??
+      params.cubageFactor ??
+      FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3)
+    : (params.cubageFactor ?? FREIGHT_CONSTANTS.CUBAGE_FACTOR_KG_M3);
+  const cubageWeightKg = round2(input.volumeM3 * cubageFactor);
+  const billableWeightKg = Math.max(input.weightKg, cubageWeightKg);
   const originalWeightKg = input.weightKg;
 
   // ---- STEP 2: BASE COST (branch por modalidade) ----
-  const isLtl = input.modality === 'fracionado';
   let baseCost: number;
   let dispatchFee = 0;
 
@@ -1159,16 +1270,17 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
   const custoMotorista = !isLtl ? fretePesoGolden : baseCost;
   const aluguelMaquinas = round2(input.aluguelMaquinasValue ?? 0);
   const repasseRisco = sumRiskRepasse({ gris, tso, rctrc, adValorem });
-  // DRE v5 (Asset-Light): dispatchFee eh repasse/cobranca do embarcador,
-  // NAO custo direto. Mantida apenas em receitaBruta; removida do
-  // custoServicosOperacionais pra nao inflar custosDiretos.
-  const custoServicosOperacionais = round2(
-    input.tollValue + aluguelMaquinas + conditionalFeesTotal + waitingTimeCost
-  );
-  /** Legado/UI: soma operacional + repasse (repasse não entra no gross-up) */
-  const custoServicos = round2(custoServicosOperacionais + repasseRisco);
+  // CD / gross-up base: motorista + pedágio + espera + aluguel + descarga (repasse real).
+  // Taxas condicionais = markup (receita) — fora do divisor, só imposto (como risco).
+  // dispatchFee: cobrança embarcador, não CD.
+  const custoServicosOperacionais = round2(input.tollValue + aluguelMaquinas + waitingTimeCost);
+  const custoServicos = custoServicosOperacionais;
   const { descargaValue } = resolveDirectCosts(input, 0);
   const custosDiretos = round2(custoMotorista + custoServicosOperacionais + descargaValue);
+  /** Receita fora do divisor: risco + taxas markup (cliente paga; Vectra não repassa 1:1 as taxas). */
+  const receitaForaDivisor = round2(repasseRisco + conditionalFeesTotal);
+  const riskCostsEstimate = estimateInsuranceRiskCosts(input.cargoValue, round2);
+  const custosRiscoReal = riskCostsEstimate.total;
 
   // ICMS percent médio (proporcional por UF quando kmByUf + icmsByUf)
   let icmsPercentForGrossUp = icmsPercent;
@@ -1209,7 +1321,7 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       params.cofinsPercent ?? 0,
       params.irpjEffectivePercent ?? 0,
       params.csllEffectivePercent ?? 0,
-      repasseRisco
+      receitaForaDivisor
     );
 
   // receitaBruta = totalCliente (gross revenue); receitaLiquida = totalCliente - impostos
@@ -1241,6 +1353,7 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
 
   let margemBruta: number;
   let resultadoLiquido: number;
+  let lucroAlvo: number;
   let margemPercent: number;
 
   if (!isLtl) {
@@ -1254,15 +1367,21 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       custosDiretos,
       totalCliente,
       profitMarginPercent: params.profitMarginPercent ?? FREIGHT_CONSTANTS.TARGET_MARGIN_PERCENT,
+      custosRiscoReal,
     });
     margemBruta = lotacaoProfit.margemBruta;
     resultadoLiquido = lotacaoProfit.resultadoLiquido;
+    lucroAlvo = lotacaoProfit.lucroAlvo;
     margemPercent = lotacaoProfit.margemPercent;
   } else {
-    resultadoLiquido = round2(receitaLiquida - overhead - custoMotoristaContratado - descargaValue);
     margemBruta = round2(
-      receitaLiquida - overhead - custoMotoristaAntt - custoServicosOperacionais
+      receitaLiquida - overhead - custoMotoristaAntt - custoServicosOperacionais - descargaValue
     );
+    resultadoLiquido = round2(margemBruta - custosRiscoReal);
+    lucroAlvo =
+      custosDiretos > 0 && profitMarginPercent > 0
+        ? round2(custosDiretos * (profitMarginPercent / 100))
+        : resultadoLiquido;
     margemPercent = totalCliente > 0 ? round2((resultadoLiquido / totalCliente) * 100) : 0;
   }
 
@@ -1287,7 +1406,7 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       params.cofinsPercent ?? 0,
       params.irpjEffectivePercent ?? 0,
       params.csllEffectivePercent ?? 0,
-      repasseRisco
+      receitaForaDivisor
     );
     const ckanGrossValue = ckanGrossUp.totalCliente;
     const ckanTeto = ckanGrossValue * 1.05;
@@ -1308,12 +1427,11 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       kmStatus: 'OK',
       marginStatus,
       marginPercent: margemPercent,
-      cubageFactor: params.cubageFactor,
+      cubageFactor,
       cubageWeightKg,
       billableWeightKg,
       kmBandUsed,
       icmsBreakdownByUf,
-      ltlMinWeightApplied: ltlMinWeightApplied || undefined,
       originalWeightKg,
       anttFloorApplied: anttFloorApplied || undefined,
       anttCostBaseUsed: lotacaoFreteMeta?.anttCostBaseUsed || undefined,
@@ -1383,8 +1501,9 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       custosCarreteiro: !isLtl ? round2(custoMotorista + input.tollValue) : custoMotorista,
       // VEC-121: campos semânticos novos
       // - Antt: piso legal mínimo (= piso ANTT quando aplicado, senão = baseCost/frete_peso)
-      // - Contratado: NTC base (frete_peso) — o que o motorista recebe em condição padrão
+      // - Contratado: NTC frete peso (fracionado: kg×R$/kg; lotação: golden/piso)
       // - Real: valor negociado na OS (alimentado externamente após fechamento)
+      // Repasse GRIS/TSO/RCTR-C/Ad Valorem NÃO entra aqui — é receita da Hub (receitaForaDivisor).
       custoMotoristaAntt,
       custoMotoristaContratado,
       custoMotoristaReal: null,
@@ -1395,11 +1514,13 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
       margemBruta,
       overhead,
       resultadoLiquido,
+      lucroAlvo,
       margemPercent,
       profitMarginTarget: profitMarginPercent,
       regimeFiscal,
     },
     conditionalFeesBreakdown: input.extras?.conditionalFees?.breakdown ?? {},
+    riskCosts: riskCostsEstimate.total > 0 ? riskCostsEstimate : undefined,
   };
 }
 
@@ -1426,6 +1547,7 @@ export function buildStoredBreakdown(
       kmBandUsed: output.meta.kmBandUsed,
       ltlMinWeightApplied: output.meta.ltlMinWeightApplied,
       originalWeightKg: output.meta.originalWeightKg,
+      cubageFactor: output.meta.cubageFactor,
       regimeSimplesNacional: input.pricingParams?.regimeSimplesNacional,
       excessoSublimite: input.pricingParams?.excessoSublimite,
       selectedConditionalFeeIds: input.extras?.conditionalFees?.ids,
@@ -1507,5 +1629,7 @@ export function buildStoredBreakdown(
           output.components.adValorem
       ),
     },
+
+    riskCosts: output.riskCosts,
   };
 }

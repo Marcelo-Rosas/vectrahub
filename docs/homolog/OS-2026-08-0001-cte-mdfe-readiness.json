@@ -1,0 +1,172 @@
+{
+  "generated_at": "2026-08-01T18:40:00.000Z",
+  "mode": "readiness",
+  "source": "supabase MCP execute_sql (Hub lrbtbrpoklgwaaclbufz)",
+  "os_number": "OS-2026-08-0001",
+  "order_id": "6632e313-a56b-4d5c-88d7-d2b7a709a40b",
+  "quote_id": "e8f6ba8f-673c-4acf-9c29-c4ac494ef2be",
+  "quote_code": "COT-2026-08-0001",
+  "stage": "documentacao",
+  "edge_functions": {
+    "emit-cte": "ACTIVE",
+    "emit-mdfe": "ACTIVE",
+    "focus-webhook": "ACTIVE",
+    "manage-cte": "ACTIVE",
+    "manage-mdfe": "ACTIVE"
+  },
+  "parties": {
+    "shipper": {
+      "id": "ec283142-6ac1-431c-8517-53f638864a9a",
+      "name": "BOOST EQUIPAMENT",
+      "emit_cte_via": "cfn",
+      "ie_indicator": 1,
+      "has_ie": true
+    },
+    "client": {
+      "id": "5c8b6ca2-c08d-4a7f-bbb1-a689fde65871",
+      "name": "INOVE ACADEMIA LTDA",
+      "ie_indicator": 9,
+      "has_ie": false
+    }
+  },
+  "company_settings": {
+    "legal_name": "VECTRA HUB LTDA",
+    "cnpj": "62188748000117",
+    "address": "Rodovia Jorge Lacerda, 725 — Itajaí/SC",
+    "zip": "88317100",
+    "phone": "(47)98850-9714"
+  },
+  "suggested_vectra_secrets_from_company": {
+    "VECTRA_LOGRADOURO": "Rodovia Jorge Lacerda",
+    "VECTRA_NUMERO": "725",
+    "VECTRA_BAIRRO": "Espinheiros",
+    "VECTRA_MUNICIPIO": "Itajaí",
+    "VECTRA_UF": "SC",
+    "VECTRA_CEP": "88317100",
+    "VECTRA_IBGE_MUN": "4208203",
+    "VECTRA_CRT": "1",
+    "VECTRA_TELEFONE": "47988509714"
+  },
+  "missing_vectra_secrets": [
+    "VECTRA_LOGRADOURO",
+    "VECTRA_NUMERO",
+    "VECTRA_BAIRRO",
+    "VECTRA_MUNICIPIO",
+    "VECTRA_IBGE_MUN",
+    "VECTRA_UF",
+    "VECTRA_CEP",
+    "VECTRA_CRT"
+  ],
+  "focus_secrets_present": [
+    "FOCUS_NFE_AMBIENTE",
+    "FOCUS_NFE_TOKEN_HOMOLOG",
+    "FOCUS_NFE_TOKEN_PROD",
+    "FOCUS_WEBHOOK_HEADER",
+    "FOCUS_WEBHOOK_SECRET"
+  ],
+  "sequences": {
+    "cte": [
+      { "ambiente": "homolog", "serie": 1, "last_numero": 0 },
+      { "ambiente": "prod", "serie": 1, "last_numero": 578 }
+    ],
+    "mdfe": [
+      { "ambiente": "homolog", "serie": 1, "last_numero": 0 },
+      { "ambiente": "prod", "serie": 1, "last_numero": 289 }
+    ]
+  },
+  "cte_emissions": [],
+  "mdfe_emissions_count": 0,
+  "fleet": { "drivers": 43, "vehicles": 266 },
+  "gates": [
+    {
+      "id": "shipper_emit_cte_via_cfn",
+      "ok": true,
+      "severity": "block",
+      "detail": "emit_cte_via=cfn"
+    },
+    {
+      "id": "quote_parties",
+      "ok": true,
+      "severity": "block",
+      "detail": "shipper + client presentes"
+    },
+    {
+      "id": "shipper_ie_contribuinte",
+      "ok": true,
+      "severity": "block",
+      "detail": "ie_indicator=1 com IE preenchida"
+    },
+    {
+      "id": "client_ie_contribuinte",
+      "ok": true,
+      "severity": "block",
+      "detail": "INOVE ie_indicator=9 (Não Contribuinte); IE limpa — fix 2026-08-01"
+    },
+    {
+      "id": "origin_cep_or_ibge",
+      "ok": true,
+      "severity": "block",
+      "detail": "origin_cep=60743760 (IBGE resolve em runtime)"
+    },
+    {
+      "id": "destination_cep_or_ibge",
+      "ok": true,
+      "severity": "block",
+      "detail": "destination_cep=68628520"
+    },
+    {
+      "id": "vectra_address_secrets",
+      "ok": false,
+      "severity": "block",
+      "detail": "faltam VECTRA_LOGRADOURO/NUMERO/BAIRRO/MUNICIPIO/IBGE_MUN/UF/CEP/CRT → emit-cte 500 vectra_config_missing"
+    },
+    {
+      "id": "focus_token_homolog",
+      "ok": true,
+      "severity": "block",
+      "detail": "FOCUS_NFE_TOKEN_HOMOLOG presente"
+    },
+    {
+      "id": "tomador_tipo",
+      "ok": true,
+      "severity": "warn",
+      "detail": "persistido=null; CIF → derivado tomador_tipo=0 (Remetente)"
+    },
+    {
+      "id": "mdfe_vehicle",
+      "ok": false,
+      "severity": "block",
+      "detail": "OS sem vehicle_plate; passar --vehicle-id= no live"
+    },
+    {
+      "id": "mdfe_driver_cpf",
+      "ok": false,
+      "severity": "block",
+      "detail": "OS sem driver_id; passar --driver-id= (ex.: GUSTAVO FIRMINO 1dbccd4e-558c-42be-8909-6a732d980f98)"
+    },
+    {
+      "id": "ciot_for_mdfe_compliance",
+      "ok": false,
+      "severity": "warn",
+      "detail": "sem CIOT — mapper MDF-e ainda não envia infCIOT"
+    },
+    {
+      "id": "cte_authorized_for_mdfe",
+      "ok": false,
+      "severity": "warn",
+      "detail": "nenhuma cte_emissions ainda"
+    }
+  ],
+  "cte_ready": false,
+  "mdfe_ready": false,
+  "blockers_cte": [
+    "vectra_address_secrets"
+  ],
+  "blockers_mdfe": [
+    "mdfe_vehicle",
+    "mdfe_driver_cpf",
+    "cte_authorized_for_mdfe"
+  ],
+  "local_script_note": "scripts/smoke-cte-mdfe-homolog.ts precisa SUPABASE_SERVICE_ROLE_KEY + PW_TEST_* no .env para --live-*; readiness deste arquivo veio via MCP",
+  "pass": false
+}

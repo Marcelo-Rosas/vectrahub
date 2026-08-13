@@ -1,0 +1,77 @@
+{
+  "generated_at": "2026-08-03T16:29:32.905Z",
+  "hub_ref": "lrbtbrpoklgwaaclbufz",
+  "cargo_ref": "epgedaiukjippepujuzc",
+  "counts": {
+    "local_files": 230,
+    "hub_matched_local_remote": 230,
+    "hub_local_only": 0,
+    "hub_remote_only_orphan": 0,
+    "cargo_remote": 227,
+    "cargo_only_not_in_hub": 13,
+    "hub_remote_not_in_cargo": 16
+  },
+  "hub_local_vs_remote": {
+    "only_local_files_not_applied": [],
+    "only_remote_orphan_no_file": []
+  },
+  "cargo_vs_hub": {
+    "in_cargo_not_hub_local_or_remote": [
+      "20260708192319",
+      "20260709194856",
+      "20260710002243",
+      "20260710015244",
+      "20260710021607",
+      "20260713021755",
+      "20260713024353",
+      "20260714015605",
+      "20260717034543",
+      "20260717034812",
+      "20260717142200",
+      "20260720135030",
+      "20260727112135"
+    ],
+    "in_hub_remote_not_cargo": [
+      "20260801160732",
+      "20260801162823",
+      "20260801170400",
+      "20260801170428",
+      "20260801170549",
+      "20260801184108",
+      "20260801184218",
+      "20260801184437",
+      "20260801192702",
+      "20260801234320",
+      "20260802000447",
+      "20260802113502",
+      "20260802115007",
+      "20260802120000",
+      "20260802134855",
+      "20260803121419"
+    ],
+    "in_hub_local_not_cargo": [
+      "20260801160732",
+      "20260801162823",
+      "20260801170400",
+      "20260801170428",
+      "20260801170549",
+      "20260801184108",
+      "20260801184218",
+      "20260801184437",
+      "20260801192702",
+      "20260801234320",
+      "20260802000447",
+      "20260802113502",
+      "20260802115007",
+      "20260802120000",
+      "20260802134855",
+      "20260803121419"
+    ]
+  },
+  "repair_notes": [
+    "Orphans remote (sem arquivo local) quebram `supabase db push` — `npx supabase migration repair --status reverted <ver>` OU arquivo stub mesmo timestamp.",
+    "Local-only: aplicar após repair orphans (`db push` / MCP apply_migration com nome alinhado).",
+    "Cargo-only: cherry do remote `cargo-upstream` → `supabase/migrations/` Hub → `db push` Hub.",
+    "Nunca apontar CI/secrets Cargo no projeto Hub."
+  ]
+}

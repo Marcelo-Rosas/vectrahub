@@ -10,6 +10,14 @@ import type {
   ConditionalFee,
   PaymentTerm,
 } from '@/types/pricing';
+import { isPriceTableMethodology, type PriceTableMethodology } from '@/lib/pricingMethodology';
+import {
+  resolvePricingRule as resolvePricingRuleCore,
+  type ResolvePricingRuleScope,
+} from '@/lib/resolvePricingRule';
+
+export type { ResolvePricingRuleScope };
+export { resolvePricingRuleCore as resolvePricingRule };
 
 // =====================================================
 // PRICING PARAMETERS
@@ -160,6 +168,7 @@ export interface PricingRuleConfig {
   min_value: number | null;
   max_value: number | null;
   vehicle_type_id: string | null;
+  methodology: PriceTableMethodology;
   is_active: boolean;
   metadata: Record<string, unknown>;
   updated_at: string;
@@ -207,6 +216,7 @@ function normalizePricingRule(row: Record<string, unknown>): PricingRuleConfig {
     min_value: parseRuleNullableNumber(row.min_value),
     max_value: parseRuleNullableNumber(row.max_value),
     vehicle_type_id: row.vehicle_type_id ? String(row.vehicle_type_id) : null,
+    methodology: isPriceTableMethodology(row.methodology) ? row.methodology : 'lotacao',
     is_active: isActive,
     metadata,
     updated_at: String(row.updated_at ?? ''),
@@ -245,32 +255,6 @@ export function usePricingRulesByCategory(category: PricingRulesCategory, active
   );
 
   return { ...query, data: filtered };
-}
-
-/**
- * Resolve regra com precedência: Veículo > Global > fallback.
- * @param rules Lista de regras de pricing_rules_config
- * @param key Chave da regra (ex: 'das_percent', 'icms_uf_sp')
- * @param vehicleTypeId ID do tipo de veículo (opcional)
- * @param fallback Valor quando não houver regra
- */
-export function resolvePricingRule(
-  rules: PricingRuleConfig[] | undefined,
-  key: string,
-  vehicleTypeId?: string | null,
-  fallback?: number
-): number | undefined {
-  if (!rules?.length) return fallback;
-  const byKey = rules.filter((r) => r.key === key);
-  if (byKey.length === 0) return fallback;
-  const vehicleRule = vehicleTypeId ? byKey.find((r) => r.vehicle_type_id === vehicleTypeId) : null;
-  const globalRule = byKey.find((r) => r.vehicle_type_id == null);
-  const rule = vehicleRule ?? globalRule;
-  if (!rule) return fallback;
-  let val = Number(rule.value);
-  if (rule.min_value != null && val < rule.min_value) val = rule.min_value;
-  if (rule.max_value != null && val > rule.max_value) val = rule.max_value;
-  return val;
 }
 
 // =====================================================

@@ -34,6 +34,104 @@ export function fmtTodayBr(): string {
   );
 }
 
+/**
+ * Resolve a parte CONTRATANTE do contrato conforme o tipo de frete.
+ *
+ * Regra comercial: em operação **CIF** o frete é de responsabilidade do
+ * embarcador (remetente), portanto o embarcador (`shippers`) figura como
+ * CONTRATANTE e pagador. Em **FOB** (ou CIF sem embarcador cadastrado) o
+ * CONTRATANTE é o cliente (`clients`).
+ */
+export function resolveContractContratante(quote: Record<string, unknown>): {
+  party: Record<string, unknown>;
+  name: string;
+  isCif: boolean;
+  source: 'shipper' | 'client';
+} {
+  const freightType = String(quote.freight_type ?? '')
+    .trim()
+    .toUpperCase();
+  const isCif = freightType === 'CIF';
+  const client = (quote.clients as Record<string, unknown> | null) ?? {};
+  const shipper = (quote.shippers as Record<string, unknown> | null) ?? {};
+  const shipperHasData = Boolean(
+    (shipper.name && String(shipper.name).trim()) || (shipper.cnpj && String(shipper.cnpj).trim())
+  );
+
+  if (isCif && shipperHasData) {
+    return {
+      party: shipper,
+      name: String(quote.shipper_name ?? shipper.name ?? '[embarcador não informado]'),
+      isCif: true,
+      source: 'shipper',
+    };
+  }
+
+  return {
+    party: client,
+    name: String(client.name ?? quote.client_name ?? '[cliente não informado]'),
+    isCif,
+    source: 'client',
+  };
+}
+
+/**
+ * Deriva o código CTR do contrato a partir do `quote_code` (1:1 com a cotação).
+ * `COT-2026-08-0002` → `CTR-2026-08-0002`. Sem código → `CTR`.
+ */
+export function ctrCodeFromQuoteCode(quoteCode: string | null | undefined): string {
+  const code = String(quoteCode ?? '').trim();
+  if (!code) return 'CTR';
+  if (/^COT-/i.test(code)) return code.replace(/^COT-/i, 'CTR-');
+  return `CTR-${code}`;
+}
+
+/** Contratos emitidos antes da regra CTR canônica (prefixo COT no filename). */
+export function isLegacyContractFilename(fileName: string | null | undefined): boolean {
+  const name = String(fileName ?? '').trim();
+  if (!name) return false;
+  if (/^CTR-/i.test(name)) return false;
+  return /^COT-/i.test(name) || /_contrato_v/i.test(name);
+}
+
+/** Slug da razão social do pagador para nome de arquivo (ASCII, maiúsculo). */
+export function slugifyPayer(name: string | null | undefined): string {
+  return String(name ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .toUpperCase()
+    .slice(0, 80);
+}
+
+/**
+ * Referência canônica exibida no documento: `CÓDIGO — RAZÃO SOCIAL DO PAGADOR`.
+ * A razão social do pagador fica SEMPRE após o número (regra canônica).
+ */
+export function buildCanonicalReference(
+  code: string,
+  payerName: string | null | undefined
+): string {
+  const c = String(code ?? '').trim() || '[SEM CÓDIGO]';
+  const p = String(payerName ?? '').trim();
+  return p ? `${c} — ${p}` : c;
+}
+
+/** Nome de arquivo canônico: `CÓDIGO-RAZAO_SOCIAL_SLUG.ext` (pagador após o número). */
+export function buildCanonicalFilename(
+  code: string,
+  payerName: string | null | undefined,
+  ext = 'pdf'
+): string {
+  const c =
+    String(code ?? '')
+      .trim()
+      .replace(/[^\w-]+/g, '_') || 'documento';
+  const slug = slugifyPayer(payerName);
+  return slug ? `${c}-${slug}.${ext}` : `${c}.${ext}`;
+}
+
 /** 5.3 — condição de pagamento com prazo/parcelas quando disponíveis. */
 export function buildPaymentTermsDescription(
   quote: Record<string, unknown>,

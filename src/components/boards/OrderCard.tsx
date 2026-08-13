@@ -42,6 +42,7 @@ type Occurrence = Database['public']['Tables']['occurrences']['Row'];
 
 interface OrderWithOccurrences extends Order {
   occurrences: Occurrence[];
+  occurrence_count?: number;
 }
 
 interface OrderCardProps {
@@ -80,7 +81,9 @@ export function OrderCard({
   };
 
   const occurrences = order.occurrences || [];
-  const hasOccurrences = occurrences.length > 0;
+  const occurrenceCount =
+    typeof order.occurrence_count === 'number' ? order.occurrence_count : occurrences.length;
+  const hasOccurrences = occurrenceCount > 0;
 
   // Requisitos para avançar para a próxima fase (gates por estágio)
   const nextStage = getNextStage(order.stage);
@@ -310,7 +313,7 @@ export function OrderCard({
             className="text-xs uppercase bg-warning/10 text-warning-foreground gap-1"
           >
             <AlertTriangle className="w-3 h-3" />
-            {occurrences.length} ocorrência{occurrences.length !== 1 ? 's' : ''}
+            {occurrenceCount} ocorrência{occurrenceCount !== 1 ? 's' : ''}
           </Badge>
         </div>
       )}

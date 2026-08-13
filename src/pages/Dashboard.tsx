@@ -39,7 +39,9 @@ import { AiInsightsWidget } from '@/components/dashboard/AiInsightsWidget';
 import { AutomationActivityFeed } from '@/components/dashboard/AutomationActivityFeed';
 import { AiUsageDashboard } from '@/components/dashboard/AiUsageDashboard';
 import { useUserRole } from '@/hooks/useUserRole';
-import { EmptyState } from '@/components/EmptyState';
+import { SectionErrorBoundary } from '@/components/ErrorBoundary';
+import { toUserMessage } from '@/lib/errors/AppError';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Fallback data for empty states
 const emptyConversionData = [
@@ -91,10 +93,8 @@ export default function Dashboard() {
   const chartRevenueData = revenueData?.length ? revenueData : emptyRevenueData;
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard-kpi'] });
     queryClient.invalidateQueries({ queryKey: ['recent-orders'] });
-    queryClient.invalidateQueries({ queryKey: ['conversion-chart'] });
-    queryClient.invalidateQueries({ queryKey: ['revenue-by-client'] });
     queryClient.invalidateQueries({ queryKey: ['sales-funnel'] });
     queryClient.invalidateQueries({ queryKey: ['monthly-trends'] });
     queryClient.invalidateQueries({ queryKey: ['performance-metrics'] });
@@ -109,30 +109,8 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ['news-items'] });
   };
 
-  const hasError = statsIsError || ordersIsError || conversionIsError || revenueIsError;
+  const hasPartialError = statsIsError || ordersIsError || conversionIsError || revenueIsError;
   const firstError = (statsError || ordersError || conversionError || revenueError) as unknown;
-
-  if (hasError) {
-    return (
-      <MainLayout>
-        <EmptyState
-          title="Não foi possível carregar o dashboard"
-          description={
-            (firstError instanceof Error && firstError.message) ||
-            'Erro inesperado ao buscar dados.'
-          }
-          actionLabel="Tentar novamente"
-          onAction={() => {
-            refetchStats();
-            refetchOrders();
-            refetchConversion();
-            refetchRevenue();
-          }}
-          icon={<AlertTriangle className="h-10 w-10 text-destructive" />}
-        />
-      </MainLayout>
-    );
-  }
 
   if (!user) {
     return (
@@ -186,14 +164,42 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
+      {hasPartialError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Algumas seções falharam ao carregar</AlertTitle>
+          <AlertDescription className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <span>{toUserMessage(firstError, 'Erro ao buscar dados do dashboard.')}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                refetchStats();
+                refetchOrders();
+                refetchConversion();
+                refetchRevenue();
+              }}
+            >
+              Tentar novamente
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Approval Banner */}
-      <ApprovalBanner />
+      <SectionErrorBoundary title="Aprovações indisponíveis">
+        <ApprovalBanner />
+      </SectionErrorBoundary>
 
       {/* KPI Cards */}
       <div
         className={`grid grid-cols-1 md:grid-cols-2 ${isOperacional ? 'lg:grid-cols-4' : 'lg:grid-cols-3 xl:grid-cols-6'} gap-4 mb-8 auto-rows-fr`}
       >
-        {statsLoading ? (
+        {statsIsError ? (
+          <div className="col-span-full rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center text-sm text-muted-foreground">
+            KPIs indisponíveis — {toUserMessage(statsError)}
+          </div>
+        ) : statsLoading ? (
           <div className="col-span-full flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
@@ -264,9 +270,17 @@ export default function Dashboard() {
       <div
         className={`grid grid-cols-1 ${isAdmin || isFinanceiro ? 'lg:grid-cols-3' : 'lg:grid-cols-2'} gap-6 mb-8`}
       >
-        <AiInsightsWidget />
-        <AutomationActivityFeed />
-        {(isAdmin || isFinanceiro) && <AiUsageDashboard />}
+        <SectionErrorBoundary title="Insights de IA indisponíveis">
+          <AiInsightsWidget />
+        </SectionErrorBoundary>
+        <SectionErrorBoundary title="Feed de automação indisponível">
+          <AutomationActivityFeed />
+        </SectionErrorBoundary>
+        {(isAdmin || isFinanceiro) && (
+          <SectionErrorBoundary title="Uso de IA indisponível">
+            <AiUsageDashboard />
+          </SectionErrorBoundary>
+        )}
       </div>
 
       {/* Tabs for different views */}
@@ -282,51 +296,64 @@ export default function Dashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <OverviewTab
-            chartConversionData={chartConversionData}
-            chartRevenueData={chartRevenueData}
-            chartsLoading={conversionLoading || revenueLoading}
-            ordersLoading={ordersLoading}
-            recentOrders={recentOrders || []}
-            onViewAllOrders={() => navigate('/operacional')}
-            onViewOrder={(order) => navigate(`/operacional?orderId=${order.id}`)}
-          />
+          <SectionErrorBoundary title="Visão geral indisponível">
+            <OverviewTab
+              chartConversionData={chartConversionData}
+              chartRevenueData={chartRevenueData}
+              chartsLoading={conversionLoading || revenueLoading}
+              ordersLoading={ordersLoading}
+              recentOrders={recentOrders || []}
+              onViewAllOrders={() => navigate('/operacional')}
+              onViewOrder={(order) => navigate(`/operacional?orderId=${order.id}`)}
+            />
+          </SectionErrorBoundary>
         </TabsContent>
 
         <TabsContent value="commercial" className="space-y-6">
-          <CommercialTab
-            chartConversionData={chartConversionData}
-            chartRevenueData={chartRevenueData}
-            chartsLoading={conversionLoading || revenueLoading}
-          />
+          <SectionErrorBoundary title="Aba comercial indisponível">
+            <CommercialTab
+              chartConversionData={chartConversionData}
+              chartRevenueData={chartRevenueData}
+              chartsLoading={conversionLoading || revenueLoading}
+            />
+          </SectionErrorBoundary>
         </TabsContent>
 
         <TabsContent value="operations" className="space-y-6">
-          <OperationsTab
-            stats={stats}
-            ordersLoading={ordersLoading}
-            recentOrders={recentOrders || []}
-            onViewAllOrders={() => navigate('/operacional')}
-            onViewOrder={(order) => navigate(`/operacional?orderId=${order.id}`)}
-          />
+          <SectionErrorBoundary title="Aba operacional indisponível">
+            <OperationsTab
+              stats={stats}
+              ordersLoading={ordersLoading}
+              recentOrders={recentOrders || []}
+              onViewAllOrders={() => navigate('/operacional')}
+              onViewOrder={(order) => navigate(`/operacional?orderId=${order.id}`)}
+            />
+          </SectionErrorBoundary>
         </TabsContent>
 
         <TabsContent value="ntc-insights" className="space-y-6">
-          <NtcIndicesCard />
-
-          <NtcInsightsTab />
+          <SectionErrorBoundary title="Inteligência NTC indisponível">
+            <NtcIndicesCard />
+            <NtcInsightsTab />
+          </SectionErrorBoundary>
         </TabsContent>
 
         <TabsContent value="news" className="space-y-6">
-          <NewsTab />
+          <SectionErrorBoundary title="News indisponível">
+            <NewsTab />
+          </SectionErrorBoundary>
         </TabsContent>
 
         <TabsContent value="mirofish" className="space-y-6">
-          <MirofishInsightsTab />
+          <SectionErrorBoundary title="MiroFish indisponível">
+            <MirofishInsightsTab />
+          </SectionErrorBoundary>
         </TabsContent>
 
         <TabsContent value="diesel" className="space-y-6">
-          <DieselCostTab />
+          <SectionErrorBoundary title="Custo diesel indisponível">
+            <DieselCostTab />
+          </SectionErrorBoundary>
         </TabsContent>
       </Tabs>
     </MainLayout>

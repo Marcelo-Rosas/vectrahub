@@ -47,6 +47,8 @@ const TYPE_LABELS: Record<DocumentType, { label: string; color: string }> = {
   nfe: { label: 'NF-e', color: 'bg-primary/10 text-primary' },
   cte: { label: 'CT-e', color: 'bg-success/10 text-success' },
   mdfe: { label: 'MDF-e', color: 'bg-primary/10 text-primary' },
+  ciot: { label: 'CIOT', color: 'bg-indigo-500/10 text-indigo-600' },
+  xml: { label: 'XML', color: 'bg-slate-500/10 text-slate-700' },
   pod: { label: 'POD', color: 'bg-warning/10 text-warning-foreground' },
   adiantamento: { label: 'Adiantamento', color: 'bg-success/10 text-success' },
   analise_gr: { label: 'Análise GR', color: 'bg-amber-500/10 text-amber-600' },
@@ -61,6 +63,7 @@ const TYPE_LABELS: Record<DocumentType, { label: string; color: string }> = {
   a_vista_fat: { label: 'À Vista FAT', color: 'bg-emerald-500/10 text-emerald-600' },
   saldo_fat: { label: 'Saldo FAT', color: 'bg-amber-500/10 text-amber-600' },
   a_prazo_fat: { label: 'A Prazo FAT', color: 'bg-blue-500/10 text-blue-600' },
+  a_vista_pag: { label: 'À Vista PAG', color: 'bg-cyan-500/10 text-cyan-600' },
   outros: { label: 'Outros', color: 'bg-muted text-muted-foreground' },
 };
 

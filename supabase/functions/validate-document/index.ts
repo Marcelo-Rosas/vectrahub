@@ -5,6 +5,12 @@ import {
   mapSefazStatusToValidationStatus,
   type SefazConsultMetadata,
 } from '../_shared/sefaz-consult.ts';
+import {
+  extractNcmFromNfeXml,
+  extractNcmFromPdfBytes,
+  resolveFocusNfeToken,
+  type NfePredominante,
+} from '../_shared/nfe-extract.ts';
 
 /**
  * Edge Function: validate-document
@@ -49,7 +55,10 @@ interface ValidationResult {
     valor_total?: string;
     data_emissao?: string;
     status?: string;
+    ncm?: string;
+    produto_predominante?: string;
   };
+  nfe_produtos?: NfePredominante | null;
 }
 
 // Código IBGE das UFs
@@ -270,6 +279,12 @@ function parseXml(xmlContent: string): ValidationResult['xml_data'] {
       else if (cStat === '110') data.status = 'denegado';
       else data.status = `status_${cStat}`;
     }
+
+    const pred = extractNcmFromNfeXml(xmlContent);
+    if (pred) {
+      data.ncm = pred.ncm;
+      data.produto_predominante = pred.descricao;
+    }
   } catch (e) {
     // Silenciosamente ignora erros de parsing
   }
@@ -337,6 +352,8 @@ serve(async (req) => {
     let documento: any = null;
     let chaveParaValidar = nfe_key;
     let xmlParaParse: string | null = xml_content || null;
+    let pdfBytes: Uint8Array | null = null;
+    let nfePredominante: NfePredominante | null = null;
 
     if (documentId) {
       const { data, error } = await supabase
@@ -370,9 +387,12 @@ serve(async (req) => {
             const head = new TextDecoder('utf-8').decode(bytes.slice(0, 512)).trim();
             if (head.startsWith('<?xml') || head.startsWith('<')) {
               xmlParaParse = new TextDecoder('utf-8').decode(bytes);
-            } else if (!chaveParaValidar && isPdfPath(storagePath, data.file_name)) {
-              const fromPdf = extractChaveFromPdfBytes(bytes);
-              if (fromPdf) chaveParaValidar = fromPdf;
+            } else if (isPdfPath(storagePath, data.file_name)) {
+              pdfBytes = bytes;
+              if (!chaveParaValidar) {
+                const fromPdf = extractChaveFromPdfBytes(bytes);
+                if (fromPdf) chaveParaValidar = fromPdf;
+              }
             }
           }
         } catch (e) {
@@ -415,11 +435,28 @@ serve(async (req) => {
       };
     }
 
-    // Faz parsing do XML se disponível
+    // Faz parsing do XML se disponível (+ NCM produto predominante)
     if (xmlParaParse) {
       result.xml_data = parseXml(xmlParaParse);
+      nfePredominante = extractNcmFromNfeXml(xmlParaParse);
       if (result.status === 'valid' && result.xml_data?.chave) {
         result.status = 'xml_parsed';
+      }
+    } else if (pdfBytes) {
+      nfePredominante = extractNcmFromPdfBytes(pdfBytes);
+    }
+
+    if (nfePredominante) {
+      result.nfe_produtos = nfePredominante;
+      result.metadata = {
+        ...result.metadata,
+        ncm: nfePredominante.ncm,
+        produto_predominante: nfePredominante.descricao,
+        ncm_itens: nfePredominante.itens.length,
+      };
+      if (result.xml_data) {
+        result.xml_data.ncm = nfePredominante.ncm;
+        result.xml_data.produto_predominante = nfePredominante.descricao;
       }
     }
 
@@ -432,10 +469,11 @@ serve(async (req) => {
       (result.status === 'valid' || result.status === 'xml_parsed');
 
     if (podeConsultarSefaz) {
+      const focusToken = resolveFocusNfeToken();
       const sefazResult = await consultSefaz(chaveFinal, {
         proxyUrl: Deno.env.get('SEFAZ_PROXY_URL'),
         proxySecret: Deno.env.get('SEFAZ_PROXY_SECRET'),
-        focusToken: Deno.env.get('FOCUS_NFE_TOKEN'),
+        focusToken,
         vectraCnpj: Deno.env.get('VECTRA_CNPJ') ?? '59650913000104',
       });
 
@@ -464,7 +502,15 @@ serve(async (req) => {
         }
       } else if (sefazResult.error) {
         result.sefaz = null;
-        result.validation_errors = [...result.validation_errors, `SEFAZ: ${sefazResult.error}`];
+        // Proxy 530 = origem do proxy inacessível (Cloudflare). Chave local ainda válida.
+        const hint =
+          sefazResult.http_status === 530
+            ? ' (proxy SEFAZ offline — chave ok local; Focus fallback indisponível ou NF-e não na distribuição)'
+            : '';
+        result.validation_errors = [
+          ...result.validation_errors,
+          `SEFAZ: ${sefazResult.error}${hint}`,
+        ];
       }
     }
 

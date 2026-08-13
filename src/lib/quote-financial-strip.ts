@@ -1,7 +1,8 @@
 import { readMetaAnttPisoCarreteiro, resolvePisoAnttCarreteiroReais } from '@/lib/carreteiro-cost';
 import type { FreightCalculationOutput } from '@/lib/freightCalculator';
 import {
-  isMarginBelowTarget,
+  resolveCustoServicosOperacionaisDisplay,
+  resolveLucroAlvoDisplay,
   resolveMargemBrutaDisplay,
   resolveResultadoLiquidoDisplay,
   round2,
@@ -9,11 +10,43 @@ import {
   type StoredPricingBreakdown,
 } from '@/lib/freightCalculator';
 
-/** PAG ao carreteiro: piso ANTT em lotação; não escala com desconto comercial no FAT. */
+/**
+ * NTC Fracionado: base motorista = frete peso (kg faturável × R$/kg da faixa).
+ * Não usa piso ANTT (só lotação) nem snapshot legado `ntc_base`
+ * (peso + GRIS + TSO + RCTR-C + despacho — receita da Hub, não PAG).
+ */
+export function resolveBaseMotoristaFracionadoReais(
+  breakdown: StoredPricingBreakdown | FreightCalculationOutput
+): number {
+  const c = breakdown.components;
+  const p = breakdown.profitability;
+  const baseCost = Number(c?.baseCost ?? 0);
+  if (baseCost > 0) return round2(baseCost);
+  const risk = sumRiskRepasse({
+    gris: c?.gris,
+    tso: c?.tso,
+    rctrc: c?.rctrc,
+    adValorem: c?.adValorem,
+  });
+  const dispatch = Number(c?.dispatchFee ?? 0);
+  const packaged = Number(p?.custoMotoristaContratado ?? p?.custosCarreteiro ?? 0);
+  if (packaged > 0 && risk + dispatch > 0.01) {
+    const peso = round2(packaged - risk - dispatch);
+    if (peso > 0) return peso;
+  }
+  if (packaged > 0) return round2(packaged);
+  return round2(Number(p?.custoMotorista ?? c?.baseFreight ?? 0));
+}
+
+/** PAG ao carreteiro: piso ANTT em lotação; NTC frete peso em fracionado. */
 function resolvePagMotoristaReais(
   breakdown: StoredPricingBreakdown | FreightCalculationOutput,
-  anttApplied: boolean
+  anttApplied: boolean,
+  modality?: 'lotacao' | 'fracionado'
 ): number {
+  if (modality === 'fracionado') {
+    return resolveBaseMotoristaFracionadoReais(breakdown);
+  }
   const p = breakdown.profitability;
   const c = breakdown.components;
   if (anttApplied) {
@@ -71,20 +104,22 @@ export function buildQuoteFinancialStripFromCalculation(
   const totalBruto = t?.totalCliente ?? 0;
   const totalCliente = Math.max(0, totalBruto - discount);
 
-  const anttApplied = m?.anttCostBaseUsed === true || m?.anttFloorApplied === true;
+  const isFracionado = options?.modality === 'fracionado';
+  const anttApplied =
+    !isFracionado && (m?.anttCostBaseUsed === true || m?.anttFloorApplied === true);
   const pisoAntt =
     readMetaAnttPisoCarreteiro(m) ||
     Number(m?.anttPisoCarreteiro ?? 0) ||
     Number(p?.custoMotoristaAntt ?? 0);
   const freteTabelaRef = m?.fretePesoOriginal ?? m?.lotacaoFreteTabelaComOverKm ?? 0;
-  const motorista = resolvePagMotoristaReais(calculation, anttApplied);
+  const motorista = resolvePagMotoristaReais(calculation, anttApplied, options?.modality);
 
   const receitaLiquida =
     p?.receitaLiquida ??
     Math.max(0, totalBruto - (t?.totalImpostos ?? (t?.das ?? 0) + (t?.icms ?? 0)));
   const custoMotoristaGolden =
     anttApplied && pisoAntt > 0 ? pisoAntt : (c?.baseCost ?? c?.baseFreight ?? 0);
-  const custoServicos = p?.custoServicos ?? 0;
+  const custoServicos = resolveCustoServicosOperacionaisDisplay(c, p?.custoServicos);
   const margemContribuicao = resolveMargemBrutaDisplay(
     p?.margemBruta,
     receitaLiquida,
@@ -95,13 +130,13 @@ export function buildQuoteFinancialStripFromCalculation(
 
   const custosDiretos = p?.custosDiretos ?? 0;
   const targetPercent = p?.profitMarginTarget ?? calculation.rates?.profitMarginPercent ?? 15;
-  const lucroAlvo = resolveResultadoLiquidoDisplay(
-    p?.resultadoLiquido,
-    custosDiretos,
-    targetPercent,
-    margemContribuicao
-  );
+  const lucroAlvo = resolveLucroAlvoDisplay(custosDiretos, targetPercent, p?.lucroAlvo);
   const percentCd = custosDiretos > 0 ? round2((lucroAlvo / custosDiretos) * 100) : 0;
+  const resultadoContabil = resolveResultadoLiquidoDisplay(
+    p?.resultadoLiquido,
+    margemContribuicao,
+    calculation.riskCosts?.total ?? 0
+  );
 
   return {
     pag: {
@@ -131,7 +166,10 @@ export function buildQuoteFinancialStripFromCalculation(
       percentCustosDiretos: percentCd,
       contribuicao: margemContribuicao,
       targetPercent,
-      isBelowTarget: isMarginBelowTarget(percentCd, targetPercent) || margemContribuicao < 0,
+      isBelowTarget:
+        margemContribuicao < 0 ||
+        resultadoContabil < 0 ||
+        (lucroAlvo > 0 && resultadoContabil + 0.01 < lucroAlvo),
     },
   };
 }
@@ -158,11 +196,13 @@ export function buildQuoteFinancialStripFromBreakdown(
   const totalCliente = options.totalCliente;
   if (totalCliente <= 0) return null;
 
-  const anttApplied = m?.anttCostBaseUsed === true || m?.anttFloorApplied === true;
+  const isFracionado = options.modality === 'fracionado';
+  const anttApplied =
+    !isFracionado && (m?.anttCostBaseUsed === true || m?.anttFloorApplied === true);
   const pisoAntt = resolvePisoAnttCarreteiroReais(breakdown);
   const freteTabelaRef = m?.fretePesoOriginal ?? m?.lotacaoFreteTabelaComOverKm ?? 0;
   /** Custos operacionais (PAG) não reduzem com desconto comercial no FAT. */
-  const motorista = resolvePagMotoristaReais(breakdown, anttApplied);
+  const motorista = resolvePagMotoristaReais(breakdown, anttApplied, options.modality);
   const pedagio = round2(c?.toll ?? 0);
   const repasse = sumRiskRepasse({
     gris: c?.gris,
@@ -174,12 +214,13 @@ export function buildQuoteFinancialStripFromBreakdown(
   const receitaLiquida = scale(p?.receitaLiquida);
   const custoMotoristaGolden =
     anttApplied && pisoAntt > 0 ? pisoAntt : round2(c?.baseCost ?? c?.baseFreight ?? 0);
+  const custoServicosOps = resolveCustoServicosOperacionaisDisplay(c, p?.custoServicos);
   const margemContribuicao = resolveMargemBrutaDisplay(
     p?.margemBruta != null ? scale(p.margemBruta) : undefined,
     receitaLiquida,
     scale(p?.overhead),
     custoMotoristaGolden,
-    round2(p?.custoServicos ?? 0)
+    custoServicosOps
   );
 
   const custosDiretos = scale(p?.custosDiretos);
@@ -188,13 +229,21 @@ export function buildQuoteFinancialStripFromBreakdown(
     p?.profitMarginTarget ??
     breakdown.rates?.profitMarginPercent ??
     15;
-  const lucroAlvo = resolveResultadoLiquidoDisplay(
-    p?.resultadoLiquido != null ? scale(p.resultadoLiquido) : null,
+  const lucroAlvo = resolveLucroAlvoDisplay(
     custosDiretos,
     targetPercent,
-    margemContribuicao
+    p?.lucroAlvo != null ? scale(p.lucroAlvo) : null
   );
   const percentCd = custosDiretos > 0 ? round2((lucroAlvo / custosDiretos) * 100) : 0;
+  const riscoReal =
+    breakdown.riskCosts?.total ??
+    // Legacy snapshots: estima se cargo conhecido via meta não — UI passa cargoValue à parte
+    0;
+  const resultadoContabil = resolveResultadoLiquidoDisplay(
+    p?.resultadoLiquido != null ? scale(p.resultadoLiquido) : null,
+    margemContribuicao,
+    scale(riscoReal)
+  );
 
   return {
     pag: {
@@ -219,7 +268,10 @@ export function buildQuoteFinancialStripFromBreakdown(
       percentCustosDiretos: percentCd,
       contribuicao: margemContribuicao,
       targetPercent,
-      isBelowTarget: isMarginBelowTarget(percentCd, targetPercent) || margemContribuicao < 0,
+      isBelowTarget:
+        margemContribuicao < 0 ||
+        resultadoContabil < 0 ||
+        (lucroAlvo > 0 && resultadoContabil + 0.01 < lucroAlvo),
     },
   };
 }

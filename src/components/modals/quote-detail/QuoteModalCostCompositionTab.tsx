@@ -14,7 +14,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { formatCurrency } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import type { StoredPricingBreakdown } from '@/lib/freightCalculator';
+import { resolveCustoServicosOperacionaisDisplay } from '@/lib/freightCalculator';
 import { resolvePisoAnttCarreteiroReais } from '@/lib/carreteiro-cost';
+import { estimateInsuranceRiskCosts } from '@/lib/lotacao-freight-base';
+import { resolveBaseMotoristaFracionadoReais } from '@/lib/quote-financial-strip';
 
 interface ConditionalFee {
   id: string;
@@ -31,6 +34,8 @@ interface QuoteModalCostCompositionTabProps {
   margemBruta: number;
   overhead: number;
   resultadoLiquido: number;
+  /** Lucro embutido no gross-up (CD × target%). */
+  lucroAlvo?: number;
   margemPercent: number;
   isBelowTarget: boolean;
   /** Receita líquida já ajustada (ex.: desconto comercial / faturamento negociado) */
@@ -47,6 +52,7 @@ interface QuoteModalCostCompositionTabProps {
   onSaveAntt?: () => Promise<void>;
   /** Valor da carga (NF) para cálculo do seguro real */
   cargoValue?: number;
+  freightModality?: 'lotacao' | 'fracionado' | string | null;
   /** Callback to recalculate freight (v4 → v5 upgrade) */
   onRecalculate?: () => void;
   isRecalculating?: boolean;
@@ -61,6 +67,7 @@ export function QuoteModalCostCompositionTab({
   margemBruta,
   overhead,
   resultadoLiquido,
+  lucroAlvo,
   margemPercent,
   isBelowTarget,
   receitaLiquidaDisplay,
@@ -74,6 +81,7 @@ export function QuoteModalCostCompositionTab({
   hasAnttCalc,
   onSaveAntt,
   cargoValue = 0,
+  freightModality,
   onRecalculate,
   isRecalculating = false,
 }: QuoteModalCostCompositionTabProps) {
@@ -111,7 +119,11 @@ export function QuoteModalCostCompositionTab({
     (breakdown.totals.irpj ?? 0) > 0 ||
     (breakdown.totals.csll ?? 0) > 0;
   const isLucroPresumido = regimeFiscal === 'lucro_presumido' || hasFederalTaxLines;
-  const custoEfetivoMotorista = breakdown.components?.baseFreight ?? 0;
+  const isFracionado =
+    freightModality === 'fracionado' || breakdown.meta?.ltlMinWeightApplied === true;
+  const custoEfetivoMotorista = isFracionado
+    ? resolveBaseMotoristaFracionadoReais(breakdown)
+    : (breakdown.components?.baseFreight ?? 0);
   const custoMotoristaPisoAntt =
     resolvePisoAnttCarreteiroReais(breakdown) ||
     pisoAnttTotal ||
@@ -125,12 +137,16 @@ export function QuoteModalCostCompositionTab({
   const tearValue = breakdown.components?.tear ?? 0;
   const aluguelMaquinasValue = breakdown.components?.aluguelMaquinas ?? 0;
   const adValoremValue = breakdown.components?.adValorem ?? 0;
+  const dispatchFeeValue = breakdown.components?.dispatchFee ?? 0;
 
-  const baseFreight = breakdown.components?.baseFreight ?? 0;
+  const baseFreight = isFracionado
+    ? resolveBaseMotoristaFracionadoReais(breakdown)
+    : (breakdown.components?.baseFreight ?? 0);
   const pedagioMemoria = breakdown.components?.toll ?? 0;
-  const subtotalMotorista = baseFreight + pedagioMemoria;
-  const anttFloorApplied = breakdown.meta?.anttFloorApplied === true;
+  const subtotalMotorista = isFracionado ? baseFreight : baseFreight + pedagioMemoria;
+  const anttFloorApplied = !isFracionado && breakdown.meta?.anttFloorApplied === true;
   const fretePesoOriginal = breakdown.meta?.fretePesoOriginal ?? 0;
+  const repasseRiscoMemoria = grisValue + tsoValue + rctrcValue + adValoremValue;
 
   const composicaoRows: { label: string; value: number; field: string }[] = [];
   if (breakdown.components) {
@@ -139,30 +155,6 @@ export function QuoteModalCostCompositionTab({
         label: 'Aluguel de Máquinas',
         value: breakdown.components.aluguelMaquinas ?? 0,
         field: 'aluguel_maquinas',
-      });
-    if ((breakdown.components.rctrc ?? 0) > 0)
-      composicaoRows.push({
-        label: `RCTR-C (${breakdown.rates?.costValuePercent?.toFixed(2) ?? 0}%)`,
-        value: breakdown.components.rctrc ?? 0,
-        field: 'rctrc',
-      });
-    if ((breakdown.components.gris ?? 0) > 0)
-      composicaoRows.push({
-        label: `GRIS (${breakdown.rates?.grisPercent?.toFixed(2) ?? 0}%)`,
-        value: breakdown.components.gris ?? 0,
-        field: 'gris',
-      });
-    if ((breakdown.components.tso ?? 0) > 0)
-      composicaoRows.push({
-        label: `TSO (${breakdown.rates?.tsoPercent?.toFixed(2) ?? 0}%)`,
-        value: breakdown.components.tso ?? 0,
-        field: 'tso',
-      });
-    if (adValoremValue > 0)
-      composicaoRows.push({
-        label: `Ad Valorem (${breakdown.rates?.adValoremPercent?.toFixed(3) ?? '0.030'}%)`,
-        value: adValoremValue,
-        field: 'ad_valorem',
       });
     if ((breakdown.components.tde ?? 0) > 0)
       composicaoRows.push({
@@ -176,14 +168,8 @@ export function QuoteModalCostCompositionTab({
         value: breakdown.components.tear ?? 0,
         field: 'tear',
       });
-    // DRE v5: Taxa de Despacho (NTC) eh repasse/cobranca do embarcador,
-    // entra so na receita bruta. Nao listar entre os custos diretos.
-    if ((breakdown.components.conditionalFeesTotal ?? 0) > 0)
-      composicaoRows.push({
-        label: 'Taxas condicionais',
-        value: breakdown.components.conditionalFeesTotal ?? 0,
-        field: 'conditional_fees',
-      });
+    // Taxas condicionais = markup (receita) — listadas fora dos CD abaixo.
+    // GRIS/TSO/RCTR-C/Ad Valorem = repasse Hub (FAT), não base motorista.
     if ((breakdown.components.waitingTimeCost ?? 0) > 0)
       composicaoRows.push({
         label: 'Estadia / hora parada',
@@ -217,25 +203,24 @@ export function QuoteModalCostCompositionTab({
       field: 'custos_descarga',
     });
 
-  const custoServicosPb = breakdown.profitability?.custoServicos;
+  const custoServicosPb = resolveCustoServicosOperacionaisDisplay(
+    breakdown.components,
+    breakdown.profitability?.custoServicos
+  );
   const custosDiretos =
     breakdown.profitability?.custosDiretos ??
     (custoServicosPb != null
       ? baseFreight + custoServicosPb + custosDescargaMemoria
       : baseFreight +
         pedagioMemoria +
-        rctrcValue +
-        grisValue +
-        tsoValue +
-        adValoremValue +
         tdeValue +
         tearValue +
         aluguelMaquinasValue +
         tacAdjustment +
         paymentAdjustment +
-        (breakdown.components?.conditionalFeesTotal ?? 0) +
         (breakdown.components?.waitingTimeCost ?? 0) +
         custosDescargaMemoria);
+  const taxasMarkupMemoria = breakdown.components?.conditionalFeesTotal ?? 0;
   const formacaoAllIn = Math.max(0, totalClienteBruto - custosDiretos);
   const receitaLiquidaMemoria =
     breakdown.profitability?.receitaLiquida ??
@@ -330,7 +315,7 @@ export function QuoteModalCostCompositionTab({
                     data-testid="row-frete-base-label"
                     className="text-muted-foreground"
                   >
-                    Frete Base
+                    {isFracionado ? 'Frete Peso (NTC Fracionado)' : 'Frete Base'}
                     {anttFloorApplied && (
                       <span className="ml-1 text-xs text-amber-600 font-medium">
                         (Piso ANTT aplicado — MP 1.343/2026)
@@ -345,7 +330,7 @@ export function QuoteModalCostCompositionTab({
                     {formatCurrency(baseFreight)}
                   </TableCell>
                 </TableRow>
-                {pedagioMemoria > 0 && (
+                {!isFracionado && pedagioMemoria > 0 && (
                   <TableRow>
                     <TableCell
                       data-field="pedagio"
@@ -369,9 +354,15 @@ export function QuoteModalCostCompositionTab({
                     data-testid="row-subtotal-motorista-label"
                     className="font-semibold text-primary"
                   >
-                    <span className="block">Subtotal Motorista (Base de Negociação)</span>
+                    <span className="block">
+                      {isFracionado
+                        ? 'Base motorista (frete peso NTC)'
+                        : 'Subtotal Motorista (Base de Negociação)'}
+                    </span>
                     <span className="block text-[10px] font-normal text-muted-foreground">
-                      Frete + pedágio — referência com motorista, não soma ao ALL-IN
+                      {isFracionado
+                        ? 'kg faturável × R$/kg da faixa — sem GRIS/TSO/RCTR-C/despacho'
+                        : 'Frete + pedágio — referência com motorista, não soma ao ALL-IN'}
                     </span>
                   </TableCell>
                   <TableCell
@@ -382,6 +373,24 @@ export function QuoteModalCostCompositionTab({
                     {formatCurrency(subtotalMotorista)}
                   </TableCell>
                 </TableRow>
+                {isFracionado && pedagioMemoria > 0 && (
+                  <TableRow>
+                    <TableCell
+                      data-field="pedagio"
+                      data-testid="row-pedagio-label"
+                      className="text-muted-foreground"
+                    >
+                      Pedágio (custo operacional)
+                    </TableCell>
+                    <TableCell
+                      data-field="pedagio_valor"
+                      data-testid="row-pedagio-value"
+                      className="text-right font-medium tabular-nums"
+                    >
+                      {formatCurrency(pedagioMemoria)}
+                    </TableCell>
+                  </TableRow>
+                )}
                 {composicaoRows.map((r) => (
                   <TableRow key={r.label}>
                     <TableCell
@@ -416,6 +425,69 @@ export function QuoteModalCostCompositionTab({
                     {formatCurrency(custosDiretos)}
                   </TableCell>
                 </TableRow>
+                {repasseRiscoMemoria > 0 && (
+                  <TableRow>
+                    <TableCell
+                      data-field="repasse_risco"
+                      data-testid="row-repasse-risco-label"
+                      className="text-muted-foreground"
+                    >
+                      <span className="block">Repasse de risco (Vectra HUB)</span>
+                      <span className="block text-[10px] font-normal text-muted-foreground">
+                        GRIS/TSO/RCTR-C/Ad Valorem — já no FAT, não é PAG do motorista
+                      </span>
+                    </TableCell>
+                    <TableCell
+                      data-field="repasse_risco_valor"
+                      data-testid="row-repasse-risco-value"
+                      className="text-right font-medium tabular-nums"
+                    >
+                      {formatCurrency(repasseRiscoMemoria)}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {isFracionado && dispatchFeeValue > 0 && (
+                  <TableRow>
+                    <TableCell
+                      data-field="dispatch_fee"
+                      data-testid="row-dispatch-fee-label"
+                      className="text-muted-foreground"
+                    >
+                      <span className="block">Taxa de despacho (NTC)</span>
+                      <span className="block text-[10px] font-normal text-muted-foreground">
+                        Cobrança ao embarcador — não entra na base motorista
+                      </span>
+                    </TableCell>
+                    <TableCell
+                      data-field="dispatch_fee_valor"
+                      data-testid="row-dispatch-fee-value"
+                      className="text-right font-medium tabular-nums"
+                    >
+                      {formatCurrency(dispatchFeeValue)}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {taxasMarkupMemoria > 0 && (
+                  <TableRow>
+                    <TableCell
+                      data-field="conditional_fees"
+                      data-testid="row-conditional_fees-label"
+                      className="text-muted-foreground"
+                    >
+                      <span className="block">Taxas condicionais (markup)</span>
+                      <span className="block text-[10px] font-normal text-muted-foreground">
+                        Receita — fora do divisor; não é repasse 1:1
+                      </span>
+                    </TableCell>
+                    <TableCell
+                      data-field="conditional_fees_valor"
+                      data-testid="row-conditional_fees-value"
+                      className="text-right font-medium tabular-nums"
+                    >
+                      {formatCurrency(taxasMarkupMemoria)}
+                    </TableCell>
+                  </TableRow>
+                )}
                 {formacaoAllIn > 0.01 && (
                   <TableRow>
                     <TableCell
@@ -774,7 +846,7 @@ export function QuoteModalCostCompositionTab({
                   <>
                     <TableRow className="bg-emerald-50/50 dark:bg-emerald-900/10 border-l-4 border-l-emerald-500">
                       <TableCell className="font-semibold">
-                        (+) Repasse de Risco (cobrado do cliente)
+                        (+) Repasse de Risco (já no faturamento)
                       </TableCell>
                       <TableCell className="text-right font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
                         {formatCurrency(grisValue + tsoValue + rctrcValue + adValoremValue)}
@@ -829,13 +901,20 @@ export function QuoteModalCostCompositionTab({
                 </TableRow>
                 <TableRow>
                   <TableCell className="pl-8 text-muted-foreground">
-                    • Custo Motorista (Piso ANTT / carreteiro)
+                    {isFracionado
+                      ? '• Custo Motorista (frete peso NTC)'
+                      : '• Custo Motorista (Piso ANTT / carreteiro)'}
                   </TableCell>
                   <TableCell className="text-right tabular-nums text-destructive">
-                    -{formatCurrency(custoMotoristaPisoAntt)}
+                    -
+                    {formatCurrency(
+                      isFracionado
+                        ? custoEfetivoMotorista
+                        : custoMotoristaPisoAntt || custoEfetivoMotorista
+                    )}
                   </TableCell>
                 </TableRow>
-                {custoEfetivoMotorista > custoMotoristaPisoAntt + 0.01 && (
+                {!isFracionado && custoEfetivoMotorista > custoMotoristaPisoAntt + 0.01 && (
                   <TableRow>
                     <TableCell className="pl-8 text-muted-foreground text-xs">
                       • Frete peso contratado (NTC, ref. gross-up)
@@ -887,35 +966,37 @@ export function QuoteModalCostCompositionTab({
                     </TableCell>
                   </TableRow>
                 )}
-                {/* Custos Reais de Risco (seguro) */}
-                {cargoValue > 0 && (
-                  <>
-                    <TableRow className="bg-amber-50/50 dark:bg-amber-900/10 border-l-4 border-l-amber-500">
-                      <TableCell className="font-semibold">
-                        (-) Custos Reais de Risco (Seguro)
-                      </TableCell>
-                      <TableCell className="text-right font-bold tabular-nums text-destructive">
-                        -{formatCurrency(cargoValue * 0.0003)}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="pl-8 text-muted-foreground">
-                        • RCTR-C (0,015% s/ {formatCurrency(cargoValue)})
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-destructive">
-                        -{formatCurrency(cargoValue * 0.00015)}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="pl-8 text-muted-foreground">
-                        • RC-DC (0,015% s/ {formatCurrency(cargoValue)})
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-destructive">
-                        -{formatCurrency(cargoValue * 0.00015)}
-                      </TableCell>
-                    </TableRow>
-                  </>
-                )}
+                {/* Custos Reais de Risco (seguro) — prêmio, não repasse */}
+                {(() => {
+                  const risk =
+                    breakdown.riskCosts?.total && breakdown.riskCosts.total > 0
+                      ? breakdown.riskCosts
+                      : estimateInsuranceRiskCosts(cargoValue);
+                  if (risk.total <= 0) return null;
+                  return (
+                    <>
+                      <TableRow className="bg-amber-50/50 dark:bg-amber-900/10 border-l-4 border-l-amber-500">
+                        <TableCell className="font-semibold">
+                          (-) Custos Reais de Risco (Seguro)
+                        </TableCell>
+                        <TableCell className="text-right font-bold tabular-nums text-destructive">
+                          -{formatCurrency(risk.total)}
+                        </TableCell>
+                      </TableRow>
+                      {risk.items.map((item) => (
+                        <TableRow key={item.code}>
+                          <TableCell className="pl-8 text-muted-foreground">
+                            • {item.name}
+                            {cargoValue > 0 ? ` (s/ ${formatCurrency(cargoValue)})` : ''}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums text-destructive">
+                            -{formatCurrency(item.cost)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </>
+                  );
+                })()}
                 <TableRow
                   className={cn(
                     'border-t-2',
@@ -934,9 +1015,19 @@ export function QuoteModalCostCompositionTab({
                     </Badge>
                   </TableCell>
                 </TableRow>
+                {lucroAlvo != null && lucroAlvo > 0 && (
+                  <TableRow>
+                    <TableCell className="text-muted-foreground">
+                      Lucro alvo (gross-up {targetMarginPercent}% s/ custos diretos)
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {formatCurrency(lucroAlvo)}
+                    </TableCell>
+                  </TableRow>
+                )}
                 <TableRow>
                   <TableCell className="font-semibold">
-                    Margem Operacional (Mínimo Viável: {targetMarginPercent}%)
+                    Margem Operacional (resultado ÷ faturamento)
                   </TableCell>
                   <TableCell className="text-right">
                     <Badge variant={isBelowTarget ? 'destructive' : 'default'}>
@@ -960,27 +1051,33 @@ export function QuoteModalCostCompositionTab({
           {/* Nota de Auditoria Financeira */}
           <div className="mt-6 p-4 rounded-md bg-muted/50 border border-muted-foreground/10">
             <p className="text-[11px] leading-relaxed text-muted-foreground italic">
-              <strong>Nota de Auditoria (DRE v5):</strong> GRIS, TSO e RCTR-C são classificados como{' '}
-              <span className="font-semibold text-foreground">Repasse de Risco</span> (receita
-              cobrada do embarcador). Os{' '}
-              <span className="font-semibold text-foreground">Custos Reais de Risco</span>{' '}
-              correspondem ao prêmio de seguro (RCTR-C 0,015% + RC-DC 0,015% sobre o valor da
-              carga). O Resultado Líquido usa modelo{' '}
-              <span className="font-semibold text-foreground">Gross-up (Asset-Light)</span> com
-              Overhead {breakdown.rates?.overheadPercent?.toFixed(2) ?? '—'}% e Margem Alvo{' '}
-              {targetMarginPercent?.toFixed(2) ?? '—'}%.
+              <strong>Nota de Auditoria (DRE v5):</strong> Ad Valorem / GRIS / TSO / RCTR-C cobrados
+              são <span className="font-semibold text-foreground">Repasse de Risco</span> (já no
+              faturamento; não somam ao piso ANTT / carreteiro).{' '}
+              <span className="font-semibold text-foreground">Custos Reais de Risco</span> = prêmio
+              estimado (RCTR-C + RC-DC 0,015% cada s/ valor da carga). Resultado líquido = receita
+              líquida − overhead − custos diretos − risco real. Lucro alvo = custos diretos ×{' '}
+              {targetMarginPercent?.toFixed(0) ?? '—'}% (embutido no preço, separado).
             </p>
           </div>
-          {breakdown.meta?.ltlMinWeightApplied && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Trava de 1 Tonelada Aplicada:</strong> Peso real informado foi{' '}
-                {breakdown.meta.originalWeightKg} kg, mas o cálculo de custo usou o mínimo de 1.000
-                kg para viabilidade operacional do fracionado.
-              </AlertDescription>
-            </Alert>
-          )}
+          {(() => {
+            const cubado = breakdown.weights?.cubageWeight ?? 0;
+            const pesoReal = breakdown.meta?.originalWeightKg ?? 0;
+            const faturavel = breakdown.weights?.billableWeight ?? cubado;
+            const fator = breakdown.meta?.cubageFactor ?? 300;
+            if (cubado <= pesoReal + 0.01) return null;
+            return (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Peso cubado aplicado:</strong> volume × fator {fator} kg/m³ ={' '}
+                  {cubado.toLocaleString('pt-BR')} kg, maior que o peso real
+                  {pesoReal > 0 ? ` (${pesoReal.toLocaleString('pt-BR')} kg)` : ''}. Peso faturável
+                  = {faturavel.toLocaleString('pt-BR')} kg.
+                </AlertDescription>
+              </Alert>
+            );
+          })()}
         </TabsContent>
 
         <TabsContent value="custos" className="mt-4 space-y-4">
@@ -1101,10 +1198,9 @@ export function QuoteModalCostCompositionTab({
             Indicadores de rentabilidade
           </h5>
           <p className="text-[10px] text-muted-foreground mb-3 leading-relaxed">
-            Lotação: gross-up inicia no piso ANTT da calculadora (ceil(km)×CCD+CC, sem over).
-            Referência comercial: max(tabela NTC + over km, piso). Overhead é{' '}
-            <span className="font-medium">custo estrutural</span> (% da receita líquida). Margem de
-            contribuição e margem operacional usam a mesma base (frete golden + serviços NTC).
+            Lotação: gross-up no piso ANTT (ceil(km)×CCD+CC). Repasse de risco = receita (já no
+            FAT), fora do divisor. Resultado contábil deduz custos diretos + prêmio de seguro. Lucro
+            alvo ({targetMarginPercent}% s/ CD) é meta embutida no preço — métrica aparte.
           </p>
           <div className="space-y-2 text-sm">
             {discountValue > 0 && (
@@ -1126,7 +1222,7 @@ export function QuoteModalCostCompositionTab({
               <span className="font-medium tabular-nums">{formatCurrency(margemBruta)}</span>
             </div>
             <p className="text-[10px] text-muted-foreground -mt-1">
-              Receita líquida − overhead − frete peso (golden) − custos de serviço NTC
+              RL − overhead − frete peso (piso/golden) − serviços operacionais NTC (sem repasse)
             </p>
             <div className="flex justify-between items-center gap-2 pt-1 border-t border-border/60">
               <span className="font-semibold">Resultado líquido</span>
@@ -1138,8 +1234,14 @@ export function QuoteModalCostCompositionTab({
               </Badge>
             </div>
             <p className="text-[10px] text-muted-foreground -mt-1">
-              Igual à margem de contribuição (resultado líquido ÷ faturamento ALL-IN)
+              Margem de contribuição − custos reais de risco (prêmio)
             </p>
+            {lucroAlvo != null && lucroAlvo > 0 && (
+              <div className="flex justify-between text-muted-foreground">
+                <span>Lucro alvo (gross-up)</span>
+                <span className="tabular-nums">{formatCurrency(lucroAlvo)}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center gap-2">
               <span className="font-semibold">Margem operacional</span>
               <Badge
@@ -1149,6 +1251,9 @@ export function QuoteModalCostCompositionTab({
                 {margemPercent.toFixed(1)}%
               </Badge>
             </div>
+            <p className="text-[10px] text-muted-foreground -mt-1">
+              Resultado líquido ÷ faturamento (após desconto)
+            </p>
           </div>
         </div>
       )}

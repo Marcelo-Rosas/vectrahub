@@ -171,12 +171,14 @@ export function adaptToLocalFormat(response: CalculateFreightResponse) {
       margemBruta: response.profitability.margem_bruta,
       overhead: response.profitability.overhead,
       resultadoLiquido: response.profitability.resultado_liquido,
+      lucroAlvo: response.profitability.lucro_alvo,
       margemPercent: response.profitability.margem_percent,
       profitMarginTarget: response.profitability.profit_margin_target,
       regimeFiscal: response.profitability.regime_fiscal,
     },
     conditionalFeesBreakdown: response.conditional_fees_breakdown,
     fallbacksApplied: response.fallbacks_applied,
+    riskCosts: response.risk_costs,
   };
 }
 

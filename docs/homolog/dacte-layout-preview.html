@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Preview — DACTE/DAMDFE espelho Focus (cabeçalho + corpo + rodapé)</title>
+  <style>
+    :root {
+      --ink: #111;
+      --muted: #444;
+      --line: #222;
+      --bg: #f5f5f5;
+      --label: #333;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px 12px 48px;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Times New Roman", Times, serif;
+      font-size: 10px;
+      line-height: 1.25;
+    }
+    .note {
+      max-width: 210mm;
+      margin: 0 auto 16px;
+      padding: 10px 12px;
+      background: #fff8e6;
+      border: 1px solid #e0c060;
+      font-size: 12px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #444;
+    }
+    .note strong { color: #222; }
+    .sheet {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 32px;
+      background: #fff;
+      border: 1px solid #bbb;
+      padding: 5mm 6mm 8mm;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      display: flex;
+      flex-direction: column;
+    }
+    .sheet-body { flex: 1; }
+    .preview-tag {
+      margin: 0 0 6px;
+      font-size: 11px;
+      font-family: Arial, Helvetica, sans-serif;
+      letter-spacing: .02em;
+      text-align: center;
+      color: #666;
+      font-weight: 600;
+    }
+    table.grid {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    table.grid td, table.grid th {
+      border: 1px solid var(--line);
+      vertical-align: top;
+      padding: 2px 4px;
+    }
+    .lbl {
+      display: block;
+      font-size: 7px;
+      font-weight: 700;
+      color: var(--label);
+      text-transform: uppercase;
+      letter-spacing: .02em;
+      margin-bottom: 1px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .val { font-size: 10px; font-weight: 700; }
+    .val-sm { font-size: 9px; font-weight: 600; }
+    .val-lg { font-size: 14px; font-weight: 700; letter-spacing: .04em; }
+    .center { text-align: center; }
+    .right { text-align: right; }
+    .muted { color: var(--muted); font-weight: 400; }
+    .tiny { font-size: 7.5px; }
+    .section-bar {
+      background: #e8e8e8;
+      font-size: 8px;
+      font-weight: 700;
+      text-align: center;
+      padding: 2px 4px !important;
+      letter-spacing: .04em;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .party-title {
+      font-size: 8px;
+      font-weight: 700;
+      margin-bottom: 2px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .party-row { margin: 1px 0; }
+    .party-row .k {
+      font-size: 7px;
+      color: #555;
+      font-weight: 700;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .party-row .v { font-size: 9px; font-weight: 600; }
+    .barcode {
+      font-family: "Courier New", monospace;
+      font-size: 11px;
+      letter-spacing: .12em;
+      font-weight: 700;
+      text-align: center;
+      padding: 6px 4px;
+    }
+    .comp-3 { width: 33.33%; }
+    .spacer { height: 3px; }
+    .tabs {
+      max-width: 210mm;
+      margin: 0 auto 12px;
+      display: flex;
+      gap: 8px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .tabs a {
+      padding: 8px 14px;
+      background: #fff;
+      border: 1px solid #ccc;
+      text-decoration: none;
+      color: #222;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+    .tabs a:hover { border-color: #888; }
+
+    /* —— Cabeçalho Focus / MOC —— */
+    .emit-wrap {
+      display: flex;
+      gap: 0;
+      align-items: stretch;
+    }
+    .emit-logo {
+      width: 22mm;
+      min-width: 22mm;
+      border: 1px solid var(--line);
+      border-right: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px;
+      background: #0a1628;
+    }
+    .emit-logo img {
+      width: 18mm;
+      height: 18mm;
+      object-fit: contain;
+      display: block;
+    }
+    .emit-data {
+      flex: 1;
+      border: 1px solid var(--line);
+      padding: 3px 5px;
+    }
+    .emit-data .razao {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .emit-data .linha { font-size: 8.5px; margin: 1px 0; }
+    .dacte-title-box {
+      width: 48mm;
+      min-width: 48mm;
+      border: 1px solid var(--line);
+      border-left: none;
+      text-align: center;
+      padding: 4px 3px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .dacte-title-box .word {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      line-height: 1.1;
+    }
+    .dacte-title-box .sub {
+      font-size: 7px;
+      font-weight: 600;
+      margin-top: 3px;
+      line-height: 1.2;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .barcode-fake {
+      height: 9mm;
+      margin: 2px 8px 1px;
+      background: repeating-linear-gradient(
+        90deg,
+        #111 0px, #111 1px,
+        #fff 1px, #fff 2px,
+        #111 2px, #111 3.5px,
+        #fff 3.5px, #fff 4.5px,
+        #111 4.5px, #111 5px,
+        #fff 5px, #fff 7px
+      );
+      border: 1px solid #111;
+    }
+
+    /* —— Rodapé Focus —— */
+    .footer-fisco {
+      margin-top: 4px;
+    }
+    .footer-print {
+      margin-top: 4px;
+      border-top: 1px solid #999;
+      padding-top: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 7.5px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #333;
+    }
+    .footer-print .brand {
+      font-weight: 700;
+      color: #1a3a6b;
+    }
+    .footer-print .ver { color: #666; }
+  </style>
+</head>
+<body>
+  <p class="note">
+    <strong>Preview HTML</strong> — cabeçalho + rodapé no padrão que a <strong>Focus NFe</strong> imprime
+    (MOC SEFAZ: identificação do emitente + logo do cadastro Focus + título DACTE/DAMDFE;
+    rodapé com data/hora impressão + Focus NFe). Corpo = grades/colunas da ref.
+    Dados emitente = <strong>VECTRA HUB</strong> (Hub). Não é o PDF oficial.
+  </p>
+
+  <div class="tabs">
+    <a href="#dacte">↓ DACTE (CT-e)</a>
+    <a href="#damdfe">↓ DAMDFE (MDF-e)</a>
+  </div>
+
+  <!-- ===================== DACTE ===================== -->
+  <div class="sheet" id="dacte">
+    <p class="preview-tag">ESPELHO LAYOUT — DACTE (modelo Focus / MOC)</p>
+    <div class="sheet-body">
+
+    <!-- Canhoto (topo MOC) -->
+    <table class="grid">
+      <tr>
+        <td style="width:58%">
+          <span class="lbl">Declaração de recebimento</span>
+          <div class="tiny muted">
+            DECLARO QUE RECEBI OS VOLUMES DESTE CONHECIMENTO EM PERFEITO ESTADO
+            PELO QUE DOU POR CUMPRIDO O PRESENTE CONTRATO DE TRANSPORTE
+          </div>
+          <div style="margin-top:8px" class="tiny">
+            NOME: ______________________ &nbsp; RG: ____________
+          </div>
+          <div style="margin-top:6px" class="tiny">ASSINATURA / CARIMBO</div>
+        </td>
+        <td style="width:22%" class="center">
+          <span class="lbl">CT-e</span>
+          <div class="val-lg">000.000.001</div>
+          <div class="spacer"></div>
+          <span class="lbl">Nº DOCUMENTO</span>
+          <div class="val">000.000.001</div>
+          <span class="lbl">SÉRIE</span>
+          <div class="val">1</div>
+        </td>
+        <td style="width:20%" class="center">
+          <span class="lbl">INÍCIO PRESTAÇÃO</span>
+          <div class="val-sm muted">____/____/____ __:__</div>
+          <div class="spacer"></div>
+          <span class="lbl">TÉRMINO PRESTAÇÃO</span>
+          <div class="val-sm muted">____/____/____ __:__</div>
+          <div class="spacer"></div>
+          <span class="lbl">MODAL</span>
+          <div class="val">RODOVIÁRIO</div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <!-- Cabeçalho Focus: logo + emitente + título DACTE -->
+    <div class="emit-wrap">
+      <div class="emit-logo">
+        <img src="../../public/brand/logo_vectra_focus_200.png" alt="Logo Focus / cadastro empresa" />
+      </div>
+      <div class="emit-data">
+        <span class="lbl">Identificação do emitente</span>
+        <div class="razao">VECTRA HUB LTDA</div>
+        <div class="linha">RODOVIA JORGE LACERDA, Nº 725 — ITAJAI — SC</div>
+        <div class="linha">CEP: 88301-000 &nbsp; Fone: (47) 98850-9714</div>
+        <div class="linha"><strong>CNPJ:</strong> 62.188.748/0001-17 &nbsp; <strong>INSCR. EST:</strong> 263768406</div>
+      </div>
+      <div class="dacte-title-box">
+        <div class="word">DACTE</div>
+        <div class="sub">Documento Auxiliar do<br />Conhecimento de<br />Transporte Eletrônico</div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <!-- Chave + protocolo -->
+    <table class="grid">
+      <tr>
+        <td colspan="2">
+          <span class="lbl">Chave de acesso</span>
+          <div class="barcode-fake" aria-hidden="true"></div>
+          <div class="barcode">4226 2188 7480 0011 7570 0100 0000 0001 1000 0000 0000</div>
+          <div class="tiny center muted">Consulta em https://dfe-portal.svrs.rs.gov.br/CTE/Consulta</div>
+        </td>
+        <td style="width:32%">
+          <span class="lbl">Protocolo de autorização de uso</span>
+          <div class="val-sm">342260000000001</div>
+          <div class="val-sm">02/08/2026 11:00:00</div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          <span class="lbl">CFOP — Natureza da operação</span>
+          <div class="val">6932 — TRANSPORTE INICIADA EM UF DIVERSA DO INSCRITO</div>
+        </td>
+      </tr>
+    </table>
+
+    <table class="grid">
+      <tr>
+        <td class="center" style="width:8%"><span class="lbl">Modelo</span><div class="val">57</div></td>
+        <td class="center" style="width:8%"><span class="lbl">Série</span><div class="val">1</div></td>
+        <td class="center" style="width:14%"><span class="lbl">Número</span><div class="val">000.000.001</div></td>
+        <td class="center" style="width:8%"><span class="lbl">Fl</span><div class="val">1/1</div></td>
+        <td class="center" style="width:16%"><span class="lbl">Data/hora emissão</span><div class="val-sm">02/08/2026 11:00:00</div></td>
+        <td class="center" style="width:12%"><span class="lbl">Insc. Suframa Dest</span><div class="val-sm">—</div></td>
+        <td class="center" style="width:12%"><span class="lbl">Ind. CT-e Globalizado</span><div class="val-sm">Não</div></td>
+        <td class="center" style="width:11%"><span class="lbl">Tipo do CT-e</span><div class="val-sm">Normal</div></td>
+        <td class="center" style="width:11%"><span class="lbl">Tipo do serviço</span><div class="val-sm">Normal</div></td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr>
+        <td style="width:50%">
+          <span class="lbl">Início da prestação</span>
+          <div class="val">FORTALEZA — CE</div>
+        </td>
+        <td style="width:50%">
+          <span class="lbl">Término da prestação</span>
+          <div class="val">PALMARES — PE</div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="lbl">Produto predominante</span>
+          <div class="val">CONFORME NOTA FISCAL</div>
+        </td>
+        <td>
+          <span class="lbl">Outras características da carga</span>
+          <div class="val">CONFORME NOTA FISCAL</div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <span class="lbl">Valor total da mercadoria</span>
+          <div class="val">141.165,52</div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr>
+        <td style="width:50%">
+          <div class="party-title">REMETENTE</div>
+          <div class="val">BOOST COMERCIO E MANUTENCAO FITNESS LTDA</div>
+          <div class="party-row"><span class="k">ENDEREÇO:</span> <span class="v">Avenida Dom Luis - lado par, Nº 500 - LOJA 192A194</span></div>
+          <div class="party-row"><span class="k">BAIRRO:</span> <span class="v">Aldeota</span></div>
+          <div class="party-row"><span class="k">MUNICÍPIO:</span> <span class="v">FORTALEZA</span>
+            &nbsp; <span class="k">UF:</span> <span class="v">CE</span>
+            &nbsp; <span class="k">PAÍS:</span> <span class="v">BRASIL</span></div>
+          <div class="party-row"><span class="k">CEP:</span> <span class="v">60160-196</span>
+            &nbsp; <span class="k">FONE:</span> <span class="v">(85)98854-6450</span></div>
+          <div class="party-row"><span class="k">CNPJ/CPF:</span> <span class="v">61.602.891/0001-40</span>
+            &nbsp; <span class="k">INSCR. EST.:</span> <span class="v">072694548</span></div>
+        </td>
+        <td style="width:50%">
+          <div class="party-title">DESTINATÁRIO</div>
+          <div class="val">Alpha Gym Academia LTDA</div>
+          <div class="party-row"><span class="k">ENDEREÇO:</span> <span class="v">RUA CAPITAO PEDRO IVO, Nº 670 LETRA D - CENTRO</span></div>
+          <div class="party-row"><span class="k">BAIRRO:</span> <span class="v">CENTRO</span></div>
+          <div class="party-row"><span class="k">MUNICÍPIO:</span> <span class="v">PALMARES</span>
+            &nbsp; <span class="k">UF:</span> <span class="v">PE</span>
+            &nbsp; <span class="k">PAÍS:</span> <span class="v">BRASIL</span></div>
+          <div class="party-row"><span class="k">CEP:</span> <span class="v">55540-000</span>
+            &nbsp; <span class="k">FONE:</span> <span class="v">(81)9873-6398</span></div>
+          <div class="party-row"><span class="k">CNPJ/CPF:</span> <span class="v">38.128.804/0001-43</span>
+            &nbsp; <span class="k">INSCR. EST.:</span> <span class="v">ISENTO</span></div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="party-title">EXPEDIDOR</div>
+          <div class="val-sm muted">—</div>
+        </td>
+        <td>
+          <div class="party-title">RECEBEDOR</div>
+          <div class="val-sm muted">—</div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <div class="party-title">TOMADOR DO SERVIÇO</div>
+          <div class="val">Alpha Gym Academia LTDA</div>
+          <div class="party-row">
+            <span class="k">CNPJ/CPF:</span> <span class="v">38.128.804/0001-43</span>
+            &nbsp; <span class="k">INSC.EST.:</span> <span class="v">ISENTO</span>
+            &nbsp; <span class="k">UF:</span> <span class="v">PE</span>
+            &nbsp; <span class="k">CEP:</span> <span class="v">55540-000</span>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr><td colspan="6" class="section-bar">QUANTIDADES / MEDIDAS DA CARGA</td></tr>
+      <tr>
+        <td class="center"><span class="lbl">Tipo medida</span><div class="val-sm">METROS CUBICOS</div></td>
+        <td class="center"><span class="lbl">Qtd/Un.medida</span><div class="val-sm">0/M3</div></td>
+        <td class="center"><span class="lbl">Tipo medida</span><div class="val-sm">PESO BRUTO</div></td>
+        <td class="center"><span class="lbl">Qtd/Un.medida</span><div class="val-sm">0/KG</div></td>
+        <td class="center"><span class="lbl">Tipo medida</span><div class="val-sm">QUANTIDADE</div></td>
+        <td class="center"><span class="lbl">Qtd/Un.medida</span><div class="val-sm">13/UND</div></td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr><td colspan="6" class="section-bar">COMPONENTES DO VALOR DA PRESTAÇÃO DE SERVIÇO</td></tr>
+      <tr>
+        <td class="comp-3"><span class="lbl">Nome</span><div class="val-sm">FRETE</div></td>
+        <td class="comp-3 right"><span class="lbl">Valor</span><div class="val-sm">7.000,00</div></td>
+        <td class="comp-3"><span class="lbl">Nome</span><div class="val-sm muted">—</div></td>
+        <td class="comp-3 right"><span class="lbl">Valor</span><div class="val-sm muted">—</div></td>
+        <td class="comp-3"><span class="lbl">Nome</span><div class="val-sm muted">—</div></td>
+        <td class="comp-3 right"><span class="lbl">Valor</span><div class="val-sm muted">—</div></td>
+      </tr>
+      <tr>
+        <td colspan="3" class="center">
+          <span class="lbl">Valor total da prestação do serviço</span>
+          <div class="val-lg">7.000,00</div>
+        </td>
+        <td colspan="3" class="center">
+          <span class="lbl">Valor a receber</span>
+          <div class="val-lg">7.000,00</div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr><td colspan="5" class="section-bar">INFORMAÇÕES RELATIVAS AO IMPOSTO</td></tr>
+      <tr>
+        <td style="width:36%"><span class="lbl">Classificação tributária do serviço</span><div class="val-sm">90 — SIMPLES NACIONAL</div></td>
+        <td style="width:16%" class="right"><span class="lbl">Base de cálculo</span><div class="val-sm">0,00</div></td>
+        <td style="width:14%" class="right"><span class="lbl">Al ICMS (%)</span><div class="val-sm">0,00</div></td>
+        <td style="width:16%" class="right"><span class="lbl">Valor ICMS</span><div class="val-sm">0,00</div></td>
+        <td style="width:18%" class="right"><span class="lbl">% Red.Bc.Cálc</span><div class="val-sm">0,00</div></td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr><td colspan="6" class="section-bar">DOCUMENTOS ORIGINÁRIOS</td></tr>
+      <tr>
+        <td style="width:8%"><span class="lbl">Tipo</span></td>
+        <td style="width:12%"><span class="lbl">Núm. nota</span></td>
+        <td style="width:30%"><span class="lbl">Chave de acesso NF-e</span></td>
+        <td style="width:8%"><span class="lbl">Tipo</span></td>
+        <td style="width:12%"><span class="lbl">Núm. nota</span></td>
+        <td style="width:30%"><span class="lbl">Chave de acesso NF-e</span></td>
+      </tr>
+      <tr>
+        <td class="val-sm">NF-e</td>
+        <td class="val-sm">000000254</td>
+        <td class="val-sm" style="word-break:break-all">23260661602891000140550010000002541370560126</td>
+        <td class="val-sm muted">—</td>
+        <td class="val-sm muted">—</td>
+        <td class="val-sm muted">—</td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr><td colspan="2" class="section-bar">OBSERVAÇÕES</td></tr>
+      <tr>
+        <td colspan="2" class="val-sm">
+          SEGURADORA BERKLEY · Apólices 1005400015107 / 1005500008136<br />
+          Motorista: JOBERY COSTA CAVALHEIRO JUNIOR · Placa: KRE7A99 · CIOT: 520018869008
+        </td>
+      </tr>
+      <tr><td colspan="2" class="section-bar">INFORMAÇÕES ESPECÍFICAS DO MODAL RODOVIÁRIO</td></tr>
+      <tr>
+        <td style="width:40%">
+          <span class="lbl">RNTRC da empresa</span>
+          <div class="val">—</div>
+        </td>
+        <td>
+          <span class="lbl">Uso exclusivo do emissor</span>
+          <div class="val-sm">PLACA : KRE7A99 &nbsp; CPFMOTORISTA : 039.220.244-16</div>
+        </td>
+      </tr>
+    </table>
+
+    </div><!-- /sheet-body -->
+
+    <!-- Rodapé Focus -->
+    <div class="footer-fisco">
+      <table class="grid">
+        <tr>
+          <td style="width:50%; min-height:14mm">
+            <span class="lbl">Uso exclusivo do emissor do CT-e</span>
+            <div class="val-sm muted" style="margin-top:8px">&nbsp;</div>
+          </td>
+          <td style="width:50%">
+            <span class="lbl">Reservado ao fisco</span>
+            <div class="val-sm muted" style="margin-top:8px">&nbsp;</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="footer-print">
+      <span>DATA E HORA DA IMPRESSÃO: 02/08/2026 11:11:00</span>
+      <span class="brand">Emitido por Focus NFe — www.focusnfe.com.br</span>
+      <span class="ver">4.00</span>
+    </div>
+  </div>
+
+  <!-- ===================== DAMDFE ===================== -->
+  <div class="sheet" id="damdfe">
+    <p class="preview-tag">ESPELHO LAYOUT — DAMDFE (modelo Focus / MOC)</p>
+    <div class="sheet-body">
+
+    <!-- Cabeçalho Focus MDF-e -->
+    <div class="emit-wrap">
+      <div class="emit-logo">
+        <img src="../../public/brand/logo_vectra_focus_200.png" alt="Logo Focus / cadastro empresa" />
+      </div>
+      <div class="emit-data">
+        <span class="lbl">Identificação do emitente</span>
+        <div class="razao">VECTRA HUB LTDA</div>
+        <div class="linha">RODOVIA JORGE LACERDA, Nº 725 — ITAJAI — SC</div>
+        <div class="linha">CEP: 88301-000 &nbsp; Fone: (47) 98850-9714</div>
+        <div class="linha">
+          <strong>CNPJ:</strong> 62.188.748/0001-17
+          &nbsp; <strong>IE:</strong> 263768406
+          &nbsp; <strong>RNTRC:</strong> —
+        </div>
+      </div>
+      <div class="dacte-title-box">
+        <div class="word" style="font-size:15px">DAMDFE</div>
+        <div class="sub">Documento Auxiliar de<br />Manifesto Eletrônico<br />de Documentos Fiscais</div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr>
+        <td class="center" style="width:10%"><span class="lbl">Modelo</span><div class="val">58</div></td>
+        <td class="center" style="width:10%"><span class="lbl">Série</span><div class="val">001</div></td>
+        <td class="center" style="width:16%"><span class="lbl">Número</span><div class="val">000000001</div></td>
+        <td class="center" style="width:8%"><span class="lbl">Fl</span><div class="val">1/1</div></td>
+        <td class="center" style="width:22%"><span class="lbl">Data e hora da emissão</span><div class="val-sm">02/08/2026 11:05:00</div></td>
+        <td class="center" style="width:12%"><span class="lbl">UF Carreg.</span><div class="val">CE</div></td>
+        <td class="center" style="width:12%"><span class="lbl">UF Descarreg.</span><div class="val">PE</div></td>
+        <td class="center" style="width:10%"><span class="lbl">Modal</span><div class="val-sm">Rodoviário</div></td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr>
+        <td style="width:55%">
+          <span class="lbl">Controle do fisco — Chave de acesso</span>
+          <div class="barcode-fake" aria-hidden="true"></div>
+          <div class="barcode" style="font-size:10px">4226 2188 7480 0011 7580 0100 0000 0001 1000 0000 0000</div>
+          <div class="tiny center muted">Consulte em https://dfe-portal.sefazvirtual.rs.gov.br/MDFe/consulta</div>
+        </td>
+        <td style="width:45%">
+          <span class="lbl">Protocolo de autorização</span>
+          <div class="val-sm">942260000000001</div>
+          <div class="val-sm">02/08/2026 11:05:00</div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr>
+        <td class="center" style="width:25%"><span class="lbl">Qtd. CT-e</span><div class="val">1</div></td>
+        <td class="center" style="width:25%"><span class="lbl">Qtd. NF-e</span><div class="val">0</div></td>
+        <td class="center" style="width:50%"><span class="lbl">Peso total (KG)</span><div class="val">0,00</div></td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr>
+        <td colspan="3" class="section-bar">VEÍCULO</td>
+        <td colspan="2" class="section-bar">CONDUTOR</td>
+      </tr>
+      <tr>
+        <td style="width:18%"><span class="lbl">Placa</span><div class="val">KRE-7A99 / PE</div></td>
+        <td style="width:16%"><span class="lbl">RNTRC</span><div class="val">02353222</div></td>
+        <td style="width:16%"><span class="lbl">RENAVAM</span><div class="val-sm">00739480367</div></td>
+        <td style="width:20%"><span class="lbl">CPF</span><div class="val-sm">039.220.244-16</div></td>
+        <td style="width:30%"><span class="lbl">Nome</span><div class="val-sm">JOBERY COSTA CAVALHEIRO JUNIOR</div></td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr><td colspan="3" class="section-bar">VALE PEDÁGIO</td></tr>
+      <tr>
+        <td><span class="lbl">Responsável CNPJ</span><div class="val-sm muted">—</div></td>
+        <td><span class="lbl">Fornecedor CNPJ</span><div class="val-sm muted">—</div></td>
+        <td><span class="lbl">Nº comprovante</span><div class="val-sm muted">—</div></td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr><td class="section-bar">OBSERVAÇÕES</td></tr>
+      <tr>
+        <td class="val-sm">
+          Seguradora BERKLEY · CIOT 520018869008 · Veículo KRE7A99 Renavam 00739480367
+        </td>
+      </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="grid">
+      <tr><td colspan="6" class="section-bar">RELAÇÃO DOS DOCUMENTOS FISCAIS</td></tr>
+      <tr>
+        <td style="width:10%"><span class="lbl">Tp.doc</span></td>
+        <td style="width:18%"><span class="lbl">CNPJ/CPF emitente</span></td>
+        <td style="width:22%"><span class="lbl">Série/Nº documento</span></td>
+        <td style="width:10%"><span class="lbl">Tp.doc</span></td>
+        <td style="width:18%"><span class="lbl">CNPJ/CPF emitente</span></td>
+        <td style="width:22%"><span class="lbl">Série/Nº documento</span></td>
+      </tr>
+      <tr>
+        <td class="val-sm">CTe</td>
+        <td class="val-sm">62.188.748/0001-17</td>
+        <td class="val-sm" style="word-break:break-all;font-size:8px">chave CT-e autorizada</td>
+        <td class="val-sm muted">—</td>
+        <td class="val-sm muted">—</td>
+        <td class="val-sm muted">—</td>
+      </tr>
+    </table>
+
+    </div>
+
+    <div class="footer-print">
+      <span>DATA E HORA DA IMPRESSÃO: 02/08/2026 11:11:00</span>
+      <span class="brand">Emitido por Focus NFe — www.focusnfe.com.br</span>
+      <span class="ver">3.00</span>
+    </div>
+  </div>
+</body>
+</html>

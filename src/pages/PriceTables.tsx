@@ -210,9 +210,11 @@ function PriceTablesTab() {
     ad_valorem_lotacao_percent?: number | null;
   }) => {
     try {
+      const methodology = data.modality === 'fracionado' ? 'fracionado_ntc' : 'lotacao';
       await createTable.mutateAsync({
         name: data.name,
         modality: data.modality,
+        methodology,
         active: false,
         version: 1,
         ad_valorem_lotacao_percent: data.ad_valorem_lotacao_percent ?? null,

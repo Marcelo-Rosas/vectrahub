@@ -73,6 +73,9 @@ verify_jwt = false  # Gateway 401 Invalid JWT; função valida Authorization man
 [functions.send-quote-email]
 verify_jwt = false  # Gateway 401 Invalid JWT; função valida Authorization manualmente
 
+[functions.send-averba-ms-email]
+verify_jwt = false  # Gateway 401 Invalid JWT; função valida Authorization manualmente
+
 [functions.generate-quote-email-pdf]
 verify_jwt = false  # Gateway 401 Invalid JWT; função valida Authorization manualmente
 
@@ -191,3 +194,9 @@ verify_jwt = false  # Chamado por cron/pg_cron com service role
 
 [functions.petrobras-diesel]
 verify_jwt = false  # Chamado por cron/pg_cron com service role
+
+[functions.emit-vpo]
+verify_jwt = false  # Gateway 401 Invalid JWT; chamado pelo front com Bearer de usuário
+
+[functions.get-vpo-recibo]
+verify_jwt = false  # Gateway 401 Invalid JWT; chamado pelo front com Bearer de usuário

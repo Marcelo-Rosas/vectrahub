@@ -19,3 +19,7 @@ declare module 'https://deno.land/std@0.177.0/http/server.ts' {
     options?: { port?: number }
   ): void;
 }
+
+declare module 'https://esm.sh/js-sha256@0.11.0' {
+  export function sha256(message: string | ArrayBuffer): string;
+}

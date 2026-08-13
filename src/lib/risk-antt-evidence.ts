@@ -105,6 +105,63 @@ export async function resolveAnttEvidenceForOrder(
   return pickAnttEvidence(localRows, driverCpf, vehiclePlate, false);
 }
 
+/** Extrai TAC|ETC do prefixo "ETC - Razão Social" (coluna Transportador ANTT). */
+export function parseAnttRegistryTypeFromTransportador(
+  transportador: string | null | undefined
+): 'TAC' | 'ETC' | null {
+  const raw = String(transportador ?? '').trim();
+  if (!raw) return null;
+  const m = raw.match(/^\s*(TAC|ETC)\s*[-–—]/i) || raw.match(/^\s*(TAC|ETC)\s*$/i);
+  return m ? (m[1].toUpperCase() as 'TAC' | 'ETC') : null;
+}
+
+/** Nome limpo sem prefixo TAC/ETC. */
+export function stripAnttTransportadorPrefix(
+  transportador: string | null | undefined
+): string | null {
+  const raw = String(transportador ?? '').trim();
+  if (!raw) return null;
+  const m = raw.match(/^\s*(?:TAC|ETC)\s*[-–—]\s*(.+)$/i);
+  return (m ? m[1].trim() : raw) || null;
+}
+
+/** Preferência: campo tipado → prefixo do transportador. */
+export function resolveAnttRegistryType(input: {
+  rntrc_registry_type?: 'TAC' | 'ETC' | null;
+  transportador?: string | null;
+}): 'TAC' | 'ETC' | null {
+  const typed = input.rntrc_registry_type;
+  if (typed === 'TAC' || typed === 'ETC') return typed;
+  return parseAnttRegistryTypeFromTransportador(input.transportador);
+}
+
+/** "Itajaí/SC" → { municipio, uf }. */
+export function parseAnttMunicipioUf(municipioUf: string | null | undefined): {
+  municipio: string | null;
+  uf: string | null;
+} {
+  const raw = String(municipioUf ?? '').trim();
+  if (!raw) return { municipio: null, uf: null };
+  const m = raw.match(/^(.+?)\s*\/\s*([A-Za-z]{2})\s*$/);
+  if (m) {
+    return { municipio: m[1].trim() || null, uf: m[2].toUpperCase() };
+  }
+  if (/^[A-Za-z]{2}$/.test(raw)) return { municipio: null, uf: raw.toUpperCase() };
+  return { municipio: raw, uf: null };
+}
+
+/**
+ * ANTT TAC/ETC → tipo_proprietario MDF-e (Focus).
+ * TAC → 1 (Independente); ETC → 2 (Outros). Agregado (0) fica manual.
+ */
+export function anttRegistryToMdfeTipoProprietario(
+  registry: 'TAC' | 'ETC' | null
+): '0' | '1' | '2' | '' {
+  if (registry === 'TAC') return '1';
+  if (registry === 'ETC') return '2';
+  return '';
+}
+
 export function anttEvidenceToCollectionOrderSnapshot(
   evidence: RiskEvidence,
   ownerFallback?: { cpf_cnpj?: string | null; city?: string | null; state?: string | null } | null
@@ -112,15 +169,11 @@ export function anttEvidenceToCollectionOrderSnapshot(
   const p = evidence.payload as Record<string, unknown>;
 
   const rawTransportador = (p.transportador as string) ?? null;
-  let parsedType: 'TAC' | 'ETC' | null = null;
-  let cleanTransportador = rawTransportador;
-  if (rawTransportador) {
-    const m = rawTransportador.match(/^\s*(TAC|ETC)\s*[-–—]\s*(.+)$/i);
-    if (m) {
-      parsedType = m[1].toUpperCase() as 'TAC' | 'ETC';
-      cleanTransportador = m[2].trim();
-    }
-  }
+  const parsedType = resolveAnttRegistryType({
+    rntrc_registry_type: (p.rntrc_registry_type as 'TAC' | 'ETC' | null) ?? null,
+    transportador: rawTransportador,
+  });
+  const cleanTransportador = stripAnttTransportadorPrefix(rawTransportador);
 
   const ownerMunicipioUf =
     ownerFallback?.city || ownerFallback?.state
@@ -133,7 +186,7 @@ export function anttEvidenceToCollectionOrderSnapshot(
   return {
     situacao: (p.situacao as string) ?? null,
     situacao_raw: (p.situacao_raw as string) ?? null,
-    rntrc_registry_type: ((p.rntrc_registry_type as 'TAC' | 'ETC' | null) ?? null) || parsedType,
+    rntrc_registry_type: parsedType,
     rntrc: (p.rntrc as string) ?? null,
     transportador: cleanTransportador,
     cpf_cnpj_mask: cpfFromPayload || ownerFallback?.cpf_cnpj || null,

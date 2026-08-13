@@ -7,23 +7,42 @@ import { Database } from '@/integrations/supabase/types';
 import { buildQuoteCloneInsert } from '@/lib/quote-clone';
 import { syncQuoteRouteStops, type RouteStopFormItem } from '@/hooks/useQuoteRouteStops';
 import { useAuth } from '@/hooks/useAuth';
+import { fetchRowsByStage } from '@/lib/board-query';
 
 type Quote = Database['public']['Tables']['quotes']['Row'];
 type QuoteInsert = Database['public']['Tables']['quotes']['Insert'];
 type QuoteUpdate = Database['public']['Tables']['quotes']['Update'];
 type QuoteStage = Database['public']['Enums']['quote_stage'];
 
+const QUOTE_BOARD_STAGES: QuoteStage[] = [
+  'novo_pedido',
+  'qualificacao',
+  'precificacao',
+  'enviado',
+  'negociacao',
+  'ganho',
+  'perdido',
+];
+
+/** Kanban comercial: fetch por stage com limit (evita dump histórico). */
 export function useQuotes() {
   return useQuery({
     queryKey: ['quotes'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('quotes')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return filterSupabaseRows<Quote>(data);
+      const { rows } = await fetchRowsByStage<Quote>({
+        stages: QUOTE_BOARD_STAGES,
+        queryKey: 'quotes',
+        fetchStage: async (stage, limit) => {
+          const { data, error } = await supabase
+            .from('quotes')
+            .select('*')
+            .eq('stage', stage as QuoteStage)
+            .order('created_at', { ascending: false })
+            .limit(limit);
+          return { data: filterSupabaseRows<Quote>(data), error };
+        },
+      });
+      return rows;
     },
   });
 }

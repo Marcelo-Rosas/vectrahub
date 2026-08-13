@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   calculateLotacaoProfitability,
+  estimateInsuranceRiskCosts,
   resolveLotacaoFretePeso,
   resolveLotacaoKmOverPercent,
 } from '@/lib/lotacao-freight-base';
@@ -66,8 +67,16 @@ describe('resolveLotacaoFretePeso', () => {
   });
 });
 
+describe('estimateInsuranceRiskCosts', () => {
+  it('0,015% + 0,015% s/ valor da carga', () => {
+    const r = estimateInsuranceRiskCosts(68665);
+    expect(r.total).toBe(20.6);
+    expect(r.items).toHaveLength(2);
+  });
+});
+
 describe('calculateLotacaoProfitability', () => {
-  it('lucro alvo = % sobre custos diretos; margem bruta = contribuição DRE', () => {
+  it('resultado contábil ≠ lucro alvo; margem % sobre FAT', () => {
     const p = calculateLotacaoProfitability({
       receitaLiquida: 10000,
       overhead: 1000,
@@ -78,13 +87,16 @@ describe('calculateLotacaoProfitability', () => {
       custosDiretos: 7700,
       totalCliente: 13000,
       profitMarginPercent: 15,
+      custosRiscoReal: 20,
     });
+    // contribuição = 10000 - 1000 - 7000 - 500 - 200 = 1300
     expect(p.margemBruta).toBe(1300);
-    expect(p.resultadoLiquido).toBe(1155);
-    expect(p.margemPercent).toBeCloseTo(15, 1);
+    expect(p.resultadoLiquido).toBe(1280);
+    expect(p.lucroAlvo).toBe(1155);
+    expect(p.margemPercent).toBeCloseTo((1280 / 13000) * 100, 1);
   });
 
-  it('contribuição negativa ainda pode ter lucro alvo positivo se CD*PM > 0', () => {
+  it('repasse não entra — só custosRiscoReal deduz resultado', () => {
     const p = calculateLotacaoProfitability({
       receitaLiquida: 10000,
       overhead: 1000,
@@ -94,9 +106,10 @@ describe('calculateLotacaoProfitability', () => {
       custosDiretos: 12500,
       totalCliente: 13000,
       profitMarginPercent: 10,
+      custosRiscoReal: 0,
     });
     expect(p.margemBruta).toBe(-3500);
-    expect(p.resultadoLiquido).toBe(1250);
-    expect(p.margemPercent).toBeCloseTo(10, 1);
+    expect(p.resultadoLiquido).toBe(-3500);
+    expect(p.lucroAlvo).toBe(1250);
   });
 });

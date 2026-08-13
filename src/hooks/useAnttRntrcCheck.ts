@@ -2,10 +2,14 @@ import { useMutation } from '@tanstack/react-query';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 
 export interface AnttRntrcCheckRequest {
+  /**
+   * ID de contexto (OS ou `owner:<uuid>` / `owner-lookup` no cadastro).
+   * Usado p/ path do comprovante; consulta RNTRC não depende da OS.
+   */
   order_id: string;
   /** CPF ou CNPJ apenas dígitos — obrigatório para operation='rntrc' */
   cpf_cnpj?: string;
-  /** Placa do veículo — obrigatório para 'veiculo' e 'vpo', usado por 'rntrc' */
+  /** Placa — obrigatória p/ 'veiculo'/'vpo'; opcional p/ 'rntrc' (Por Transportador) */
   vehicle_plate?: string;
   /** RNTRC do motorista (drivers.antt) — obrigatório para 'ciot', melhora 'rntrc'/'veiculo' */
   rntrc?: string;

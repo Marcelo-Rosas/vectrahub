@@ -7,6 +7,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/hooks/useAuth';
+import { isTransientError } from '@/lib/errors/AppError';
 import { Sentry } from '@/lib/sentry';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
@@ -39,13 +40,13 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
+      retry: (failureCount, error) => isTransientError(error) && failureCount < 2,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       staleTime: 1000 * 60 * 5, // 5 minutes
       refetchOnWindowFocus: false,
     },
     mutations: {
-      retry: 1,
+      retry: (failureCount, error) => isTransientError(error) && failureCount < 1,
     },
   },
 });

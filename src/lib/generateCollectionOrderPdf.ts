@@ -11,6 +11,8 @@ import type {
 
 export interface CollectionOrderPdfPayload {
   oc_number: string;
+  /** Razão social do pagador do frete (regra canônica — após o número). */
+  payer_name?: string | null;
   issued_at: string;
   issued_by_name: string | null;
   sender: CollectionOrderPartyData;
@@ -179,6 +181,14 @@ function drawHeader(
   doc.text(`Emissao: ${fmtDate(payload.issued_at)}`, PW - MR, 19, { align: 'right' });
   if (payload.issued_by_name) {
     doc.text(`Usuario: ${payload.issued_by_name}`, PW - MR, 23, { align: 'right' });
+  }
+
+  // Regra canônica: razão social do pagador do frete após o número.
+  if (payload.payer_name?.trim()) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.orangeLight);
+    doc.text(`Pagador do frete: ${payload.payer_name.trim()}`, ix, 26.5);
   }
 
   return H + 4;

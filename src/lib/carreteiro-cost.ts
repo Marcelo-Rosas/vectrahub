@@ -61,3 +61,33 @@ export function resolveFretePesoContratadoReais(
     0
   );
 }
+
+/**
+ * Gate: carreteiro_real (negociado) nunca abaixo de carreteiro_antt (piso).
+ * true se real < antt (piso numérico > 0).
+ */
+export function isCarreteiroRealBelowFloor(
+  carreteiroReal: number | null | undefined,
+  carreteiroAntt: number | null | undefined
+): boolean {
+  if (carreteiroReal == null || !Number.isFinite(Number(carreteiroReal))) return false;
+  if (carreteiroAntt == null || !Number.isFinite(Number(carreteiroAntt))) return false;
+  const real = Number(carreteiroReal);
+  const antt = Number(carreteiroAntt);
+  if (antt <= 0) return false;
+  return real < antt;
+}
+
+/** Lança Error se real < piso ANTT. Sem piso conhecido → ok. */
+export function assertCarreteiroRealAboveFloor(
+  carreteiroReal: number | null | undefined,
+  carreteiroAntt: number | null | undefined
+): void {
+  if (!isCarreteiroRealBelowFloor(carreteiroReal, carreteiroAntt)) return;
+  const real = Number(carreteiroReal);
+  const antt = Number(carreteiroAntt);
+  const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  throw new Error(
+    `Carreteiro real (${fmt(real)}) abaixo do piso ANTT (${fmt(antt)}). Negocie ≥ piso.`
+  );
+}

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { asDb, asInsert } from '@/lib/supabase-utils';
 import { supabase } from '@/integrations/supabase/client';
+import type { PriceTableMethodology } from '@/lib/pricingMethodology';
 
 export function useCreatePricingRuleConfig() {
   const queryClient = useQueryClient();
@@ -15,6 +16,7 @@ export function useCreatePricingRuleConfig() {
       min_value?: number | null;
       max_value?: number | null;
       vehicle_type_id?: string | null;
+      methodology: PriceTableMethodology;
       metadata?: Record<string, unknown>;
     }) => {
       const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
@@ -23,7 +25,6 @@ export function useCreatePricingRuleConfig() {
         .insert(
           asInsert({
             ...data,
-            // Ensure nulls instead of undefined for optional columns
             min_value: data.min_value ?? null,
             max_value: data.max_value ?? null,
             vehicle_type_id: data.vehicle_type_id ?? null,

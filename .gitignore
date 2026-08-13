@@ -77,3 +77,8 @@ bun.lockb
 # Smoke / setup gerados localmente
 scripts/smoke-run-metrics.json
 scripts/SETUP_REPORT.md
+
+# ANTT Dados Abertos dumps (spike / job local — não versionar)
+docs/ANTT/spike-dados-abertos/*.csv
+docs/ANTT/spike-dados-abertos/*.json
+!docs/ANTT/spike-dados-abertos/SPIKE-REPORT.md

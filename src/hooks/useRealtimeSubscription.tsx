@@ -1,6 +1,7 @@
-import { useEffect, useMemo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useRef } from 'react';
+import { useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 type TableName =
   | 'quotes'
@@ -11,13 +12,31 @@ type TableName =
   | 'financial_installments'
   | 'quote_payment_proofs';
 
+const INVALIDATE_DEBOUNCE_MS = 400;
+
 export function useRealtimeSubscription(tables: TableName[]) {
   const queryClient = useQueryClient();
   // Stable reference to avoid effect re-runs when caller passes inline arrays
   const tablesKey = useMemo(() => tables.sort().join(','), [tables]);
+  const channelErrorCount = useRef(0);
+  const pendingTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   useEffect(() => {
     const tablesSet = new Set(tablesKey ? (tablesKey.split(',') as TableName[]) : []);
+    channelErrorCount.current = 0;
+    const timers = pendingTimers.current;
+
+    const scheduleInvalidate = (key: string, queryKey: QueryKey) => {
+      const existing = timers.get(key);
+      if (existing) clearTimeout(existing);
+      timers.set(
+        key,
+        setTimeout(() => {
+          timers.delete(key);
+          void queryClient.invalidateQueries({ queryKey });
+        }, INVALIDATE_DEBOUNCE_MS)
+      );
+    };
 
     const channel = supabase
       .channel('realtime-changes')
@@ -30,7 +49,7 @@ export function useRealtimeSubscription(tables: TableName[]) {
         },
         () => {
           if (tablesSet.has('quotes')) {
-            queryClient.invalidateQueries({ queryKey: ['quotes'] });
+            scheduleInvalidate('quotes', ['quotes']);
           }
         }
       )
@@ -43,7 +62,7 @@ export function useRealtimeSubscription(tables: TableName[]) {
         },
         () => {
           if (tablesSet.has('orders')) {
-            queryClient.invalidateQueries({ queryKey: ['orders'] });
+            scheduleInvalidate('orders', ['orders']);
           }
         }
       )
@@ -56,8 +75,8 @@ export function useRealtimeSubscription(tables: TableName[]) {
         },
         () => {
           if (tablesSet.has('occurrences')) {
-            queryClient.invalidateQueries({ queryKey: ['occurrences'] });
-            queryClient.invalidateQueries({ queryKey: ['orders'] });
+            scheduleInvalidate('occurrences', ['occurrences']);
+            scheduleInvalidate('orders', ['orders']);
           }
         }
       )
@@ -70,7 +89,7 @@ export function useRealtimeSubscription(tables: TableName[]) {
         },
         () => {
           if (tablesSet.has('clients')) {
-            queryClient.invalidateQueries({ queryKey: ['clients'] });
+            scheduleInvalidate('clients', ['clients']);
           }
         }
       )
@@ -83,9 +102,9 @@ export function useRealtimeSubscription(tables: TableName[]) {
         },
         () => {
           if (tablesSet.has('financial_documents')) {
-            queryClient.invalidateQueries({ queryKey: ['financial-kanban'] });
-            queryClient.invalidateQueries({ queryKey: ['card'] });
-            queryClient.invalidateQueries({ queryKey: ['cash-flow-summary'] });
+            scheduleInvalidate('financial-kanban', ['financial-kanban']);
+            scheduleInvalidate('card', ['card']);
+            scheduleInvalidate('cash-flow-summary', ['cash-flow-summary']);
           }
         }
       )
@@ -98,9 +117,9 @@ export function useRealtimeSubscription(tables: TableName[]) {
         },
         () => {
           if (tablesSet.has('financial_installments')) {
-            queryClient.invalidateQueries({ queryKey: ['financial-kanban'] });
-            queryClient.invalidateQueries({ queryKey: ['card'] });
-            queryClient.invalidateQueries({ queryKey: ['cash-flow-summary'] });
+            scheduleInvalidate('financial-kanban', ['financial-kanban']);
+            scheduleInvalidate('card', ['card']);
+            scheduleInvalidate('cash-flow-summary', ['cash-flow-summary']);
           }
         }
       )
@@ -113,20 +132,35 @@ export function useRealtimeSubscription(tables: TableName[]) {
         },
         () => {
           if (tablesSet.has('quote_payment_proofs')) {
-            queryClient.invalidateQueries({ queryKey: ['quote_payment_proofs'] });
-            queryClient.invalidateQueries({ queryKey: ['quote_reconciliation'] });
-            queryClient.invalidateQueries({ queryKey: ['financial-kanban'] });
-            queryClient.invalidateQueries({ queryKey: ['cash-flow-summary'] });
+            scheduleInvalidate('quote_payment_proofs', ['quote_payment_proofs']);
+            scheduleInvalidate('quote_reconciliation', ['quote_reconciliation']);
+            scheduleInvalidate('financial-kanban', ['financial-kanban']);
+            scheduleInvalidate('cash-flow-summary', ['cash-flow-summary']);
           }
         }
       )
       .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR') {
-          console.warn('[useRealtimeSubscription] Realtime channel error');
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          channelErrorCount.current += 1;
+          logger.warn('[useRealtimeSubscription] Realtime channel degraded', {
+            status,
+            tables: tablesKey,
+            consecutiveErrors: channelErrorCount.current,
+          });
+          if (channelErrorCount.current >= 3) {
+            logger.captureException(new Error(`Realtime ${status}`), {
+              tables: tablesKey,
+              consecutiveErrors: channelErrorCount.current,
+            });
+          }
+        } else if (status === 'SUBSCRIBED') {
+          channelErrorCount.current = 0;
         }
       });
 
     return () => {
+      for (const t of timers.values()) clearTimeout(t);
+      timers.clear();
       supabase.removeChannel(channel);
     };
   }, [queryClient, tablesKey]);

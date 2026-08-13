@@ -8,7 +8,7 @@
  */
 
 /** Map axes_count → WebRouter categoriaVeiculo (commercial, rod. dupla) */
-function axesToCategoriaVeiculo(axesCount?: number): string {
+export function axesToCategoriaVeiculo(axesCount?: number): string {
   const map: Record<number, string> = {
     2: '2',
     3: '4',
@@ -27,14 +27,8 @@ const UA = 'vectra-cargo-flow/1.0 (webrouter; contact: support@vectracargo.com.b
 
 function getEnv(key: string): string | undefined {
   try {
-    if (
-      typeof (globalThis as { Deno?: { env?: { get?: (k: string) => string | undefined } } }).Deno
-        ?.env?.get === 'function'
-    ) {
-      return (
-        globalThis as { Deno: { env: { get: (k: string) => string | undefined } } }
-      ).Deno.env.get(key);
-    }
+    const deno = globalThis as { Deno?: { env?: { get?: (k: string) => string | undefined } } };
+    if (typeof deno.Deno?.env?.get === 'function') return deno.Deno.env.get(key);
   } catch {
     // ignore
   }
@@ -202,9 +196,20 @@ export interface TollPlaza {
   nome: string;
   cidade: string;
   uf: string;
-  valor: number; // centavos
-  valorTag: number; // centavos
+  /** Valor praça em R$ (WebRouter). */
+  valor: number;
+  /** Valor TAG em R$ (WebRouter). */
+  valorTag: number;
   ordemPassagem: number;
+  /** Código da praça AILOG (`idPedagio`) — criarViagem.idAilog. */
+  idAilog?: number;
+  idCNP?: string;
+  codigo?: string;
+  idSemParar?: string;
+  idConectcar?: string;
+  idVeloe?: string;
+  idMoveMais?: string;
+  idRepom?: string;
 }
 
 export interface RouteDistanceFullResult {
@@ -213,6 +218,11 @@ export interface RouteDistanceFullResult {
   toll_total_centavos: number;
   toll_tag_centavos: number;
   toll_plazas: TollPlaza[];
+  /**
+   * Ordered UF sequence along the route (ordemRoteiro + pedágios).
+   * Hint for MDF-e UFPer — validate with uf-percurso.ts before sending to SEFAZ.
+   */
+  percurso_ufs_hint: string[];
   /** Ordered [lat, lng] pairs from WebRouter path for Leaflet rendering */
   polyline_coords: [number, number][];
   /** Encoded polyline string from WebRouter (path.polyline) for storage/decoding */
@@ -221,6 +231,8 @@ export interface RouteDistanceFullResult {
   url_mapa_view: string;
   /** WebRouter route ID for future queries (requires salvarRota: true) */
   id_rota: number | null;
+  /** Endereços enviados ao roteirizador (origem → paradas → destino). */
+  enderecos: ReturnType<typeof buildAddress>[];
 }
 
 export interface RouteDistanceFullError {
@@ -355,8 +367,9 @@ export async function calculateRouteDistanceFull(
 
     // Extract coordinates from ordemRoteiro (waypoints with lat/lng)
     const polylineCoords = extractPolylineCoords(rota);
+    const percursoHint = extractPercursoUfsHint(rota, tollPlazas);
     console.log(
-      `[webrouter-full] polyline: ${encodedPolyline.length} chars, coords: ${polylineCoords.length}, urlMapa: ${urlMapaView ? 'yes' : 'no'}, idRota: ${idRota}`
+      `[webrouter-full] polyline: ${encodedPolyline.length} chars, coords: ${polylineCoords.length}, urlMapa: ${urlMapaView ? 'yes' : 'no'}, idRota: ${idRota}, percursoUFs=${percursoHint.join('-') || '(none)'}`
     );
 
     return {
@@ -365,10 +378,12 @@ export async function calculateRouteDistanceFull(
       toll_total_centavos: tollTotal,
       toll_tag_centavos: tollTag,
       toll_plazas: tollPlazas,
+      percurso_ufs_hint: percursoHint,
       polyline_coords: polylineCoords,
       encoded_polyline: encodedPolyline,
       url_mapa_view: urlMapaView,
       id_rota: idRota,
+      enderecos,
     };
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : 'WebRouter fetch failed' };
@@ -385,6 +400,9 @@ function extractTollPlazas(rota: Record<string, unknown> | null): TollPlaza[] {
 
     return pedagios.map((p: Record<string, unknown>) => {
       const cidade = p.cidade as Record<string, unknown> | undefined;
+      const idAilogRaw = p.idAilog ?? p.idAILOG ?? p.id_ailog ?? p.idPedagio ?? p.id;
+      const idAilog = Number(idAilogRaw);
+      const idCnp = p.idCNP ?? p.idANTT;
       return {
         nome: String(p.nome || ''),
         cidade: String(cidade?.cidade || ''),
@@ -392,11 +410,72 @@ function extractTollPlazas(rota: Record<string, unknown> | null): TollPlaza[] {
         valor: Number(p.valor) || 0,
         valorTag: Number(p.valorTag) || 0,
         ordemPassagem: Number(p.ordemPassagem) || 0,
+        idAilog: Number.isFinite(idAilog) && idAilog > 0 ? idAilog : undefined,
+        idCNP: idCnp != null && String(idCnp).trim() ? String(idCnp) : undefined,
+        codigo: p.codigo != null ? String(p.codigo) : undefined,
+        idSemParar: p.idSemParar != null ? String(p.idSemParar) : undefined,
+        idConectcar: p.idConectcar != null ? String(p.idConectcar) : undefined,
+        idVeloe: p.idVeloe != null ? String(p.idVeloe) : undefined,
+        idMoveMais: p.idMoveMais != null ? String(p.idMoveMais) : undefined,
+        idRepom: p.idRepom != null ? String(p.idRepom) : undefined,
       };
     });
   } catch {
     return [];
   }
+}
+
+/**
+ * Ordered UFs along WebRouter route for MDF-e percurso hint.
+ * Primary signal = pedágios (ordemPassagem); bookends = ordemRoteiro (origem/destino).
+ * Dedups consecutive. Does NOT strip UFIni/UFFim — caller (uf-percurso) does.
+ */
+export function extractPercursoUfsHint(
+  rota: Record<string, unknown> | null,
+  tollPlazas: TollPlaza[] = []
+): string[] {
+  const norm = (u: unknown) =>
+    String(u ?? '')
+      .toUpperCase()
+      .replace(/[^A-Z]/g, '')
+      .slice(0, 2);
+
+  const dedup = (arr: string[]) => {
+    const out: string[] = [];
+    for (const u of arr) {
+      if (u.length === 2 && out[out.length - 1] !== u) out.push(u);
+    }
+    return out;
+  };
+
+  const roteiroUfs: string[] = [];
+  const ordemRoteiro = rota?.ordemRoteiro;
+  if (Array.isArray(ordemRoteiro)) {
+    const pts = [...ordemRoteiro].sort(
+      (a, b) =>
+        Number((a as Record<string, unknown>).ordemPassagem) -
+        Number((b as Record<string, unknown>).ordemPassagem)
+    );
+    for (const ponto of pts) {
+      const p = ponto as Record<string, unknown>;
+      const cidade = p.cidade as Record<string, unknown> | undefined;
+      const uf = norm(cidade?.uf ?? p.uf);
+      if (uf.length === 2) roteiroUfs.push(uf);
+    }
+  }
+
+  const tollUfs = [...tollPlazas]
+    .sort((a, b) => a.ordemPassagem - b.ordemPassagem)
+    .map((t) => norm(t.uf))
+    .filter((u) => u.length === 2);
+
+  // Prefer: origem roteiro → pedágios → destino roteiro (mais denso que só extremos)
+  if (tollUfs.length > 0) {
+    const first = roteiroUfs[0];
+    const last = roteiroUfs[roteiroUfs.length - 1];
+    return dedup([...(first ? [first] : []), ...tollUfs, ...(last ? [last] : [])]);
+  }
+  return dedup(roteiroUfs);
 }
 
 /**

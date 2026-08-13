@@ -1,5 +1,6 @@
 import type { PricingRuleConfig } from '@/hooks/usePricingRules';
-import { resolvePricingRule } from '@/hooks/usePricingRules';
+import { resolvePricingRule } from '@/lib/resolvePricingRule';
+import type { PriceTableMethodology } from '@/lib/pricingMethodology';
 
 export interface ResolvedTaxRegimeFlags {
   regimeLucroPresumido: boolean;
@@ -17,32 +18,36 @@ export interface ResolvedTaxRegimeFlags {
  */
 export function resolveTaxRegimeFlags(params: {
   pricingRules?: PricingRuleConfig[];
+  methodology: PriceTableMethodology;
   vehicleTypeId?: string | null;
   taxRegimeLucroPresumidoParam?: number | null;
 }): ResolvedTaxRegimeFlags {
-  const vtId = params.vehicleTypeId ?? undefined;
+  const scope = {
+    methodology: params.methodology,
+    vehicleTypeId: params.vehicleTypeId,
+  };
   const rules = params.pricingRules;
 
-  const pisPercent = resolvePricingRule(rules, 'pis_percent', vtId, 0) ?? 0;
-  const cofinsPercent = resolvePricingRule(rules, 'cofins_percent', vtId, 0) ?? 0;
-  const irpjEffectivePercent = resolvePricingRule(rules, 'irpj_effective_percent', vtId, 0) ?? 0;
-  const csllEffectivePercent = resolvePricingRule(rules, 'csll_effective_percent', vtId, 0) ?? 0;
+  const pisPercent = resolvePricingRule(rules, 'pis_percent', scope, 0) ?? 0;
+  const cofinsPercent = resolvePricingRule(rules, 'cofins_percent', scope, 0) ?? 0;
+  const irpjEffectivePercent = resolvePricingRule(rules, 'irpj_effective_percent', scope, 0) ?? 0;
+  const csllEffectivePercent = resolvePricingRule(rules, 'csll_effective_percent', scope, 0) ?? 0;
 
   const regimeLucroFromRule =
-    (resolvePricingRule(rules, 'regime_lucro_presumido', vtId, 0) ?? 0) === 1;
+    (resolvePricingRule(rules, 'regime_lucro_presumido', scope, 0) ?? 0) === 1;
   const regimeLucroFromParam =
     params.taxRegimeLucroPresumidoParam != null &&
     Number(params.taxRegimeLucroPresumidoParam) === 1;
   const hasLpRates = pisPercent > 0 || cofinsPercent > 0;
   const regimeSimplesRaw =
-    (resolvePricingRule(rules, 'regime_simples_nacional', vtId, 1) ?? 1) === 1;
+    (resolvePricingRule(rules, 'regime_simples_nacional', scope, 1) ?? 1) === 1;
 
   let regimeLucroPresumido = regimeLucroFromRule || regimeLucroFromParam;
   if (!regimeLucroPresumido && !regimeSimplesRaw && hasLpRates) {
     regimeLucroPresumido = true;
   }
 
-  const excessoVal = resolvePricingRule(rules, 'excesso_sublimite', vtId, 0);
+  const excessoVal = resolvePricingRule(rules, 'excesso_sublimite', scope, 0);
   return {
     regimeLucroPresumido,
     regimeSimplesNacional: regimeLucroPresumido ? false : regimeSimplesRaw,

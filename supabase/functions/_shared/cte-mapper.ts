@@ -55,6 +55,7 @@ export interface QuoteRow {
   freight_modality?: string | null;
   pricing_breakdown?: PricingBreakdown | null;
   toll_value?: number | null;
+  discount_value?: number | null;
   tomador_tipo: number; // 0-4 (required for CT-e)
   nfe_keys?: string[] | null;
 }
@@ -92,6 +93,11 @@ export interface PricingBreakdown {
   icms_base?: number;
   icms_aliquota?: number;
   icms_valor?: number;
+  totals?: {
+    totalCliente?: number;
+    discount?: number;
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 }
 
@@ -106,6 +112,14 @@ export interface BuildCteInput {
   expedidor?: PartyRow; // defaults to shipper
   recebedor?: PartyRow; // defaults to client
   naturezaOperacao?: string;
+  /** Incrementa sufixo `-rN` no ref (idempotência Focus + UNIQUE cte_emissions.ref). */
+  retry?: number;
+  /** Valor faturado da OS (card). Tem prioridade sobre quote.value. */
+  orderValue?: number | string | null;
+  /** Prestação desta via (1 CT-e por NF). Tem prioridade sobre order/quote. */
+  valorPrestacao?: number | string | null;
+  /** Número da NF-e vinculada (sufixo do ref Focus). */
+  nfeNumero?: string | null;
 }
 
 export interface BuildCteResult {
@@ -118,10 +132,84 @@ function digits(s: string | null | undefined): string {
   return (s ?? '').replace(/\D/g, '');
 }
 
-function moneyToBRL(value: number | null | undefined): number {
-  if (value == null) return 0;
-  // quote.value is already in R$ (numeric), not centavos
-  return Number(value.toFixed(2));
+/**
+ * Tag IE de uma parte no CT-e (`inscricao_estadual_<papel>`).
+ * Regras MOC CT-e (≠ NF-e — CT-e não tem indIEDest):
+ *   IE numérica  → contribuinte inscrito
+ *   "ISENTO"     → contribuinte isento de inscrição (ie_indicator=2)
+ *   tag ausente  → não contribuinte (ie_indicator=9)
+ */
+function ieCteField(
+  papel: 'destinatario' | 'recebedor' | 'remetente' | 'expedidor',
+  party: PartyRow
+): Record<string, string> {
+  const key = `inscricao_estadual_${papel}`;
+  const raw = String(party.state_registration ?? '').trim();
+  const indicador = Number(party.ie_indicator ?? 1);
+  if (raw && !/^isento$/i.test(raw)) return { [key]: digits(raw) || raw };
+  if (indicador === 2) return { [key]: 'ISENTO' };
+  return {};
+}
+
+/**
+ * SEFAZ CT-e/MDF-e: RNTRC pattern `[0-9]{8}|ISENTO`.
+ * Portal ANTT às vezes exibe 9 dígitos com zero à esquerda (ex.: 059734055) —
+ * normaliza para 8 dígitos (último bloco numérico / strip leading zeros).
+ */
+export function normalizeRntrcSefaz(raw: string | null | undefined): string {
+  const trimmed = String(raw ?? '').trim();
+  if (!trimmed) return '';
+  if (/^ISENTO$/i.test(trimmed)) return 'ISENTO';
+  const d = digits(trimmed);
+  if (d.length === 8) return d;
+  // ANTT 9 dig c/ zero à esquerda → SEFAZ 8 (drop 1 zero). Ex.: 059734055→59734055
+  // Evita strip-all: 002353222 → 02353222 (errado p/ portal se reconsultado).
+  if (d.length === 9 && d.startsWith('0')) return d.slice(1);
+  if (d.length > 8) {
+    const stripped = d.replace(/^0+/, '');
+    if (stripped.length === 8) return stripped;
+    if (stripped.length > 8) return stripped.slice(-8);
+    return d.slice(-8);
+  }
+  return d.padStart(8, '0');
+}
+
+function toMoneyNumber(value: number | string | null | undefined): number | null {
+  if (value == null || value === '') return null;
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Valor da prestação do CT-e = o que o tomador paga.
+ * Ordem: OS.card (order.value) → tabela − desconto (1x) → quote.value.
+ * Evita desconto duplicado quando quote.value já veio líquido e o save
+ * subtraiu discount de novo (COT-2026-08-0002: 26.000 → 25.248,31).
+ */
+export function resolveCteValorPrestacao(input: {
+  quoteValue?: number | string | null;
+  orderValue?: number | string | null;
+  totalCliente?: number | string | null;
+  discount?: number | string | null;
+  valorPrestacao?: number | string | null;
+}): number {
+  const forced = toMoneyNumber(input.valorPrestacao);
+  if (forced != null && forced > 0) return Number(forced.toFixed(2));
+
+  const order = toMoneyNumber(input.orderValue);
+  if (order != null && order > 0) return Number(order.toFixed(2));
+
+  const bruto = toMoneyNumber(input.totalCliente);
+  const discount = Math.max(0, toMoneyNumber(input.discount) ?? 0);
+  if (bruto != null && bruto > 0) {
+    return Number(Math.max(0, bruto - discount).toFixed(2));
+  }
+
+  return Number((toMoneyNumber(input.quoteValue) ?? 0).toFixed(2));
+}
+
+function moneyToBRL(value: number | string | null | undefined): number {
+  return Number((toMoneyNumber(value) ?? 0).toFixed(2));
 }
 
 function nz<T>(value: T | null | undefined, fallback: T): T {
@@ -182,9 +270,11 @@ function buildComponentes(
     .map(([nome, valor]) => ({ nome, valor: Number((valor as number).toFixed(2)) }));
 }
 
-export function buildCteRef(quoteCode: string, retry = 0): string {
+export function buildCteRef(quoteCode: string, retry = 0, nfeNumero?: string | null): string {
   const code = quoteCode || 'NOCODE';
-  return retry > 0 ? `CFN-CTE-${code}-r${retry}` : `CFN-CTE-${code}`;
+  const nfe = String(nfeNumero ?? '').replace(/\D/g, '');
+  const nfePart = nfe ? `-NF${nfe}` : '';
+  return retry > 0 ? `CFN-CTE-${code}${nfePart}-r${retry}` : `CFN-CTE-${code}${nfePart}`;
 }
 
 /**
@@ -207,11 +297,25 @@ export function buildCtePayload(input: BuildCteInput): BuildCteResult {
   const expedidor = input.expedidor ?? shipper;
   const recebedor = input.recebedor ?? client;
   const warnings: string[] = [];
+  const retry = Number(input.retry ?? 0);
 
   const ufOrigem = (quote.origin_uf || shipper.state || vectra.uf).toUpperCase();
   const ufDestino = (quote.destination_uf || client.state || '').toUpperCase();
 
-  const tomadorIndicadorIE = (client.ie_indicator ?? 1) as IndicadorIE;
+  // Tomador IE indicator deve vir da parte correta (CIF→remetente, FOB→destinatário).
+  // Bug antigo: sempre usava client → CIF mandava indTomador=9 com academia.
+  const tomadorTipo = Number(quote.tomador_tipo ?? 3);
+  const tomadorParty: PartyRow =
+    tomadorTipo === 0
+      ? shipper
+      : tomadorTipo === 1
+        ? expedidor
+        : tomadorTipo === 2
+          ? recebedor
+          : client;
+  const tomadorIndicadorIE = (Number(tomadorParty.ie_indicator ?? 1) as IndicadorIE) || 1;
+  const destIndicadorIE = (Number(client.ie_indicator ?? 9) as IndicadorIE) || 9;
+
   const cfop = resolveCfopCte({
     ufOrigem,
     ufDestino,
@@ -220,10 +324,25 @@ export function buildCtePayload(input: BuildCteInput): BuildCteResult {
   });
 
   const componentes = buildComponentes(quote.pricing_breakdown ?? undefined);
-  const valorTotal = moneyToBRL(quote.value);
-  const valorReceber = moneyToBRL(quote.value);
+  const pbTotals = quote.pricing_breakdown?.totals;
+  const valorTotal = resolveCteValorPrestacao({
+    quoteValue: quote.value,
+    orderValue: input.orderValue,
+    totalCliente: pbTotals?.totalCliente,
+    discount: pbTotals?.discount ?? quote.discount_value,
+    valorPrestacao: input.valorPrestacao,
+  });
+  const valorReceber = valorTotal;
 
-  const ref = buildCteRef(quote.quote_code ?? quote.id);
+  const ref = buildCteRef(quote.quote_code ?? quote.id, retry, input.nfeNumero);
+  const rntrcSefaz = normalizeRntrcSefaz(vectra.rntrc);
+  if (!rntrcSefaz || (rntrcSefaz !== 'ISENTO' && rntrcSefaz.length !== 8)) {
+    warnings.push(`vectra.rntrc invalid for SEFAZ pattern [0-9]{8}|ISENTO (raw=${vectra.rntrc})`);
+  } else if (digits(vectra.rntrc) !== rntrcSefaz && rntrcSefaz !== 'ISENTO') {
+    warnings.push(
+      `vectra.rntrc normalized ${digits(vectra.rntrc)} → ${rntrcSefaz} (SEFAZ 8 digits)`
+    );
+  }
 
   // ICMS — Lucro Presumido / Normal: CST 00 (tributação integral)
   const icmsAliquota = quote.pricing_breakdown?.icms_aliquota ?? null;
@@ -298,9 +417,7 @@ export function buildCtePayload(input: BuildCteInput): BuildCteResult {
     ...(recebedor.cnpj ? { cnpj_recebedor: digits(recebedor.cnpj) } : {}),
     ...(recebedor.cpf ? { cpf_recebedor: digits(recebedor.cpf) } : {}),
     // SEFAZ exige IE do recebedor contribuinte (rejeição 718). Só envia se não-vazia.
-    ...(recebedor.state_registration && recebedor.state_registration.trim() !== ''
-      ? { inscricao_estadual_recebedor: recebedor.state_registration }
-      : {}),
+    ...ieCteField('recebedor', recebedor),
     telefone_recebedor: digits(recebedor.phone) || undefined,
     ...buildEnderecoFields('recebedor', recebedor),
 
@@ -308,9 +425,10 @@ export function buildCtePayload(input: BuildCteInput): BuildCteResult {
     nome_destinatario: requireField(client.name, 'destinatario.name', warnings),
     ...(client.cnpj ? { cnpj_destinatario: digits(client.cnpj) } : {}),
     ...(client.cpf ? { cpf_destinatario: digits(client.cpf) } : {}),
-    ...(client.state_registration && client.state_registration.trim() !== ''
-      ? { inscricao_estadual_destinatario: client.state_registration }
-      : {}),
+    // CT-e não tem indIEDest (isso é NF-e). Só a tag IE: número, "ISENTO"
+    // (contribuinte isento de inscrição) ou ausente (não contribuinte).
+    // MOC G129: ISENTO/ausente + destinatário COM IE ativa na UF → rejeição 232.
+    ...ieCteField('destinatario', client),
     telefone_destinatario: digits(client.phone) || undefined,
     ...buildEnderecoFields('destinatario', client),
 
@@ -342,7 +460,7 @@ export function buildCtePayload(input: BuildCteInput): BuildCteResult {
 
     // === modal rodoviário ===
     modal_rodoviario: {
-      rntrc: vectra.rntrc,
+      rntrc: rntrcSefaz,
     },
 
     // === documentos vinculados ===
@@ -361,7 +479,9 @@ export function buildCtePayload(input: BuildCteInput): BuildCteResult {
         }),
 
     // === info adicionais ===
-    informacoes_adicionais_contribuinte: `Cotacao ${quote.quote_code ?? quote.id.slice(0, 8)} — emitido via CFN`,
+    informacoes_adicionais_contribuinte: input.nfeNumero
+      ? `Cotacao ${quote.quote_code ?? quote.id.slice(0, 8)} NF-e ${input.nfeNumero} dest ${client.name} — CFN`
+      : `Cotacao ${quote.quote_code ?? quote.id.slice(0, 8)} — emitido via CFN`,
   };
 
   // Validation warnings (non-blocking — caller decides)

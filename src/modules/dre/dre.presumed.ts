@@ -106,12 +106,6 @@ export function computePresumedFromBreakdown(
       ['components', 'waitingTimeCost'],
       ['components', 'waiting_time_cost']
     ) ?? 0;
-  const conditionalFeesTotal =
-    numFallback(
-      breakdown,
-      ['components', 'conditionalFeesTotal'],
-      ['components', 'conditional_fees_total']
-    ) ?? 0;
   const aluguelMaquinas =
     numFallback(breakdown, ['components', 'aluguelMaquinas'], ['components', 'aluguel_maquinas']) ??
     0;
@@ -119,54 +113,35 @@ export function computePresumedFromBreakdown(
     numFallback(breakdown, ['components', 'laborCost'], ['components', 'labor_cost']) ??
     numFallback(breakdown, ['components', 'maoDeObra'], ['components', 'mao_de_obra']) ??
     0;
+  // Custo real de risco (prêmio) — NÃO incluir custoServicos (já quebrado em linhas atômicas).
   const riskTotal = num(breakdown?.riskCosts, 'total') ?? 0;
-  const custoServicos =
-    numFallback(
-      breakdown,
-      ['profitability', 'custoServicos'],
-      ['profitability', 'custo_servicos']
-    ) ?? 0;
-  // Outros custos: apenas itens sem linha dedicada (risk, serviços diversos).
-  const outrosCustos = round2(riskTotal + custoServicos);
+  const outrosCustos = round2(riskTotal);
 
   values.set('custo_motorista', round2(custoMotorista));
   values.set('pedagio', round2(toll));
   values.set('carga_descarga', round2(custosDescarga));
   values.set('espera', round2(waitingTimeCost));
-  values.set('taxas_condicionais', round2(conditionalFeesTotal));
+  // Taxas condicionais = markup (receita no FAT), não custo — linha 0 na DRE de custos.
+  values.set('taxas_condicionais', 0);
   values.set('aluguel_maquinas', round2(aluguelMaquinas));
   values.set('mao_de_obra', round2(maoDeObra));
   values.set('outros_custos', outrosCustos);
 
+  // CD: motorista + pedágio + descarga + espera + aluguel (repasse) + risco. Sem taxas markup.
   const custosDiretos = round2(
     custoMotorista +
       toll +
       custosDescarga +
       waitingTimeCost +
-      conditionalFeesTotal +
       aluguelMaquinas +
       maoDeObra +
       outrosCustos
   );
   values.set('custos_diretos', custosDiretos);
 
-  const profitMarginTarget =
-    numFallback(
-      breakdown,
-      ['profitability', 'profitMarginTarget'],
-      ['profitability', 'profit_margin_target']
-    ) ||
-    numFallback(breakdown, ['rates', 'profitMarginPercent'], ['rates', 'profit_margin_percent']) ||
-    0;
-  const isLotacaoSnapshot =
-    breakdown?.meta != null &&
-    (numOrUndef(breakdown.meta as object, 'anttFloorApplied') != null ||
-      numOrUndef(breakdown.meta as object, 'lotacaoPisoComOver') != null ||
-      numOrUndef(breakdown.meta as object, 'lotacao_piso_com_over') != null);
-  const resultadoRecomputado =
-    isLotacaoSnapshot && custosDiretos > 0 && profitMarginTarget > 0
-      ? round2(custosDiretos * (profitMarginTarget / 100))
-      : round2(receitaLiquida - overhead - custosDiretos);
+  // Resultado contábil: RL − OH − custos (inclui risco em outros_custos).
+  // Lucro-alvo do gross-up (CD × %) NÃO substitui o resultado.
+  const resultadoRecomputado = round2(receitaLiquida - overhead - custosDiretos);
   values.set('resultado_liquido', resultadoRecomputado);
 
   const margemPercent = faturamento > 0 ? round2((resultadoRecomputado / faturamento) * 100) : 0;

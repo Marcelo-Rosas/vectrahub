@@ -173,6 +173,7 @@ export interface FreightProfitability {
   margem_bruta: number;
   overhead: number;
   resultado_liquido: number;
+  lucro_alvo?: number;
   margem_percent: number;
   profit_margin_target?: number;
   regime_fiscal?: 'simples_nacional' | 'excesso_sublimite' | 'lucro_presumido' | 'normal';

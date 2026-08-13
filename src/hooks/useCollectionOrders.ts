@@ -10,6 +10,7 @@ import {
   resolveAnttEvidenceForOrder,
 } from '@/lib/risk-antt-evidence';
 import { generateCollectionOrderPdf } from '@/lib/generateCollectionOrderPdf';
+import { resolveFreightPayerName } from '@/lib/canonical-doc-ref';
 import type {
   CollectionOrder,
   CollectionOrderCargoData,
@@ -113,7 +114,7 @@ export function useCreateCollectionOrder(orderId: string | undefined) {
       const { data: order, error: orderErr } = await supabase
         .from('orders')
         .select(
-          `id, os_number, notes, weight, volume, cargo_value, cargo_type,
+          `id, os_number, notes, weight, volume, cargo_value, cargo_type, freight_type,
            shipper_id, client_id, driver_id, vehicle_plate, vehicle_brand, vehicle_model, vehicle_type_name,
            driver_name, driver_phone, driver_cnh, driver_antt,
            eta, pickup_date, origin, destination, origin_cep, destination_cep,
@@ -316,8 +317,16 @@ export function useCreateCollectionOrder(orderId: string | undefined) {
 
       // 7. Gerar PDF
       const issuedAtIso = new Date().toISOString();
+      // Regra canônica: razão social do pagador do frete (CIF → embarcador; FOB → cliente).
+      const payerName = resolveFreightPayerName(
+        (order as { freight_type?: string | null }).freight_type,
+        recipient.name,
+        sender.name
+      );
+
       const { blob } = await generateCollectionOrderPdf({
         oc_number: ocNumber,
+        payer_name: payerName,
         issued_at: issuedAtIso,
         issued_by_name: issuedByName,
         sender,

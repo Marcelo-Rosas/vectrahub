@@ -15,7 +15,8 @@
 
 export const FREIGHT_CONSTANTS = {
   CUBAGE_FACTOR_KG_M3: 300,
-  DEFAULT_DAS_PERCENT: 14,
+  /** Fallback DAS — Anexo III faixa inicial (Simples Nacional). Preferir pricing_rules_config. */
+  DEFAULT_DAS_PERCENT: 6,
   DEFAULT_MARKUP_PERCENT: 30,
   DEFAULT_OVERHEAD_PERCENT: 15,
   TARGET_MARGIN_PERCENT: 15,
@@ -218,7 +219,11 @@ export interface FreightProfitability {
   receita_liquida?: number;
   margem_bruta: number;
   overhead: number;
+  /** Resultado contábil (RL − OH − CD − risco real). */
   resultado_liquido: number;
+  /** Lucro embutido no gross-up (CD × profit_margin%). */
+  lucro_alvo?: number;
+  /** Margem operacional: resultado ÷ FAT × 100. */
   margem_percent: number;
   profit_margin_target?: number;
   regime_fiscal?: 'simples_nacional' | 'excesso_sublimite' | 'lucro_presumido' | 'normal';
@@ -241,6 +246,10 @@ export interface CalculateFreightResponse {
   errors: string[];
 
   /** v5: Risk pass-through revenue (GRIS/TSO/RCTR-C/Ad Valorem cobrados do cliente) */
+  risk_costs?: {
+    items: Array<{ code: string; name: string; cost: number }>;
+    total: number;
+  };
   risk_pass_through?: {
     gris: number;
     tso: number;

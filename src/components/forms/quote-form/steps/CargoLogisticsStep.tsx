@@ -60,6 +60,8 @@ interface CargoLogisticsStepProps {
   weightUnit: 'kg' | 'ton';
   setWeightUnit: (unit: 'kg' | 'ton') => void;
   isLegacy?: boolean;
+  /** Ao mudar modalidade: escolhe tabela NTC operacional (não deixa Select vazio). */
+  onFreightModalityChange?: (modality: 'lotacao' | 'fracionado') => void;
 }
 
 export function CargoLogisticsStep({
@@ -69,6 +71,7 @@ export function CargoLogisticsStep({
   weightUnit,
   setWeightUnit,
   isLegacy = false,
+  onFreightModalityChange,
 }: CargoLogisticsStepProps) {
   const watchedPaymentTermId = form.watch('payment_term_id');
   const selectedTerm = paymentTerms.find((t) => t.id === watchedPaymentTermId) ?? null;
@@ -206,8 +209,13 @@ export function CargoLogisticsStep({
                     <FormLabel>Modalidade de Frete</FormLabel>
                     <Select
                       onValueChange={(v) => {
-                        field.onChange(v);
-                        form.setValue('price_table_id', '');
+                        const modality = v as 'lotacao' | 'fracionado';
+                        field.onChange(modality);
+                        if (onFreightModalityChange) {
+                          onFreightModalityChange(modality);
+                        } else {
+                          form.setValue('price_table_id', '');
+                        }
                       }}
                       value={field.value || ''}
                     >
@@ -238,11 +246,18 @@ export function CargoLogisticsStep({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {priceTablesFiltered.map((table) => (
-                          <SelectItem key={table.id} value={table.id}>
-                            {table.name} ({table.modality === 'lotacao' ? 'Lotação' : 'Fracionado'})
-                          </SelectItem>
-                        ))}
+                        {priceTablesFiltered.length === 0 ? (
+                          <div className="px-2 py-3 text-xs text-muted-foreground">
+                            Nenhuma tabela NTC ativa para esta modalidade.
+                          </div>
+                        ) : (
+                          priceTablesFiltered.map((table) => (
+                            <SelectItem key={table.id} value={table.id}>
+                              {table.name} (
+                              {table.modality === 'lotacao' ? 'Lotação' : 'Fracionado'})
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />

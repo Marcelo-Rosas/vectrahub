@@ -33,16 +33,10 @@ import { ConvertQuoteModal } from '@/components/modals/ConvertQuoteModal';
 import type { Database, Json } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
 import { usePriceTable } from '@/hooks/usePriceTables';
-import {
-  usePricingParameter,
-  useConditionalFees,
-  usePaymentTerms,
-  usePricingRulesConfig,
-} from '@/hooks/usePricingRules';
-import { resolveTaxRegimeFlags } from '@/lib/tax-regime-resolve';
-import { expectedRegimeLabel, isPricingBreakdownRegimeStale } from '@/lib/pricing-breakdown-stale';
-import { useUpdateQuote } from '@/hooks/useQuotes';
+import { usePricingParameter, useConditionalFees, usePaymentTerms } from '@/hooks/usePricingRules';
+import { useUpdateQuote, useQuote } from '@/hooks/useQuotes';
 import { useQuoteRouteStops } from '@/hooks/useQuoteRouteStops';
+import { useOrdersByQuoteId, useSyncQuoteRouteToOrders } from '@/hooks/useSyncQuoteRouteToOrders';
 import {
   useCalculateFreight,
   buildStoredBreakdownFromEdgeResponse,
@@ -56,7 +50,10 @@ import { resolvePisoAnttCarreteiroReais } from '@/lib/carreteiro-cost';
 import { resolveAnttRsKm, resolvePisoAnttTotalReais } from '@/lib/antt-rs-km';
 import { enrichStoredBreakdownAnttMeta } from '@/lib/enrich-breakdown-antt-meta';
 import { mergeBreakdownWithNegotiatedDiscount } from '@/lib/quote-breakdown-utils';
-import { buildQuoteFinancialStripFromBreakdown } from '@/lib/quote-financial-strip';
+import {
+  buildQuoteFinancialStripFromBreakdown,
+  resolveBaseMotoristaFracionadoReais,
+} from '@/lib/quote-financial-strip';
 import { QuoteComplianceStrip } from '@/components/forms/quote-form/FinancialDualStrip';
 import { supabase } from '@/integrations/supabase/client';
 import { asDb, asInsert, filterSupabaseRows, filterSupabaseSingle } from '@/lib/supabase-utils';
@@ -65,11 +62,13 @@ import {
   StoredPricingBreakdown,
   TollPlaza,
   FREIGHT_CONSTANTS,
-  isMarginBelowTarget,
+  resolveCustoServicosOperacionaisDisplay,
+  resolveLucroAlvoDisplay,
   resolveMargemBrutaDisplay,
   resolveResultadoLiquidoDisplay,
   round2,
 } from '@/lib/freightCalculator';
+import { estimateInsuranceRiskCosts } from '@/lib/lotacao-freight-base';
 import {
   Table,
   TableBody,
@@ -99,7 +98,6 @@ import {
   QuoteModalHistoryTab,
 } from '@/components/modals/quote-detail';
 import { AnttFloorBanner } from '@/components/modals/quote-detail/AnttFloorBanner';
-import { QuoteRegimeStaleBanner } from '@/components/modals/quote-detail/QuoteRegimeStaleBanner';
 import { AnttFloorAlertDialog } from '@/components/modals/quote-detail/AnttFloorAlertDialog';
 import { QuoteContractPanel } from '@/components/modals/quote-detail/QuoteContractPanel';
 import { formatCurrency } from '@/lib/formatters';
@@ -131,11 +129,14 @@ const PRICE_EPS_REAIS = 0.01;
 export function QuoteDetailModal({
   open,
   onClose,
-  quote,
+  quote: boardQuote,
   canManage = true,
 }: QuoteDetailModalProps) {
+  const { data: hydratedQuote } = useQuote(open && boardQuote?.id ? boardQuote.id : '');
+  const quote = hydratedQuote ?? boardQuote;
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
+  const [isSyncRouteDialogOpen, setIsSyncRouteDialogOpen] = useState(false);
   const [isConvertingToFat, setIsConvertingToFat] = useState(false);
   const [anttDialog, setAnttDialog] = useState<{
     open: boolean;
@@ -164,13 +165,14 @@ export function QuoteDetailModal({
   const updateQuoteMutation = useUpdateQuote();
   const calculateFreightMutation = useCalculateFreight();
   const processQuotePaymentProofMutation = useProcessQuotePaymentProof();
+  const syncQuoteRouteToOrders = useSyncQuoteRouteToOrders();
+  const { data: linkedOrders = [] } = useOrdersByQuoteId(open && quote?.id ? quote.id : null);
 
   // All hooks MUST be called before any conditional returns
   const { data: priceTable } = usePriceTable(quote?.price_table_id || '');
   const { data: routeStops } = useQuoteRouteStops(open && quote ? quote.id : null);
   const { data: taxRegimeParam } = usePricingParameter('tax_regime_simples');
   const { data: taxRegimeLPParam } = usePricingParameter('tax_regime_lucro_presumido');
-  const { data: pricingRules } = usePricingRulesConfig(true);
   const { data: conditionalFeesData } = useConditionalFees(true);
   const { data: paymentTermsList } = usePaymentTerms(true);
 
@@ -284,26 +286,6 @@ export function QuoteDetailModal({
 
   const { downloadQuotePdf, loading: pdfLoading } = usePdfDownload();
 
-  const expectedTaxRegime = useMemo(
-    () =>
-      resolveTaxRegimeFlags({
-        pricingRules,
-        vehicleTypeId: quote?.vehicle_type_id ?? null,
-        taxRegimeLucroPresumidoParam:
-          taxRegimeLPParam?.value != null ? Number(taxRegimeLPParam.value) : undefined,
-      }),
-    [pricingRules, quote?.vehicle_type_id, taxRegimeLPParam?.value]
-  );
-
-  const isRegimeBreakdownStale = useMemo(() => {
-    if (!quote?.pricing_breakdown) return false;
-    const bd = quote.pricing_breakdown as unknown as StoredPricingBreakdown;
-    return isPricingBreakdownRegimeStale(bd, {
-      lucroPresumido: expectedTaxRegime.regimeLucroPresumido,
-      simplesNacional: expectedTaxRegime.regimeSimplesNacional,
-    });
-  }, [quote?.pricing_breakdown, expectedTaxRegime]);
-
   // Early return AFTER all hooks
   if (!quote) return null;
 
@@ -352,19 +334,23 @@ export function QuoteDetailModal({
     receitaLiquidaSnapshot != null ? round2(receitaLiquidaSnapshot * faturamentoRatio) : null;
 
   const priceTableModality = (priceTable as { modality?: string } | null)?.modality;
+  const isFracionado =
+    quote?.freight_modality === 'fracionado' || priceTableModality === 'fracionado';
   const custosCarreteiroView =
     breakdown?.profitability?.custosCarreteiro ??
     (breakdown?.profitability as { custos_carreteiro?: number } | undefined)?.custos_carreteiro ??
     null;
   const pisoAnttCarreteiroView = resolvePisoAnttCarreteiroReais(breakdown);
   const custoMotoristaContratadoView =
-    breakdown?.profitability?.custoMotoristaContratado ??
-    breakdown?.profitability?.custosCarreteiro ??
-    (breakdown?.profitability as { custoMotorista?: number } | undefined)?.custoMotorista ??
-    custosCarreteiroView;
+    isFracionado && breakdown
+      ? resolveBaseMotoristaFracionadoReais(breakdown)
+      : (breakdown?.profitability?.custoMotoristaContratado ??
+        breakdown?.profitability?.custosCarreteiro ??
+        (breakdown?.profitability as { custoMotorista?: number } | undefined)?.custoMotorista ??
+        custosCarreteiroView);
   /** Lotação: exibir piso ANTT carreteiro (sem over %), alinhado à aba Custos. */
   const custoMotoristaView =
-    priceTableModality === 'lotacao' && pisoAnttCarreteiroView > 0
+    !isFracionado && priceTableModality === 'lotacao' && pisoAnttCarreteiroView > 0
       ? pisoAnttCarreteiroView
       : custoMotoristaContratadoView;
   const pisoAnttView = resolvePisoAnttTotalReais({
@@ -393,18 +379,10 @@ export function QuoteDetailModal({
   // misturava piso ANTT com frete contratado — ex.: COT-2026-06-0002 mostrava ~R$ 13,5k
   // de margem bruta vs ~R$ 5,8k gravados no motor.
   const c = breakdown?.components;
-  const custoServicosView =
-    breakdown?.profitability?.custoServicos ??
-    (c?.toll ?? 0) +
-      (c?.aluguelMaquinas ?? 0) +
-      (c?.gris ?? 0) +
-      (c?.tso ?? 0) +
-      (c?.rctrc ?? 0) +
-      (c?.adValorem ?? 0) +
-      (c?.tde ?? 0) +
-      (c?.tear ?? 0) +
-      (c?.conditionalFeesTotal ?? 0) +
-      (c?.waitingTimeCost ?? 0);
+  const custoServicosView = resolveCustoServicosOperacionaisDisplay(
+    c,
+    breakdown?.profitability?.custoServicos
+  );
   const receitaLiquidaFromBreakdown =
     receitaLiquidaView ??
     (totalClienteView > 0
@@ -438,18 +416,30 @@ export function QuoteDetailModal({
   const custosDiretosScaled = round2(
     (breakdown?.profitability?.custosDiretos ?? 0) * faturamentoRatio
   );
+  const riscoRealView = round2(
+    (breakdown?.riskCosts?.total ??
+      estimateInsuranceRiskCosts(Number(quote?.cargo_value ?? 0)).total) * faturamentoRatio
+  );
   const resultadoSnapshot = breakdown?.profitability?.resultadoLiquido;
   const resultadoLiquidoView = resolveResultadoLiquidoDisplay(
     resultadoSnapshot != null ? round2(resultadoSnapshot * faturamentoRatio) : null,
+    margemBrutaView,
+    riscoRealView
+  );
+  const lucroAlvoView = resolveLucroAlvoDisplay(
     custosDiretosScaled,
     targetMargin,
-    margemBrutaView
+    breakdown?.profitability?.lucroAlvo != null
+      ? round2(breakdown.profitability.lucroAlvo * faturamentoRatio)
+      : null
   );
-  /** Lucro alvo % sobre custos diretos para ambas modalidades — bate com a meta
-   * `profit_margin_target` (Edge calcula `resultado_liquido = custos_diretos × target%`). */
+  /** Margem operacional = resultado contábil ÷ faturamento negociado. */
   const margemPercentView =
-    custosDiretosScaled > 0 ? round2((resultadoLiquidoView / custosDiretosScaled) * 100) : 0;
-  const isBelowTarget = isMarginBelowTarget(margemPercentView, targetMargin) || margemBrutaView < 0;
+    totalClienteView > 0 ? round2((resultadoLiquidoView / totalClienteView) * 100) : 0;
+  const isBelowTarget =
+    margemBrutaView < 0 ||
+    resultadoLiquidoView < 0 ||
+    (lucroAlvoView > 0 && resultadoLiquidoView + 0.01 < lucroAlvoView);
 
   const financialStripModel = buildQuoteFinancialStripFromBreakdown(breakdown, {
     totalCliente: totalClienteView,
@@ -457,9 +447,9 @@ export function QuoteDetailModal({
     faturamentoRatio,
     targetMarginPercent: targetMargin,
     modality:
-      priceTableModality === 'fracionado'
+      quote?.freight_modality === 'fracionado' || priceTableModality === 'fracionado'
         ? 'fracionado'
-        : priceTableModality === 'lotacao'
+        : quote?.freight_modality === 'lotacao' || priceTableModality === 'lotacao'
           ? 'lotacao'
           : undefined,
   });
@@ -1066,6 +1056,10 @@ export function QuoteDetailModal({
                   ? 'Atualizar — valor abaixo do Piso ANTT!'
                   : 'Recalcular memória de cálculo'
               }
+              linkedOsCount={linkedOrders.length}
+              linkedOsLabel={linkedOrders.map((o) => o.os_number).join(', ') || null}
+              isSyncingRouteToOs={syncQuoteRouteToOrders.isPending}
+              onSyncRouteToOs={() => setIsSyncRouteDialogOpen(true)}
             />
           </div>
 
@@ -1084,20 +1078,6 @@ export function QuoteDetailModal({
                 }}
                 onApplyFloor={handleRecalcular}
                 disabled={calculateFreightMutation.isPending || updateQuoteMutation.isPending}
-              />
-            )}
-            {isRegimeBreakdownStale && canManage && breakdown && (
-              <QuoteRegimeStaleBanner
-                storedRegime={breakdown.profitability?.regimeFiscal ?? 'normal'}
-                expectedLabel={expectedRegimeLabel({
-                  lucroPresumido: expectedTaxRegime.regimeLucroPresumido,
-                  simplesNacional: expectedTaxRegime.regimeSimplesNacional,
-                })}
-                onRecalculate={handleRecalcular}
-                isRecalculating={
-                  calculateFreightMutation.isPending || updateQuoteMutation.isPending
-                }
-                disabled={!quote.price_table_id || !quote.km_distance}
               />
             )}
             <div className="flex flex-wrap items-center justify-end gap-2">
@@ -1407,6 +1387,7 @@ export function QuoteDetailModal({
                   margemBruta={margemBrutaView}
                   overhead={overheadScaled}
                   resultadoLiquido={resultadoLiquidoView}
+                  lucroAlvo={lucroAlvoView}
                   margemPercent={margemPercentView}
                   isBelowTarget={isBelowTarget}
                   receitaLiquidaDisplay={receitaLiquidaFromBreakdown ?? undefined}
@@ -1420,6 +1401,7 @@ export function QuoteDetailModal({
                   hasAnttCalc={!!anttCalc}
                   onSaveAntt={handleSaveAntt}
                   cargoValue={Number(quote?.cargo_value) || 0}
+                  freightModality={quote?.freight_modality ?? priceTableModality}
                   onRecalculate={handleRecalcular}
                   isRecalculating={
                     calculateFreightMutation.isPending || updateQuoteMutation.isPending
@@ -1559,7 +1541,14 @@ export function QuoteDetailModal({
                       <label className="text-sm font-medium text-foreground mb-2 block">
                         Contrato
                       </label>
-                      <QuoteContractPanel quoteId={quote.id} stage={quote.stage} />
+                      <QuoteContractPanel
+                        quoteId={quote.id}
+                        stage={quote.stage}
+                        quoteCode={quote.quote_code}
+                        freightType={quote.freight_type}
+                        clientName={quote.client_name}
+                        shipperName={quote.shipper_name}
+                      />
                     </div>
 
                     <div>
@@ -1633,6 +1622,77 @@ export function QuoteDetailModal({
         onApply={handleApplyAnttFloor}
         onCancel={() => setAnttDialog({ open: false, suggestedValue: 0, piso: 0 })}
       />
+
+      <AlertDialog
+        open={isSyncRouteDialogOpen}
+        onOpenChange={(open) => {
+          if (!syncQuoteRouteToOrders.isPending) setIsSyncRouteDialogOpen(open);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Atualizar OS com rota da cotação?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>
+                  Vai sobrescrever na(s) OS vinculada(s) apenas{' '}
+                  <span className="font-medium text-foreground">km + praças + pedágio</span> a
+                  partir desta COT. Frete e ANTT não mudam.
+                </p>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>
+                    Destino:{' '}
+                    <span className="font-mono text-foreground">
+                      {linkedOrders.map((o) => o.os_number).join(', ') || '—'}
+                    </span>
+                  </li>
+                  <li>
+                    COT:{' '}
+                    <span className="font-mono text-foreground">
+                      {quote.km_distance != null ? `${Number(quote.km_distance)} km` : '—'} ·{' '}
+                      {tollPlazas.length} praças ·{' '}
+                      {formatCurrency(tollPlazas.reduce((s, p) => s + (Number(p.valor) || 0), 0))}
+                    </span>
+                  </li>
+                </ul>
+                <p>
+                  VPO local será zerado (`has_vpo` / meta.vpo) para permitir nova emissão. VPO já
+                  comprado no SemParar não cancela pela API — baixa/estorno manual se couber.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={syncQuoteRouteToOrders.isPending}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={syncQuoteRouteToOrders.isPending || tollPlazas.length === 0}
+              onClick={(e) => {
+                e.preventDefault();
+                void syncQuoteRouteToOrders
+                  .mutateAsync({
+                    id: quote.id,
+                    quote_code: quote.quote_code,
+                    km_distance: quote.km_distance,
+                    toll_value: quote.toll_value,
+                    pricing_breakdown: quote.pricing_breakdown,
+                  })
+                  .then(() => setIsSyncRouteDialogOpen(false));
+              }}
+            >
+              {syncQuoteRouteToOrders.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Atualizando…
+                </>
+              ) : (
+                'Confirmar atualização'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Dialog de valor sugerido — aparece quando recálculo diverge do valor negociado (maior ou menor) */}
       <AlertDialog open={suggestedValueDialog.open}>
