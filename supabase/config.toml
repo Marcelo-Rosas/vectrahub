@@ -198,5 +198,8 @@ verify_jwt = false  # Chamado por cron/pg_cron com service role
 [functions.emit-vpo]
 verify_jwt = false  # Gateway 401 Invalid JWT; chamado pelo front com Bearer de usuário
 
+[functions.consultar-vpo-veiculo]
+verify_jwt = false  # Gateway 401 Invalid JWT; chamado pelo front com Bearer de usuário
+
 [functions.get-vpo-recibo]
 verify_jwt = false  # Gateway 401 Invalid JWT; chamado pelo front com Bearer de usuário

@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   CreditCard,
   Info,
+  RefreshCw,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,21 +23,26 @@ import {
 import { FiscalEmissionPipeline } from '@/components/modals/order-detail/FiscalEmissionPipeline';
 import { useUpdateOrder } from '@/hooks/useOrders';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
+import { useConsultVpoVehicle } from '@/hooks/useConsultVpoVehicle';
 import { useEmitVpo } from '@/hooks/useEmitVpo';
 import { formatCnpjDisplay } from '@/lib/formatters';
 import type { VpoEmissionRecord } from '@/lib/freightCalculator';
 import {
+  canEmitVpo,
   DEFAULT_VPO_TIPO_VIAGEM,
   fornecedoraCnpjOf,
   labelVpoTipoViagem,
   lookupVpoVehicleByPlate,
   normalizeVpoTipoViagem,
   resolveIdVpo,
+  resolveVpoVehicleForUi,
   tipoValeFromLookup,
   VPO_EMISSOR_INFO,
+  vpoLookupFromConsult,
   type VpoTipoViagem,
 } from '@/lib/vpo-emissores';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface OrderVpoTabProps {
   orderId: string;
@@ -85,7 +91,14 @@ export function OrderVpoTab({
   const updateOrder = useUpdateOrder();
   const emitVpo = useEmitVpo(orderId);
   const { data: company } = useCompanySettings();
-  const vehicleVpo = lookupVpoVehicleByPlate(vehiclePlate);
+  const catalogVpo = lookupVpoVehicleByPlate(vehiclePlate);
+  const plateConsult = useConsultVpoVehicle(orderId, vehiclePlate);
+  const liveVpo = vpoLookupFromConsult(plateConsult.data?.match);
+  const vehicleVpo = resolveVpoVehicleForUi({
+    live: liveVpo,
+    catalog: catalogVpo,
+    liveFetched: plateConsult.isFetched && !plateConsult.isError,
+  });
 
   const [cnpjFornecedora, setCnpjFornecedora] = useState('');
   const [cnpjPagador, setCnpjPagador] = useState('');
@@ -138,13 +151,13 @@ export function OrderVpoTab({
   const persistedIdVpo = resolveIdVpo(vpoEmission);
   const vpoOk = isVpoSatisfied(hasVpo, tollPlazaCount, tollValue) || Boolean(persistedIdVpo);
   const emissorInfo = vehicleVpo ? VPO_EMISSOR_INFO[vehicleVpo.emissor] : null;
-  const canEmit =
-    canManage &&
-    !tollFree &&
-    Boolean(vehiclePlate) &&
-    Boolean(vehicleVpo?.ativo || emissorInfo) &&
-    !persistedIdVpo &&
-    !emitVpo.isPending;
+  const canEmit = canEmitVpo({
+    canManage,
+    tollFree,
+    plate: vehiclePlate,
+    persistedId: persistedIdVpo,
+    emitPending: emitVpo.isPending,
+  });
 
   const tollFmt =
     tollValue != null
@@ -157,13 +170,61 @@ export function OrderVpoTab({
 
   async function markVpoReady() {
     if (!canManage) return;
+    const id = idVpo.replace(/\D/g, '').slice(0, 20);
+    const forn = cnpjFornecedora.replace(/\D/g, '').slice(0, 14);
+    const pag = cnpjPagador.replace(/\D/g, '').slice(0, 14);
+    const valor = Number(valorVpo);
+    if (id.length < 8 || forn.length !== 14 || pag.length !== 14 || !(valor > 0)) {
+      toast.error('Preencha IDVPO, CNPJs (14 dígitos) e valor do vale-pedágio antes de gravar.');
+      return;
+    }
     setMarking(true);
     try {
+      const { data: row, error: fetchErr } = await supabase
+        .from('orders')
+        .select('pricing_breakdown')
+        .eq('id', orderId)
+        .single();
+      if (fetchErr) throw fetchErr;
+      const currentBreakdown =
+        row?.pricing_breakdown && typeof row.pricing_breakdown === 'object'
+          ? (row.pricing_breakdown as Record<string, unknown>)
+          : {};
+      const currentMeta =
+        currentBreakdown.meta && typeof currentBreakdown.meta === 'object'
+          ? (currentBreakdown.meta as Record<string, unknown>)
+          : {};
+      const vpoRecord: VpoEmissionRecord = {
+        emissor: vehicleVpo?.emissor || 'EXTERNAL',
+        tag: vehicleVpo?.tag ?? null,
+        idANTT: id,
+        idVpo: id,
+        cnpjFornecedora: forn,
+        cnpjPagador: pag,
+        tipoVale,
+        tipoViagem,
+        valorReais: valor,
+        source: 'partner_external',
+        categoriaCombinacaoVeicular: '04',
+        emittedAt: new Date().toISOString(),
+      };
       await updateOrder.mutateAsync({
         id: orderId,
-        updates: { has_vpo: true },
+        updates: {
+          has_vpo: true,
+          pricing_breakdown: {
+            ...currentBreakdown,
+            calculatedAt:
+              typeof currentBreakdown.calculatedAt === 'string'
+                ? currentBreakdown.calculatedAt
+                : new Date().toISOString(),
+            version: currentBreakdown.version || '4.0',
+            status: currentBreakdown.status || 'OK',
+            meta: { ...currentMeta, vpo: vpoRecord },
+          } as never,
+        },
       });
-      toast.success('OS marcada com VPO (has_vpo). Prefira Emitir VPO para gravar o IDVPO.');
+      toast.success(`VPO gravado · IDVPO ${id}`);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Falha ao marcar VPO');
     } finally {
@@ -193,45 +254,62 @@ export function OrderVpoTab({
           </Badge>
         </div>
         {!tollFree && (
-          <Button
-            size="sm"
-            className="gap-2"
-            disabled={!canEmit}
-            title={
-              persistedIdVpo
-                ? `VPO já emitido · ${persistedIdVpo}`
-                : !vehiclePlate
-                  ? 'Informe a placa do caminhão'
-                  : !vehicleVpo?.ativo
-                    ? 'Placa sem TAG ativa no emissor'
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={!vehiclePlate || plateConsult.isFetching}
+              title="Consultar placa no WebRouter (consultarVeiculo)"
+              onClick={() => void plateConsult.refetch()}
+            >
+              {plateConsult.isFetching ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="w-3.5 h-3.5" />
+              )}
+              Consultar placa
+            </Button>
+            <Button
+              size="sm"
+              className="gap-2"
+              disabled={!canEmit}
+              title={
+                persistedIdVpo
+                  ? `VPO já emitido · ${persistedIdVpo}`
+                  : !vehiclePlate
+                    ? 'Informe a placa do caminhão'
                     : 'Revisita a rota WebRouter e emite o vale-pedágio'
-            }
-            onClick={() => {
-              if (!canEmit) return;
-              void emitVpo
-                .mutateAsync({ tipoViagem })
-                .then((res) => {
-                  const id = resolveIdVpo(res);
-                  if (id) setIdVpo(id);
-                  if (res.cnpjFornecedora) {
-                    setCnpjFornecedora(res.cnpjFornecedora.replace(/\D/g, '').slice(0, 14));
-                  }
-                  if (res.valorReais != null) setValorVpo(String(res.valorReais));
-                })
-                .catch(() => {
-                  /* toast no onError do hook */
-                });
-            }}
-          >
-            {emitVpo.isPending ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : persistedIdVpo ? (
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            ) : (
-              <Ticket className="w-3.5 h-3.5" />
-            )}
-            {persistedIdVpo ? 'VPO emitido' : 'Emitir VPO (WebRouter)'}
-          </Button>
+              }
+              onClick={() => {
+                if (!canEmit) return;
+                void emitVpo
+                  .mutateAsync({ tipoViagem })
+                  .then((res) => {
+                    const id = resolveIdVpo(res);
+                    if (id) setIdVpo(id);
+                    if (res.cnpjFornecedora) {
+                      setCnpjFornecedora(res.cnpjFornecedora.replace(/\D/g, '').slice(0, 14));
+                    }
+                    if (res.valorReais != null) setValorVpo(String(res.valorReais));
+                    void plateConsult.refetch();
+                  })
+                  .catch(() => {
+                    /* toast no onError do hook */
+                  });
+              }}
+            >
+              {emitVpo.isPending ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : persistedIdVpo ? (
+                <CheckCircle2 className="w-3.5 h-3.5" />
+              ) : (
+                <Ticket className="w-3.5 h-3.5" />
+              )}
+              {persistedIdVpo ? 'VPO emitido' : 'Emitir VPO (WebRouter)'}
+            </Button>
+          </div>
         )}
       </div>
 
@@ -277,7 +355,20 @@ export function OrderVpoTab({
               : 'text-sm rounded-md border border-amber-300/50 bg-amber-50 text-amber-900 p-3'
           }
         >
-          {vehicleVpo?.ativo ? (
+          {plateConsult.isFetching && !vehicleVpo ? (
+            <>
+              Consultando placa <strong className="font-mono">{vehiclePlate}</strong> no WebRouter
+              (consultarVeiculo)…
+            </>
+          ) : plateConsult.isError ? (
+            <>
+              Falha ao consultar placa no WebRouter:{' '}
+              {plateConsult.error instanceof Error
+                ? plateConsult.error.message
+                : 'tente Consultar placa'}
+              . Emitir VPO ainda consulta ao vivo na Edge.
+            </>
+          ) : vehicleVpo?.ativo ? (
             <>
               Placa <strong className="font-mono">{vehicleVpo.plate}</strong> cadastrada em{' '}
               <strong>{emissorInfo?.nome}</strong> — TAG {vehicleVpo.tag} ativa
@@ -286,11 +377,16 @@ export function OrderVpoTab({
               (padrão): praça já passada na coleta não perde crédito — sobra vira benefício após
               vigência.
             </>
+          ) : vehicleVpo && !vehicleVpo.ativo ? (
+            <>
+              Placa <strong className="font-mono">{vehicleVpo.plate}</strong> encontrada em{' '}
+              <strong>{emissorInfo?.nome}</strong> mas TAG inativa ({vehicleVpo.status || '—'}).
+            </>
           ) : vehiclePlate ? (
             <>
               Rota com pedágio — VPO obrigatório (Lei 10.209 + Portaria ANTT 17/2024). Placa{' '}
-              <strong className="font-mono">{vehiclePlate}</strong> ainda sem emissor consultado.
-              Focus: <code className="text-xs">dispositivos_vale_pedagio[]</code>.
+              <strong className="font-mono">{vehiclePlate}</strong> sem TAG ativa em nenhum emissor
+              WebRouter. Focus: <code className="text-xs">dispositivos_vale_pedagio[]</code>.
             </>
           ) : (
             <>
@@ -367,8 +463,8 @@ export function OrderVpoTab({
           <div className="space-y-3 rounded-lg border p-4">
             <h4 className="text-sm font-medium">Rascunho dispositivo (Focus)</h4>
             <p className="text-xs text-muted-foreground">
-              Emissor e TAG vêm da placa. IDVPO (idANTT / numero_comprovante_compra) só depois de
-              Emitir VPO. Persistência no MDF-e ainda não grava no banco.
+              Emissor e TAG vêm da consulta live WebRouter (consultarVeiculo). IDVPO (idANTT /
+              numero_comprovante_compra) só depois de Emitir VPO.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -377,9 +473,11 @@ export function OrderVpoTab({
                   id="vpo-emissor"
                   readOnly
                   value={
-                    emissorInfo
-                      ? `${emissorInfo.codigo} — ${emissorInfo.nome}`
-                      : 'Consulte a placa no WebRouter'
+                    plateConsult.isFetching && !emissorInfo
+                      ? 'Consultando WebRouter…'
+                      : emissorInfo
+                        ? `${emissorInfo.codigo} — ${emissorInfo.nome}`
+                        : 'Sem emissor ativo nesta placa'
                   }
                   className="bg-muted/50"
                 />
@@ -503,8 +601,14 @@ export function OrderVpoTab({
               ) : (
                 <CheckCircle2 className="w-4 h-4" />
               )}
-              Marcar VPO informado na OS
+              Marcar / gravar VPO na OS
             </Button>
+          )}
+          {canManage && !hasVpo && (
+            <p className="text-[11px] text-muted-foreground">
+              Com IdVpo de parceiro (fracionado): preencha fornecedora, pagador, IDVPO e valor →
+              gravar. O MDF-e lê de <code className="text-[10px]">pricing_breakdown.meta.vpo</code>.
+            </p>
           )}
         </>
       )}

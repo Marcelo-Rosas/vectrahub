@@ -59,9 +59,74 @@ export function fornecedoraCnpjOf(emissor: VpoEmissor): string {
   return VPO_EMISSOR_INFO[emissor].cnpj;
 }
 
+export type VpoConsultInput = {
+  emissor?: string | null;
+  placa?: string | null;
+  tag?: string | null;
+  ativo?: boolean;
+  status?: string | null;
+  quantidadeEixos?: number | null;
+  nomeProprietario?: string | null;
+  descricao?: string | null;
+};
+
+export function isVpoEmissor(v: string | null | undefined): v is VpoEmissor {
+  return (VPO_EMISSORES as readonly string[]).includes(String(v || '').toUpperCase());
+}
+
+/** Mapeia resposta live `consultarVeiculo` → lookup da aba VPO. */
+export function vpoLookupFromConsult(
+  raw: VpoConsultInput | null | undefined
+): VpoVehicleLookup | null {
+  if (!raw) return null;
+  const emissorRaw = String(raw.emissor || '').toUpperCase();
+  if (!isVpoEmissor(emissorRaw)) return null;
+  const plate = normalizePlate(raw.placa);
+  if (!plate) return null;
+  const tagRaw = raw.tag != null ? String(raw.tag).trim() : '';
+  return {
+    plate,
+    emissor: emissorRaw,
+    tag: tagRaw || null,
+    ativo: Boolean(raw.ativo),
+    status: String(raw.status || ''),
+    quantidadeEixos: raw.quantidadeEixos != null ? Number(raw.quantidadeEixos) || null : null,
+    nomeProprietario: raw.nomeProprietario != null ? String(raw.nomeProprietario) : null,
+    descricao: raw.descricao != null ? String(raw.descricao) : null,
+  };
+}
+
+/** Live ganha. Miss após fetch não usa catálogo de outra placa. Pending → fallback. */
+export function resolveVpoVehicleForUi(opts: {
+  live: VpoVehicleLookup | null;
+  catalog: VpoVehicleLookup | null;
+  liveFetched: boolean;
+}): VpoVehicleLookup | null {
+  if (opts.live) return opts.live;
+  if (opts.liveFetched) return null;
+  return opts.catalog ?? null;
+}
+
+/** Emitir VPO não depende do catálogo estático — Edge consulta WebRouter. */
+export function canEmitVpo(opts: {
+  canManage: boolean;
+  tollFree: boolean;
+  plate: string | null | undefined;
+  persistedId: string | null | undefined;
+  emitPending: boolean;
+  vehicleAtivo?: boolean;
+}): boolean {
+  return (
+    opts.canManage &&
+    !opts.tollFree &&
+    Boolean(normalizePlate(opts.plate)) &&
+    !String(opts.persistedId || '').trim() &&
+    !opts.emitPending
+  );
+}
+
 /**
- * Consultas WebRouter `consultarVeiculo` já validadas (produção).
- * Enquanto a Edge não consulta ao vivo, a aba VPO usa este mapa.
+ * Fallback local (QJL1771). Fonte da verdade = Edge `consultar-vpo-veiculo`.
  */
 const KNOWN_VPO_VEHICLES: Record<string, VpoVehicleLookup> = {
   QJL1771: {
