@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 type FairBrandLockupSize = 'auth' | 'header';
 
-/** Lockup /auth feira — logo do embarcador quando metadado resolvido. */
+/** Lockup logo embarcador — só shell logado `/feira`, nunca `/auth`. */
 export function FairBrandLockup({
   tenant,
   size = 'header',

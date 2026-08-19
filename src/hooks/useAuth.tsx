@@ -3,8 +3,7 @@ import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 
-/** Production origin for auth redirects (emails); avoids preview domains. */
-const PROD_ORIGIN = 'https://app.hub.vectracargo.com.br';
+import { authEmailRedirectOrigin } from '@/lib/fair-origins';
 
 interface AuthContextType {
   user: User | null;
@@ -74,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${PROD_ORIGIN}/reset-password`,
+      redirectTo: `${authEmailRedirectOrigin()}/reset-password`,
     });
     return { error: error as Error | null };
   };

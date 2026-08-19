@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from 'lucide-react';
-import { isFairTenantEmail, signupDomainHint } from '@/lib/fair-tenant';
+import { isFairTenantEmail } from '@/lib/fair-tenant';
 import { useFairCompanies } from '@/hooks/useFairCompanies';
 import { BrandLogo } from '@/components/BrandLogo';
-import { FairBrandLockup } from '@/components/fair/FairBrandLockup';
 import { FairEventFooter } from '@/components/fair/FairEventFooter';
+import { FAIR_APP_HOME, isFairHostname } from '@/lib/fair-origins';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -60,7 +60,6 @@ export default function Auth() {
     fullName?: string;
   }>({});
   const { data: fairCompanies = [] } = useFairCompanies(!!user);
-  const domainHint = signupDomainHint(fairCompanies);
 
   // Password reset dialog state
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
@@ -71,8 +70,12 @@ export default function Auth() {
   useEffect(() => {
     if (!loading && user) {
       const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
-      if (isFairTenantEmail(user.email, fairCompanies)) {
+      if (isFairHostname()) {
         navigate(from.startsWith('/feira') ? from : '/feira', { replace: true });
+        return;
+      }
+      if (isFairTenantEmail(user.email, fairCompanies)) {
+        window.location.replace(FAIR_APP_HOME);
         return;
       }
       navigate(from, { replace: true });
@@ -199,11 +202,7 @@ export default function Auth() {
 
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <div className="flex items-center gap-3">
-            {fairFlow ? (
-              <FairBrandLockup size="header" tone="dark" withText={false} />
-            ) : (
-              <BrandLogo size="lg" iconWrapClassName="bg-sidebar-primary" />
-            )}
+            <BrandLogo size="lg" iconWrapClassName="bg-sidebar-primary" />
           </div>
 
           <div className="max-w-md">
@@ -263,16 +262,12 @@ export default function Auth() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden mb-6 flex justify-center">
-            {fairFlow ? (
-              <FairBrandLockup size="auth" withText={false} />
-            ) : (
-              <BrandLogo
-                size="lg"
-                iconWrapClassName="bg-primary"
-                textPrimaryClassName="text-foreground"
-                textSecondaryClassName="text-muted-foreground"
-              />
-            )}
+            <BrandLogo
+              size="lg"
+              iconWrapClassName="bg-primary"
+              textPrimaryClassName="text-foreground"
+              textSecondaryClassName="text-muted-foreground"
+            />
           </div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -337,13 +332,7 @@ export default function Auth() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder={
-                      fairFlow
-                        ? 'nome@konnenfitness.com.br'
-                        : mode === 'signup'
-                          ? 'nome@empresa.com.br'
-                          : 'E-mail'
-                    }
+                    placeholder={mode === 'signup' ? 'nome@empresa.com.br' : 'E-mail'}
                     className={`pl-10 ${loginErrors.email ? 'border-destructive' : ''}`}
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
@@ -424,7 +413,10 @@ export default function Auth() {
             ) : (
               <p className="text-center text-sm text-muted-foreground mt-6">
                 {mode === 'signup' ? (
-                  <>Cadastro liberado para e-mail corporativo do embarcador ({domainHint}).</>
+                  <>
+                    Cadastro com e-mail corporativo do embarcador. Domínio vem de feira.companies —
+                    sem travar um tenant na tela.
+                  </>
                 ) : (
                   <>
                     Acesso Hub: colaboradores Vectra Cargo.
@@ -435,7 +427,7 @@ export default function Auth() {
                       className="p-0 h-auto text-sm"
                       onClick={() => setMode('signup')}
                     >
-                      Vendedor Buckler ou Konnen? Criar conta com e-mail corporativo
+                      Vendedor da feira? Criar conta com e-mail corporativo
                     </Button>
                   </>
                 )}

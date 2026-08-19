@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { applyFairThemeToElement, type FairBrandPalette } from '@/lib/fair-brand-palettes';
 
-/** --fair-* no documentElement enquanto /feira cotação montada. Sheet herda. */
-export function useFairDocumentTheme(palette: FairBrandPalette): void {
-  useEffect(() => applyFairThemeToElement(document.documentElement, palette), [palette]);
+/** --fair-* no documentElement só com paleta do tenant logado. Auth genérico não chama. */
+export function useFairDocumentTheme(palette: FairBrandPalette | null): void {
+  useEffect(() => {
+    if (!palette) return;
+    return applyFairThemeToElement(document.documentElement, palette);
+  }, [palette]);
 }

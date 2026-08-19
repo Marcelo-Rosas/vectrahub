@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -24,14 +24,15 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { BrandLogo } from '@/components/BrandLogo';
 import { useLayout } from '@/components/layout/useLayout';
-import { useUserRole, type UserProfile } from '@/hooks/useUserRole';
+import { FAIR_APP_HOME } from '@/lib/fair-origins';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
   {
-    path: '/feira',
+    path: FAIR_APP_HOME,
     icon: Tent,
     label: 'Feira',
+    external: true,
     roles: ['admin', 'financeiro', 'operacional'] as UserProfile[],
   },
   {
@@ -89,7 +90,13 @@ const navItems = [
   },
 ];
 
-type NavItem = { path: string; icon: typeof LayoutDashboard; label: string; roles?: UserProfile[] };
+type NavItem = {
+  path: string;
+  icon: typeof LayoutDashboard;
+  label: string;
+  roles?: UserProfile[];
+  external?: boolean;
+};
 const bottomNavItems: NavItem[] = [
   // { path: '/configuracoes', icon: Settings, label: 'Configurações' }, // (a implementar)
   // { path: '/integracoes', icon: Plug, label: 'Integrações' }, // (a implementar)
@@ -98,7 +105,6 @@ const bottomNavItems: NavItem[] = [
 
 export function Sidebar() {
   const { isSidebarCollapsed: isCollapsed, toggleSidebar } = useLayout();
-  const location = useLocation();
   const { perfil } = useUserRole();
   const filteredNavItems = navItems.filter(
     (item) => !item.roles || (perfil != null && item.roles?.includes(perfil))
@@ -145,11 +151,8 @@ export function Sidebar() {
             icon={item.icon}
             label={item.label}
             isCollapsed={isCollapsed}
-            isActive={
-              item.path === '/feira'
-                ? location.pathname.startsWith('/feira')
-                : location.pathname === item.path
-            }
+            external={item.external === true}
+            isActive={false}
           />
         ))}
       </nav>
@@ -204,47 +207,56 @@ interface NavItemProps {
   label: string;
   isCollapsed: boolean;
   isActive: boolean;
+  external?: boolean;
 }
 
-function NavItem({ path, icon: Icon, label, isCollapsed, isActive }: NavItemProps) {
+function NavItem({ path, icon: Icon, label, isCollapsed, isActive, external }: NavItemProps) {
+  const inner = (
+    <motion.div
+      className={cn(
+        'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors relative',
+        'text-sidebar-muted hover:text-sidebar-foreground',
+        isActive && 'bg-sidebar-accent text-sidebar-foreground',
+        isCollapsed && 'justify-center px-2'
+      )}
+      whileHover={{ x: isCollapsed ? 0 : 4 }}
+      transition={{ duration: 0.15 }}
+    >
+      {isActive && (
+        <motion.div
+          layoutId="activeIndicator"
+          className="absolute left-0 w-1 h-6 bg-sidebar-primary rounded-r-full"
+          initial={false}
+          transition={{ duration: 0.2, ease: [0.22, 0.9, 0.32, 1] }}
+        />
+      )}
+      <Icon className="w-5 h-5 shrink-0" />
+      <AnimatePresence>
+        {!isCollapsed && (
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="font-medium"
+          >
+            {label}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+
   return (
     <Tooltip delayDuration={0}>
       <TooltipTrigger asChild>
-        <NavLink to={path}>
-          <motion.div
-            className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors relative',
-              'text-sidebar-muted hover:text-sidebar-foreground',
-              isActive && 'bg-sidebar-accent text-sidebar-foreground',
-              isCollapsed && 'justify-center px-2'
-            )}
-            whileHover={{ x: isCollapsed ? 0 : 4 }}
-            transition={{ duration: 0.15 }}
-          >
-            {isActive && (
-              <motion.div
-                layoutId="activeIndicator"
-                className="absolute left-0 w-1 h-6 bg-sidebar-primary rounded-r-full"
-                initial={false}
-                transition={{ duration: 0.2, ease: [0.22, 0.9, 0.32, 1] }}
-              />
-            )}
-            <Icon className="w-5 h-5 shrink-0" />
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="font-medium"
-                >
-                  {label}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        </NavLink>
+        {external ? (
+          <a href={path} rel="noreferrer">
+            {inner}
+          </a>
+        ) : (
+          <NavLink to={path}>{inner}</NavLink>
+        )}
       </TooltipTrigger>
       {isCollapsed && <TooltipContent side="right">{label}</TooltipContent>}
     </Tooltip>

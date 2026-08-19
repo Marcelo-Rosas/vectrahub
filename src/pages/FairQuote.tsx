@@ -14,17 +14,21 @@ export default function FairQuotePage() {
   const { signOut, user } = useAuth();
   const { tenant, isLoading } = useFairResolvedTenant();
   const showPainel = isFairDashboardOwner(user?.email);
-  const palette = resolveFairPalette(tenant?.slug ?? '');
+  const palette = tenant ? resolveFairPalette(tenant.slug) : null;
   useFairDocumentTheme(palette);
 
   return (
     <div
       className="flex min-h-screen-dvh flex-col touch-manipulation"
-      style={{ ...fairPaletteStyle(palette), backgroundColor: palette.tokens.pageBg }}
+      style={
+        palette
+          ? { ...fairPaletteStyle(palette), backgroundColor: palette.tokens.pageBg }
+          : undefined
+      }
     >
       <header
         className="sticky top-0 z-20 shrink-0 border-b bg-background/95 px-3 pb-3 pt-safe-top backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-4"
-        style={{ borderColor: `${palette.tokens.ink}1A` }}
+        style={palette ? { borderColor: `${palette.tokens.ink}1A` } : undefined}
       >
         <div className="flex items-center justify-between gap-2">
           {tenant ? (

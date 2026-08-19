@@ -16,6 +16,7 @@ import {
   matchTenantByEmail,
   companyRowToTenant,
   type FairCompanyRow,
+  signupDomainHint,
 } from '@/lib/fair-tenant';
 
 const COMPANIES: FairCompanyRow[] = [
@@ -85,6 +86,11 @@ describe('isFairTenantEmail', () => {
     expect(isFairTenantEmail('alguem@gmail.com', TENANTS)).toBe(false);
     expect(isFairTenantEmail('marcelo.rosas@vectracargo.com.br', TENANTS)).toBe(false);
     expect(isFairTenantEmail('')).toBe(false);
+  });
+
+  it('hint de cadastro lista todos os domínios, não só Buckler', () => {
+    expect(signupDomainHint(TENANTS)).toContain('@bucklerfit.com');
+    expect(signupDomainHint(TENANTS)).toContain('@konnenfitness.com.br');
   });
 });
 

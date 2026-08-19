@@ -2,8 +2,10 @@ import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useFairCompanies } from '@/hooks/useFairCompanies';
+import { useUserRole, type UserProfile } from '@/hooks/useUserRole';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FAIR_APP_HOME, isFairHostname } from '@/lib/fair-origins';
 import { isFairTenantEmail } from '@/lib/fair-tenant';
 
 interface ProtectedRouteProps {
@@ -47,6 +49,14 @@ export function ProtectedRoute({
   }
 
   if (isFairTenantEmail(user.email, fairCompanies) && !location.pathname.startsWith('/feira')) {
+    if (!isFairHostname()) {
+      window.location.replace(FAIR_APP_HOME);
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      );
+    }
     return <Navigate to="/feira" replace />;
   }
 
