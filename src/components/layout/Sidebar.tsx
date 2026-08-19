@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Activity,
   Building2,
+  Tent,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,12 @@ import { useUserRole, type UserProfile } from '@/hooks/useUserRole';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  {
+    path: '/feira',
+    icon: Tent,
+    label: 'Feira',
+    roles: ['admin', 'financeiro', 'operacional'] as UserProfile[],
+  },
   {
     path: '/comercial',
     icon: TrendingUp,
@@ -138,7 +145,11 @@ export function Sidebar() {
             icon={item.icon}
             label={item.label}
             isCollapsed={isCollapsed}
-            isActive={location.pathname === item.path}
+            isActive={
+              item.path === '/feira'
+                ? location.pathname.startsWith('/feira')
+                : location.pathname === item.path
+            }
           />
         ))}
       </nav>

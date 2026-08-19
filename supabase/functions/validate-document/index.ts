@@ -11,6 +11,7 @@ import {
   resolveFocusNfeToken,
   type NfePredominante,
 } from '../_shared/nfe-extract.ts';
+import { extractDestFromNfeXml, mergeNfeDestIntoMetadata } from '../_shared/nfe-dest-from-meta.ts';
 
 /**
  * Edge Function: validate-document
@@ -59,6 +60,7 @@ interface ValidationResult {
     produto_predominante?: string;
   };
   nfe_produtos?: NfePredominante | null;
+  xml?: string;
 }
 
 // Código IBGE das UFs
@@ -249,14 +251,9 @@ function parseXml(xmlContent: string): ValidationResult['xml_data'] {
     const emitNomeMatch = xmlContent.match(/<emit>.*?<xNome>([^<]+)<\/xNome>.*?<\/emit>/s);
     if (emitNomeMatch) data.emitente_nome = emitNomeMatch[1];
 
-    // Extrai destinatário
-    const destCnpjMatch =
-      xmlContent.match(/<dest>.*?<CNPJ>(\d+)<\/CNPJ>.*?<\/dest>/s) ||
-      xmlContent.match(/<dest>.*?<Cnpj>(\d+)<\/Cnpj>.*?<\/dest>/s);
-    if (destCnpjMatch) data.destinatario_cnpj = destCnpjMatch[1];
-
-    const destNomeMatch = xmlContent.match(/<dest>.*?<xNome>([^<]+)<\/xNome>.*?<\/dest>/s);
-    if (destNomeMatch) data.destinatario_nome = destNomeMatch[1];
+    // Extrai destinatário (CNPJ ou CPF; namespace opcional)
+    const destFields = extractDestFromNfeXml(xmlContent);
+    Object.assign(data, destFields);
 
     // Valor total
     const vTotalMatch =
@@ -439,6 +436,10 @@ serve(async (req) => {
     if (xmlParaParse) {
       result.xml_data = parseXml(xmlParaParse);
       nfePredominante = extractNcmFromNfeXml(xmlParaParse);
+      result.metadata = mergeNfeDestIntoMetadata({
+        ...result.metadata,
+        xml_data: result.xml_data,
+      });
       if (result.status === 'valid' && result.xml_data?.chave) {
         result.status = 'xml_parsed';
       }
@@ -477,12 +478,24 @@ serve(async (req) => {
         vectraCnpj: Deno.env.get('VECTRA_CNPJ') ?? '59650913000104',
       });
 
+      if (sefazResult.xml && !xmlParaParse) {
+        xmlParaParse = sefazResult.xml;
+        result.xml_data = parseXml(sefazResult.xml);
+        result.metadata = mergeNfeDestIntoMetadata({
+          ...result.metadata,
+          xml_data: result.xml_data,
+          xml: sefazResult.xml,
+        });
+        if (result.xml_data?.chave) result.status = 'xml_parsed';
+      }
+      if (sefazResult.xml) result.xml = sefazResult.xml;
+
       if (sefazResult.metadata) {
         result.sefaz = sefazResult.metadata;
-        result.metadata = {
+        result.metadata = mergeNfeDestIntoMetadata({
           ...result.metadata,
           sefaz: sefazResult.metadata,
-        };
+        });
         result.status = mapSefazStatusToValidationStatus(sefazResult.metadata.c_stat);
 
         if (result.status === 'sefaz_authorized') {
@@ -519,7 +532,11 @@ serve(async (req) => {
       const updateData: any = {
         validation_status: result.status,
         validation_errors: result.validation_errors.length > 0 ? result.validation_errors : null,
-        validation_metadata: result.metadata,
+        validation_metadata: (() => {
+          const meta = { ...(result.metadata ?? {}) };
+          delete meta.xml;
+          return meta;
+        })(),
       };
 
       const chaveLimpa = chaveParaValidar?.replace(/\D/g, '') ?? '';

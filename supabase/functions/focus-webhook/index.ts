@@ -1,6 +1,5 @@
 // @ts-nocheck
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createSupabaseContext } from 'npm:@supabase/server';
 
 const FOCUS_WEBHOOK_SECRET = Deno.env.get('FOCUS_WEBHOOK_SECRET') ?? '';
 const FOCUS_WEBHOOK_HEADER = Deno.env.get('FOCUS_WEBHOOK_HEADER') ?? 'X-Focus-Auth';
@@ -31,7 +30,7 @@ function nowBrasilia(): string {
  * Degrada sem lançar: falha de mirror não pode derrubar o webhook.
  */
 async function mirror(
-  supabase: ReturnType<typeof createClient>,
+  supabase: { storage: { from: (bucket: string) => { upload: Function } } },
   url: string | undefined | null,
   bucket: string,
   filename: string,
@@ -63,7 +62,7 @@ async function mirror(
   }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'GET') {
     return json({
       service: 'focus-webhook',
@@ -120,13 +119,12 @@ serve(async (req) => {
     return json({ ok: true, docType, ignored: true });
   }
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-  if (!supabaseUrl || !serviceKey) {
-    console.error('[focus-webhook] supabase env missing');
-    return json({ error: 'server_misconfigured' }, 500);
+  const { data: ctx, error: ctxError } = await createSupabaseContext(req, { auth: 'none' });
+  if (ctxError || !ctx) {
+    console.error('[focus-webhook] supabase context failed', ctxError?.message);
+    return json({ error: 'server_misconfigured' }, ctxError?.status ?? 500);
   }
-  const supabase = createClient(supabaseUrl, serviceKey);
+  const supabase = ctx.supabaseAdmin;
 
   const ref = p.ref;
   if (!ref) return json({ error: 'ref_missing' }, 400);

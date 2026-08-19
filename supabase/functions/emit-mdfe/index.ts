@@ -620,22 +620,92 @@ serve(async (req) => {
       : null;
   let valorContrato = Number(bodyPag?.valor_contrato ?? 0);
   const ciotsForMdfe: Array<{ ciot: string; cnpjResponsavel?: string }> = [];
+  const dispositivosVale: Array<{
+    cnpjFornecedora: string;
+    cnpjPagador?: string;
+    cpfPagador?: string;
+    numeroComprovante: string;
+    valor: number;
+    tipo?: '01' | '04';
+  }> = [];
+  let categoriaCombinacaoVeicular: string | undefined;
   if (quoteIds.length > 0) {
     const { data: orderRows } = await supabase
       .from('orders')
-      .select('carreteiro_real, carreteiro_antt, value, ciot_number, ciot_status')
+      .select(
+        'carreteiro_real, carreteiro_antt, value, ciot_number, ciot_status, pricing_breakdown'
+      )
       .in('quote_id', quoteIds)
       .limit(5);
     for (const o of orderRows ?? []) {
-      const ciotStatus = String((o as any).ciot_status ?? '');
-      const ciotN = String((o as any).ciot_number ?? '').replace(/\D/g, '');
+      const pb = (o as { pricing_breakdown?: { meta?: Record<string, unknown> } | null })
+        .pricing_breakdown;
+      const meta = pb && typeof pb === 'object' ? pb.meta : null;
+      const metaCiot =
+        meta && typeof meta.ciot === 'object' && meta.ciot
+          ? (meta.ciot as { number?: string; cnpjResponsavel?: string })
+          : null;
+      const metaVpo =
+        meta && typeof meta.vpo === 'object' && meta.vpo
+          ? (meta.vpo as {
+              idANTT?: string | null;
+              idVpo?: string | null;
+              cnpjFornecedora?: string;
+              cnpjPagador?: string;
+              tipoVale?: '01' | '04';
+              valorReais?: number;
+              categoriaCombinacaoVeicular?: string;
+            })
+          : null;
+
+      const ciotStatus = String((o as { ciot_status?: string | null }).ciot_status ?? '');
+      const ciotN = String(
+        metaCiot?.number || (o as { ciot_number?: string | null }).ciot_number || ''
+      ).replace(/\D/g, '');
+      const ciotCnpjResp = String(metaCiot?.cnpjResponsavel || '')
+        .replace(/\D/g, '')
+        .slice(0, 14);
       // CIOT cancelado no portal não vai no MDF-e (SEFAZ 304 com número inválido).
       if (ciotN.length >= 8 && ciotStatus !== 'cancelled') {
-        ciotsForMdfe.push({ ciot: ciotN, cnpjResponsavel: vectra.cnpj });
+        ciotsForMdfe.push({
+          ciot: ciotN,
+          // Parceiro fracionado: CNPJ de quem gerou o CIOT; senão emitente Vectra.
+          cnpjResponsavel: ciotCnpjResp.length === 14 ? ciotCnpjResp : vectra.cnpj,
+        });
       }
+
+      const idVpo =
+        String(metaVpo?.idANTT || metaVpo?.idVpo || '')
+          .replace(/\D/g, '')
+          .slice(0, 20) || '';
+      const forn = String(metaVpo?.cnpjFornecedora || '').replace(/\D/g, '');
+      const pag = String(metaVpo?.cnpjPagador || '').replace(/\D/g, '');
+      const valorVpo = Number(metaVpo?.valorReais ?? 0);
+      if (idVpo && forn.length === 14 && pag.length === 14 && valorVpo > 0) {
+        dispositivosVale.push({
+          cnpjFornecedora: forn,
+          cnpjPagador: pag,
+          numeroComprovante: idVpo,
+          valor: valorVpo,
+          tipo: metaVpo?.tipoVale === '04' ? '04' : '01',
+        });
+        if (!categoriaCombinacaoVeicular && metaVpo?.categoriaCombinacaoVeicular) {
+          categoriaCombinacaoVeicular = String(metaVpo.categoriaCombinacaoVeicular);
+        }
+      }
+
       if (!(valorContrato > 0)) {
         const raw = Number(
-          (o as any).carreteiro_real ?? (o as any).carreteiro_antt ?? (o as any).value ?? 0
+          (
+            o as {
+              carreteiro_real?: number | null;
+              carreteiro_antt?: number | null;
+              value?: number | null;
+            }
+          ).carreteiro_real ??
+            (o as { carreteiro_antt?: number | null }).carreteiro_antt ??
+            (o as { value?: number | null }).value ??
+            0
         );
         if (raw > 0) {
           const asCents = Deno.env.get('VECTRA_MONEY_CENTS') === '1';
@@ -644,7 +714,7 @@ serve(async (req) => {
       }
     }
   }
-  // Body override CIOT (homolog / e-FRETE já gerado)
+  // Body override CIOT (homolog / e-FRETE já gerado / parceiro)
   if (Array.isArray(body.ciots)) {
     for (const c of body.ciots as Array<{ ciot?: string; cnpj_responsavel?: string }>) {
       const n = String(c?.ciot ?? '').replace(/\D/g, '');
@@ -655,6 +725,61 @@ serve(async (req) => {
         });
       }
     }
+  }
+  // Body override VPO
+  if (Array.isArray(body.dispositivos_vale_pedagio)) {
+    for (const d of body.dispositivos_vale_pedagio as Array<{
+      cnpj_empresa_fornecedora?: string;
+      cnpj_responsavel_pagamento?: string;
+      numero_comprovante_compra?: string;
+      valor_vale_pedagio?: number;
+      tipo_vale_pedagio?: '01' | '04';
+    }>) {
+      const forn = String(d?.cnpj_empresa_fornecedora ?? '').replace(/\D/g, '');
+      const pag = String(d?.cnpj_responsavel_pagamento ?? '').replace(/\D/g, '');
+      const nCompra = String(d?.numero_comprovante_compra ?? '').replace(/\D/g, '');
+      const valor = Number(d?.valor_vale_pedagio ?? 0);
+      if (forn.length === 14 && pag.length === 14 && nCompra && valor > 0) {
+        dispositivosVale.push({
+          cnpjFornecedora: forn,
+          cnpjPagador: pag,
+          numeroComprovante: nCompra,
+          valor,
+          tipo: d.tipo_vale_pedagio === '04' ? '04' : '01',
+        });
+      }
+    }
+  }
+  if (body.categoria_combinacao_veicular) {
+    categoriaCombinacaoVeicular = String(body.categoria_combinacao_veicular);
+  }
+
+  // Dedupe: várias OS na mesma viagem compartilham o mesmo CIOT/VPO do parceiro.
+  const ciotSeen = new Set<string>();
+  const ciotsDeduped = ciotsForMdfe.filter((c) => {
+    const key = `${String(c.ciot).replace(/\D/g, '')}|${String(c.cnpjResponsavel ?? '').replace(/\D/g, '')}`;
+    if (ciotSeen.has(key)) return false;
+    ciotSeen.add(key);
+    return true;
+  });
+  const vpoSeen = new Set<string>();
+  const dispositivosDeduped = dispositivosVale.filter((d) => {
+    const key = [
+      String(d.numeroComprovante).replace(/\D/g, ''),
+      String(d.cnpjFornecedora).replace(/\D/g, ''),
+      String(d.cnpjPagador ?? '').replace(/\D/g, ''),
+    ].join('|');
+    if (vpoSeen.has(key)) return false;
+    vpoSeen.add(key);
+    return true;
+  });
+  if (
+    ciotsDeduped.length < ciotsForMdfe.length ||
+    dispositivosDeduped.length < dispositivosVale.length
+  ) {
+    console.log(
+      `[emit-mdfe] dedupe ciot ${ciotsForMdfe.length}→${ciotsDeduped.length} vpo ${dispositivosVale.length}→${dispositivosDeduped.length}`
+    );
   }
   if (!(valorContrato > 0)) {
     const fromCte = Number(firstPs.valor_total ?? firstPs.valor_receber ?? 0);
@@ -713,7 +838,10 @@ serve(async (req) => {
               formaPagamento: bodyPag?.forma_pagamento ?? 0,
             }
           : undefined,
-      ciots: ciotsForMdfe.length > 0 ? ciotsForMdfe : undefined,
+      ciots: ciotsDeduped.length > 0 ? ciotsDeduped : undefined,
+      dispositivosValePedagio: dispositivosDeduped.length > 0 ? dispositivosDeduped : undefined,
+      categoriaCombinacaoVeicular,
+      ufInicio: body.uf_inicio ? String(body.uf_inicio) : undefined,
     });
   } catch (err) {
     return json({ error: 'mapper_failed', detail: String(err) }, 500, cors);

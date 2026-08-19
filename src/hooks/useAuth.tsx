@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 
 /** Production origin for auth redirects (emails); avoids preview domains. */
 const PROD_ORIGIN = 'https://app.hub.vectracargo.com.br';
@@ -52,15 +53,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${PROD_ORIGIN}/auth`,
-        data: { full_name: fullName },
-      },
-    });
-    return { error: error as Error | null };
+    const normalized = email.trim().toLowerCase();
+
+    try {
+      await invokeEdgeFunction<{ ok?: boolean; alreadyExists?: boolean }>('tenant-signup', {
+        requireAuth: false,
+        body: { email: normalized, password, full_name: fullName },
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao criar conta';
+      return { error: new Error(message) };
+    }
+
+    return signIn(normalized, password);
   };
 
   const signOut = async () => {

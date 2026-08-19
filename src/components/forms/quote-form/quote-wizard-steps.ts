@@ -30,7 +30,7 @@ export const QUOTE_WIZARD_STEPS: QuoteWizardStepConfig[] = [
     label: 'Carga e logística',
     shortLabel: 'Carga',
     title: 'Carga, tabela e prazos',
-    description: 'Peso, modalidade, tabela de preço e condição de pagamento do cliente.',
+    description: 'Peso, XML da NF-e, modalidade, tabela de preço e condição de pagamento.',
     icon: Package,
   },
   {

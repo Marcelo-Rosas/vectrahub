@@ -1,6 +1,6 @@
 /// <reference path="deno.d.ts" />
-import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { corsPreflight, resolveSupabaseContext } from '../_shared/supabase-server.ts';
 import { calculateFreightInputSchema } from '../_shared/freight-schema.ts';
 import {
   FREIGHT_CONSTANTS,
@@ -48,70 +48,27 @@ type WaitingRuleRow = {
 // =====================================================
 
 Deno.serve(async (req) => {
+  const pre = corsPreflight(req);
+  if (pre) return pre;
+
   const corsHeaders = getCorsHeaders(req);
 
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
   try {
-    // Use ANON_KEY + user JWT (respects RLS); requires verify_jwt = true
-
-    // Use Deno.env only if running in Deno, fallback for other runtimes (e.g., Node test or local dev)
-    const getEnvSafe = (key: string) => {
-      if (typeof Deno !== 'undefined' && Deno.env && typeof Deno.env.get === 'function') {
-        return Deno.env.get(key);
-      } else if (typeof process !== 'undefined' && process.env) {
-        return process.env[key];
-      }
-      return undefined;
-    };
-
-    const supabaseUrl = getEnvSafe('SUPABASE_URL');
-    const supabaseAnonKey = getEnvSafe('SUPABASE_ANON_KEY');
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          status: 'SERVER_ERROR',
-          errors: ['Environment variables SUPABASE_URL or SUPABASE_ANON_KEY not set'],
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    const { data: ctx, error: authCtxError } = await resolveSupabaseContext(req, 'user');
+    if (authCtxError || !ctx) {
       return new Response(
         JSON.stringify({
           success: false,
           status: 'UNAUTHORIZED',
-          errors: ['Authorization header obrigatório'],
+          errors: [authCtxError?.message ?? 'Usuário não autenticado'],
         }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        {
+          status: authCtxError?.status ?? 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     }
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    // Verify user is authenticated
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          status: 'UNAUTHORIZED',
-          errors: ['Usuário não autenticado'],
-        }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const supabase = ctx.supabase;
 
     // Parse and validate payload with Zod
     let body: unknown;

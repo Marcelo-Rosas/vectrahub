@@ -1,4 +1,5 @@
 import type { UseFormReturn } from 'react-hook-form';
+import { useMemo } from 'react';
 import { AlertTriangle, CheckCircle2, Tag } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
@@ -7,6 +8,11 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { FinancialRouteInfo } from '@/components/financial/modal-sections/FinancialRouteInfo';
 import { NumericInput } from '@/components/ui/numeric-input';
 import { formatCurrency } from '@/lib/formatters';
+import {
+  buildContractSplitsFromQuoteForm,
+  contractSplitsSumCents,
+  resolveContractPayerCount,
+} from '@/lib/contract-split';
 import type { FreightCalculationOutput } from '@/lib/freightCalculator';
 import type { QuoteFormData } from '../types';
 import { PAYMENT_METHOD_LABELS } from '@/types/pricing';
@@ -45,8 +51,8 @@ export function ReviewStep({
   shipperName,
   isLegacy = false,
 }: ReviewStepProps) {
-  const values = form.getValues();
-  const discount = form.watch('discount') ?? 0;
+  const values = form.watch();
+  const discount = values.discount ?? 0;
   const meta = calculationResult?.meta;
   const anttCostBaseUsed = meta?.anttCostBaseUsed === true;
   const pisoAntt = meta?.anttPisoCarreteiro ?? meta?.lotacaoPisoComOver ?? 0;
@@ -73,6 +79,49 @@ export function ReviewStep({
               ? 'lotacao'
               : undefined,
       });
+
+  const contractSplitPreview = useMemo(() => {
+    if (isLegacy) return null;
+    const additionalRecipientCount = (values.additional_recipients ?? []).filter(
+      (r) => r.client_id || r.name?.trim()
+    ).length;
+    const additionalShipperCount = (values.additional_shippers ?? []).filter(
+      (s) => s.shipper_id || s.name?.trim()
+    ).length;
+    const payerCount = resolveContractPayerCount(values.freight_type, {
+      client_id: values.client_id,
+      additional_recipient_count: additionalRecipientCount,
+      shipper_id: values.shipper_id,
+      additional_shipper_count: additionalShipperCount,
+    });
+    if (payerCount <= 1) return null;
+    try {
+      const splits = buildContractSplitsFromQuoteForm({
+        freight_type: values.freight_type,
+        freight_modality: values.freight_modality,
+        valueReais: totalCliente,
+        client_id: values.client_id,
+        client_name: values.client_name || clientName,
+        shipper_id: values.shipper_id,
+        shipper_name: values.shipper_name || shipperName,
+        client_leg_weight_kg: values.client_leg_weight_kg,
+        client_leg_cargo_value: values.client_leg_cargo_value,
+        client_leg_amount: values.client_leg_amount,
+        shipper_leg_weight_kg: values.shipper_leg_weight_kg,
+        shipper_leg_cargo_value: values.shipper_leg_cargo_value,
+        shipper_leg_amount: values.shipper_leg_amount,
+        additional_recipients: values.additional_recipients,
+        additional_shippers: values.additional_shippers,
+      });
+      return {
+        splits,
+        sumCents: contractSplitsSumCents(splits),
+        expectedCents: Math.round(totalCliente * 100),
+      };
+    } catch {
+      return null;
+    }
+  }, [isLegacy, values, totalCliente, clientName, shipperName]);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -299,6 +348,41 @@ export function ReviewStep({
           )}
         </div>
       </SectionBlock>
+
+      {contractSplitPreview && contractSplitPreview.splits.length > 0 && (
+        <SectionBlock variant="card" label="Contratos (multi-pagador)">
+          <div className="space-y-2 text-sm">
+            {contractSplitPreview.splits.map((split) => (
+              <div key={split.sequence} className="flex justify-between gap-4">
+                <span className="text-muted-foreground truncate">
+                  CTR-{String(split.sequence).padStart(2, '0')} — {split.name}
+                </span>
+                <span className="font-medium shrink-0">
+                  {formatCurrency(split.amount_cents / 100)}
+                </span>
+              </div>
+            ))}
+            <Separator />
+            <div className="flex justify-between font-medium">
+              <span>Soma</span>
+              <span
+                className={
+                  contractSplitPreview.sumCents !== contractSplitPreview.expectedCents
+                    ? 'text-destructive'
+                    : ''
+                }
+              >
+                {formatCurrency(contractSplitPreview.sumCents / 100)}
+              </span>
+            </div>
+            {contractSplitPreview.sumCents !== contractSplitPreview.expectedCents && (
+              <p className="text-xs text-destructive">
+                Soma difere do total da cotação ({formatCurrency(totalCliente)}).
+              </p>
+            )}
+          </div>
+        </SectionBlock>
+      )}
 
       {/* Pagamento e Datas */}
       {(values.payment_method ||

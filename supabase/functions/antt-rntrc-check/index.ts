@@ -416,7 +416,13 @@ function extractRntrcResult(
   const noResult = /não foram encontrados transportadores|nenhum.*encontrad|sem.*resultado/i.test(
     html
   );
-  if (noResult) return { situacao: 'irregular', rntrc: null };
+  if (noResult) {
+    return {
+      situacao: 'irregular',
+      rntrc: null,
+      message: 'Portal ANTT: transportador não encontrado (Por Transportador).',
+    };
+  }
 
   const isRegular = /\b(regular|ativo|habilitado)\b/i.test(html);
   const isIrregular = /\b(irregular|inativo|cancelado|suspenso|impedido|vencido)\b/i.test(html);

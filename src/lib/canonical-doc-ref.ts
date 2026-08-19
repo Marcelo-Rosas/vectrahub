@@ -35,14 +35,20 @@ export function slugifyPayer(name: string | null | undefined): string {
 }
 
 /**
- * Deriva o código CTR do contrato a partir do `quote_code` (1:1 com a cotação).
- * `COT-2026-08-0002` → `CTR-2026-08-0002`.
+ * Deriva o código CTR do contrato a partir do `quote_code`.
+ * `COT-2026-08-0002` → `CTR-2026-08-0002`; com sequence → `CTR-2026-08-0002-01`.
  */
-export function ctrCodeFromQuoteCode(quoteCode: string | null | undefined): string {
+export function ctrCodeFromQuoteCode(
+  quoteCode: string | null | undefined,
+  sequence?: number
+): string {
   const code = String(quoteCode ?? '').trim();
-  if (!code) return 'CTR';
-  if (/^COT-/i.test(code)) return code.replace(/^COT-/i, 'CTR-');
-  return `CTR-${code}`;
+  let base = 'CTR';
+  if (code) {
+    base = /^COT-/i.test(code) ? code.replace(/^COT-/i, 'CTR-') : `CTR-${code}`;
+  }
+  if (sequence == null || sequence < 1) return base;
+  return `${base}-${String(sequence).padStart(2, '0')}`;
 }
 
 /** Contratos emitidos antes da regra CTR canônica (prefixo COT no filename). */

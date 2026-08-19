@@ -81,6 +81,9 @@ export interface QuotePdfPayload {
   shipper_email_fallback?: string | null;
   /** Paradas intermediárias persistidas em quote_route_stops */
   route_stops?: QuotePdfRouteStop[];
+  event_flag?: string | null;
+  pedagio_estimado?: number | null;
+  fair_disclaimer?: boolean;
 }
 
 type PdfDoc = jsPDF & { lastAutoTable?: { finalY?: number } };
@@ -220,6 +223,11 @@ function drawHeader(
 
   if (mode === 'detailed') {
     doc.text('USO INTERNO', PW - MR, 23, { align: 'right' });
+  } else if (payload.event_flag) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.orangeLight);
+    doc.text(payload.event_flag, PW - MR, 23, { align: 'right' });
   }
 
   return H + 4;
@@ -601,6 +609,10 @@ function drawPricingBlock(
       if ((c.conditionalFeesTotal ?? 0) > 0)
         rows.push(['Taxas Condicionais', formatCurrency(c.conditionalFeesTotal ?? 0)]);
     }
+  }
+
+  if (payload.fair_disclaimer && (payload.pedagio_estimado ?? 0) > 0) {
+    rows.push(['Pedágio estimado', formatCurrency(payload.pedagio_estimado ?? 0)]);
   }
 
   if (rows.length === 0) return y;

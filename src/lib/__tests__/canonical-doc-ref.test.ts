@@ -36,6 +36,11 @@ describe('ctrCodeFromQuoteCode', () => {
   it('troca COT- por CTR- mantendo o número', () => {
     expect(ctrCodeFromQuoteCode('COT-2026-08-0007')).toBe('CTR-2026-08-0007');
   });
+
+  it('adiciona sufixo -NN por pagador', () => {
+    expect(ctrCodeFromQuoteCode('COT-2026-08-0003', 1)).toBe('CTR-2026-08-0003-01');
+    expect(ctrCodeFromQuoteCode('COT-2026-08-0003', 2)).toBe('CTR-2026-08-0003-02');
+  });
 });
 
 describe('isLegacyContractFilename', () => {

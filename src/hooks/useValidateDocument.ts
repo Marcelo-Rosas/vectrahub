@@ -7,6 +7,7 @@ export type ValidateDocumentInput =
   | {
       documentId: string;
       nfe_key?: string;
+      consult_sefaz?: boolean;
     };
 
 export function getValidateDocumentId(input: ValidateDocumentInput): string {
@@ -49,6 +50,7 @@ interface ValidateDocumentResponse {
     data_emissao?: string;
     status?: string;
   };
+  xml?: string;
 }
 
 function formatValidationToast(data: ValidateDocumentResponse): void {
@@ -101,12 +103,14 @@ export function useValidateDocument() {
     mutationFn: async (input: ValidateDocumentInput): Promise<ValidateDocumentResponse> => {
       const documentId = getValidateDocumentId(input);
       const nfe_key = typeof input === 'string' ? undefined : input.nfe_key;
+      const consult_sefaz = typeof input === 'string' ? undefined : input.consult_sefaz;
 
       const { data, error } = await supabase.functions.invoke('validate-document', {
         body: {
           documentId,
           nfe_key: nfe_key?.replace(/\D/g, ''),
           auto_update: true,
+          ...(consult_sefaz === false ? { consult_sefaz: false } : {}),
         },
       });
 

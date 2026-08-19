@@ -106,6 +106,9 @@ interface QuoteFormWizardProps {
   anttCcd: number | null;
   anttCc: number | null;
   anttKmDistance: number;
+  quoteId?: string | null;
+  pendingNfeXmlFiles?: File[];
+  onPendingNfeXmlFilesChange?: (files: File[]) => void;
 }
 
 export function QuoteFormWizard({
@@ -164,6 +167,9 @@ export function QuoteFormWizard({
   anttCcd,
   anttCc,
   anttKmDistance,
+  quoteId,
+  pendingNfeXmlFiles,
+  onPendingNfeXmlFilesChange,
 }: QuoteFormWizardProps) {
   const [step, setStep] = useState(0);
   const canNext = step < STEP_COUNT - 1;
@@ -273,6 +279,9 @@ export function QuoteFormWizard({
             weightUnit={weightUnit}
             setWeightUnit={setWeightUnit}
             isLegacy={isLegacy}
+            quoteId={quoteId}
+            pendingNfeXmlFiles={pendingNfeXmlFiles}
+            onPendingNfeXmlFilesChange={onPendingNfeXmlFilesChange}
           />
         );
       case 2:

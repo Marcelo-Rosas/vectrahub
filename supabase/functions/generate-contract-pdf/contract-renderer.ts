@@ -355,16 +355,21 @@ export async function renderContractPdf(ctx: {
   quote: Record<string, unknown>;
   company: Record<string, unknown>;
   version: number;
+  /** Multi-payer: valor e pagador desta perna. Omitido = legado (valor cheio da cotação). */
+  leg?: {
+    sequence: number;
+    amount_cents: number;
+    contratante: ReturnType<typeof resolveContractContratante>;
+  };
 }): Promise<Uint8Array> {
-  const { quote, company, version } = ctx;
+  const { quote, company, version, leg } = ctx;
   const paymentTerm = (quote.payment_terms as Record<string, unknown> | null) ?? {};
 
-  // CONTRATANTE = embarcador (shipper) quando CIF; cliente quando FOB.
-  const contratante = resolveContractContratante(quote);
+  const contratante = leg?.contratante ?? resolveContractContratante(quote);
   const contratanteParty = contratante.party;
+  const sequence = leg?.sequence ?? 1;
 
-  // Referência canônica: CTR-AAAA-MM-#### — RAZÃO SOCIAL DO PAGADOR.
-  const ctrCode = ctrCodeFromQuoteCode(quote.quote_code as string | null | undefined);
+  const ctrCode = ctrCodeFromQuoteCode(quote.quote_code as string | null | undefined, sequence);
   const canonicalRef = buildCanonicalReference(ctrCode, contratante.name);
 
   const w = new PdfWriter();
@@ -464,15 +469,21 @@ export async function renderContractPdf(ctx: {
   w.subItem('d) Abster-se de manter qualquer relação direta com motoristas ou TACs.');
 
   // Cláusula 5 — Pagamento (com dados dinâmicos)
-  const freightValue =
-    typeof quote.value === 'number' ? formatBrlReais(quote.value) : '[valor não informado]';
+  const amountReais = leg?.amount_cents != null ? leg.amount_cents / 100 : Number(quote.value);
+  const freightValue = Number.isFinite(amountReais)
+    ? formatBrlReais(amountReais)
+    : '[valor não informado]';
+  const quoteCodeRef = String(quote.quote_code ?? '').trim();
   const paymentDescription = buildPaymentTermsDescription(quote, paymentTerm);
   const clause52 = buildClause52IncludedItems(quote);
 
   w.clause(
     'CLÁUSULA 5ª',
     'DO PAGAMENTO',
-    `5.1. O pagamento do frete deverá ser realizado exclusivamente em conta bancária de titularidade jurídica da CONTRATADA, no valor total de ${freightValue}.`
+    `5.1. O pagamento do frete deverá ser realizado exclusivamente em conta bancária de titularidade jurídica da CONTRATADA, no valor total de ${freightValue}.` +
+      (quoteCodeRef && leg
+        ? ` Este instrumento cobre exclusivamente a parcela do CONTRATANTE na cotação ${quoteCodeRef}; o valor total da operação está distribuído entre os pagadores conforme acordado comercialmente.`
+        : '')
   );
   if (contratante.isCif) {
     w.subItem(

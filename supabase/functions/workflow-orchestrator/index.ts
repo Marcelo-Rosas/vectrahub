@@ -107,10 +107,21 @@ async function handleQuoteStageChanged(
     actions.push('deferred:os_creation_scheduled_24h');
 
     try {
-      const contractRes = await callEdgeFunction('generate-contract-pdf', {
+      const contractRes = (await callEdgeFunction('generate-contract-pdf', {
         quote_id: event.entity_id,
-      });
-      if (contractRes?.contract_id) {
+      })) as {
+        contract_id?: string | null;
+        partial?: boolean;
+        success_count?: number;
+        failed_sequences?: number[];
+      };
+      if (contractRes?.partial) {
+        actions.push(
+          `contract_partial:ok=${contractRes.success_count ?? 0}:failed=${(contractRes.failed_sequences ?? []).join(',')}`
+        );
+      } else if (contractRes?.success_count && contractRes.success_count > 0) {
+        actions.push(`contracts_generated:${contractRes.success_count}`);
+      } else if (contractRes?.contract_id) {
         actions.push(`contract_generated:${contractRes.contract_id}`);
       }
     } catch (e) {

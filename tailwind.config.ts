@@ -114,6 +114,14 @@ export default {
         'slide-in-right': 'slide-in-right 0.3s ease-out',
         'scale-in': 'scale-in 0.2s ease-out',
       },
+      padding: {
+        'safe-top': 'max(0.75rem, env(safe-area-inset-top))',
+        'safe-bottom': 'max(1rem, env(safe-area-inset-bottom))',
+        'safe-x': 'max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right))',
+      },
+      minHeight: {
+        'screen-dvh': '100dvh',
+      },
     },
   },
   plugins: [tailwindcssAnimate],

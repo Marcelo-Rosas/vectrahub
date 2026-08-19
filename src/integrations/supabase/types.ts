@@ -8198,53 +8198,68 @@ export type Database = {
       };
       quote_contracts: {
         Row: {
+          amount_cents: number;
           created_at: string;
           generated_at: string;
           generated_by: string | null;
           id: string;
+          party_id: string | null;
+          party_type: Database['public']['Enums']['quote_contract_party_type'];
           pdf_file_name: string | null;
           pdf_size_bytes: number | null;
           pdf_storage_path: string;
           quote_id: string;
+          sequence: number;
           signature_envelope_id: string | null;
           signature_metadata: Json;
           signature_provider: string | null;
           signature_status: string;
           signed_at: string | null;
+          split_snapshot: Json;
           updated_at: string;
           version: number;
         };
         Insert: {
+          amount_cents?: number;
           created_at?: string;
           generated_at?: string;
           generated_by?: string | null;
           id?: string;
+          party_id?: string | null;
+          party_type?: Database['public']['Enums']['quote_contract_party_type'];
           pdf_file_name?: string | null;
           pdf_size_bytes?: number | null;
           pdf_storage_path: string;
           quote_id: string;
+          sequence?: number;
           signature_envelope_id?: string | null;
           signature_metadata?: Json;
           signature_provider?: string | null;
           signature_status?: string;
           signed_at?: string | null;
+          split_snapshot?: Json;
           updated_at?: string;
           version?: number;
         };
         Update: {
+          amount_cents?: number;
           created_at?: string;
           generated_at?: string;
           generated_by?: string | null;
           id?: string;
+          party_id?: string | null;
+          party_type?: Database['public']['Enums']['quote_contract_party_type'];
           pdf_file_name?: string | null;
           pdf_size_bytes?: number | null;
           pdf_storage_path?: string;
           quote_id?: string;
+          sequence?: number;
           signature_envelope_id?: string | null;
           signature_metadata?: Json;
           signature_provider?: string | null;
           signature_status?: string;
           signed_at?: string | null;
+          split_snapshot?: Json;
           updated_at?: string;
           version?: number;
         };
@@ -13528,6 +13543,7 @@ export type Database = {
         | 'pedagio'
         | 'ntc';
       pricing_rule_value_type: 'fixed' | 'percentage' | 'per_km' | 'per_ton';
+      quote_contract_party_type: 'client' | 'shipper';
       quote_stage:
         | 'novo_pedido'
         | 'qualificacao'
@@ -13793,6 +13809,7 @@ export const Constants = {
         'ntc',
       ],
       pricing_rule_value_type: ['fixed', 'percentage', 'per_km', 'per_ton'],
+      quote_contract_party_type: ['client', 'shipper'],
       quote_stage: [
         'novo_pedido',
         'qualificacao',

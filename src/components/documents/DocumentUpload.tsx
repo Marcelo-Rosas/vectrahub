@@ -54,6 +54,8 @@ interface DocumentUploadProps {
   onDocumentUploaded?: (type: DocumentType) => void;
   /** Called after registro criado (id + tipo) — ex.: validação automática de NF-e */
   onDocumentCreated?: (documentId: string, type: DocumentType, file: File) => void;
+  /** Wizard/CT-e: só XML autorizado da NF-e (tipo nfe). Recusa DANFE PDF. */
+  nfeXmlContext?: boolean;
 }
 
 const STANDALONE_FISCAL_DOCUMENT_TYPES: { value: DocumentType; label: string }[] = [
@@ -212,6 +214,7 @@ export function DocumentUpload({
   onDocumentUploaded,
   onDocumentCreated,
   standaloneFiscalContext,
+  nfeXmlContext,
 }: DocumentUploadProps) {
   const { user } = useAuth();
   const createDocumentMutation = useCreateDocument();
@@ -233,31 +236,39 @@ export function DocumentUpload({
       ]
     : CARRIER_PAYMENT_BASE_DOCUMENT_TYPES;
 
-  let availableTypes = standaloneFiscalContext
-    ? STANDALONE_FISCAL_DOCUMENT_TYPES
-    : docMotContext
-      ? DOC_MOT_TYPES
-      : financialContext === 'carrier_payment'
-        ? carrierPaymentTypes
-        : financialContext === 'quote_receivable'
-          ? QUOTE_RECEIVABLE_DOCUMENT_TYPES
-          : quoteId && !orderId
-            ? QUOTE_DOCUMENT_TYPES
-            : orderStage
-              ? DOCUMENT_TYPES_BY_STAGE[orderStage]
-              : DOCUMENT_TYPES_BY_STAGE['ordem_criada'];
+  let availableTypes = nfeXmlContext
+    ? [{ value: 'nfe' as DocumentType, label: 'XML NF-e autorizado' }]
+    : standaloneFiscalContext
+      ? STANDALONE_FISCAL_DOCUMENT_TYPES
+      : docMotContext
+        ? DOC_MOT_TYPES
+        : financialContext === 'carrier_payment'
+          ? carrierPaymentTypes
+          : financialContext === 'quote_receivable'
+            ? QUOTE_RECEIVABLE_DOCUMENT_TYPES
+            : quoteId && !orderId
+              ? QUOTE_DOCUMENT_TYPES
+              : orderStage
+                ? DOCUMENT_TYPES_BY_STAGE[orderStage]
+                : DOCUMENT_TYPES_BY_STAGE['ordem_criada'];
 
   // Na aba Docs, remover tipos Doc-Mot (CNH, CRLV, etc.) — estão na aba Doc-Mot
-  if (!docMotContext && !financialContext && orderId) {
+  if (!nfeXmlContext && !docMotContext && !financialContext && orderId) {
     availableTypes = availableTypes.filter((t) => !DRIVER_DOC_TYPES.includes(t.value));
   }
   // Quando docs do motorista foram herdados da viagem, remove do seletor
-  if (driverDocsInherited && orderId && financialContext !== 'carrier_payment' && !docMotContext) {
+  if (
+    !nfeXmlContext &&
+    driverDocsInherited &&
+    orderId &&
+    financialContext !== 'carrier_payment' &&
+    !docMotContext
+  ) {
     availableTypes = availableTypes.filter((t) => !DRIVER_DOC_TYPES.includes(t.value));
   }
 
   const [selectedType, setSelectedType] = useState<DocumentType>(
-    standaloneFiscalContext ? 'nfe' : (availableTypes[0]?.value ?? 'outros')
+    nfeXmlContext || standaloneFiscalContext ? 'nfe' : (availableTypes[0]?.value ?? 'outros')
   );
 
   // Atualiza o tipo selecionado quando o estágio muda
@@ -272,6 +283,15 @@ export function DocumentUpload({
       if (!user) {
         toast.error('Você precisa estar logado para enviar documentos');
         return;
+      }
+
+      const isXml = file.name.toLowerCase().endsWith('.xml');
+      if (nfeXmlContext && !isXml) {
+        toast.error('Só XML autorizado da NF-e. DANFE PDF não traz destinatário.');
+        return;
+      }
+      if (type === 'nfe' && !isXml && file.name.toLowerCase().endsWith('.pdf')) {
+        toast.warning('DANFE PDF valida só a chave. CT-e precisa do XML autorizado.');
       }
 
       const fileExt = file.name.split('.').pop();
@@ -330,7 +350,6 @@ export function DocumentUpload({
 
       onDocumentUploaded?.(type);
 
-      const isXml = file.name.toLowerCase().endsWith('.xml');
       if (
         created?.id &&
         onDocumentCreated &&
@@ -352,7 +371,7 @@ export function DocumentUpload({
       onCarrierPaymentDocCreated,
       onQuotePaymentDocCreated,
       onDocumentUploaded,
-      onDocumentCreated,
+      nfeXmlContext,
     ]
   );
 
@@ -369,7 +388,15 @@ export function DocumentUpload({
 
       for (const uploadingFile of newFiles) {
         try {
-          await uploadFile(uploadingFile.file, uploadingFile.type);
+          const isXml = uploadingFile.file.name.toLowerCase().endsWith('.xml');
+          if (nfeXmlContext && !isXml) {
+            toast.error(`${uploadingFile.file.name}: só XML (.xml)`);
+            setUploadingFiles((prev) =>
+              prev.map((f) => (f.file === uploadingFile.file ? { ...f, status: 'error' } : f))
+            );
+            continue;
+          }
+          await uploadFile(uploadingFile.file, nfeXmlContext ? 'nfe' : uploadingFile.type);
           toast.success(`${uploadingFile.file.name} enviado com sucesso`);
         } catch (error) {
           toast.error(`Erro ao enviar ${uploadingFile.file.name}`);
@@ -378,23 +405,25 @@ export function DocumentUpload({
 
       onSuccess?.();
     },
-    [selectedType, onSuccess, uploadFile]
+    [selectedType, onSuccess, uploadFile, nfeXmlContext]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      'application/pdf': ['.pdf'],
-      'image/jpeg': ['.jpg', '.jpeg'],
-      'image/png': ['.png'],
-      'image/webp': ['.webp'],
-      'application/xml': ['.xml'],
-      'text/xml': ['.xml'],
-      'video/mp4': ['.mp4'],
-      'video/quicktime': ['.mov'],
-      'video/x-msvideo': ['.avi'],
-      'video/webm': ['.webm'],
-    },
+    accept: nfeXmlContext
+      ? { 'application/xml': ['.xml'], 'text/xml': ['.xml'] }
+      : {
+          'application/pdf': ['.pdf'],
+          'image/jpeg': ['.jpg', '.jpeg'],
+          'image/png': ['.png'],
+          'image/webp': ['.webp'],
+          'application/xml': ['.xml'],
+          'text/xml': ['.xml'],
+          'video/mp4': ['.mp4'],
+          'video/quicktime': ['.mov'],
+          'video/x-msvideo': ['.avi'],
+          'video/webm': ['.webm'],
+        },
     maxSize: 524288000, // 500MB
   });
 
@@ -411,21 +440,23 @@ export function DocumentUpload({
   return (
     <div className="space-y-4">
       {/* Document Type Selector */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-foreground">Tipo de documento:</span>
-        <Select value={selectedType} onValueChange={(v) => setSelectedType(v as DocumentType)}>
-          <SelectTrigger className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {availableTypes.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {!nfeXmlContext && (
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-foreground">Tipo de documento:</span>
+          <Select value={selectedType} onValueChange={(v) => setSelectedType(v as DocumentType)}>
+            <SelectTrigger className="w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableTypes.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  {type.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Dropzone */}
       <div
@@ -448,7 +479,9 @@ export function DocumentUpload({
           {isDragActive ? 'Solte os arquivos aqui' : 'Arraste arquivos ou clique para selecionar'}
         </p>
         <p className="text-sm text-muted-foreground">
-          PDF, imagens, XML ou vídeos (MP4, MOV, AVI, WebM) • Máximo 500MB
+          {nfeXmlContext
+            ? 'Somente XML autorizado da NF-e (.xml) — não enviar DANFE PDF'
+            : 'PDF, imagens, XML ou vídeos (MP4, MOV, AVI, WebM) • Máximo 500MB'}
         </p>
       </div>
 

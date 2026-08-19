@@ -106,6 +106,13 @@ import {
   type FreightCalculationOutput,
 } from '@/lib/freightCalculator';
 import { negotiatedQuoteValue } from '@/lib/quote-breakdown-utils';
+import {
+  buildContractSplitsFromQuoteForm,
+  resolveContractPayerCount,
+  SplitBasisZeroError,
+  parseContractSplitsJson,
+  type ContractSplitItem,
+} from '@/lib/contract-split';
 import { resolveLotacaoKmOverPercent } from '@/lib/lotacao-freight-base';
 import { buildStoredBreakdownFromEdgeResponse } from '@/hooks/useCalculateFreight';
 import { useEdgeFreightPreview } from '@/hooks/use-edge-freight-preview';
@@ -121,6 +128,7 @@ import {
   ANTT_FLOOR_DEFAULT_FLAGS,
 } from '@/lib/antt-floor-calc';
 import { getAnttCargoTypeLabel, resolveAnttCargoTypeForPiso } from '@/lib/antt-cargo-type-map';
+import { attachNfeXmlFiles } from '@/lib/attach-nfe-xml';
 
 type Quote = Database['public']['Tables']['quotes']['Row'];
 type PriceTableRow = Database['public']['Tables']['price_tables']['Row'];
@@ -365,6 +373,9 @@ const quoteSchema = z
         z.object({
           client_id: z.string().optional(),
           name: z.string(),
+          weight_kg: z.number().min(0).optional(),
+          cargo_value: z.number().min(0).optional(),
+          leg_amount: z.number().min(0).optional(),
         })
       )
       .optional()
@@ -379,10 +390,20 @@ const quoteSchema = z
           /** CEP do ponto de coleta (embarcador adicional). Entra no cálculo de km antes das entregas. */
           cep: z.string().optional(),
           city_uf: z.string().optional(),
+          weight_kg: z.number().min(0).optional(),
+          cargo_value: z.number().min(0).optional(),
+          leg_amount: z.number().min(0).optional(),
         })
       )
       .optional()
       .default([]),
+    /** Rateio contrato — pagador principal (FOB = cliente, CIF = embarcador). */
+    client_leg_weight_kg: z.number().min(0).optional(),
+    client_leg_cargo_value: z.number().min(0).optional(),
+    client_leg_amount: z.number().min(0).optional(),
+    shipper_leg_weight_kg: z.number().min(0).optional(),
+    shipper_leg_cargo_value: z.number().min(0).optional(),
+    shipper_leg_amount: z.number().min(0).optional(),
     /** Paradas intermediárias (ordem: origem → paradas → destino). Usadas para cálculo de km com waypoints. */
     route_stops: z
       .array(
@@ -435,6 +456,31 @@ interface QuoteFormProps {
 const kgToUnit = (kg: number, unit: 'kg' | 'ton') => (unit === 'ton' ? kg / 1000 : kg);
 const unitToKg = (value: number, unit: 'kg' | 'ton') => (unit === 'ton' ? value * 1000 : value);
 
+function formHasManualLegAmounts(data: QuoteFormData, isCif: boolean): boolean {
+  if (isCif) {
+    if (data.shipper_leg_amount != null && data.shipper_leg_amount > 0) return true;
+    return (data.additional_shippers ?? []).some((s) => (s.leg_amount ?? 0) > 0);
+  }
+  if (data.client_leg_amount != null && data.client_leg_amount > 0) return true;
+  return (data.additional_recipients ?? []).some((r) => (r.leg_amount ?? 0) > 0);
+}
+
+function formBasisSum(data: QuoteFormData, isCif: boolean): number {
+  const legBasis = (w?: number, c?: number) => Math.max(w ?? 0, c ?? 0);
+  if (isCif) {
+    let sum = legBasis(data.shipper_leg_weight_kg, data.shipper_leg_cargo_value);
+    for (const s of data.additional_shippers ?? []) {
+      sum += legBasis(s.weight_kg, s.cargo_value);
+    }
+    return sum;
+  }
+  let sum = legBasis(data.client_leg_weight_kg, data.client_leg_cargo_value);
+  for (const r of data.additional_recipients ?? []) {
+    sum += legBasis(r.weight_kg, r.cargo_value);
+  }
+  return sum;
+}
+
 export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
   const { user } = useAuth();
   const { data: clients } = useClients();
@@ -472,6 +518,7 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
 
   // Weight unit toggle: kg or ton
   const [weightUnit, setWeightUnit] = useState<'kg' | 'ton'>('ton');
+  const [pendingNfeXmlFiles, setPendingNfeXmlFiles] = useState<File[]>([]);
 
   // Taxas adicionais (conditional fees + estadia)
   const [additionalFeesSelection, setAdditionalFeesSelection] = useState<AdditionalFeesSelection>(
@@ -1278,6 +1325,12 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
             }[])
           : [],
         route_stops: [],
+        client_leg_weight_kg: undefined,
+        client_leg_cargo_value: undefined,
+        client_leg_amount: undefined,
+        shipper_leg_weight_kg: undefined,
+        shipper_leg_cargo_value: undefined,
+        shipper_leg_amount: undefined,
       });
     } else {
       setAdditionalFeesSelection(defaultAdditionalFeesSelection);
@@ -1321,8 +1374,15 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
         additional_recipients: [],
         additional_shippers: [],
         route_stops: [],
+        client_leg_weight_kg: undefined,
+        client_leg_cargo_value: undefined,
+        client_leg_amount: undefined,
+        shipper_leg_weight_kg: undefined,
+        shipper_leg_cargo_value: undefined,
+        shipper_leg_amount: undefined,
       });
     }
+    setPendingNfeXmlFiles([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quote, form, open]);
 
@@ -1348,6 +1408,57 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
     form.setValue('route_stops', stops, { shouldDirty: false });
     form.setValue('additional_recipients', recipients, { shouldDirty: false });
   }, [quote, routeStopsData, form]);
+
+  useEffect(() => {
+    if (!quote) return;
+    const splits = parseContractSplitsJson(
+      (quote as unknown as Record<string, unknown>).contract_splits
+    );
+    if (splits.length === 0) return;
+
+    const isCif =
+      String(quote.freight_type ?? 'FOB')
+        .trim()
+        .toUpperCase() === 'CIF';
+
+    for (const split of splits) {
+      const cargoReais =
+        split.cargo_value_cents != null ? split.cargo_value_cents / 100 : undefined;
+      const amountReais = split.amount_cents / 100;
+
+      if (split.sequence === 1) {
+        if (isCif) {
+          form.setValue('shipper_leg_weight_kg', split.weight_kg, { shouldDirty: false });
+          form.setValue('shipper_leg_cargo_value', cargoReais, { shouldDirty: false });
+          form.setValue('shipper_leg_amount', amountReais, { shouldDirty: false });
+        } else {
+          form.setValue('client_leg_weight_kg', split.weight_kg, { shouldDirty: false });
+          form.setValue('client_leg_cargo_value', cargoReais, { shouldDirty: false });
+          form.setValue('client_leg_amount', amountReais, { shouldDirty: false });
+        }
+        continue;
+      }
+
+      const idx = split.sequence - 2;
+      if (isCif) {
+        form.setValue(`additional_shippers.${idx}.weight_kg`, split.weight_kg, {
+          shouldDirty: false,
+        });
+        form.setValue(`additional_shippers.${idx}.cargo_value`, cargoReais, { shouldDirty: false });
+        form.setValue(`additional_shippers.${idx}.leg_amount`, amountReais, { shouldDirty: false });
+      } else {
+        form.setValue(`additional_recipients.${idx}.weight_kg`, split.weight_kg, {
+          shouldDirty: false,
+        });
+        form.setValue(`additional_recipients.${idx}.cargo_value`, cargoReais, {
+          shouldDirty: false,
+        });
+        form.setValue(`additional_recipients.${idx}.leg_amount`, amountReais, {
+          shouldDirty: false,
+        });
+      }
+    }
+  }, [quote, form, routeStopsData]);
 
   useEffect(() => {
     if (!quote) return;
@@ -1782,6 +1893,67 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
       const storedBillable =
         useStoredPricing && quote?.billable_weight != null ? quote.billable_weight : null;
 
+      const negotiatedValue = negotiatedQuoteValue(
+        useStoredPricing
+          ? Number(pricingBreakdown?.totals?.totalCliente) || storedValue
+          : calculationResult.totals.totalCliente,
+        data.discount || 0
+      );
+
+      const isCif =
+        String(data.freight_type ?? '')
+          .trim()
+          .toUpperCase() === 'CIF';
+      const isFracionado =
+        String(data.freight_modality ?? 'lotacao').toLowerCase() === 'fracionado';
+      const additionalRecipientCount = (data.additional_recipients ?? []).filter(
+        (r) => r.client_id || r.name?.trim()
+      ).length;
+      const additionalShipperCount = (data.additional_shippers ?? []).filter(
+        (s) => s.shipper_id || s.name?.trim()
+      ).length;
+      const payerCount = resolveContractPayerCount(data.freight_type, {
+        client_id: data.client_id,
+        additional_recipient_count: additionalRecipientCount,
+        shipper_id: data.shipper_id,
+        additional_shipper_count: additionalShipperCount,
+      });
+
+      if (isFracionado && payerCount > 1) {
+        const hasOverride = formHasManualLegAmounts(data, isCif);
+        if (!hasOverride && formBasisSum(data, isCif) === 0) {
+          toast.error('Informe peso ou valor da carga por pagador');
+          return;
+        }
+      }
+
+      let contractSplits: ContractSplitItem[];
+      try {
+        contractSplits = buildContractSplitsFromQuoteForm({
+          freight_type: data.freight_type,
+          freight_modality: data.freight_modality,
+          valueReais: negotiatedValue,
+          client_id: data.client_id,
+          client_name: data.client_name,
+          shipper_id: data.shipper_id,
+          shipper_name: data.shipper_name,
+          client_leg_weight_kg: data.client_leg_weight_kg,
+          client_leg_cargo_value: data.client_leg_cargo_value,
+          client_leg_amount: data.client_leg_amount,
+          shipper_leg_weight_kg: data.shipper_leg_weight_kg,
+          shipper_leg_cargo_value: data.shipper_leg_cargo_value,
+          shipper_leg_amount: data.shipper_leg_amount,
+          additional_recipients: data.additional_recipients,
+          additional_shippers: data.additional_shippers,
+        });
+      } catch (e) {
+        if (e instanceof SplitBasisZeroError) {
+          toast.error('Informe peso ou valor da carga por pagador');
+          return;
+        }
+        throw e;
+      }
+
       const quoteData = {
         client_id: data.client_id || null,
         client_name: data.client_name,
@@ -1829,12 +2001,9 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
         toll_value: data.toll || null,
         cargo_value: data.cargo_value || null,
         discount_value: data.discount || 0,
-        value: negotiatedQuoteValue(
-          useStoredPricing
-            ? Number(pricingBreakdown?.totals?.totalCliente) || storedValue
-            : calculationResult.totals.totalCliente,
-          data.discount || 0
-        ),
+        value: negotiatedValue,
+        contract_splits:
+          contractSplits as unknown as Database['public']['Tables']['quotes']['Row']['contract_splits'],
         pricing_breakdown: {
           ...pricingBreakdown,
           totals: {
@@ -1876,6 +2045,24 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
       }
 
       await syncQuoteRouteStops(savedQuoteId, stopsForSync);
+
+      if (pendingNfeXmlFiles.length) {
+        try {
+          const attached = await attachNfeXmlFiles({
+            userId: user.id,
+            quoteId: savedQuoteId,
+            files: pendingNfeXmlFiles,
+          });
+          setPendingNfeXmlFiles([]);
+          if (attached.keys.length) {
+            toast.success(`${attached.keys.length} XML NF-e anexado(s) com destinatário`);
+          }
+        } catch (xmlErr) {
+          toast.error('Cotação salva, mas XML NF-e falhou', {
+            description: xmlErr instanceof Error ? xmlErr.message : String(xmlErr),
+          });
+        }
+      }
 
       // On-save composition analysis: async, non-blocking
       const shipperId = quoteData.shipper_id;
@@ -2114,6 +2301,9 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
                       anttCcd={anttRate?.ccd != null ? Number(anttRate.ccd) : null}
                       anttCc={anttRate?.cc != null ? Number(anttRate.cc) : null}
                       anttKmDistance={kmDistanceForAntt}
+                      quoteId={quote?.id ?? null}
+                      pendingNfeXmlFiles={pendingNfeXmlFiles}
+                      onPendingNfeXmlFilesChange={setPendingNfeXmlFiles}
                     />
                   </div>
                 ) : (

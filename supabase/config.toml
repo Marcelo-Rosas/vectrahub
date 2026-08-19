@@ -38,6 +38,13 @@ additional_redirect_urls = [
   "https://app.vectracargo.com.br/**",
   "https://*.app.vectracargo.com.br",
   "https://*.app.vectracargo.com.br/**",
+  # Feira IHRSA (Pages vectra-feira)
+  "https://app.feira.vectracargo.com.br",
+  "https://app.feira.vectracargo.com.br/**",
+  "https://app.feira.vectracargo.com.br/auth",
+  "https://app.feira.vectracargo.com.br/feira",
+  "https://vectra-feira.pages.dev",
+  "https://vectra-feira.pages.dev/**",
 ]
 
 [functions.import-price-table]
@@ -126,6 +133,15 @@ verify_jwt = false  # Router de AI; valida auth internamente
 
 [functions.invite-user]
 verify_jwt = false  # Função valida admin via is_admin() RPC
+
+[functions.tenant-signup]
+verify_jwt = false  # Cadastro público do tenant feira; função valida domínio do e-mail
+
+[functions.feira-save-quote]
+verify_jwt = false  # JWT usuário via resolveSupabaseContext('user')
+
+[functions.feira-quotes-feed]
+verify_jwt = false  # JWT staff Vectra via resolveSupabaseContext('user')
 
 [functions.process-payment-proof]
 verify_jwt = false  # Chamado pelo workflow-orchestrator com service role

@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { AppError, mapToAppError } from '@/lib/errors/AppError';
+import { contentTypeFromFunctionsErrorContext } from '@/lib/functions-error-context';
 import { logger } from '@/lib/logger';
 
 type InvokeOptions = {
@@ -55,13 +56,19 @@ async function buildAuthHeaders(requireAuth: boolean): Promise<Record<string, st
   };
 }
 
-async function parseErrorContext(error: { context?: Response }): Promise<string | null> {
+async function parseErrorContext(error: { context?: unknown }): Promise<string | null> {
   const context = error?.context;
   if (!context) return null;
-  const contentType = context.headers.get('content-type') || '';
+  const contentType = contentTypeFromFunctionsErrorContext(context);
+  const readable = context as {
+    clone?: () => { json: () => Promise<unknown>; text: () => Promise<string> };
+    status?: number;
+  };
+  if (typeof readable.clone !== 'function') return null;
+  const cloned = () => readable.clone!();
   if (contentType.includes('application/json')) {
     try {
-      const payload = (await context.clone().json()) as {
+      const payload = (await cloned().json()) as {
         error?: string;
         detail?: string;
         message?: string;
@@ -73,7 +80,7 @@ async function parseErrorContext(error: { context?: Response }): Promise<string 
       return payload?.detail || payload?.message || payload?.error || null;
     } catch {
       try {
-        const text = await context.clone().text();
+        const text = await cloned().text();
         return text || null;
       } catch {
         return null;
@@ -81,7 +88,7 @@ async function parseErrorContext(error: { context?: Response }): Promise<string 
     }
   }
   try {
-    const text = await context.clone().text();
+    const text = await cloned().text();
     return text?.slice(0, 200) || null;
   } catch {
     return null;
@@ -90,7 +97,7 @@ async function parseErrorContext(error: { context?: Response }): Promise<string 
 
 function statusFromFunctionsError(error: {
   message?: string;
-  context?: Response;
+  context?: { status?: number };
 }): number | undefined {
   const ctxStatus = error.context?.status;
   if (typeof ctxStatus === 'number') return ctxStatus;

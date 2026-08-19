@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/hooks/useAuth';
 import { isTransientError } from '@/lib/errors/AppError';
+import { FAIR_DASHBOARD_OWNER_EMAIL } from '@/lib/fair-dashboard-access';
 import { Sentry } from '@/lib/sentry';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
@@ -36,6 +37,8 @@ const InsuranceMonitoringDashboard = lazy(() =>
   }))
 );
 const NotFound = lazy(() => import('./pages/NotFound'));
+const FairQuote = lazy(() => import('./pages/FairQuote'));
+const FairDashboard = lazy(() => import('./pages/FairDashboard'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +66,33 @@ const App = () => (
             <SentryRoutes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+
+              <Route
+                path="/feira"
+                element={
+                  <ProtectedRoute>
+                    <RouteErrorBoundary
+                      title="Erro na cotação feira"
+                      description="Recarregue a página ou tente novamente."
+                    >
+                      <FairQuote />
+                    </RouteErrorBoundary>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/feira/dashboard"
+                element={
+                  <ProtectedRoute allowedEmails={[FAIR_DASHBOARD_OWNER_EMAIL]}>
+                    <RouteErrorBoundary
+                      title="Erro no dashboard feira"
+                      description="Recarregue a página ou tente novamente."
+                    >
+                      <FairDashboard />
+                    </RouteErrorBoundary>
+                  </ProtectedRoute>
+                }
+              />
 
               <Route
                 path="/"

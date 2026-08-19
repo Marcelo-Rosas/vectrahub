@@ -26,6 +26,35 @@ function json(body: unknown, status = 200, cors: Record<string, string> = {}): R
   });
 }
 
+function pickProtocolo(body: Record<string, unknown>, fallback: string | null): string | null {
+  for (const key of [
+    'protocolo',
+    'numero_protocolo',
+    'protocolo_sefaz',
+    'numero_protocolo_autorizacao',
+  ]) {
+    const v = body[key];
+    if (typeof v === 'string' && v.trim()) return v.trim();
+  }
+  return fallback;
+}
+
+function nProtFromXml(xml: string): string | null {
+  const m = xml.match(/<nProt>(\d{15})<\/nProt>/);
+  return m?.[1] ?? null;
+}
+
+async function protocoloFromXmlUrl(url: unknown): Promise<string | null> {
+  if (typeof url !== 'string' || !url.startsWith('http')) return null;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    return nProtFromXml(await r.text());
+  } catch {
+    return null;
+  }
+}
+
 serve(async (req) => {
   const cors = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
@@ -85,18 +114,18 @@ serve(async (req) => {
             : focusStatus === 'processando_autorizacao'
               ? 'processing'
               : null;
-    if (newStatus && newStatus !== emission.status) {
-      await supabase
-        .from('mdfe_emissions')
-        .update({
-          status: newStatus,
-          status_sefaz: resp.body.status_sefaz ?? null,
-          chave_mdfe: resp.body.chave ?? emission.chave_mdfe,
-          protocolo: resp.body.protocolo ?? resp.body.numero_protocolo ?? emission.protocolo,
-          response_received: resp.body,
-        })
-        .eq('id', emissionId);
+    let protocolo = pickProtocolo(resp.body as Record<string, unknown>, emission.protocolo ?? null);
+    if (!protocolo) {
+      protocolo = await protocoloFromXmlUrl((resp.body as Record<string, unknown>).caminho_xml);
     }
+    const patch: Record<string, unknown> = {
+      status_sefaz: resp.body.status_sefaz ?? emission.status_sefaz,
+      chave_mdfe: resp.body.chave ?? emission.chave_mdfe,
+      protocolo,
+      response_received: resp.body,
+    };
+    if (newStatus && newStatus !== emission.status) patch.status = newStatus;
+    await supabase.from('mdfe_emissions').update(patch).eq('id', emissionId);
     return json(
       {
         ok: true,
@@ -128,18 +157,19 @@ serve(async (req) => {
         cors
       );
     }
-    if (!emission.protocolo) {
-      return json(
-        { error: 'missing_protocolo', detail: 'consult first to populate protocolo' },
-        409,
-        cors
-      );
+    const ibgeNames: Record<number, string> = {
+      2304400: 'Fortaleza',
+      2309607: 'Pacajus',
+    };
+    const nomeMunicipio = String(body.nome_municipio ?? ibgeNames[codigoMunicipio] ?? '').trim();
+    if (!nomeMunicipio) {
+      return json({ error: 'nome_municipio_required' }, 400, cors);
     }
+    const dataEncerrar = new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10);
     const resp = await focus.encerrarMdfe(ref, {
-      protocolo: emission.protocolo,
-      data_encerramento: new Date().toISOString().slice(0, 19),
-      uf,
-      codigo_municipio: codigoMunicipio,
+      data: dataEncerrar,
+      sigla_uf: uf,
+      nome_municipio: nomeMunicipio,
     });
     if (resp.status >= 400) {
       return json(

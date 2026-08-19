@@ -1,21 +1,25 @@
 /**
- * Consulta situação de NF-e / CT-e / MDF-e na SEFAZ.
+ * Consulta situação de NF-e / CT-e / MDF-e.
  *
- * Providers (ordem de prioridade):
- * 1. SEFAZ_PROXY_URL — proxy local/cloud com certificado A1 (SOAP oficial)
- * 2. FOCUS_NFE_TOKEN — API Focus NFe (nfes_recebidas / ctes_recebidas)
+ * Ordem:
+ * 1. SEFAZ_PROXY (SOAP A1) — situação; dest só se SOAP trouxer <dest>
+ * 2. MEUDANFE_API_KEY — XML completo da NF-e (modelo 55)
+ * 3. FOCUS_NFE_TOKEN — nfes_recebidas (só se Vectra estiver na distribuição DFe)
  */
+import { extractDestFromNfeXml } from './nfe-dest-from-meta.ts';
+import { fetchNfeXmlFromMeuDanfe } from './meudanfe-nfe.ts';
 
 export interface SefazConsultMetadata {
   c_stat: string;
   x_motivo: string;
   protocolo?: string | null;
   data_autorizacao?: string | null;
-  source: 'proxy' | 'focus';
+  source: 'proxy' | 'focus' | 'meudanfe';
   consulted_at: string;
   emitente_cnpj?: string | null;
   emitente_nome?: string | null;
   destinatario_cnpj?: string | null;
+  destinatario_cpf?: string | null;
   destinatario_nome?: string | null;
 }
 
@@ -24,6 +28,8 @@ export interface SefazConsultResult {
   chave: string;
   document_type: 'nfe' | 'cte' | 'mdfe' | 'unknown';
   metadata?: SefazConsultMetadata;
+  /** procNFe / infNFe quando MeuDanfe (ou proxy) devolve XML completo */
+  xml?: string;
   error?: string;
   http_status?: number;
 }
@@ -264,6 +270,31 @@ export interface ConsultSefazOptions {
   focusToken?: string | null;
   vectraCnpj?: string | null;
   timeoutMs?: number;
+  meuDanfeApiKey?: string | null;
+}
+
+function hasDestNome(r: SefazConsultResult | undefined): boolean {
+  return Boolean(String(r?.metadata?.destinatario_nome ?? '').trim());
+}
+
+function resultFromMeuDanfeXml(chave: string, xml: string): SefazConsultResult {
+  const dest = extractDestFromNfeXml(xml);
+  const nome = dest.destinatario_nome ?? '';
+  return {
+    ok: Boolean(nome),
+    chave,
+    document_type: documentTypeFromChave(chave),
+    xml,
+    metadata: {
+      c_stat: nome ? '100' : '000',
+      x_motivo: nome ? 'XML NF-e via MeuDanfe' : 'MeuDanfe XML sem destinatário',
+      source: 'meudanfe',
+      consulted_at: new Date().toISOString(),
+      destinatario_nome: dest.destinatario_nome ?? null,
+      destinatario_cnpj: dest.destinatario_cnpj ?? null,
+      destinatario_cpf: dest.destinatario_cpf ?? null,
+    },
+  };
 }
 
 export async function consultSefaz(
@@ -280,6 +311,8 @@ export async function consultSefaz(
     };
   }
 
+  let lastWithoutDest: SefazConsultResult | undefined;
+
   if (options.proxyUrl && options.proxySecret) {
     const viaProxy = await consultViaProxy(
       clean,
@@ -287,12 +320,35 @@ export async function consultSefaz(
       options.proxySecret,
       options.timeoutMs
     );
-    if (viaProxy.metadata) return viaProxy;
-    if (!options.focusToken) return viaProxy;
+    if (hasDestNome(viaProxy)) return viaProxy;
+    lastWithoutDest = viaProxy.metadata || viaProxy.error ? viaProxy : lastWithoutDest;
+  }
+
+  const meuDanfeKey = options.meuDanfeApiKey ?? Deno.env.get('MEUDANFE_API_KEY') ?? null;
+  if (meuDanfeKey && documentTypeFromChave(clean) === 'nfe') {
+    const md = await fetchNfeXmlFromMeuDanfe(clean, meuDanfeKey);
+    if (md.ok && md.xml) return resultFromMeuDanfeXml(clean, md.xml);
+    const mdFatal = md.http_status === 401 || md.http_status === 402 || md.http_status === 403;
+    if (mdFatal || !lastWithoutDest) {
+      lastWithoutDest = {
+        ok: false,
+        chave: clean,
+        document_type: documentTypeFromChave(clean),
+        error: md.error,
+        http_status: md.http_status,
+      };
+    }
   }
 
   if (options.focusToken) {
-    return consultViaFocus(clean, options.focusToken, options.vectraCnpj, options.timeoutMs);
+    const viaFocus = await consultViaFocus(
+      clean,
+      options.focusToken,
+      options.vectraCnpj,
+      options.timeoutMs
+    );
+    if (hasDestNome(viaFocus) || !lastWithoutDest) return viaFocus;
+    if (viaFocus.metadata) return viaFocus;
   }
 
   if (options.proxyUrl && !options.proxySecret) {
@@ -304,12 +360,14 @@ export async function consultSefaz(
     };
   }
 
+  if (lastWithoutDest) return lastWithoutDest;
+
   return {
     ok: false,
     chave: clean,
     document_type: documentTypeFromChave(clean),
     error:
-      'Consulta SEFAZ não configurada. Defina SEFAZ_PROXY_URL + SEFAZ_PROXY_SECRET (proxy com certificado A1) ou FOCUS_NFE_TOKEN.',
+      'Consulta NF-e não configurada. Defina SEFAZ_PROXY_URL+SECRET, MEUDANFE_API_KEY ou FOCUS_NFE_TOKEN.',
   };
 }
 

@@ -1,6 +1,7 @@
 {
   "imports": {
     "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
+    "@supabase/server": "npm:@supabase/server",
     "zod": "npm:zod@3.23.8"
   },
   "compilerOptions": {

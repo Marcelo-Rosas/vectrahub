@@ -41,6 +41,13 @@ import {
 import { CRITICALITY_CONFIG, REQUIREMENT_LABELS, type RiskCriticality } from '@/types/risk';
 import { BuonnyRegistrationModal, type BuonnyRegistrationData } from './BuonnyRegistrationModal';
 import type { RiskEvidence } from '@/types/risk';
+import {
+  resolveAnttConsultPath,
+  anttRntrcForPortal,
+  anttShouldFallbackToPlaca,
+  isAnttPendente,
+} from '@/lib/risk-antt-evidence';
+import { useAuth } from '@/hooks/useAuth';
 
 function onlyDigits(s: string): string {
   return s.replace(/\D/g, '');
@@ -88,6 +95,7 @@ export function RiskWorkflowWizard({
   destinationUf = 'SP',
 }: RiskWorkflowWizardProps) {
   const qc = useQueryClient();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState<StepKey>('antt');
   const [notes, setNotes] = useState('');
 
@@ -186,8 +194,17 @@ export function RiskWorkflowWizard({
     : ownerIsCnpj
       ? 'terceiro'
       : 'agregado';
-  const contractType = resolvedDriverContractType ?? inferredContractType;
-  const anttCpfCnpj = contractType === 'proprio' ? resolvedDriverCpf : ownerCpfCnpj;
+  /** Relação comercial Vectra × motorista — NÃO muda a trilha ANTT. */
+  const cadastroContractType = resolvedDriverContractType ?? inferredContractType;
+  /** ANTT: dono do cavalo = motorista (mesmo CPF) → Por Transportador, mesmo se cadastro=terceiro. */
+  const anttConsultPath = resolveAnttConsultPath({
+    contractType: cadastroContractType,
+    driverCpf: resolvedDriverCpf,
+    ownerDoc: ownerCpfCnpj,
+  });
+  const anttCpfCnpj = anttConsultPath === 'proprio' ? resolvedDriverCpf : ownerCpfCnpj;
+  const tacOwnerCadastroTerceiro =
+    cadastroContractType === 'terceiro' && anttConsultPath === 'proprio';
 
   const { data: driverExposure } = useDriverActiveExposure(resolvedDriverId, orderId);
 
@@ -439,7 +456,7 @@ export function RiskWorkflowWizard({
 
     // TAC path needs driver CPF; Agregado path only needs the plate
     let digits = '';
-    if (contractType === 'proprio') {
+    if (anttConsultPath === 'proprio') {
       if (!anttCpfCnpj) {
         toast.error('CPF/CNPJ do transportador não cadastrado');
         return;
@@ -461,7 +478,7 @@ export function RiskWorkflowWizard({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let firstResp: any = null;
 
-      if (contractType !== 'proprio') {
+      if (anttConsultPath !== 'proprio') {
         // ── Terceiro / Agregado path: consulta Por Veículo (placa) ────────────
         setAnttCheckStage('veiculo');
         const respV = await anttCheck.mutateAsync({
@@ -471,7 +488,7 @@ export function RiskWorkflowWizard({
           operation: 'veiculo',
         });
         firstResp = respV;
-        modalidade = contractType === 'terceiro' ? 'terceiro' : 'agregado';
+        modalidade = anttConsultPath === 'terceiro' ? 'terceiro' : 'agregado';
 
         if (respV.situacao === 'regular') {
           // RNTRC do proprietário vem da resposta do portal, ou usa o ANTT do motorista como fallback
@@ -498,12 +515,26 @@ export function RiskWorkflowWizard({
           order_id: orderId,
           cpf_cnpj: digits,
           vehicle_plate: resolvedVehiclePlate,
-          rntrc: resolvedDriverAntt || undefined,
+          rntrc: anttRntrcForPortal(resolvedDriverAntt),
           operation: 'rntrc',
         });
         firstResp = resp1;
 
-        if (resp1.situacao === 'regular' && vehicleRenavam) {
+        if (anttShouldFallbackToPlaca(resp1) && resolvedVehiclePlate) {
+          setAnttCheckStage('veiculo');
+          const respV = await anttCheck.mutateAsync({
+            order_id: orderId,
+            vehicle_plate: resolvedVehiclePlate,
+            cpf_cnpj: digits,
+            operation: 'veiculo',
+          });
+          firstResp = {
+            ...respV,
+            message:
+              respV.message ||
+              'Por Transportador (CPF) sem cadastro ATIVO. Resultado abaixo é Por Veículo (placa).',
+          };
+        } else if (resp1.situacao === 'regular' && vehicleRenavam) {
           setAnttCheckStage('veiculo');
           const resp2 = await anttCheck.mutateAsync({
             order_id: orderId,
@@ -585,6 +616,7 @@ export function RiskWorkflowWizard({
           renavam: vehicleRenavam ?? null,
           cpf_cnpj: digits || null,
           vehicle_plate: normalizePlate(resolvedVehiclePlate),
+          message: firstResp?.message ?? null,
           is_stub: firstResp?.is_stub ?? true,
           consult_source: 'auto',
           modalidade,
@@ -609,7 +641,11 @@ export function RiskWorkflowWizard({
       }
 
       if (!overallOk) {
-        toast.error(irregularNote);
+        if (isAnttPendente({ situacao_raw: firstResp?.situacao_raw })) {
+          toast.warning('ANTT PENDENTE — libere com sua aprovação para ir ao Buonny');
+        } else {
+          toast.error(irregularNote);
+        }
       } else if (modalidade === 'tac') {
         toast.success('ANTT: TAC — veículo na frota do motorista');
       } else if (modalidade === 'terceiro' && ciotFound) {
@@ -631,6 +667,43 @@ export function RiskWorkflowWizard({
       toast.error(`Erro na consulta ANTT: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setAnttCheckStage(null);
+    }
+  };
+
+  const handleAnttPendenteRelease = async () => {
+    if (!anttEvidence) {
+      toast.error('Consulte a ANTT antes de liberar');
+      return;
+    }
+    const prev = (anttEvidence.payload as Record<string, unknown> | null) ?? {};
+    if (!isAnttPendente(prev)) {
+      toast.error('Liberação só vale para situação PENDENTE');
+      return;
+    }
+    try {
+      const evalId = await ensureEvaluationId();
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      await addEvidence.mutateAsync({
+        evaluation_id: evalId,
+        evidence_type: 'antt_rntrc_check',
+        status: 'valid',
+        expires_at: expiresAt,
+        notes: 'ANTT PENDENTE — liberação operacional (aprovação do operador)',
+        payload: {
+          ...prev,
+          operator_release: true,
+          operator_release_at: new Date().toISOString(),
+          operator_release_by: user?.id ?? null,
+          consult_source: 'operator_release',
+        },
+      });
+      await Promise.all([
+        qc.refetchQueries({ queryKey: ['risk-evidence', evalId] }),
+        qc.invalidateQueries({ queryKey: ['risk-evaluation', 'order', orderId] }),
+      ]);
+      toast.success('ANTT PENDENTE liberada. Pode ir ao Próximo.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Falha ao liberar ANTT PENDENTE');
     }
   };
 
@@ -850,8 +923,13 @@ export function RiskWorkflowWizard({
             <StepAntt
               driverName={resolvedDriverName}
               driverCpf={anttCpfCnpj}
-              ownerName={(contractType !== 'proprio' && vehicleData?.ownerName) || undefined}
-              ownerIsCnpj={contractType === 'terceiro'}
+              ownerName={
+                (anttConsultPath !== 'proprio' || tacOwnerCadastroTerceiro
+                  ? vehicleData?.ownerName
+                  : undefined) || undefined
+              }
+              ownerIsCnpj={anttConsultPath === 'terceiro'}
+              tacOwnerCadastroTerceiro={tacOwnerCadastroTerceiro}
               driverRntrcRegistryType={resolvedDriverRntrcRegistryType}
               vehiclePlate={resolvedVehiclePlate}
               vehicleTypeName={resolvedVehicleTypeName}
@@ -859,6 +937,8 @@ export function RiskWorkflowWizard({
               anttValid={anttValid}
               isEditable={isBuonnyEditable}
               onConsult={handleAnttConsult}
+              onReleasePendente={handleAnttPendenteRelease}
+              isReleasingPendente={addEvidence.isPending}
               isConsulting={anttCheck.isPending || anttCheckStage !== null}
               checkStage={anttCheckStage}
               consultError={anttCheck.isError ? (anttCheck.error?.message ?? 'Erro') : null}
@@ -970,12 +1050,15 @@ function StepAntt({
   driverRntrcRegistryType,
   ownerName,
   ownerIsCnpj,
+  tacOwnerCadastroTerceiro,
   vehiclePlate,
   vehicleTypeName,
   anttEvidence,
   anttValid,
   isEditable,
   onConsult,
+  onReleasePendente,
+  isReleasingPendente,
   isConsulting,
   checkStage,
   consultError,
@@ -987,12 +1070,16 @@ function StepAntt({
   driverRntrcRegistryType?: 'TAC' | 'ETC' | null;
   ownerName?: string | null;
   ownerIsCnpj?: boolean;
+  /** Cadastro Vectra=terceiro mas motorista=dono → ANTT TAC, não muda contract_type. */
+  tacOwnerCadastroTerceiro?: boolean;
   vehiclePlate?: string | null;
   vehicleTypeName?: string | null;
   anttEvidence: RiskEvidence | undefined;
   anttValid: boolean;
   isEditable: boolean;
   onConsult: () => void;
+  onReleasePendente?: () => void;
+  isReleasingPendente?: boolean;
   isConsulting: boolean;
   checkStage?: 'rntrc' | 'veiculo' | 'ciot' | null;
   consultError?: string | null;
@@ -1021,6 +1108,8 @@ function StepAntt({
   const consultLabel = checkStage
     ? (stageLabelMap[checkStage] ?? 'Consultando...')
     : 'Consultar ANTT';
+  const pendenteLiberavel =
+    isEditable && !anttValid && isAnttPendente(payload) && Boolean(onReleasePendente);
 
   return (
     <div className="space-y-4" data-testid="risk-step-antt">
@@ -1036,17 +1125,21 @@ function StepAntt({
         {ownerName ? (
           <div className="col-span-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 px-3 py-2 text-xs space-y-0.5">
             <div className="font-medium text-amber-700 dark:text-amber-400">
-              {ownerIsCnpj
-                ? '⚠ Veículo terceiro — proprietário empresa (CNPJ)'
-                : '⚠ Veículo agregado — proprietário diferente do motorista'}
+              {tacOwnerCadastroTerceiro
+                ? 'Cadastro Vectra: terceiro. Motorista é dono do cavalo — ANTT consulta TAC (Por Transportador).'
+                : ownerIsCnpj
+                  ? '⚠ Veículo terceiro — proprietário empresa (CNPJ)'
+                  : '⚠ Veículo agregado — proprietário diferente do motorista'}
             </div>
             <div className="text-amber-700 dark:text-amber-400">
               Proprietário: <span className="font-semibold">{ownerName}</span>
             </div>
             <div className="text-amber-600 dark:text-amber-500">
-              {ownerIsCnpj
-                ? 'CIOT: validar obrigatoriedade conforme enquadramento da operação e legislação vigente'
-                : 'CIOT obrigatório — TAC agregado pessoa física'}
+              {tacOwnerCadastroTerceiro
+                ? 'contract_type permanece terceiro. RNTRC do cadastro do TAC entra na consulta Por Transportador.'
+                : ownerIsCnpj
+                  ? 'CIOT: validar obrigatoriedade conforme enquadramento da operação e legislação vigente'
+                  : 'CIOT obrigatório — TAC agregado pessoa física'}
             </div>
           </div>
         ) : (
@@ -1088,13 +1181,23 @@ function StepAntt({
             ) : (
               <XCircle className="h-4 w-4 text-red-600" />
             )}
-            ANTT: {anttValid ? 'Consulta válida' : 'Reprovada / expirada'}
+            ANTT:{' '}
+            {anttValid
+              ? payload?.operator_release
+                ? 'Liberada (PENDENTE + sua aprovação)'
+                : 'Consulta válida'
+              : 'Reprovada / expirada'}
           </div>
           {transportador ? <div className="text-muted-foreground">{transportador}</div> : null}
           {payload?.rntrc != null && String(payload.rntrc).length > 0 && (
             <div className="text-muted-foreground">RNTRC: {String(payload.rntrc)}</div>
           )}
           {situacao && <div className="text-muted-foreground capitalize">Situação: {situacao}</div>}
+          {payload?.message != null && String(payload.message).length > 0 && (
+            <div className="text-xs text-muted-foreground break-all">
+              {String(payload.message).slice(0, 280)}
+            </div>
+          )}
           {rntrcRegistryType && (
             <div className="text-muted-foreground">Registro RNTRC: {rntrcRegistryType}</div>
           )}
@@ -1183,11 +1286,26 @@ function StepAntt({
             size="sm"
             variant={anttValid ? 'outline' : 'default'}
             onClick={onConsult}
-            disabled={isConsulting}
+            disabled={isConsulting || isReleasingPendente}
             aria-label="Consultar situação ANTT RNTRC"
           >
             {isConsulting && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
             {isConsulting ? consultLabel : anttValid ? 'Reconsultar ANTT' : 'Consultar ANTT'}
+          </Button>
+        )}
+        {pendenteLiberavel && (
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => onReleasePendente?.()}
+            disabled={isConsulting || isReleasingPendente}
+          >
+            {isReleasingPendente ? (
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+            ) : (
+              <CheckCircle2 className="h-4 w-4 mr-1" />
+            )}
+            Liberar PENDENTE (minha aprovação)
           </Button>
         )}
         <Button size="sm" onClick={onNext} disabled={!canAdvance} className="ml-auto">
@@ -1199,7 +1317,9 @@ function StepAntt({
 
       {!canAdvance && isEditable && (
         <p className="text-xs text-muted-foreground">
-          Execute a consulta ANTT para liberar o passo Buonny.
+          {pendenteLiberavel
+            ? 'ANTT PENDENTE no portal. Sua aprovação libera o passo Buonny — situação ANTT não muda.'
+            : 'Execute a consulta ANTT para liberar o passo Buonny.'}
         </p>
       )}
     </div>

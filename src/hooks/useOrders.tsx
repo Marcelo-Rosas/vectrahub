@@ -56,8 +56,12 @@ export interface OrderWithOccurrences extends Order {
         | 'client_id'
         | 'origin'
         | 'origin_cep'
+        | 'origin_uf'
+        | 'origin_ibge'
         | 'destination'
         | 'destination_cep'
+        | 'destination_uf'
+        | 'destination_ibge'
         | 'freight_type'
         | 'km_distance'
         | 'vehicle_type_id'
@@ -99,8 +103,12 @@ const ORDER_BOARD_SELECT = `
     client_id,
     origin,
     origin_cep,
+    origin_uf,
+    origin_ibge,
     destination,
     destination_cep,
+    destination_uf,
+    destination_ibge,
     freight_type,
     km_distance,
     vehicle_type_id,
@@ -130,8 +138,12 @@ const ORDER_DETAIL_SELECT = `
     client_id,
     origin,
     origin_cep,
+    origin_uf,
+    origin_ibge,
     destination,
     destination_cep,
+    destination_uf,
+    destination_ibge,
     freight_type,
     km_distance,
     vehicle_type_id,
