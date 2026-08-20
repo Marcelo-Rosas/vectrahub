@@ -4,11 +4,13 @@ import { cn } from '@/lib/utils';
 
 export function FairTenantLogo({
   tenant,
+  logoUrl,
   className,
   imgClassName,
   size = 'sm',
 }: {
   tenant: FairTenant;
+  logoUrl?: string | null;
   className?: string;
   imgClassName?: string;
   size?: 'sm' | 'md' | 'lg' | 'auth';
@@ -23,6 +25,7 @@ export function FairTenantLogo({
           : 'h-5 w-auto max-w-[120px] sm:h-6 sm:max-w-[148px]';
   const pad = size === 'auth' ? 'px-5 py-3.5' : size === 'lg' ? 'px-3.5 py-2.5' : 'px-2.5 py-1.5';
   const palette = resolveFairPalette(tenant.slug);
+  const src = logoUrl?.trim() || tenant.logoSrc;
 
   return (
     <div
@@ -30,9 +33,10 @@ export function FairTenantLogo({
       style={{ backgroundColor: palette.tokens.logoBg }}
     >
       <img
-        src={tenant.logoSrc}
+        src={src}
         alt={tenant.name}
         className={cn(img, 'object-contain', imgClassName)}
+        referrerPolicy="no-referrer"
       />
     </div>
   );

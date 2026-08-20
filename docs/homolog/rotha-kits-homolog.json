@@ -1,0 +1,45 @@
+{
+  "source": "Produtos (10).xlsx homolog + rothafitness.com",
+  "note": "Kits 52-70 kg pendentes — sem linhas AB6051 >50 kg na planilha",
+  "kits": [
+    {
+      "sku": "ROTHA-KIT-HALTER-1-10",
+      "series": "AB6047",
+      "pairs": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+      "weight_kg": 110,
+      "volume_m3": 0.2
+    },
+    {
+      "sku": "ROTHA-KIT-DB-12-25",
+      "series": "AB6051",
+      "pairs_kg": [12.5, 15, 17.5, 20, 22.5, 25],
+      "weight_kg": 225,
+      "volume_m3": 0.22
+    },
+    {
+      "sku": "ROTHA-KIT-DB-12-35",
+      "series": "AB6051",
+      "pairs_kg": [12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 35],
+      "weight_kg": 475,
+      "volume_m3": 0.46
+    },
+    {
+      "sku": "ROTHA-KIT-DB-12-40",
+      "series": "AB6051",
+      "pairs_kg": [12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 35, 37.5, 40],
+      "weight_kg": 630,
+      "volume_m3": 0.52
+    },
+    {
+      "sku": "ROTHA-KIT-DB-42-50",
+      "series": "AB6051",
+      "pairs_kg": [42.5, 45, 47.5, 50],
+      "weight_kg": 370,
+      "volume_m3": 0.16
+    }
+  ],
+  "totals_all_kits": {
+    "weight_kg": 1810,
+    "volume_m3": 1.56
+  }
+}

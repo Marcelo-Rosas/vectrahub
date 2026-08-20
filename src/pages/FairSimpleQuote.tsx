@@ -1,5 +1,5 @@
-import { FairQuoteCalculator } from '@/components/fair/FairQuoteCalculator';
-import { PlayFitFairQuoteCalculator } from '@/components/fair/PlayFitFairQuoteCalculator';
+import { FairSimpleFreightCalculator } from '@/components/fair/FairSimpleFreightCalculator';
+import { PlayFitSimpleFreightCalculator } from '@/components/fair/PlayFitSimpleFreightCalculator';
 import { FairTenantLogo } from '@/components/fair/FairTenantLogo';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,11 +8,11 @@ import { useFairBrand } from '@/hooks/useFairBrand';
 import { isFairDashboardOwner } from '@/lib/fair-dashboard-access';
 import { useFairDocumentTheme } from '@/hooks/useFairDocumentTheme';
 import { fairPaletteStyle } from '@/lib/fair-brand-palettes';
-import { LayoutDashboard, LogOut, Zap } from 'lucide-react';
+import { LayoutDashboard, LogOut, Package } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-/** Shell mobile-first — feira / celular vendedor. */
-export default function FairQuotePage() {
+/** Cotação mínima feira — CEP + peso + valor NF. */
+export default function FairSimpleQuotePage() {
   const { signOut, user } = useAuth();
   const { tenant, isLoading } = useFairResolvedTenant();
   const { palette, logoUrl } = useFairBrand(tenant);
@@ -32,7 +32,7 @@ export default function FairQuotePage() {
         className="sticky top-0 z-20 shrink-0 border-b bg-background/95 px-3 pb-2 pt-safe-top backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-4 md:pb-1.5"
         style={palette ? { borderColor: `${palette.tokens.ink}1A` } : undefined}
       >
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 md:max-w-3xl">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 md:max-w-xl">
           {tenant ? (
             <FairTenantLogo
               tenant={tenant}
@@ -51,9 +51,9 @@ export default function FairQuotePage() {
               className="min-h-11 px-2 md:min-h-8 md:h-8 md:px-2.5"
               asChild
             >
-              <Link to="/feira/simples">
-                <Zap className="mr-1 h-4 w-4" />
-                <span className="hidden sm:inline">Rápido</span>
+              <Link to="/feira">
+                <Package data-icon="inline-start" />
+                <span className="hidden sm:inline">Catálogo</span>
               </Link>
             </Button>
             {showPainel && (
@@ -64,7 +64,7 @@ export default function FairQuotePage() {
                 asChild
               >
                 <Link to="/feira/dashboard">
-                  <LayoutDashboard className="mr-1 h-4 w-4" />
+                  <LayoutDashboard data-icon="inline-start" />
                   <span className="hidden sm:inline">Painel</span>
                 </Link>
               </Button>
@@ -75,14 +75,14 @@ export default function FairQuotePage() {
               className="min-h-11 touch-manipulation text-muted-foreground md:min-h-8 md:h-8 md:px-2.5"
               onClick={() => signOut()}
             >
-              <LogOut className="mr-1.5 h-4 w-4" />
+              <LogOut data-icon="inline-start" />
               Sair
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="min-h-0 flex-1 overflow-x-hidden md:overflow-y-auto">
+      <main className="min-h-0 flex-1 scroll-pt-16 overflow-x-hidden md:overflow-y-auto">
         {isLoading ? (
           <p className="p-6 text-sm text-muted-foreground">Carregando embarcador…</p>
         ) : !tenant ? (
@@ -90,9 +90,9 @@ export default function FairQuotePage() {
             Domínio não habilitado em feira.companies.
           </p>
         ) : tenant.slug === 'playfit' ? (
-          <PlayFitFairQuoteCalculator tenant={tenant} />
+          <PlayFitSimpleFreightCalculator tenant={tenant} />
         ) : (
-          <FairQuoteCalculator />
+          <FairSimpleFreightCalculator />
         )}
       </main>
     </div>

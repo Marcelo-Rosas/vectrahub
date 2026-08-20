@@ -14,13 +14,15 @@ import {
 } from '@/lib/fair-brand-palettes';
 
 describe('fair-brand-palettes', () => {
-  it('tem 18 tokens e 4 embarcadores', () => {
+  it('tem 18 tokens e embarcadores feira', () => {
     expect(FAIR_BRAND_TOKEN_ROWS).toHaveLength(18);
     expect(FAIR_BRAND_PALETTES.map((p) => p.slug)).toEqual([
       'buckler',
       'konnen',
       'boost',
       'reebok',
+      'playfit',
+      'rotha',
     ]);
   });
 

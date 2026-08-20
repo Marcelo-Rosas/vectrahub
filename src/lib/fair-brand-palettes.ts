@@ -33,7 +33,7 @@ export type FairBrandfetchSeed = {
 };
 
 export type FairBrandPalette = {
-  slug: 'buckler' | 'konnen' | 'boost' | 'reebok';
+  slug: 'buckler' | 'konnen' | 'boost' | 'reebok' | 'playfit' | 'rotha';
   name: string;
   domain: string;
   site: string;
@@ -215,11 +215,73 @@ export const REEBOK_FAIR_PALETTE: FairBrandPalette = {
   },
 };
 
+/** PlayFit Pisos: verde sustentabilidade — homolog até asset oficial. */
+export const PLAYFIT_FAIR_PALETTE: FairBrandPalette = {
+  slug: 'playfit',
+  name: 'PlayFit Pisos',
+  domain: 'playfitpisos.com.br',
+  site: 'https://playfitpisos.com.br/',
+  notes: 'Verde #2D6A4F + menta #95D5B2. Homolog — substituir com brand book PlayFit.',
+  brandfetch: { accent: '#40916C', dark: '#1B4332', light: '#D8F3DC', quality: 0.35 },
+  tokens: {
+    headerBg: '#FFFFFF',
+    headerFg: '#1B4332',
+    logoBg: '#2D6A4F',
+    logoFg: '#FFFFFF',
+    pageBg: '#F1FAF4',
+    surface: '#FFFFFF',
+    surfaceAlt: '#D8F3DC',
+    ink: '#1B4332',
+    muted: '#52796F',
+    border: '#95D5B2',
+    accent: '#2D6A4F',
+    accentSoft: '#B7E4C7',
+    accentHover: '#1B4332',
+    ctaBg: '#2D6A4F',
+    ctaFg: '#FFFFFF',
+    price: '#1B4332',
+    pillFg: '#1B4332',
+    focus: '#40916C',
+  },
+};
+
+/** Rotha Fitness: preto + vermelho performance — homolog até brand book. */
+export const ROTHA_FAIR_PALETTE: FairBrandPalette = {
+  slug: 'rotha',
+  name: 'Rotha Fitness',
+  domain: 'rothafitness.com',
+  site: 'https://rothafitness.com/',
+  notes: 'Preto #0D0D0D + vermelho #E10600. Homolog — site oficial.',
+  brandfetch: { accent: '#E10600', dark: '#0D0D0D', light: '#F5F5F5', quality: 0.35 },
+  tokens: {
+    headerBg: '#FFFFFF',
+    headerFg: '#0D0D0D',
+    logoBg: '#0D0D0D',
+    logoFg: '#FFFFFF',
+    pageBg: '#F7F7F7',
+    surface: '#FFFFFF',
+    surfaceAlt: '#EEEEEE',
+    ink: '#0D0D0D',
+    muted: '#5C5C5C',
+    border: '#D4D4D4',
+    accent: '#E10600',
+    accentSoft: '#FFD6D1',
+    accentHover: '#B80500',
+    ctaBg: '#E10600',
+    ctaFg: '#FFFFFF',
+    price: '#0D0D0D',
+    pillFg: '#0D0D0D',
+    focus: '#E10600',
+  },
+};
+
 export const FAIR_BRAND_PALETTES: readonly FairBrandPalette[] = [
   BUCKLER_FAIR_PALETTE,
   KONNEN_FAIR_PALETTE,
   BOOST_FAIR_PALETTE,
   REEBOK_FAIR_PALETTE,
+  PLAYFIT_FAIR_PALETTE,
+  ROTHA_FAIR_PALETTE,
 ];
 
 const BY_SLUG: Record<FairBrandPalette['slug'], FairBrandPalette> = {
@@ -227,14 +289,31 @@ const BY_SLUG: Record<FairBrandPalette['slug'], FairBrandPalette> = {
   konnen: KONNEN_FAIR_PALETTE,
   boost: BOOST_FAIR_PALETTE,
   reebok: REEBOK_FAIR_PALETTE,
+  playfit: PLAYFIT_FAIR_PALETTE,
+  rotha: ROTHA_FAIR_PALETTE,
 };
 
 export function resolveFairPalette(slug: string | null | undefined): FairBrandPalette {
   const key = (slug ?? '').trim().toLowerCase();
-  if (key === 'buckler' || key === 'konnen' || key === 'boost' || key === 'reebok') {
-    return BY_SLUG[key];
+  if (
+    key === 'buckler' ||
+    key === 'konnen' ||
+    key === 'boost' ||
+    key === 'reebok' ||
+    key === 'playfit' ||
+    key === 'rotha'
+  ) {
+    return BY_SLUG[key as FairBrandPalette['slug']];
   }
   return BUCKLER_FAIR_PALETTE;
+}
+
+/** Mescla tokens Brandfetch (API) sobre paleta estática do slug. */
+export function mergeFairBrandPalette(
+  base: FairBrandPalette,
+  tokens: FairBrandTokens
+): FairBrandPalette {
+  return { ...base, tokens };
 }
 
 export function fairPaletteCssVars(palette: FairBrandPalette): Record<string, string> {

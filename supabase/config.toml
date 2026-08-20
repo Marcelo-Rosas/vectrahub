@@ -140,8 +140,14 @@ verify_jwt = false  # Cadastro público do tenant feira; função valida domíni
 [functions.feira-save-quote]
 verify_jwt = false  # JWT usuário via resolveSupabaseContext('user')
 
+[functions.feira-parse-order-pdf]
+verify_jwt = false  # JWT usuário via resolveSupabaseContext('user')
+
 [functions.feira-quotes-feed]
 verify_jwt = false  # JWT staff Vectra via resolveSupabaseContext('user')
+
+[functions.feira-resolve-brand]
+verify_jwt = false  # JWT usuário feira via resolveSupabaseContext('user')
 
 [functions.process-payment-proof]
 verify_jwt = false  # Chamado pelo workflow-orchestrator com service role
