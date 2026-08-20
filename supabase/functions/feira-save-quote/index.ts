@@ -35,6 +35,7 @@ type GateIn = {
 
 type Body = {
   id?: string;
+  company_slug?: string;
   destination?: string;
   km_distance?: number;
   cargo_value?: number;
@@ -85,9 +86,7 @@ Deno.serve(async (req) => {
   if (!user?.id) return jsonWithCors(req, { error: 'UNAUTHORIZED' }, 401);
 
   const email = (user.email ?? '').toLowerCase();
-  if (email.endsWith('@vectracargo.com.br')) {
-    return jsonWithCors(req, { error: 'Staff Vectra não grava COT feira' }, 403);
-  }
+  const isStaff = email.endsWith('@vectracargo.com.br');
 
   let body: Body;
   try {
@@ -114,22 +113,50 @@ Deno.serve(async (req) => {
   }
   if (legalName.length < 2) return jsonWithCors(req, { error: 'Nome do cliente obrigatório' }, 400);
 
-  const { data: link, error: linkErr } = await feiraFrom(supabase, 'user_company')
-    .select('company_id')
-    .eq('user_id', user.id)
-    .maybeSingle();
+  let company: {
+    id: string;
+    origin_label: string;
+    event_flag: string;
+    toll_fallback_percent: number | string;
+    active: boolean;
+  } | null = null;
 
-  if (linkErr) return jsonWithCors(req, { error: linkErr.message }, 400);
-  if (!link?.company_id) {
-    return jsonWithCors(req, { error: 'Domínio não habilitado para feira' }, 403);
+  if (isStaff) {
+    const slug = (body.company_slug ?? '').trim().toLowerCase();
+    if (!slug) {
+      return jsonWithCors(req, { error: 'company_slug obrigatório para staff Vectra' }, 400);
+    }
+    const { data: staffCompany, error: staffCompanyErr } = await feiraFrom(supabase, 'companies')
+      .select('id, origin_label, event_flag, toll_fallback_percent, active')
+      .eq('slug', slug)
+      .eq('active', true)
+      .maybeSingle();
+    if (staffCompanyErr) return jsonWithCors(req, { error: staffCompanyErr.message }, 400);
+    if (!staffCompany) return jsonWithCors(req, { error: 'Embarcador não encontrado' }, 404);
+    company = staffCompany;
+  } else {
+    const { data: link, error: linkErr } = await feiraFrom(supabase, 'user_company')
+      .select('company_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (linkErr) return jsonWithCors(req, { error: linkErr.message }, 400);
+    if (!link?.company_id) {
+      return jsonWithCors(req, { error: 'Domínio não habilitado para feira' }, 403);
+    }
+
+    const { data: linkedCompany, error: companyErr } = await feiraFrom(supabase, 'companies')
+      .select('id, origin_label, event_flag, toll_fallback_percent, active')
+      .eq('id', link.company_id)
+      .maybeSingle();
+
+    if (companyErr) return jsonWithCors(req, { error: companyErr.message }, 400);
+    if (!linkedCompany?.active) {
+      return jsonWithCors(req, { error: 'Tenant feira inativo' }, 403);
+    }
+    company = linkedCompany;
   }
 
-  const { data: company, error: companyErr } = await feiraFrom(supabase, 'companies')
-    .select('id, origin_label, event_flag, toll_fallback_percent, active')
-    .eq('id', link.company_id)
-    .maybeSingle();
-
-  if (companyErr) return jsonWithCors(req, { error: companyErr.message }, 400);
   if (!company?.active) return jsonWithCors(req, { error: 'Tenant feira inativo' }, 403);
 
   const fallbackPct = num(company.toll_fallback_percent, 12);

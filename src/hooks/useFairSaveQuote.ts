@@ -1,6 +1,7 @@
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { persistFairQuote, type FairSavedQuote } from '@/lib/fair-quote-store';
 import type { PlayFitQuoteBreakdown } from '@/lib/playfit-quote-build';
+import { useFairResolvedTenant } from '@/hooks/useFairCompanies';
 
 export type FairQuoteDraft = Omit<FairSavedQuote, 'id' | 'code' | 'createdAt'> &
   Partial<Pick<FairSavedQuote, 'id' | 'code' | 'createdAt'>> & {
@@ -25,10 +26,13 @@ type FeiraSaveQuoteResponse = {
 };
 
 export function useFairSaveQuote() {
+  const { tenant, canSwitchTenant } = useFairResolvedTenant();
+
   const save = async (draft: FairQuoteDraft): Promise<FairSavedQuote> => {
     const saved = await invokeEdgeFunction<FeiraSaveQuoteResponse>('feira-save-quote', {
       body: {
         id: draft.id,
+        company_slug: canSwitchTenant ? tenant?.slug : undefined,
         destination: draft.destination,
         km_distance: draft.km,
         cargo_value: draft.cargoValue,

@@ -11,10 +11,14 @@ import {
   fairDestinationLabel,
 } from '@/lib/fair-client';
 import {
+  canSwitchFairTenant,
   fairTenantOriginLocked,
   isFairTenantEmail,
+  isVectraStaffEmail,
   matchTenantByEmail,
   companyRowToTenant,
+  resolveFairTenant,
+  resolveFairTenantBySlug,
   type FairCompanyRow,
   signupDomainHint,
 } from '@/lib/fair-tenant';
@@ -91,6 +95,29 @@ describe('isFairTenantEmail', () => {
   it('hint de cadastro lista todos os domínios, não só Buckler', () => {
     expect(signupDomainHint(TENANTS)).toContain('@bucklerfit.com');
     expect(signupDomainHint(TENANTS)).toContain('@konnenfitness.com.br');
+  });
+});
+
+describe('staff Vectra — troca de tenant', () => {
+  it('identifica email @vectracargo.com.br como staff', () => {
+    expect(isVectraStaffEmail('marcelo.rosas@vectracargo.com.br')).toBe(true);
+    expect(canSwitchFairTenant('ops@vectracargo.com.br')).toBe(true);
+    expect(isVectraStaffEmail('vendas@bucklerfit.com')).toBe(false);
+  });
+
+  it('staff sem domínio embarcador — resolve por slug ou primeiro tenant', () => {
+    expect(matchTenantByEmail('marcelo.rosas@vectracargo.com.br', TENANTS)).toBeNull();
+    expect(resolveFairTenant('marcelo.rosas@vectracargo.com.br', TENANTS, 'konnen')?.slug).toBe(
+      'konnen'
+    );
+    expect(resolveFairTenant('marcelo.rosas@vectracargo.com.br', TENANTS)?.slug).toBe('buckler');
+    expect(resolveFairTenantBySlug('konnen', TENANTS)?.name).toBe('Konnen Fitness');
+  });
+
+  it('vendedor embarcador continua preso ao domínio mesmo com slug staff', () => {
+    expect(resolveFairTenant('anderson.moraes@bucklerfit.com', TENANTS, 'konnen')?.slug).toBe(
+      'buckler'
+    );
   });
 });
 

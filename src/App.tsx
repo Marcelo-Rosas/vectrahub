@@ -9,7 +9,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/hooks/useAuth';
 import { isTransientError } from '@/lib/errors/AppError';
-import { FAIR_DASHBOARD_OWNER_EMAIL } from '@/lib/fair-dashboard-access';
 import { Sentry } from '@/lib/sentry';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
@@ -102,7 +101,7 @@ const App = () => (
                 <Route
                   path="dashboard"
                   element={
-                    <ProtectedRoute allowedEmails={[FAIR_DASHBOARD_OWNER_EMAIL]}>
+                    <ProtectedRoute allowFairStaffTester>
                       <RouteErrorBoundary
                         title="Erro no dashboard feira"
                         description="Recarregue a página ou tente novamente."

@@ -23,6 +23,7 @@ import {
   computeFairDashboardRoutes,
 } from '@/lib/fair-dashboard-kpis';
 import { usePromoteFairQuoteToHub } from '@/hooks/usePromoteFairQuoteToHub';
+import { readFairStaffTenantSlug, writeFairStaffTenantSlug } from '@/lib/fair-tenant';
 import type { FairDashboardQuoteCard } from '@/lib/fair-dashboard-types';
 import { formatCurrency } from '@/lib/formatters';
 import { ArrowLeft, LogOut, MapPin } from 'lucide-react';
@@ -46,7 +47,7 @@ function emptyKpis() {
 /** Dashboard Feira — Vectra, mobile-first, Kanban TMS intocado. */
 export default function FairDashboardPage() {
   const { signOut } = useAuth();
-  const [tenantId, setTenantId] = useState('buckler');
+  const [tenantId, setTenantId] = useState(() => readFairStaffTenantSlug() ?? 'buckler');
   const [destination, setDestination] = useState(ALL_DESTINATIONS);
   const { data, isLoading } = useFairDashboardFeed(tenantId);
   const { outcomes, setQuoteOutcome } = useFairQuoteOutcomes();
@@ -139,6 +140,7 @@ export default function FairDashboardPage() {
           value={tenantId}
           onValueChange={(v) => {
             setTenantId(v);
+            writeFairStaffTenantSlug(v);
             setDestination(ALL_DESTINATIONS);
           }}
         >
