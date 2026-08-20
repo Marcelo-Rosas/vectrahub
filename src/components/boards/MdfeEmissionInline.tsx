@@ -21,27 +21,39 @@ import {
   useManageMdfe,
   describeMdfeStatus,
 } from '@/hooks/useMdfeEmission';
-import { useCteEmissionsByQuote } from '@/hooks/useCteEmission';
+import { useMdfeCompositionCtes } from '@/hooks/useMdfeCompositionCtes';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { fetchCepData } from '@/hooks/useCepLookup';
 
 interface MdfeEmissionInlineProps {
   quoteId: string | null | undefined;
+  orderId?: string | null;
   driverId: string | null | undefined;
   vehiclePlate: string | null | undefined;
+  /** CIOT compartilhado — agrega OS irmãs (fracionado parceiro) sem viagem. */
+  ciotNumber?: string | null;
   /** UF destino (encerramento default). */
   destinationUf?: string | null;
   /** IBGE município destino (encerramento default). */
   destinationIbge?: number | string | null;
+  /** CEP destino — resolve IBGE via lookup-cep se a cotação não tiver IBGE. */
+  destinationCep?: string | null;
+  /** Nome município destino (Focus encerrar exige nome, não só IBGE). */
+  destinationCity?: string | null;
   readOnly?: boolean;
 }
 
 export function MdfeEmissionInline({
   quoteId,
+  orderId,
   driverId,
   vehiclePlate,
+  ciotNumber,
   destinationUf,
   destinationIbge,
+  destinationCep,
+  destinationCity,
   readOnly = false,
 }: MdfeEmissionInlineProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -50,8 +62,15 @@ export function MdfeEmissionInline({
   const [justificativa, setJustificativa] = useState('');
   const [resolvingVehicle, setResolvingVehicle] = useState(false);
 
-  const { data: ctes = [] } = useCteEmissionsByQuote(quoteId);
-  const authorizedCtes = ctes.filter((c) => c.status === 'authorized' && Boolean(c.chave_cte));
+  const { data: composition, isLoading: compositionLoading } = useMdfeCompositionCtes({
+    quoteId,
+    orderId,
+    vehiclePlate,
+    driverId,
+    ciotNumber,
+  });
+  const authorizedCtes = composition?.ctes ?? [];
+  const isMultiOs = Boolean(composition?.isMultiOs);
   const cte = authorizedCtes[0] ?? null;
   const { data: emission, isLoading } = useMdfeEmissionByQuote(quoteId);
   useMdfeEmissionRealtime(quoteId);
@@ -62,7 +81,7 @@ export function MdfeEmissionInline({
     return <span className="text-xs text-muted-foreground">Sem cotação vinculada</span>;
   }
 
-  if (isLoading) {
+  if (isLoading || compositionLoading) {
     return <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />;
   }
 
@@ -77,6 +96,10 @@ export function MdfeEmissionInline({
   const isReemit = isRejected || isCancelled;
   const cteOk = authorizedCtes.length > 0;
   const fleetOk = Boolean(driverId && vehiclePlate);
+
+  const cteSummary = authorizedCtes
+    .map((c) => `#${c.numero}${c.os_number ? ` (${c.os_number})` : ''}`)
+    .join(', ');
 
   async function resolveVehicleId(): Promise<string | null> {
     if (!vehiclePlate) return null;
@@ -127,14 +150,29 @@ export function MdfeEmissionInline({
     manage.mutate({ action: 'consult', emission_id: emission.id });
   }
 
-  function handleEncerrar() {
+  async function handleEncerrar() {
     if (!emission) return;
-    const uf = String(destinationUf ?? emission.uf_fim ?? '')
+    let uf = String(destinationUf ?? emission.uf_fim ?? '')
       .toUpperCase()
       .slice(0, 2);
-    const mun = Number(destinationIbge);
-    if (!uf || !mun) {
-      toast.error('UF/IBGE destino ausentes — preencha na cotação antes de encerrar');
+    let mun = Number(destinationIbge);
+    let city = String(destinationCity ?? '').trim();
+    const payload = emission.payload_sent ?? {};
+    if (!mun) mun = Number(payload.codigo_municipio_fim ?? 0);
+    const cep = String(destinationCep ?? '').replace(/\D/g, '');
+    if ((!uf || uf.length !== 2 || !mun || !city) && cep.length === 8) {
+      const viaCep = await fetchCepData(cep);
+      if (viaCep) {
+        if (!uf || uf.length !== 2)
+          uf = String(viaCep.uf ?? '')
+            .toUpperCase()
+            .slice(0, 2);
+        if (!mun) mun = Number(viaCep.ibge);
+        if (!city) city = String(viaCep.localidade ?? '').trim();
+      }
+    }
+    if (!uf || uf.length !== 2 || !mun) {
+      toast.error('UF/IBGE destino ausentes — preencha CEP/UF na cotação antes de encerrar');
       return;
     }
     manage.mutate({
@@ -142,124 +180,165 @@ export function MdfeEmissionInline({
       emission_id: emission.id,
       uf,
       codigo_municipio: mun,
+      nome_municipio: city || undefined,
     });
     setEncerrarOpen(false);
   }
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
-      <Badge variant="outline" className={`text-[10px] uppercase ${color}`}>
-        MDF-e: {label}
-        {emission?.numero ? ` · #${emission.numero}` : ''}
-      </Badge>
+    <div className="flex flex-col gap-1.5 min-w-0">
+      <div className="flex items-center gap-2 flex-wrap">
+        <Badge variant="outline" className={`text-[10px] uppercase ${color}`}>
+          MDF-e: {label}
+          {emission?.numero ? ` · #${emission.numero}` : ''}
+        </Badge>
 
-      {isDraftLike && !readOnly && (
-        <Button
-          variant="default"
-          size="sm"
-          className="h-7 px-2 text-xs"
-          onClick={(e) => {
-            e.stopPropagation();
-            setConfirmOpen(true);
-          }}
-          disabled={emit.isPending || resolvingVehicle || !cteOk || !fleetOk}
-          title={
-            !cteOk
-              ? 'Precisa CT-e autorizado com chave — reemitir CT-e se cancelado'
-              : !fleetOk
-                ? 'OS precisa motorista + placa'
-                : isReemit
-                  ? 'Nova emissão MDF-e (substitui a cancelada/rejeitada)'
-                  : undefined
-          }
-        >
-          {emit.isPending || resolvingVehicle ? (
-            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-          ) : (
-            <Send className="w-3 h-3 mr-1" />
-          )}
-          {isReemit ? 'Reemitir MDF-e' : 'Emitir MDF-e'}
-        </Button>
-      )}
+        {isMultiOs && isDraftLike && (
+          <Badge
+            variant="outline"
+            className="text-[10px] border-sky-300 text-sky-800 bg-sky-50"
+            title={cteSummary}
+          >
+            Conjunto · {authorizedCtes.length} CT-e · {composition?.osNumbers.length} OS
+          </Badge>
+        )}
 
-      {isProcessing && !readOnly && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2 text-xs"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleConsult();
-          }}
-          disabled={manage.isPending}
-        >
-          {manage.isPending ? (
-            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-          ) : (
-            <RefreshCw className="w-3 h-3 mr-1" />
-          )}
-          Consultar
-        </Button>
-      )}
+        {isDraftLike && !readOnly && (
+          <Button
+            variant="default"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              setConfirmOpen(true);
+            }}
+            disabled={emit.isPending || resolvingVehicle || !cteOk || !fleetOk}
+            title={
+              !cteOk
+                ? 'Precisa CT-e autorizado com chave — reemitir CT-e se cancelado'
+                : !fleetOk
+                  ? 'OS precisa motorista + placa'
+                  : isMultiOs
+                    ? `Manifesto conjunto: ${cteSummary}`
+                    : isReemit
+                      ? 'Nova emissão MDF-e (substitui a cancelada/rejeitada)'
+                      : undefined
+            }
+          >
+            {emit.isPending || resolvingVehicle ? (
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+            ) : (
+              <Send className="w-3 h-3 mr-1" />
+            )}
+            {isReemit ? 'Reemitir MDF-e' : isMultiOs ? 'Emitir MDF-e conjunto' : 'Emitir MDF-e'}
+          </Button>
+        )}
 
-      {isAuthorized && !readOnly && (
-        <>
+        {isProcessing && !readOnly && (
           <Button
             variant="ghost"
             size="sm"
             className="h-7 px-2 text-xs"
             onClick={(e) => {
               e.stopPropagation();
-              setEncerrarOpen(true);
+              handleConsult();
             }}
+            disabled={manage.isPending}
           >
-            <Lock className="w-3 h-3 mr-1" /> Encerrar
+            {manage.isPending ? (
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+            ) : (
+              <RefreshCw className="w-3 h-3 mr-1" />
+            )}
+            Consultar
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs text-destructive"
-            onClick={(e) => {
-              e.stopPropagation();
-              setCancelOpen(true);
-            }}
+        )}
+
+        {isAuthorized && !readOnly && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEncerrarOpen(true);
+              }}
+            >
+              <Lock className="w-3 h-3 mr-1" /> Encerrar
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCancelOpen(true);
+              }}
+            >
+              <Ban className="w-3 h-3 mr-1" /> Cancelar
+            </Button>
+          </>
+        )}
+
+        {isCancelled && <FileX className="w-3.5 h-3.5 text-muted-foreground" />}
+        {(isAuthorized || isEncerrado) && <FileCheck className="w-3.5 h-3.5 text-green-700" />}
+
+        {isRejected && emission?.rejection_msg && (
+          <span
+            className="text-[10px] text-destructive max-w-[280px] truncate"
+            title={emission.rejection_msg}
           >
-            <Ban className="w-3 h-3 mr-1" /> Cancelar
-          </Button>
-        </>
-      )}
+            {emission.rejection_msg}
+          </span>
+        )}
+      </div>
 
-      {isCancelled && <FileX className="w-3.5 h-3.5 text-muted-foreground" />}
-      {(isAuthorized || isEncerrado) && <FileCheck className="w-3.5 h-3.5 text-green-700" />}
-
-      {isRejected && emission?.rejection_msg && (
-        <span
-          className="text-[10px] text-destructive max-w-[280px] truncate"
-          title={emission.rejection_msg}
-        >
-          {emission.rejection_msg}
-        </span>
+      {isMultiOs && isDraftLike && (
+        <p className="text-[11px] text-muted-foreground">
+          {composition?.tripNumber ? (
+            <>
+              Viagem <span className="font-mono">{composition.tripNumber}</span> —{' '}
+            </>
+          ) : (
+            <>Mesma placa/CIOT — </>
+          )}
+          incluirá {authorizedCtes.length} CT-e: {cteSummary}
+        </p>
       )}
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent onClick={(e) => e.stopPropagation()}>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {isReemit ? 'Reemitir MDF-e (Homologação)' : 'Emitir MDF-e (Homologação)'}
+              {isReemit ? 'Reemitir MDF-e' : isMultiOs ? 'Emitir MDF-e conjunto' : 'Emitir MDF-e'}
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              {isReemit ? (
-                <>
-                  Nova emissão substitui a {isCancelled ? 'cancelada' : 'rejeitada'} #
-                  {emission?.numero}. Agrega o CT-e autorizado #{cte?.numero} com motorista/placa da
-                  OS. Focus gera novo número/ref (-rN).
-                </>
-              ) : (
-                <>
-                  Agrega o CT-e autorizado #{cte?.numero} com motorista/placa da OS. Envio à SEFAZ
-                  via Focus NFe. Certifique-se que o CT-e está autorizado antes de continuar.
-                </>
-              )}
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                {isMultiOs ? (
+                  <>
+                    <p>
+                      Um manifesto para {composition?.osNumbers.join(' + ')}
+                      {composition?.tripNumber ? ` (${composition.tripNumber})` : ''}.
+                    </p>
+                    <p>
+                      CT-es: <span className="font-medium text-foreground">{cteSummary}</span>
+                    </p>
+                    <p>Placa {vehiclePlate}. Envio à SEFAZ via Focus NFe.</p>
+                  </>
+                ) : isReemit ? (
+                  <p>
+                    Nova emissão substitui a {isCancelled ? 'cancelada' : 'rejeitada'} #
+                    {emission?.numero}. Agrega o CT-e autorizado #{cte?.numero} com motorista/placa
+                    da OS.
+                  </p>
+                ) : (
+                  <p>
+                    Agrega o CT-e autorizado #{cte?.numero} com motorista/placa da OS. Envio à SEFAZ
+                    via Focus NFe.
+                  </p>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -311,7 +390,7 @@ export function MdfeEmissionInline({
               Encerra na UF/município de descarga:{' '}
               <strong>
                 {String(destinationUf ?? emission?.uf_fim ?? '—').toUpperCase()} / IBGE{' '}
-                {destinationIbge ?? '—'}
+                {destinationIbge ?? (destinationCep ? `CEP ${destinationCep}` : '—')}
               </strong>
               . Consulte o MDF-e antes se o protocolo estiver vazio.
             </AlertDialogDescription>

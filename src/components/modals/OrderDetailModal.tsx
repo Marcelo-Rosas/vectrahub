@@ -1849,8 +1849,8 @@ export function OrderDetailModal({
                   key={`risk-${order.id}-${wizardDriverKey}`}
                   orderId={order.id}
                   orderStage={order.stage}
-                  cargoValue={Number(order.cargo_value ?? order.quote?.cargo_value ?? 0)}
-                  kmDistance={Number(order.km_distance ?? order.quote?.km_distance ?? 0)}
+                  cargoValue={Number(order.quote?.cargo_value ?? order.cargo_value ?? 0)}
+                  kmDistance={Number(order.quote?.km_distance ?? order.km_distance ?? 0)}
                   driverName={wizardDriverName}
                   driverCpf={wizardDriverCpf}
                   vehiclePlate={wizardVehiclePlate}
@@ -1896,17 +1896,18 @@ export function OrderDetailModal({
               <TabsContent value="mdfe" className="m-0 space-y-4">
                 <OrderMdfeTab
                   quoteId={order.quote_id ?? order.quote?.id}
+                  orderId={order.id}
                   driverId={order.driver_id}
                   vehiclePlate={order.vehicle_plate}
                   destinationUf={
-                    (order.quote as { destination_uf?: string | null } | null | undefined)
-                      ?.destination_uf ??
+                    order.quote?.destination_uf ??
                     order.destination?.match(/,?\s*([A-Z]{2})\s*$/i)?.[1]?.toUpperCase()
                   }
-                  destinationIbge={
-                    (order.quote as { destination_ibge?: number | null } | null | undefined)
-                      ?.destination_ibge
-                  }
+                  destinationIbge={order.quote?.destination_ibge}
+                  destinationCep={order.quote?.destination_cep ?? order.destination_cep}
+                  destinationCity={(order.quote?.destination ?? order.destination ?? '')
+                    .split(',')[0]
+                    ?.trim()}
                   canManage={canManage}
                   hasVpo={vpoSatisfied}
                   vpoDispensado={!orderHasVpo && vpoSatisfied}

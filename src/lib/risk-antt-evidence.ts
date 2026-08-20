@@ -10,6 +10,58 @@ export function normalizePlate(s: string): string {
   return s.replace(/[^A-Z0-9]/gi, '').toUpperCase();
 }
 
+export type AnttConsultPath = 'proprio' | 'agregado' | 'terceiro';
+
+/**
+ * Cadastro Vectra (contract_type) ≠ trilha ANTT.
+ * Motorista dono do cavalo (mesmo CPF) consulta Por Transportador mesmo se
+ * contract_type = terceiro (asset-light: terceiro pra Vectra, TAC pra ANTT).
+ */
+export function resolveAnttConsultPath(opts: {
+  contractType?: AnttConsultPath | null;
+  driverCpf?: string | null;
+  ownerDoc?: string | null;
+}): AnttConsultPath {
+  const driver = onlyDigits(opts.driverCpf ?? '');
+  const owner = onlyDigits(opts.ownerDoc ?? '');
+  if (driver.length === 11 && owner.length === 11 && driver === owner) return 'proprio';
+  if (owner.length === 14) return 'terceiro';
+  if (driver.length === 11 && owner.length === 11 && driver !== owner) return 'agregado';
+  if (
+    opts.contractType === 'proprio' ||
+    opts.contractType === 'agregado' ||
+    opts.contractType === 'terceiro'
+  ) {
+    return opts.contractType;
+  }
+  return 'terceiro';
+}
+
+/** Filtro RNTRC no portal: só 9 dígitos. 8 (SEFAZ) envenena Por Transportador se mandar junto do CPF. */
+export function anttRntrcForPortal(raw: string | null | undefined): string | undefined {
+  const d = onlyDigits(raw ?? '');
+  return d.length === 9 ? d : undefined;
+}
+
+/** Por Transportador sem grade (irregular/indeterminado + sem RNTRC) → tenta Por Veículo. */
+export function anttShouldFallbackToPlaca(resp: {
+  situacao?: string | null;
+  rntrc?: string | null;
+}): boolean {
+  const s = String(resp.situacao || '').toLowerCase();
+  if (s !== 'irregular' && s !== 'indeterminado') return false;
+  return !String(resp.rntrc || '').trim();
+}
+
+export function isAnttPendente(payload: Record<string, unknown> | null | undefined): boolean {
+  const raw = String(payload?.situacao_raw ?? '')
+    .trim()
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+  return raw === 'PENDENTE';
+}
+
 function matchesAnttEvidence(
   evidence: RiskEvidence,
   driverCpf: string | null | undefined,

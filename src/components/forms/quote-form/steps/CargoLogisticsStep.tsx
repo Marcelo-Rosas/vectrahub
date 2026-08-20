@@ -14,6 +14,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { QuoteFormData } from '../types';
 import { QuoteComplianceStrip } from '../FinancialDualStrip';
+import { QuoteNfeXmlPanel } from '../QuoteNfeXmlPanel';
 
 const PAYMENT_METHODS = ['pix', 'boleto', 'cartao', 'transferencia', 'outro'] as const;
 const PAYMENT_METHOD_LABELS: Record<(typeof PAYMENT_METHODS)[number], string> = {
@@ -62,6 +63,9 @@ interface CargoLogisticsStepProps {
   isLegacy?: boolean;
   /** Ao mudar modalidade: escolhe tabela NTC operacional (não deixa Select vazio). */
   onFreightModalityChange?: (modality: 'lotacao' | 'fracionado') => void;
+  quoteId?: string | null;
+  pendingNfeXmlFiles?: File[];
+  onPendingNfeXmlFilesChange?: (files: File[]) => void;
 }
 
 export function CargoLogisticsStep({
@@ -72,6 +76,9 @@ export function CargoLogisticsStep({
   setWeightUnit,
   isLegacy = false,
   onFreightModalityChange,
+  quoteId,
+  pendingNfeXmlFiles = [],
+  onPendingNfeXmlFilesChange,
 }: CargoLogisticsStepProps) {
   const watchedPaymentTermId = form.watch('payment_term_id');
   const selectedTerm = paymentTerms.find((t) => t.id === watchedPaymentTermId) ?? null;
@@ -456,6 +463,14 @@ export function CargoLogisticsStep({
           />
         </div>
       </SectionBlock>
+
+      {!isLegacy && onPendingNfeXmlFilesChange && (
+        <QuoteNfeXmlPanel
+          quoteId={quoteId}
+          pendingFiles={pendingNfeXmlFiles}
+          onPendingFilesChange={onPendingNfeXmlFilesChange}
+        />
+      )}
     </div>
   );
 }

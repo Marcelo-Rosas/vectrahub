@@ -187,6 +187,52 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  /* /feira tenant tokens — fallback navy Hub se vars ausentes */
+  .fair-ink {
+    color: var(--fair-ink, #0b1d3a);
+  }
+  .fair-accent {
+    color: var(--fair-accent, #2e5aac);
+  }
+  .fair-price {
+    color: var(--fair-price, #2e5aac);
+  }
+  .fair-cta {
+    background-color: var(--fair-cta-bg, #0b1d3a);
+    color: var(--fair-cta-fg, #ffffff);
+  }
+  .fair-cta:hover:not(:disabled) {
+    background-color: var(--fair-accent-hover, #0b1d3a);
+    color: var(--fair-cta-fg, #ffffff);
+  }
+  .fair-toggle-off {
+    color: var(--fair-accent, #2e5aac);
+  }
+  .fair-chip {
+    background-color: var(--fair-accent-soft, #fff4c2);
+    color: var(--fair-pill-fg, #0b1d3a);
+    border-color: var(--fair-border, #cdc2b1);
+  }
+  .fair-soft-panel {
+    background-color: var(--fair-accent-soft, #fff4c2);
+    border-color: var(--fair-border, #cdc2b1);
+  }
+  .fair-mark {
+    background-color: var(--fair-logo-bg, #010101);
+    color: var(--fair-logo-fg, #cdc2b1);
+  }
+  .fair-check[data-state='checked'] {
+    background-color: var(--fair-cta-bg, #0b1d3a);
+    border-color: var(--fair-cta-bg, #0b1d3a);
+    color: var(--fair-cta-fg, #ffffff);
+  }
+  .fair-stats {
+    background-color: var(--fair-surface-alt, #e8e2d8);
+  }
+  .fair-result-card {
+    border-color: var(--fair-border, #2e5aac);
+  }
 }
 
 @keyframes slideInLeft {

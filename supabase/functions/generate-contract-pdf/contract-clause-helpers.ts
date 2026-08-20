@@ -76,14 +76,46 @@ export function resolveContractContratante(quote: Record<string, unknown>): {
 }
 
 /**
- * Deriva o código CTR do contrato a partir do `quote_code` (1:1 com a cotação).
- * `COT-2026-08-0002` → `CTR-2026-08-0002`. Sem código → `CTR`.
+ * Deriva o código CTR do contrato a partir do `quote_code`.
+ * Com sequence → sufixo `-01`, `-02`.
  */
-export function ctrCodeFromQuoteCode(quoteCode: string | null | undefined): string {
+export function ctrCodeFromQuoteCode(
+  quoteCode: string | null | undefined,
+  sequence?: number
+): string {
   const code = String(quoteCode ?? '').trim();
-  if (!code) return 'CTR';
-  if (/^COT-/i.test(code)) return code.replace(/^COT-/i, 'CTR-');
-  return `CTR-${code}`;
+  let base = 'CTR';
+  if (code) {
+    base = /^COT-/i.test(code) ? code.replace(/^COT-/i, 'CTR-') : `CTR-${code}`;
+  }
+  if (sequence == null || sequence < 1) return base;
+  return `${base}-${String(sequence).padStart(2, '0')}`;
+}
+
+/** CONTRATANTE a partir de um pagador explícito do split (multi-payer). */
+export function resolveContractContratanteFromSplit(
+  quote: Record<string, unknown>,
+  split: {
+    party_type: 'client' | 'shipper';
+    name: string;
+    party: Record<string, unknown>;
+  }
+): {
+  party: Record<string, unknown>;
+  name: string;
+  isCif: boolean;
+  source: 'shipper' | 'client';
+} {
+  const freightIsCif =
+    String(quote.freight_type ?? '')
+      .trim()
+      .toUpperCase() === 'CIF';
+  return {
+    party: split.party,
+    name: split.name,
+    isCif: freightIsCif && split.party_type === 'shipper',
+    source: split.party_type === 'shipper' ? 'shipper' : 'client',
+  };
 }
 
 /** Contratos emitidos antes da regra CTR canônica (prefixo COT no filename). */

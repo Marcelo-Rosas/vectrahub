@@ -26,6 +26,13 @@ import {
   splitFreightProportional,
 } from '../_shared/cte-nfe-split.ts';
 import { calculateRouteDistance } from '../_shared/webrouter-client.ts';
+import { consultSefaz } from '../_shared/sefaz-consult.ts';
+import { resolveFocusNfeToken } from '../_shared/nfe-extract.ts';
+import {
+  extractDestFromNfeXml,
+  mergeNfeDestIntoMetadata,
+  partyFromNfeMeta,
+} from '../_shared/nfe-dest-from-meta.ts';
 
 function envOrThrow(key: string): string {
   const v = Deno.env.get(key);
@@ -107,28 +114,74 @@ function json(body: unknown, status = 200, cors: Record<string, string> = {}): R
   });
 }
 
-function partyFromNfeMeta(meta: Record<string, unknown>, nfeKey: string): PartyRow | null {
-  const name = String(meta.destinatario_nome ?? '').trim();
-  if (!name) return null;
-  const cnpj = digits(meta.destinatario_cnpj);
-  const cpf = digits(meta.destinatario_cpf);
-  return {
-    id: `nfe-${nfeKey.slice(-12)}`,
-    name,
-    cnpj: cnpj.length === 14 ? cnpj : null,
-    cpf: cpf.length === 11 ? cpf : null,
-    state_registration: meta.destinatario_ie ? String(meta.destinatario_ie) : null,
-    ie_indicator: Number(meta.destinatario_ie_indicator ?? 9) || 9,
-    ibge_code: null,
-    address: meta.endereco ? String(meta.endereco) : '',
-    address_number: meta.numero ? String(meta.numero) : 'S/N',
-    address_complement: meta.complemento ? String(meta.complemento) : null,
-    address_neighborhood: meta.bairro ? String(meta.bairro) : '',
-    city: meta.cidade ? String(meta.cidade) : '',
-    state: meta.uf ? String(meta.uf).toUpperCase() : '',
-    zip_code: digits(meta.cep),
-    phone: digits(meta.telefone) || null,
-  };
+function nfeKeyFromDoc(d: { nfe_key?: string | null; file_name?: string | null }): string {
+  const fromCol = digits(d.nfe_key);
+  if (fromCol.length === 44) return fromCol;
+  const fromName = digits(d.file_name);
+  if (fromName.length === 44) return fromName;
+  const m = String(d.file_name ?? '').match(/(\d{44})/);
+  return m ? m[1] : '';
+}
+
+async function xmlFromDocumentStorage(
+  supabase: ReturnType<typeof createClient>,
+  fileUrl: string | null | undefined,
+  fileName: string | null | undefined
+): Promise<string | null> {
+  const path = String(fileUrl ?? '').trim();
+  if (!path) return null;
+  const name = `${path} ${fileName ?? ''}`.toLowerCase();
+  if (
+    name.includes('.pdf') ||
+    name.includes('.jpg') ||
+    name.includes('.jpeg') ||
+    name.includes('.png')
+  ) {
+    return null;
+  }
+  const { data, error } = await supabase.storage.from('documents').download(path);
+  if (error || !data) return null;
+  const text = await data.text();
+  const head = text.trim().slice(0, 200);
+  if (!head.startsWith('<') && !head.includes('<')) return null;
+  if (!/<infNFe\b/i.test(text) && !/<NFe\b/i.test(text)) return null;
+  return text;
+}
+
+async function hydrateNfeDestMeta(
+  meta: Record<string, unknown> | undefined,
+  nfeKey: string,
+  xmlFromFile?: string | null
+): Promise<Record<string, unknown>> {
+  let merged = mergeNfeDestIntoMetadata(meta ?? {});
+  if (xmlFromFile) {
+    merged = mergeNfeDestIntoMetadata({
+      ...merged,
+      ...extractDestFromNfeXml(xmlFromFile),
+    });
+  }
+  if (String(merged.destinatario_nome ?? '').trim() && String(merged.uf ?? '').trim()) {
+    return merged;
+  }
+
+  if (String(merged.destinatario_nome ?? '').trim() && !xmlFromFile) {
+    return merged;
+  }
+
+  const sefazResult = await consultSefaz(nfeKey, {
+    proxyUrl: Deno.env.get('SEFAZ_PROXY_URL'),
+    proxySecret: Deno.env.get('SEFAZ_PROXY_SECRET'),
+    focusToken: resolveFocusNfeToken(),
+    vectraCnpj: Deno.env.get('VECTRA_CNPJ'),
+  });
+  if (sefazResult.metadata) {
+    merged = mergeNfeDestIntoMetadata({
+      ...merged,
+      sefaz: sefazResult.metadata,
+      ...(sefazResult.xml ? { xml: sefazResult.xml } : {}),
+    });
+  }
+  return merged;
 }
 
 type ShipperPoolEntry = {
@@ -542,17 +595,49 @@ serve(async (req) => {
     .map((k) => digits(k))
     .filter((k) => k.length === 44);
 
-  const { data: nfeDocs } = order?.id
-    ? await supabase
+  type NfeDocRow = {
+    id: string;
+    nfe_key: string | null;
+    file_name: string | null;
+    file_url: string | null;
+    type: string | null;
+    validation_metadata: unknown;
+  };
+  const nfeDocSelect = 'id, nfe_key, file_name, file_url, type, validation_metadata';
+  const nfeDocQueries: Array<Promise<{ data: NfeDocRow[] | null }>> = [];
+  if (order?.id) {
+    nfeDocQueries.push(
+      supabase
         .from('documents')
-        .select('nfe_key, file_name, validation_metadata')
+        .select(nfeDocSelect)
         .eq('order_id', order.id)
-        .eq('type', 'nfe')
-    : { data: [] as Array<{ nfe_key: string | null; validation_metadata: unknown }> };
+        .in('type', ['nfe', 'xml'])
+    );
+  }
+  nfeDocQueries.push(
+    supabase
+      .from('documents')
+      .select(nfeDocSelect)
+      .eq('quote_id', quote.id)
+      .in('type', ['nfe', 'xml'])
+  );
+  if (nfeKeysFromQuote.length) {
+    nfeDocQueries.push(
+      supabase.from('documents').select(nfeDocSelect).in('nfe_key', nfeKeysFromQuote)
+    );
+  }
+  const nfeDocResults = await Promise.all(nfeDocQueries);
+  const nfeDocs: NfeDocRow[] = [];
+  const seenDocIds = new Set<string>();
+  for (const r of nfeDocResults) {
+    for (const d of r.data ?? []) {
+      if (seenDocIds.has(d.id)) continue;
+      seenDocIds.add(d.id);
+      nfeDocs.push(d);
+    }
+  }
 
-  const nfeKeysFromDocs = (nfeDocs ?? [])
-    .map((d) => digits(d.nfe_key))
-    .filter((k) => k.length === 44);
+  const nfeKeysFromDocs = nfeDocs.map((d) => nfeKeyFromDoc(d)).filter((k) => k.length === 44);
 
   // Prefer cotação; completa com chaves já validadas nos documentos da OS
   const nfeKeys = [...new Set([...nfeKeysFromQuote, ...nfeKeysFromDocs])];
@@ -562,12 +647,30 @@ serve(async (req) => {
     await supabase.from('quotes').update({ nfe_keys: nfeKeys }).eq('id', quote.id);
   }
 
-  const docByKey = new Map<string, Record<string, unknown>>();
-  for (const d of nfeDocs ?? []) {
-    const k = digits(d.nfe_key);
-    if (k.length === 44 && d.validation_metadata && typeof d.validation_metadata === 'object') {
-      docByKey.set(k, d.validation_metadata as Record<string, unknown>);
-    }
+  const docByKey = new Map<
+    string,
+    { id: string; meta: Record<string, unknown>; file_url: string | null; file_name: string | null }
+  >();
+  for (const d of nfeDocs) {
+    const k = nfeKeyFromDoc(d);
+    const meta =
+      d.validation_metadata && typeof d.validation_metadata === 'object'
+        ? (d.validation_metadata as Record<string, unknown>)
+        : {};
+    if (k.length !== 44) continue;
+    const next = { id: d.id, meta, file_url: d.file_url, file_name: d.file_name };
+    const prev = docByKey.get(k);
+    const nextXml =
+      String(d.type ?? '').toLowerCase() === 'xml' ||
+      String(d.file_name ?? '')
+        .toLowerCase()
+        .endsWith('.xml');
+    const prevXml = prev
+      ? String(prev.file_name ?? '')
+          .toLowerCase()
+          .endsWith('.xml')
+      : false;
+    if (!prev || (nextXml && !prevXml)) docByKey.set(k, next);
   }
 
   const additionalShippersCount = Array.isArray(quote.additional_shippers)
@@ -606,8 +709,9 @@ serve(async (req) => {
     }
   }
 
-  if (nfeKeys.length >= 2) {
-    const missing: string[] = [];
+  if (nfeKeys.length >= 1) {
+    const missingDocument: string[] = [];
+    const missingDest: string[] = [];
     const shipperPool = await buildShipperPool(
       supabase,
       shipper as Record<string, unknown>,
@@ -626,24 +730,46 @@ serve(async (req) => {
       remitter: ShipperPoolEntry;
     }> = [];
     for (const key of nfeKeys) {
-      const meta = docByKey.get(key);
-      if (!meta) {
-        missing.push(key);
+      const row = docByKey.get(key);
+      const xmlFromFile = row
+        ? await xmlFromDocumentStorage(supabase, row.file_url, row.file_name)
+        : null;
+      const hydrated = await hydrateNfeDestMeta(row?.meta, key, xmlFromFile);
+      if (row?.id && String(hydrated.destinatario_nome ?? '').trim()) {
+        await supabase
+          .from('documents')
+          .update({ validation_metadata: hydrated, nfe_key: key })
+          .eq('id', row.id);
+      }
+      if (!row && !String(hydrated.destinatario_nome ?? '').trim()) {
+        missingDocument.push(key);
         continue;
       }
-      const dest = partyFromNfeMeta(meta, key);
+      const dest = partyFromNfeMeta(hydrated, key);
       if (!dest) {
-        missing.push(key);
+        missingDest.push(key);
         continue;
       }
-      const remitter = resolveShipperForNfe(key, meta, shipperPool, defaultShipperEntry);
-      rawLegs.push({ key, meta, dest, remitter });
+      const remitter = resolveShipperForNfe(key, hydrated, shipperPool, defaultShipperEntry);
+      rawLegs.push({ key, meta: hydrated, dest, remitter });
     }
-    if (missing.length) {
+    if (missingDocument.length || missingDest.length) {
+      const parts: string[] = [];
+      if (missingDocument.length) {
+        parts.push(`sem documento/XML da NF: ${missingDocument.join(', ')}`);
+      }
+      if (missingDest.length) {
+        parts.push(`sem destinatário (chave-only ou SEFAZ sem dest): ${missingDest.join(', ')}`);
+      }
       return json(
         {
-          error: 'nfe_destinatario_missing',
-          detail: `NF sem destinatário no documento: ${missing.join(', ')}`,
+          error:
+            missingDocument.length && !missingDest.length
+              ? 'nfe_metadata_missing'
+              : 'nfe_destinatario_missing',
+          detail: parts.join('; '),
+          missing_document: missingDocument,
+          missing_destinatario: missingDest,
         },
         422,
         cors

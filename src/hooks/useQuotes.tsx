@@ -8,6 +8,7 @@ import { buildQuoteCloneInsert } from '@/lib/quote-clone';
 import { syncQuoteRouteStops, type RouteStopFormItem } from '@/hooks/useQuoteRouteStops';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchRowsByStage } from '@/lib/board-query';
+import { buildOrderQuoteSnapshotUpdate } from '@/lib/sync-quote-snapshot-to-orders';
 
 type Quote = Database['public']['Tables']['quotes']['Row'];
 type QuoteInsert = Database['public']['Tables']['quotes']['Insert'];
@@ -88,6 +89,17 @@ export function useCreateQuote() {
   });
 }
 
+async function syncQuoteSnapshotToLinkedOrders(quote: Quote): Promise<void> {
+  const snapshot = buildOrderQuoteSnapshotUpdate(quote);
+  const { error } = await supabase
+    .from('orders')
+    .update(asInsert(snapshot))
+    .eq('quote_id', asDb(quote.id));
+  if (error) {
+    throw new Error(`Cotação salva, mas OS não atualizou: ${error.message}`);
+  }
+}
+
 export function useUpdateQuote() {
   const queryClient = useQueryClient();
 
@@ -101,10 +113,12 @@ export function useUpdateQuote() {
         .single();
 
       if (error) throw error;
+      await syncQuoteSnapshotToLinkedOrders(data);
       return data;
     },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['financial-kanban'] });
       queryClient.invalidateQueries({ queryKey: ['cash-flow-summary'] });
       queryClient.invalidateQueries({ queryKey: cardQueryKey(id, null) });

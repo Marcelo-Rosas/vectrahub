@@ -6,6 +6,379 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: '14.15';
   };
+  feira: {
+    Tables: {
+      clients: {
+        Row: {
+          address: string | null;
+          address_number: string | null;
+          city: string | null;
+          cnpj: string;
+          company_id: string;
+          created_at: string;
+          email: string | null;
+          id: string;
+          legal_name: string;
+          neighborhood: string | null;
+          phone: string | null;
+          state: string | null;
+          trade_name: string | null;
+          zip_code: string | null;
+        };
+        Insert: {
+          address?: string | null;
+          address_number?: string | null;
+          city?: string | null;
+          cnpj: string;
+          company_id: string;
+          created_at?: string;
+          email?: string | null;
+          id?: string;
+          legal_name: string;
+          neighborhood?: string | null;
+          phone?: string | null;
+          state?: string | null;
+          trade_name?: string | null;
+          zip_code?: string | null;
+        };
+        Update: {
+          address?: string | null;
+          address_number?: string | null;
+          city?: string | null;
+          cnpj?: string;
+          company_id?: string;
+          created_at?: string;
+          email?: string | null;
+          id?: string;
+          legal_name?: string;
+          neighborhood?: string | null;
+          phone?: string | null;
+          state?: string | null;
+          trade_name?: string | null;
+          zip_code?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'clients_company_id_fkey';
+            columns: ['company_id'];
+            isOneToOne: false;
+            referencedRelation: 'companies';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      companies: {
+        Row: {
+          active: boolean;
+          created_at: string;
+          email_domains: string[];
+          event_flag: string;
+          id: string;
+          name: string;
+          origin_cep: string | null;
+          origin_city: string;
+          origin_label: string;
+          origin_uf: string;
+          price_table_id: string | null;
+          slug: string;
+          toll_fallback_percent: number;
+        };
+        Insert: {
+          active?: boolean;
+          created_at?: string;
+          email_domains: string[];
+          event_flag: string;
+          id?: string;
+          name: string;
+          origin_cep?: string | null;
+          origin_city: string;
+          origin_label: string;
+          origin_uf: string;
+          price_table_id?: string | null;
+          slug: string;
+          toll_fallback_percent?: number;
+        };
+        Update: {
+          active?: boolean;
+          created_at?: string;
+          email_domains?: string[];
+          event_flag?: string;
+          id?: string;
+          name?: string;
+          origin_cep?: string | null;
+          origin_city?: string;
+          origin_label?: string;
+          origin_uf?: string;
+          price_table_id?: string | null;
+          slug?: string;
+          toll_fallback_percent?: number;
+        };
+        Relationships: [];
+      };
+      product_boxes: {
+        Row: {
+          box_type: string;
+          boxes_per_unit: number;
+          group_weight_kg: number;
+          height_mm: number;
+          id: string;
+          length_mm: number;
+          product_id: string;
+          volume_m3: number;
+          width_mm: number;
+        };
+        Insert: {
+          box_type: string;
+          boxes_per_unit?: number;
+          group_weight_kg?: number;
+          height_mm: number;
+          id?: string;
+          length_mm: number;
+          product_id: string;
+          volume_m3?: number;
+          width_mm: number;
+        };
+        Update: {
+          box_type?: string;
+          boxes_per_unit?: number;
+          group_weight_kg?: number;
+          height_mm?: number;
+          id?: string;
+          length_mm?: number;
+          product_id?: string;
+          volume_m3?: number;
+          width_mm?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'product_boxes_product_id_fkey';
+            columns: ['product_id'];
+            isOneToOne: false;
+            referencedRelation: 'products';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      products: {
+        Row: {
+          active: boolean;
+          box_types_count: number;
+          boxes_total: number;
+          company_id: string;
+          id: string;
+          name: string;
+          sku: string;
+          volume_m3_per_unit: number;
+          weight_kg_per_unit: number;
+        };
+        Insert: {
+          active?: boolean;
+          box_types_count?: number;
+          boxes_total?: number;
+          company_id: string;
+          id?: string;
+          name: string;
+          sku: string;
+          volume_m3_per_unit: number;
+          weight_kg_per_unit: number;
+        };
+        Update: {
+          active?: boolean;
+          box_types_count?: number;
+          boxes_total?: number;
+          company_id?: string;
+          id?: string;
+          name?: string;
+          sku?: string;
+          volume_m3_per_unit?: number;
+          weight_kg_per_unit?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'products_company_id_fkey';
+            columns: ['company_id'];
+            isOneToOne: false;
+            referencedRelation: 'companies';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      quote_lines: {
+        Row: {
+          boxes_count: number;
+          id: string;
+          quantity: number;
+          quote_id: string;
+          selected_box_types: string[] | null;
+          sku: string;
+          volume_m3: number;
+          weight_kg: number;
+        };
+        Insert: {
+          boxes_count: number;
+          id?: string;
+          quantity: number;
+          quote_id: string;
+          selected_box_types?: string[] | null;
+          sku: string;
+          volume_m3: number;
+          weight_kg: number;
+        };
+        Update: {
+          boxes_count?: number;
+          id?: string;
+          quantity?: number;
+          quote_id?: string;
+          selected_box_types?: string[] | null;
+          sku?: string;
+          volume_m3?: number;
+          weight_kg?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'quote_lines_quote_id_fkey';
+            columns: ['quote_id'];
+            isOneToOne: false;
+            referencedRelation: 'quotes';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      quotes: {
+        Row: {
+          cargo_value: number;
+          client_id: string | null;
+          company_id: string;
+          created_at: string;
+          created_by: string;
+          destination: string;
+          event_flag: string;
+          freight_weight: number;
+          hub_total_cliente: number;
+          id: string;
+          km_distance: number;
+          origin: string;
+          pedagio_estimado: number;
+          pricing_breakdown: Json | null;
+          quote_code: string;
+          status: string;
+          toll_method: string;
+          toll_percent: number;
+          total_exibido: number;
+          volume_m3: number;
+          weight_kg: number;
+        };
+        Insert: {
+          cargo_value: number;
+          client_id?: string | null;
+          company_id: string;
+          created_at?: string;
+          created_by: string;
+          destination: string;
+          event_flag: string;
+          freight_weight: number;
+          hub_total_cliente: number;
+          id?: string;
+          km_distance: number;
+          origin: string;
+          pedagio_estimado: number;
+          pricing_breakdown?: Json | null;
+          quote_code: string;
+          status?: string;
+          toll_method: string;
+          toll_percent: number;
+          total_exibido: number;
+          volume_m3: number;
+          weight_kg: number;
+        };
+        Update: {
+          cargo_value?: number;
+          client_id?: string | null;
+          company_id?: string;
+          created_at?: string;
+          created_by?: string;
+          destination?: string;
+          event_flag?: string;
+          freight_weight?: number;
+          hub_total_cliente?: number;
+          id?: string;
+          km_distance?: number;
+          origin?: string;
+          pedagio_estimado?: number;
+          pricing_breakdown?: Json | null;
+          quote_code?: string;
+          status?: string;
+          toll_method?: string;
+          toll_percent?: number;
+          total_exibido?: number;
+          volume_m3?: number;
+          weight_kg?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'quotes_client_id_fkey';
+            columns: ['client_id'];
+            isOneToOne: false;
+            referencedRelation: 'clients';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'quotes_company_id_fkey';
+            columns: ['company_id'];
+            isOneToOne: false;
+            referencedRelation: 'companies';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      user_company: {
+        Row: {
+          company_id: string;
+          user_id: string;
+        };
+        Insert: {
+          company_id: string;
+          user_id: string;
+        };
+        Update: {
+          company_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_company_company_id_fkey';
+            columns: ['company_id'];
+            isOneToOne: false;
+            referencedRelation: 'companies';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      current_company_id: { Args: never; Returns: string };
+      email_domain: { Args: { p_email: string }; Returns: string };
+      email_matches_company_domain: {
+        Args: { p_allowed: string; p_email: string };
+        Returns: boolean;
+      };
+      is_fair_tenant_email: { Args: { p_email: string }; Returns: boolean };
+      is_vectra_staff: { Args: never; Returns: boolean };
+      resolve_company_id_for_email: {
+        Args: { p_email: string };
+        Returns: string;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       ai_budget_config: {
@@ -649,6 +1022,41 @@ export type Database = {
             referencedRelation: 'orders';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'ciot_operations_service_order_id_fkey';
+            columns: ['service_order_id'];
+            isOneToOne: false;
+            referencedRelation: 'orders_rs_per_km';
+            referencedColumns: ['order_id'];
+          },
+          {
+            foreignKeyName: 'ciot_operations_service_order_id_fkey';
+            columns: ['service_order_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_order_payment_reconciliation';
+            referencedColumns: ['order_id'];
+          },
+          {
+            foreignKeyName: 'ciot_operations_service_order_id_fkey';
+            columns: ['service_order_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_quote_order_divergence';
+            referencedColumns: ['order_id'];
+          },
+          {
+            foreignKeyName: 'ciot_operations_service_order_id_fkey';
+            columns: ['service_order_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_trip_financial_details';
+            referencedColumns: ['order_id'];
+          },
+          {
+            foreignKeyName: 'ciot_operations_service_order_id_fkey';
+            columns: ['service_order_id'];
+            isOneToOne: false;
+            referencedRelation: 'vw_order_risk_status';
+            referencedColumns: ['order_id'];
+          },
         ];
       };
       clients: {
@@ -850,6 +1258,7 @@ export type Database = {
           pdf_storage_path: string | null;
           pickup_date: string | null;
           recipient_data: Json;
+          sender_2_data: Json | null;
           sender_data: Json;
           status: Database['public']['Enums']['collection_order_status'];
           updated_at: string;
@@ -876,6 +1285,7 @@ export type Database = {
           pdf_storage_path?: string | null;
           pickup_date?: string | null;
           recipient_data: Json;
+          sender_2_data?: Json | null;
           sender_data: Json;
           status?: Database['public']['Enums']['collection_order_status'];
           updated_at?: string;
@@ -902,6 +1312,7 @@ export type Database = {
           pdf_storage_path?: string | null;
           pickup_date?: string | null;
           recipient_data?: Json;
+          sender_2_data?: Json | null;
           sender_data?: Json;
           status?: Database['public']['Enums']['collection_order_status'];
           updated_at?: string;
@@ -1459,6 +1870,8 @@ export type Database = {
           type: Database['public']['Enums']['document_type'];
           updated_at: string;
           uploaded_by: string;
+          validation_errors: string[] | null;
+          validation_metadata: Json | null;
           validation_status: string | null;
         };
         Insert: {
@@ -1476,6 +1889,8 @@ export type Database = {
           type: Database['public']['Enums']['document_type'];
           updated_at?: string;
           uploaded_by: string;
+          validation_errors?: string[] | null;
+          validation_metadata?: Json | null;
           validation_status?: string | null;
         };
         Update: {
@@ -1493,6 +1908,8 @@ export type Database = {
           type?: Database['public']['Enums']['document_type'];
           updated_at?: string;
           uploaded_by?: string;
+          validation_errors?: string[] | null;
+          validation_metadata?: Json | null;
           validation_status?: string | null;
         };
         Relationships: [
@@ -2514,6 +2931,54 @@ export type Database = {
         };
         Relationships: [];
       };
+      ltl_parameters: {
+        Row: {
+          correction_factor: number;
+          created_at: string;
+          cubage_factor: number;
+          dispatch_fee: number;
+          gris_high_risk_percent: number;
+          gris_min: number;
+          gris_min_cargo_limit: number;
+          gris_percent: number;
+          id: string;
+          min_freight: number;
+          min_freight_cargo_limit: number;
+          min_tso: number;
+          reference_month: string;
+        };
+        Insert: {
+          correction_factor?: number;
+          created_at?: string;
+          cubage_factor?: number;
+          dispatch_fee?: number;
+          gris_high_risk_percent?: number;
+          gris_min?: number;
+          gris_min_cargo_limit?: number;
+          gris_percent?: number;
+          id?: string;
+          min_freight?: number;
+          min_freight_cargo_limit?: number;
+          min_tso?: number;
+          reference_month: string;
+        };
+        Update: {
+          correction_factor?: number;
+          created_at?: string;
+          cubage_factor?: number;
+          dispatch_fee?: number;
+          gris_high_risk_percent?: number;
+          gris_min?: number;
+          gris_min_cargo_limit?: number;
+          gris_percent?: number;
+          id?: string;
+          min_freight?: number;
+          min_freight_cargo_limit?: number;
+          min_tso?: number;
+          reference_month?: string;
+        };
+        Relationships: [];
+      };
       market_indices: {
         Row: {
           agente_versao: string | null;
@@ -3394,11 +3859,11 @@ export type Database = {
           descarga_real: number | null;
           destination: string;
           destination_cep: string | null;
+          driver_antt: string | null;
+          driver_cnh: string | null;
           driver_id: string | null;
           driver_name: string | null;
           driver_phone: string | null;
-          driver_cnh: string | null;
-          driver_antt: string | null;
           eta: string | null;
           freight_modality: string | null;
           freight_type: string | null;
@@ -3472,11 +3937,11 @@ export type Database = {
           descarga_real?: number | null;
           destination: string;
           destination_cep?: string | null;
+          driver_antt?: string | null;
+          driver_cnh?: string | null;
           driver_id?: string | null;
           driver_name?: string | null;
           driver_phone?: string | null;
-          driver_cnh?: string | null;
-          driver_antt?: string | null;
           eta?: string | null;
           freight_modality?: string | null;
           freight_type?: string | null;
@@ -3550,11 +4015,11 @@ export type Database = {
           descarga_real?: number | null;
           destination?: string;
           destination_cep?: string | null;
+          driver_antt?: string | null;
+          driver_cnh?: string | null;
           driver_id?: string | null;
           driver_name?: string | null;
           driver_phone?: string | null;
-          driver_cnh?: string | null;
-          driver_antt?: string | null;
           eta?: string | null;
           freight_modality?: string | null;
           freight_type?: string | null;
@@ -3727,6 +4192,9 @@ export type Database = {
         Row: {
           active: boolean;
           address: string | null;
+          bank_account: string | null;
+          bank_agency: string | null;
+          bank_code: string | null;
           city: string | null;
           cpf_cnpj: string | null;
           cpf_cnpj_mask: string | null;
@@ -3735,7 +4203,9 @@ export type Database = {
           id: string;
           name: string;
           notes: string | null;
+          payment_prefer: string | null;
           phone: string | null;
+          pix_key: string | null;
           rg: string | null;
           rg_emitter: string | null;
           rntrc: string | null;
@@ -3749,6 +4219,9 @@ export type Database = {
         Insert: {
           active?: boolean;
           address?: string | null;
+          bank_account?: string | null;
+          bank_agency?: string | null;
+          bank_code?: string | null;
           city?: string | null;
           cpf_cnpj?: string | null;
           cpf_cnpj_mask?: string | null;
@@ -3757,7 +4230,9 @@ export type Database = {
           id?: string;
           name: string;
           notes?: string | null;
+          payment_prefer?: string | null;
           phone?: string | null;
+          pix_key?: string | null;
           rg?: string | null;
           rg_emitter?: string | null;
           rntrc?: string | null;
@@ -3771,6 +4246,9 @@ export type Database = {
         Update: {
           active?: boolean;
           address?: string | null;
+          bank_account?: string | null;
+          bank_agency?: string | null;
+          bank_code?: string | null;
           city?: string | null;
           cpf_cnpj?: string | null;
           cpf_cnpj_mask?: string | null;
@@ -3779,7 +4257,9 @@ export type Database = {
           id?: string;
           name?: string;
           notes?: string | null;
+          payment_prefer?: string | null;
           phone?: string | null;
+          pix_key?: string | null;
           rg?: string | null;
           rg_emitter?: string | null;
           rntrc?: string | null;
@@ -4036,6 +4516,15 @@ export type Database = {
           toll_percent: number | null;
           tso_percent: number | null;
           user_id: string | null;
+          weight_rate_10: number | null;
+          weight_rate_100: number | null;
+          weight_rate_150: number | null;
+          weight_rate_20: number | null;
+          weight_rate_200: number | null;
+          weight_rate_30: number | null;
+          weight_rate_50: number | null;
+          weight_rate_70: number | null;
+          weight_rate_above_200: number | null;
         };
         Insert: {
           ad_valorem_percent?: number | null;
@@ -4051,6 +4540,15 @@ export type Database = {
           toll_percent?: number | null;
           tso_percent?: number | null;
           user_id?: string | null;
+          weight_rate_10?: number | null;
+          weight_rate_100?: number | null;
+          weight_rate_150?: number | null;
+          weight_rate_20?: number | null;
+          weight_rate_200?: number | null;
+          weight_rate_30?: number | null;
+          weight_rate_50?: number | null;
+          weight_rate_70?: number | null;
+          weight_rate_above_200?: number | null;
         };
         Update: {
           ad_valorem_percent?: number | null;
@@ -4066,6 +4564,15 @@ export type Database = {
           toll_percent?: number | null;
           tso_percent?: number | null;
           user_id?: string | null;
+          weight_rate_10?: number | null;
+          weight_rate_100?: number | null;
+          weight_rate_150?: number | null;
+          weight_rate_20?: number | null;
+          weight_rate_200?: number | null;
+          weight_rate_30?: number | null;
+          weight_rate_50?: number | null;
+          weight_rate_70?: number | null;
+          weight_rate_above_200?: number | null;
         };
         Relationships: [
           {
@@ -4175,6 +4682,60 @@ export type Database = {
         };
         Relationships: [];
       };
+      pricing_route_overrides: {
+        Row: {
+          cargo_type: string | null;
+          created_at: string | null;
+          description: string | null;
+          destination_city: string | null;
+          destination_uf: string;
+          id: string;
+          is_active: boolean;
+          modality: string | null;
+          notes: string | null;
+          origin_city: string | null;
+          origin_uf: string;
+          override_type: string | null;
+          override_value: number | null;
+          profit_margin_percent: number | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          cargo_type?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          destination_city?: string | null;
+          destination_uf: string;
+          id?: string;
+          is_active?: boolean;
+          modality?: string | null;
+          notes?: string | null;
+          origin_city?: string | null;
+          origin_uf: string;
+          override_type?: string | null;
+          override_value?: number | null;
+          profit_margin_percent?: number | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          cargo_type?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          destination_city?: string | null;
+          destination_uf?: string;
+          id?: string;
+          is_active?: boolean;
+          modality?: string | null;
+          notes?: string | null;
+          origin_city?: string | null;
+          origin_uf?: string;
+          override_type?: string | null;
+          override_value?: number | null;
+          profit_margin_percent?: number | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
       pricing_rules_config: {
         Row: {
           category: Database['public']['Enums']['pricing_rule_category'];
@@ -4277,53 +4838,68 @@ export type Database = {
       };
       quote_contracts: {
         Row: {
+          amount_cents: number;
           created_at: string;
           generated_at: string;
           generated_by: string | null;
           id: string;
+          party_id: string | null;
+          party_type: Database['public']['Enums']['quote_contract_party_type'];
           pdf_file_name: string | null;
           pdf_size_bytes: number | null;
           pdf_storage_path: string;
           quote_id: string;
+          sequence: number;
           signature_envelope_id: string | null;
           signature_metadata: Json;
           signature_provider: string | null;
           signature_status: string;
           signed_at: string | null;
+          split_snapshot: Json;
           updated_at: string;
           version: number;
         };
         Insert: {
+          amount_cents?: number;
           created_at?: string;
           generated_at?: string;
           generated_by?: string | null;
           id?: string;
+          party_id?: string | null;
+          party_type?: Database['public']['Enums']['quote_contract_party_type'];
           pdf_file_name?: string | null;
           pdf_size_bytes?: number | null;
           pdf_storage_path: string;
           quote_id: string;
+          sequence?: number;
           signature_envelope_id?: string | null;
           signature_metadata?: Json;
           signature_provider?: string | null;
           signature_status?: string;
           signed_at?: string | null;
+          split_snapshot?: Json;
           updated_at?: string;
           version?: number;
         };
         Update: {
+          amount_cents?: number;
           created_at?: string;
           generated_at?: string;
           generated_by?: string | null;
           id?: string;
+          party_id?: string | null;
+          party_type?: Database['public']['Enums']['quote_contract_party_type'];
           pdf_file_name?: string | null;
           pdf_size_bytes?: number | null;
           pdf_storage_path?: string;
           quote_id?: string;
+          sequence?: number;
           signature_envelope_id?: string | null;
           signature_metadata?: Json;
           signature_provider?: string | null;
           signature_status?: string;
           signed_at?: string | null;
+          split_snapshot?: Json;
           updated_at?: string;
           version?: number;
         };
@@ -4520,10 +5096,13 @@ export type Database = {
           client_email: string | null;
           client_id: string | null;
           client_name: string;
+          commercial_owner_name: string | null;
           conditional_fees_breakdown: Json | null;
+          contract_splits: Json;
           created_at: string;
           created_by: string;
           cubage_weight: number | null;
+          delivered_at: string | null;
           delivery_conditions_selected: Json | null;
           delivery_notes: string | null;
           destination: string;
@@ -4535,13 +5114,18 @@ export type Database = {
           email_sent: boolean;
           email_sent_at: string | null;
           estimated_loading_date: string | null;
+          followup_target_locked_at: string | null;
+          followup_target_type: string | null;
           freight_modality: string | null;
           freight_type: string | null;
+          handoff_required: boolean;
           id: string;
           is_legacy: boolean;
           km_distance: number | null;
+          last_commercial_reply_at: string | null;
           nfe_keys: string[] | null;
           notes: string | null;
+          opened_at: string | null;
           origin: string;
           origin_cep: string | null;
           origin_ibge: number | null;
@@ -4550,7 +5134,10 @@ export type Database = {
           payment_term_id: string | null;
           price_table_id: string | null;
           pricing_breakdown: Json | null;
+          proposal_sent_at: string | null;
           quote_code: string | null;
+          resend_email_id: string | null;
+          sent_at: string | null;
           shipper_email: string | null;
           shipper_id: string | null;
           shipper_name: string | null;
@@ -4580,10 +5167,13 @@ export type Database = {
           client_email?: string | null;
           client_id?: string | null;
           client_name: string;
+          commercial_owner_name?: string | null;
           conditional_fees_breakdown?: Json | null;
+          contract_splits?: Json;
           created_at?: string;
           created_by: string;
           cubage_weight?: number | null;
+          delivered_at?: string | null;
           delivery_conditions_selected?: Json | null;
           delivery_notes?: string | null;
           destination: string;
@@ -4595,13 +5185,18 @@ export type Database = {
           email_sent?: boolean;
           email_sent_at?: string | null;
           estimated_loading_date?: string | null;
+          followup_target_locked_at?: string | null;
+          followup_target_type?: string | null;
           freight_modality?: string | null;
           freight_type?: string | null;
+          handoff_required?: boolean;
           id?: string;
           is_legacy?: boolean;
           km_distance?: number | null;
+          last_commercial_reply_at?: string | null;
           nfe_keys?: string[] | null;
           notes?: string | null;
+          opened_at?: string | null;
           origin: string;
           origin_cep?: string | null;
           origin_ibge?: number | null;
@@ -4610,7 +5205,10 @@ export type Database = {
           payment_term_id?: string | null;
           price_table_id?: string | null;
           pricing_breakdown?: Json | null;
+          proposal_sent_at?: string | null;
           quote_code?: string | null;
+          resend_email_id?: string | null;
+          sent_at?: string | null;
           shipper_email?: string | null;
           shipper_id?: string | null;
           shipper_name?: string | null;
@@ -4640,10 +5238,13 @@ export type Database = {
           client_email?: string | null;
           client_id?: string | null;
           client_name?: string;
+          commercial_owner_name?: string | null;
           conditional_fees_breakdown?: Json | null;
+          contract_splits?: Json;
           created_at?: string;
           created_by?: string;
           cubage_weight?: number | null;
+          delivered_at?: string | null;
           delivery_conditions_selected?: Json | null;
           delivery_notes?: string | null;
           destination?: string;
@@ -4655,13 +5256,18 @@ export type Database = {
           email_sent?: boolean;
           email_sent_at?: string | null;
           estimated_loading_date?: string | null;
+          followup_target_locked_at?: string | null;
+          followup_target_type?: string | null;
           freight_modality?: string | null;
           freight_type?: string | null;
+          handoff_required?: boolean;
           id?: string;
           is_legacy?: boolean;
           km_distance?: number | null;
+          last_commercial_reply_at?: string | null;
           nfe_keys?: string[] | null;
           notes?: string | null;
+          opened_at?: string | null;
           origin?: string;
           origin_cep?: string | null;
           origin_ibge?: number | null;
@@ -4670,7 +5276,10 @@ export type Database = {
           payment_term_id?: string | null;
           price_table_id?: string | null;
           pricing_breakdown?: Json | null;
+          proposal_sent_at?: string | null;
           quote_code?: string | null;
+          resend_email_id?: string | null;
+          sent_at?: string | null;
           shipper_email?: string | null;
           shipper_id?: string | null;
           shipper_name?: string | null;
@@ -5264,6 +5873,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      rntrc_open_data: {
+        Row: {
+          as_of: string;
+          categoria: string;
+          cnpj_cpf: string | null;
+          equiparado: boolean;
+          ingested_at: string;
+          municipio: string | null;
+          nome: string | null;
+          rntrc: string;
+          situacao: string | null;
+          source_resource: string | null;
+          uf: string | null;
+        };
+        Insert: {
+          as_of: string;
+          categoria: string;
+          cnpj_cpf?: string | null;
+          equiparado?: boolean;
+          ingested_at?: string;
+          municipio?: string | null;
+          nome?: string | null;
+          rntrc: string;
+          situacao?: string | null;
+          source_resource?: string | null;
+          uf?: string | null;
+        };
+        Update: {
+          as_of?: string;
+          categoria?: string;
+          cnpj_cpf?: string | null;
+          equiparado?: boolean;
+          ingested_at?: string;
+          municipio?: string | null;
+          nome?: string | null;
+          rntrc?: string;
+          situacao?: string | null;
+          source_resource?: string | null;
+          uf?: string | null;
+        };
+        Relationships: [];
+      };
       route_metrics_config: {
         Row: {
           created_at: string;
@@ -5310,6 +5961,103 @@ export type Database = {
             columns: ['vehicle_type_id'];
             isOneToOne: false;
             referencedRelation: 'vehicle_types';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      shipper_product_boxes: {
+        Row: {
+          box_type: string;
+          boxes_per_unit: number;
+          created_at: string;
+          group_weight_kg: number;
+          height_mm: number;
+          id: string;
+          length_mm: number;
+          product_id: string;
+          volume_m3: number;
+          width_mm: number;
+        };
+        Insert: {
+          box_type: string;
+          boxes_per_unit?: number;
+          created_at?: string;
+          group_weight_kg?: number;
+          height_mm: number;
+          id?: string;
+          length_mm: number;
+          product_id: string;
+          volume_m3?: number;
+          width_mm: number;
+        };
+        Update: {
+          box_type?: string;
+          boxes_per_unit?: number;
+          created_at?: string;
+          group_weight_kg?: number;
+          height_mm?: number;
+          id?: string;
+          length_mm?: number;
+          product_id?: string;
+          volume_m3?: number;
+          width_mm?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'shipper_product_boxes_product_id_fkey';
+            columns: ['product_id'];
+            isOneToOne: false;
+            referencedRelation: 'shipper_products';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      shipper_products: {
+        Row: {
+          active: boolean;
+          box_types_count: number;
+          boxes_total: number;
+          created_at: string;
+          id: string;
+          name: string;
+          shipper_id: string;
+          sku: string;
+          updated_at: string;
+          volume_m3_per_unit: number;
+          weight_kg_per_unit: number;
+        };
+        Insert: {
+          active?: boolean;
+          box_types_count?: number;
+          boxes_total?: number;
+          created_at?: string;
+          id?: string;
+          name: string;
+          shipper_id: string;
+          sku: string;
+          updated_at?: string;
+          volume_m3_per_unit: number;
+          weight_kg_per_unit: number;
+        };
+        Update: {
+          active?: boolean;
+          box_types_count?: number;
+          boxes_total?: number;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          shipper_id?: string;
+          sku?: string;
+          updated_at?: string;
+          volume_m3_per_unit?: number;
+          weight_kg_per_unit?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'shipper_products_shipper_id_fkey';
+            columns: ['shipper_id'];
+            isOneToOne: false;
+            referencedRelation: 'shippers';
             referencedColumns: ['id'];
           },
         ];
@@ -7394,6 +8142,28 @@ export type Database = {
         Returns: string;
       };
       link_order_to_trip: { Args: { p_order_id: string }; Returns: string };
+      lookup_rntrc_open_data: {
+        Args: { p_cnpj?: string; p_rntrc?: string };
+        Returns: {
+          as_of: string;
+          categoria: string;
+          cnpj_cpf: string | null;
+          equiparado: boolean;
+          ingested_at: string;
+          municipio: string | null;
+          nome: string | null;
+          rntrc: string;
+          situacao: string | null;
+          source_resource: string | null;
+          uf: string | null;
+        }[];
+        SetofOptions: {
+          from: '*';
+          to: 'rntrc_open_data';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       next_collection_order_seq: {
         Args: { p_month: number; p_year: number };
         Returns: number;
@@ -7412,6 +8182,7 @@ export type Database = {
         };
         Returns: number;
       };
+      rntrc_open_data_truncate: { Args: never; Returns: undefined };
       set_user_profile: {
         Args: {
           new_profile: Database['public']['Enums']['user_profile'];
@@ -7514,8 +8285,12 @@ export type Database = {
         | 'carga_descarga'
         | 'aluguel'
         | 'risco'
-        | 'ntc';
+        | 'ntc'
+        | 'conteiner'
+        | 'pedagio'
+        | 'taxas_adicionais';
       pricing_rule_value_type: 'fixed' | 'percentage' | 'per_km' | 'per_ton';
+      quote_contract_party_type: 'client' | 'shipper';
       quote_stage:
         | 'novo_pedido'
         | 'qualificacao'
@@ -7652,6 +8427,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  feira: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ['admin', 'comercial', 'operacao', 'fiscal', 'leitura'],
@@ -7727,8 +8505,12 @@ export const Constants = {
         'aluguel',
         'risco',
         'ntc',
+        'conteiner',
+        'pedagio',
+        'taxas_adicionais',
       ],
       pricing_rule_value_type: ['fixed', 'percentage', 'per_km', 'per_ton'],
+      quote_contract_party_type: ['client', 'shipper'],
       quote_stage: [
         'novo_pedido',
         'qualificacao',

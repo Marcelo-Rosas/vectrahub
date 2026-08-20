@@ -109,6 +109,11 @@ export interface BuildMdfeInput {
   vectra: VectraConfig;
   retry?: number; // prior emissions → ref CFN-MDFE-…-rN (Focus dedup)
   municipiosCarregamento: MunicipioCarregamento[]; // 1..50 (where cargo was picked up)
+  /**
+   * Override UFIni (SEFAZ 456). Sem override: UF majoritária das origens dos CT-es;
+   * carregamentos de outras UFs são omitidos do grupo (CT-es continuam no manifesto).
+   */
+  ufInicio?: string;
   percursoUfs?: string[]; // intermediate UFs between uf_inicio and uf_fim
   /** Apólices ativas (RCTR-C / RC-DC). Responsável = emitente (Vectra). */
   seguros?: MdfeSeguro[];
@@ -138,10 +143,29 @@ export interface BuildMdfeInput {
    */
   pagamento?: MdfePagamento;
   /**
-   * CIOT (SEFAZ 304 TAC). Fonte: e-FRETE gratuito → orders.ciot_number.
+   * CIOT (SEFAZ 304 TAC). Fonte: e-FRETE gratuito → orders.ciot_number
+   * ou CIOT fracionado de parceiro (meta.ciot.cnpjResponsavel).
    * Focus: modal_rodoviario.ciot[]
    */
   ciots?: Array<{ ciot: string; cnpjResponsavel?: string; cpfResponsavel?: string }>;
+  /**
+   * Vale-Pedágio (Focus dispositivos_vale_pedagio[]).
+   * Fonte: pricing_breakdown.meta.vpo — emissão própria ou IdVpo de parceiro.
+   */
+  dispositivosValePedagio?: MdfeDispositivoValePedagio[];
+  /** SEFAZ 731: obrigatório quando há dispositivos_vale_pedagio (ex.: 04 = 3 eixos). */
+  categoriaCombinacaoVeicular?: string;
+}
+
+/** Focus modal_rodoviario.dispositivos_vale_pedagio[] */
+export interface MdfeDispositivoValePedagio {
+  cnpjFornecedora: string;
+  cnpjPagador?: string;
+  cpfPagador?: string;
+  /** IDVPO / nCompra */
+  numeroComprovante: string;
+  valor: number;
+  tipo?: '01' | '04';
 }
 
 export interface BuildMdfeResult {
@@ -229,6 +253,61 @@ export function buildMdfePagamentos(
   ];
 }
 
+/**
+ * Monta Focus `dispositivos_vale_pedagio[]` (+ categoria_combinacao_veicular).
+ * SEFAZ 731: categ obrigatória quando o grupo valePed existe.
+ */
+export function buildMdfeDispositivosValePedagio(
+  dispositivos: MdfeDispositivoValePedagio[] | undefined,
+  categoriaCombinacaoVeicular: string | undefined,
+  warnings: string[]
+): Record<string, unknown> | undefined {
+  if (!dispositivos || dispositivos.length === 0) return undefined;
+
+  const list: Record<string, unknown>[] = [];
+  for (const d of dispositivos) {
+    const forn = digits(d.cnpjFornecedora);
+    const nCompra = String(d.numeroComprovante ?? '').replace(/\D/g, '');
+    const valor = Number(d.valor);
+    if (forn.length !== 14 || nCompra.length < 1 || !(valor > 0)) {
+      warnings.push(
+        'dispositivo vale-pedágio ignorado — exige cnpj_fornecedora 14d, IDVPO e valor > 0'
+      );
+      continue;
+    }
+    const cnpjPg = digits(d.cnpjPagador);
+    const cpfPg = digits(d.cpfPagador);
+    const row: Record<string, unknown> = {
+      cnpj_empresa_fornecedora: forn,
+      numero_comprovante_compra: nCompra.slice(0, 20),
+      valor_vale_pedagio: Number(valor.toFixed(2)),
+      tipo_vale_pedagio: d.tipo === '04' ? '04' : '01',
+    };
+    if (cnpjPg.length === 14) row.cnpj_responsavel_pagamento = cnpjPg;
+    else if (cpfPg.length === 11) row.cpf_responsavel_pagamento = cpfPg;
+    else {
+      warnings.push('dispositivo vale-pedágio ignorado — falta CNPJ/CPF pagador');
+      continue;
+    }
+    list.push(row);
+  }
+  if (list.length === 0) return undefined;
+
+  const categ = String(categoriaCombinacaoVeicular ?? '')
+    .replace(/\D/g, '')
+    .padStart(2, '0')
+    .slice(0, 2);
+  const out: Record<string, unknown> = { dispositivos_vale_pedagio: list };
+  if (categ.length === 2 && categ !== '00') {
+    out.categoria_combinacao_veicular = categ;
+  } else {
+    warnings.push(
+      'categoria_combinacao_veicular ausente — SEFAZ 731 exige categ quando há vale-pedágio'
+    );
+  }
+  return out;
+}
+
 function rntrcPropSefaz(raw: string | null | undefined): string | null {
   const n = normalizeRntrcSefaz(raw);
   if (/^[0-9]{8}$/.test(n)) return n;
@@ -284,6 +363,62 @@ export function buildMdfeRef(serie: number, numero: number, retry = 0): string {
   return retry > 0 ? `CFN-MDFE-${serie}-${numero}-r${retry}` : `CFN-MDFE-${serie}-${numero}`;
 }
 
+/**
+ * SEFAZ 456: todos cMunCarrega devem pertencer a UFIni.
+ * Com CT-es de origens em UFs distintas, escolhe a UF majoritária (empate: ordem
+ * alfabética) e filtra o grupo de carregamento.
+ */
+export function resolveMdfeUfInicioECarregamentos(
+  ctes: Array<{ uf_origem?: string }>,
+  municipios: MunicipioCarregamento[],
+  overrideUf?: string | null
+): { ufInicio: string; municipios: MunicipioCarregamento[]; omitted: MunicipioCarregamento[] } {
+  const override = String(overrideUf ?? '')
+    .toUpperCase()
+    .replace(/[^A-Z]/g, '')
+    .slice(0, 2);
+
+  const counts = new Map<string, number>();
+  for (const c of ctes) {
+    const uf = String(c.uf_origem ?? '')
+      .toUpperCase()
+      .replace(/[^A-Z]/g, '')
+      .slice(0, 2);
+    if (uf.length === 2) counts.set(uf, (counts.get(uf) ?? 0) + 1);
+  }
+  for (const m of municipios) {
+    const uf = String(m.uf ?? '')
+      .toUpperCase()
+      .replace(/[^A-Z]/g, '')
+      .slice(0, 2);
+    if (uf.length === 2 && !counts.has(uf)) counts.set(uf, 0);
+  }
+
+  let ufInicio = override;
+  if (ufInicio.length !== 2) {
+    const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    ufInicio =
+      ranked[0]?.[0] ||
+      String(municipios[0]?.uf ?? '')
+        .toUpperCase()
+        .replace(/[^A-Z]/g, '')
+        .slice(0, 2);
+  }
+
+  const kept: MunicipioCarregamento[] = [];
+  const omitted: MunicipioCarregamento[] = [];
+  for (const m of municipios) {
+    const uf = String(m.uf ?? '')
+      .toUpperCase()
+      .replace(/[^A-Z]/g, '')
+      .slice(0, 2);
+    if (!uf || uf === ufInicio) kept.push({ ...m, uf: uf || ufInicio });
+    else omitted.push(m);
+  }
+
+  return { ufInicio, municipios: kept, omitted };
+}
+
 export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
   const { ctes, vehicle, driver, serie, numero, vectra } = input;
   const warnings: string[] = [];
@@ -292,12 +427,20 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
 
   // UFIni/UFFim = rota da carga (CT-e), NÃO a UF do emitente.
   // SEFAZ 456: cMunCarrega deve pertencer à UFIni (ex.: Fortaleza/CE ≠ uf_inicio=SC).
-  const municipiosCarregamentoEarly = uniqByCode(input.municipiosCarregamento);
-  const ufInicio = String(
-    municipiosCarregamentoEarly[0]?.uf || ctes[0]?.uf_origem || vectra.uf || ''
-  )
-    .toUpperCase()
-    .slice(0, 2);
+  const resolved = resolveMdfeUfInicioECarregamentos(
+    ctes,
+    uniqByCode(input.municipiosCarregamento),
+    input.ufInicio
+  );
+  const ufInicio = resolved.ufInicio;
+  const municipiosCarregamento = resolved.municipios;
+  if (resolved.omitted.length > 0) {
+    warnings.push(
+      `SEFAZ 456: uf_inicio=${ufInicio}; omitidos carregamentos fora da UF: ${resolved.omitted
+        .map((m) => `${cleanMunicipioNome(m.nome)}(${m.uf})`)
+        .join(', ')}`
+    );
+  }
   const ufFim = String(ctes[ctes.length - 1]?.uf_destino || ufInicio)
     .toUpperCase()
     .slice(0, 2);
@@ -329,7 +472,6 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
   const vCarga = ctes.reduce((sum, c) => sum + c.valor_carga, 0);
   const pesoBruto = ctes.reduce((sum, c) => sum + c.peso_kg, 0);
 
-  const municipiosCarregamento = municipiosCarregamentoEarly;
   if (municipiosCarregamento.length === 0)
     warnings.push('municipiosCarregamento empty — SEFAZ requires at least 1');
 
@@ -444,6 +586,7 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
       })(),
       // CIOT (SEFAZ 304) — e-FRETE gratuito; NÃO AILOG pago
       ...(() => {
+        const seen = new Set<string>();
         const list = (input.ciots ?? [])
           .map((c) => {
             const n = String(c.ciot ?? '').replace(/\D/g, '');
@@ -454,6 +597,9 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
             if (cnpj.length === 14) row.cnpj_responsavel = cnpj;
             else if (cpf.length === 11) row.cpf_responsavel = cpf;
             else return null;
+            const key = `${row.ciot}|${row.cnpj_responsavel ?? ''}|${row.cpf_responsavel ?? ''}`;
+            if (seen.has(key)) return null;
+            seen.add(key);
             return row;
           })
           .filter(Boolean);
@@ -466,6 +612,29 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
           return {};
         }
         return { ciot: list };
+      })(),
+      // Vale-Pedágio (Focus dispositivos_vale_pedagio) — próprio ou parceiro
+      ...(() => {
+        // Dedupe por IDVPO+fornecedora+pagador (OS irmãs na mesma viagem)
+        const raw = input.dispositivosValePedagio ?? [];
+        const seen = new Set<string>();
+        const unique = raw.filter((d) => {
+          const key = [
+            String(d.numeroComprovante ?? '').replace(/\D/g, ''),
+            digits(d.cnpjFornecedora),
+            digits(d.cnpjPagador),
+            digits(d.cpfPagador),
+          ].join('|');
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        const built = buildMdfeDispositivosValePedagio(
+          unique,
+          input.categoriaCombinacaoVeicular,
+          warnings
+        );
+        return built ?? {};
       })(),
       // Contratante: SEFAZ 578 exige ≥1. SEFAZ 741: com prop do veículo,
       // contratante DEVE = emitente (Vectra). Sem prop → tomador/shipper OK.
@@ -564,12 +733,12 @@ export interface EncerrarMdfeInput {
   municipio_descarga_ibge: number;
 }
 
-export function buildEncerramentoPayload(input: EncerrarMdfeInput): Record<string, unknown> {
+export function buildEncerramentoPayload(
+  input: EncerrarMdfeInput & { nome_municipio: string }
+): Record<string, unknown> {
   return {
-    protocolo: input.protocolo,
-    // Horário local Brasil (UTC-3 fixo) — mesmo motivo do data_emissao (rejeição 212).
-    data_encerramento: new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 19) + '-03:00',
-    uf: input.uf,
-    codigo_municipio: input.municipio_descarga_ibge,
+    data: new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10),
+    sigla_uf: input.uf,
+    nome_municipio: input.nome_municipio,
   };
 }

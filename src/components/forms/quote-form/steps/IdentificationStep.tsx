@@ -5,6 +5,7 @@ import { fetchCepData } from '@/hooks/useCepLookup';
 import { formatCityUfFromCep, sanitizeCep } from '@/lib/cep-utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NumericInput } from '@/components/ui/numeric-input';
 import { MaskedInput } from '@/components/ui/masked-input';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import {
@@ -82,7 +83,14 @@ export function IdentificationStep({
   });
 
   const clientCount = 1 + recipientFields.length;
+  const shipperCount = 1 + shipperFields.length;
   const showEntregasIntermediarias = clientCount > 1;
+  const freightType = form.watch('freight_type');
+  const isCif =
+    String(freightType ?? '')
+      .trim()
+      .toUpperCase() === 'CIF';
+  const showContractSplit = isCif ? shipperCount > 1 : clientCount > 1;
 
   useEffect(() => {
     if (!showEntregasIntermediarias) {
@@ -488,6 +496,255 @@ export function IdentificationStep({
           </div>
         </div>
       </SectionBlock>
+
+      {showContractSplit && (
+        <SectionBlock variant="card" label="Rateio do contrato (multi-pagador)">
+          <p className="text-xs text-muted-foreground mb-4">
+            {isCif
+              ? 'CIF: um CTR por embarcador. Informe peso/valor por pagador ou valor líquido manual de cada perna.'
+              : 'FOB: um CTR por destinatário. Informe peso/valor por pagador ou valor líquido manual de cada perna.'}
+          </p>
+          <div className="space-y-3">
+            {isCif ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 rounded-lg border border-border p-3 bg-muted/20">
+                  <span className="sm:col-span-4 text-sm font-medium truncate">
+                    {form.watch('shipper_name') || 'Embarcador principal'}
+                  </span>
+                  <FormField
+                    control={form.control}
+                    name="shipper_leg_weight_kg"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Peso (kg)</FormLabel>
+                        <FormControl>
+                          <NumericInput
+                            value={field.value}
+                            onValueChange={(v) => field.onChange(v ?? undefined)}
+                            placeholder="0"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="shipper_leg_cargo_value"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Valor carga (R$)</FormLabel>
+                        <FormControl>
+                          <NumericInput
+                            prefix="R$ "
+                            value={field.value}
+                            onValueChange={(v) => field.onChange(v ?? undefined)}
+                            placeholder="0,00"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="shipper_leg_amount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Valor CTR (R$)</FormLabel>
+                        <FormControl>
+                          <NumericInput
+                            prefix="R$ "
+                            value={field.value}
+                            onValueChange={(v) => field.onChange(v ?? undefined)}
+                            placeholder="Opcional"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                {shipperFields.map((sf, idx) => (
+                  <div
+                    key={sf.id}
+                    className="grid grid-cols-1 sm:grid-cols-4 gap-3 rounded-lg border border-border p-3 bg-muted/20"
+                  >
+                    <span className="sm:col-span-4 text-sm font-medium truncate">
+                      {form.watch(`additional_shippers.${idx}.name`) || `Embarcador ${idx + 2}`}
+                    </span>
+                    <FormField
+                      control={form.control}
+                      name={`additional_shippers.${idx}.weight_kg`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Peso (kg)</FormLabel>
+                          <FormControl>
+                            <NumericInput
+                              value={field.value}
+                              onValueChange={(v) => field.onChange(v ?? undefined)}
+                              placeholder="0"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`additional_shippers.${idx}.cargo_value`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Valor carga (R$)</FormLabel>
+                          <FormControl>
+                            <NumericInput
+                              prefix="R$ "
+                              value={field.value}
+                              onValueChange={(v) => field.onChange(v ?? undefined)}
+                              placeholder="0,00"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`additional_shippers.${idx}.leg_amount`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Valor CTR (R$)</FormLabel>
+                          <FormControl>
+                            <NumericInput
+                              prefix="R$ "
+                              value={field.value}
+                              onValueChange={(v) => field.onChange(v ?? undefined)}
+                              placeholder="Opcional"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 rounded-lg border border-border p-3 bg-muted/20">
+                  <span className="sm:col-span-4 text-sm font-medium truncate">
+                    {form.watch('client_name') || 'Cliente principal'}
+                  </span>
+                  <FormField
+                    control={form.control}
+                    name="client_leg_weight_kg"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Peso (kg)</FormLabel>
+                        <FormControl>
+                          <NumericInput
+                            value={field.value}
+                            onValueChange={(v) => field.onChange(v ?? undefined)}
+                            placeholder="0"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="client_leg_cargo_value"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Valor carga (R$)</FormLabel>
+                        <FormControl>
+                          <NumericInput
+                            prefix="R$ "
+                            value={field.value}
+                            onValueChange={(v) => field.onChange(v ?? undefined)}
+                            placeholder="0,00"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="client_leg_amount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Valor CTR (R$)</FormLabel>
+                        <FormControl>
+                          <NumericInput
+                            prefix="R$ "
+                            value={field.value}
+                            onValueChange={(v) => field.onChange(v ?? undefined)}
+                            placeholder="Opcional"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                {recipientFields.map((rf, idx) => (
+                  <div
+                    key={rf.id}
+                    className="grid grid-cols-1 sm:grid-cols-4 gap-3 rounded-lg border border-border p-3 bg-muted/20"
+                  >
+                    <span className="sm:col-span-4 text-sm font-medium truncate">
+                      {form.watch(`additional_recipients.${idx}.name`) || `Destinatário ${idx + 2}`}
+                    </span>
+                    <FormField
+                      control={form.control}
+                      name={`additional_recipients.${idx}.weight_kg`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Peso (kg)</FormLabel>
+                          <FormControl>
+                            <NumericInput
+                              value={field.value}
+                              onValueChange={(v) => field.onChange(v ?? undefined)}
+                              placeholder="0"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`additional_recipients.${idx}.cargo_value`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Valor carga (R$)</FormLabel>
+                          <FormControl>
+                            <NumericInput
+                              prefix="R$ "
+                              value={field.value}
+                              onValueChange={(v) => field.onChange(v ?? undefined)}
+                              placeholder="0,00"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`additional_recipients.${idx}.leg_amount`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Valor CTR (R$)</FormLabel>
+                          <FormControl>
+                            <NumericInput
+                              prefix="R$ "
+                              value={field.value}
+                              onValueChange={(v) => field.onChange(v ?? undefined)}
+                              placeholder="Opcional"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </SectionBlock>
+      )}
 
       <SectionBlock variant="card" label="Rota">
         <div className="space-y-6">

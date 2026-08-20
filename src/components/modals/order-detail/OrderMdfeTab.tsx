@@ -1,18 +1,22 @@
-import { Download, FileStack, Loader2, AlertTriangle } from 'lucide-react';
+import { Download, FileStack, Loader2, AlertTriangle, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MdfeEmissionInline } from '@/components/boards/MdfeEmissionInline';
 import { useMdfeEmissionByQuote, describeMdfeStatus } from '@/hooks/useMdfeEmission';
 import { useCteEmissionsByQuote } from '@/hooks/useCteEmission';
+import { useDownloadMdfeComprovante } from '@/hooks/useDownloadMdfeComprovante';
 import { FiscalEmissionPipeline } from '@/components/modals/order-detail/FiscalEmissionPipeline';
 import { supabase } from '@/integrations/supabase/client';
 
 interface OrderMdfeTabProps {
   quoteId: string | null | undefined;
+  orderId?: string | null;
   driverId: string | null | undefined;
   vehiclePlate: string | null | undefined;
   destinationUf?: string | null;
   destinationIbge?: number | string | null;
+  destinationCep?: string | null;
+  destinationCity?: string | null;
   canManage: boolean;
   /** Checklist fluxo fiscal. */
   hasVpo?: boolean | null;
@@ -32,10 +36,13 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 export function OrderMdfeTab({
   quoteId,
+  orderId,
   driverId,
   vehiclePlate,
   destinationUf,
   destinationIbge,
+  destinationCep,
+  destinationCity,
   canManage,
   hasVpo,
   vpoDispensado = false,
@@ -44,6 +51,8 @@ export function OrderMdfeTab({
   const { data: emission, isLoading } = useMdfeEmissionByQuote(quoteId);
   const { data: ctes = [] } = useCteEmissionsByQuote(quoteId);
   const cte = ctes.find((c) => c.status === 'authorized') ?? ctes[0] ?? null;
+  const { download: downloadComprovante, pending: comprovantePending } =
+    useDownloadMdfeComprovante();
 
   const focusDamdfeUrl = (emission?.response_received as { caminho_damdfe?: string } | null)
     ?.caminho_damdfe;
@@ -103,10 +112,14 @@ export function OrderMdfeTab({
         </div>
         <MdfeEmissionInline
           quoteId={quoteId}
+          orderId={orderId}
           driverId={driverId}
           vehiclePlate={vehiclePlate}
+          ciotNumber={ciotNumber}
           destinationUf={destinationUf}
           destinationIbge={destinationIbge}
+          destinationCep={destinationCep}
+          destinationCity={destinationCity}
           readOnly={!canManage}
         />
       </div>
@@ -193,11 +206,27 @@ export function OrderMdfeTab({
             </p>
           )}
 
-          {isAuthorized && (emission.damdfe_storage_path || focusDamdfeUrl) && (
+          {isAuthorized && (
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={() => void downloadDamdfe()} className="gap-2">
-                <Download className="w-4 h-4" />
-                DAMDFE oficial (PDF)
+              {(emission.damdfe_storage_path || focusDamdfeUrl) && (
+                <Button variant="outline" onClick={() => void downloadDamdfe()} className="gap-2">
+                  <Download className="w-4 h-4" />
+                  DAMDFE oficial (PDF)
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => void downloadComprovante(emission)}
+                disabled={comprovantePending}
+                className="gap-2"
+                title="Lista CIOT, VPO e chaves dos CT-es (o DAMDFE Focus omite)"
+              >
+                {comprovantePending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FileText className="w-4 h-4" />
+                )}
+                Comprovante CIOT + CT-es
               </Button>
             </div>
           )}

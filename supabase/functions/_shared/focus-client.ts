@@ -11,7 +11,7 @@
  *   POST   /v2/mdfe?ref=<ref>          emit MDF-e
  *   GET    /v2/mdfe/<ref>              consult MDF-e
  *   DELETE /v2/mdfe/<ref>              cancel MDF-e
- *   POST   /v2/mdfe/<ref>/encerramento encerrar MDF-e
+ *   POST   /v2/mdfe/<ref>/encerrar     encerrar MDF-e (Focus: data, sigla_uf, nome_municipio)
  *
  *   POST   /v2/inutilizacao?ref=<ref>  inutilizar range
  *
@@ -185,13 +185,12 @@ export class FocusClient {
   encerrarMdfe(
     ref: string,
     payload: {
-      protocolo: string;
-      data_encerramento: string;
-      uf: string;
-      codigo_municipio: number;
+      data: string;
+      sigla_uf: string;
+      nome_municipio: string;
     }
   ): Promise<FocusResponse> {
-    return this.request('POST', `/v2/mdfe/${encodeURIComponent(ref)}/encerramento`, payload);
+    return this.request('POST', `/v2/mdfe/${encodeURIComponent(ref)}/encerrar`, payload);
   }
 
   // ============================================================

@@ -1,4 +1,5 @@
 import { corsHeaders } from '../_shared/cors.ts';
+import { corsPreflight, resolveSupabaseContext } from '../_shared/supabase-server.ts';
 
 interface CepData {
   cep: string;
@@ -93,12 +94,18 @@ function formatAddress(data: CepData): string {
 }
 
 Deno.serve(async (req) => {
-  // lookup-cep é público (sem auth) — CORS wildcard é seguro aqui
-  const jsonHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
+  const pre = corsPreflight(req);
+  if (pre) return pre;
 
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
+  const { error: authCtxError } = await resolveSupabaseContext(req, 'none');
+  if (authCtxError) {
+    return new Response(JSON.stringify({ success: false, error: authCtxError.message }), {
+      status: authCtxError.status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
+
+  const jsonHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
 
   try {
     let body: { cep?: string };

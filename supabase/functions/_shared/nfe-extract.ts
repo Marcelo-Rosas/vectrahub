@@ -2,6 +2,7 @@
  * Extrai NCM / produto predominante de XML NF-e (ou texto DANFE PDF).
  * Usado por validate-document e emit-mdfe (SEFAZ 301 — carga lotação).
  */
+/// <reference path="./deno.d.ts" />
 
 export interface NfeProductLine {
   ncm: string;

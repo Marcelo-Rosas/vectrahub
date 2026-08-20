@@ -313,7 +313,10 @@ export function buildCtePayload(input: BuildCteInput): BuildCteResult {
         : tomadorTipo === 2
           ? recebedor
           : client;
-  const tomadorIndicadorIE = (Number(tomadorParty.ie_indicator ?? 1) as IndicadorIE) || 1;
+  const rawTomadorIe = Number(tomadorParty.ie_indicator);
+  const tomadorIndicadorIE = (
+    rawTomadorIe === 1 || rawTomadorIe === 2 || rawTomadorIe === 9 ? rawTomadorIe : 1
+  ) as IndicadorIE;
   const destIndicadorIE = (Number(client.ie_indicator ?? 9) as IndicadorIE) || 9;
 
   const cfop = resolveCfopCte({

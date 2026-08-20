@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760">
+  <title>/feira theme preview</title>
+  <rect width="1280" height="760" fill="#E8EAED"/>
+  <text x="40" y="36" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" fill="#111111">/feira logado ? teste de pele</text>
+  <text x="40" y="56" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#5B6B7F">Hub Kanban nao muda. Fitness Brasil so no rodape. Cores Brand API em seed.</text>
+
+  <defs>
+    <g id="fb-mark">
+      <rect width="28" height="28" rx="4" fill="#111111"/>
+      <text x="5" y="20" font-family="Arial, sans-serif" font-size="14" font-weight="800" fill="#F4EFE8">F</text>
+      <text x="14" y="20" font-family="Arial, sans-serif" font-size="14" font-weight="800" fill="#F4EFE8">B</text>
+      <rect x="12.5" y="7" width="3.2" height="3.2" fill="#E91E8C"/>
+      <rect x="12.5" y="12.4" width="3.2" height="3.2" fill="#2EC4B6"/>
+      <rect x="12.5" y="17.8" width="3.2" height="3.2" fill="#3D6B8A"/>
+    </g>
+    <g id="reebok-vector">
+      <polygon points="4,14 38,6 72,14 38,18" fill="#FF1714"/>
+      <path d="M18 15 C24 21 26 26 22 34" fill="none" stroke="#FF1714" stroke-width="3.4" stroke-linecap="round"/>
+      <path d="M30 15 C34 22 34 27 30 34" fill="none" stroke="#FF1714" stroke-width="3.4" stroke-linecap="round"/>
+    </g>
+    <g id="konnen-k">
+      <polygon points="2,4 10,4 10,12 18,4 26,4 14,16 26,28 18,28 10,20 10,28 2,28" fill="#FFD600"/>
+    </g>
+    <g id="boost-b">
+      <path d="M2 2 H16 C22 2 22 10 16 11 H2 Z" fill="#FFFFFF"/>
+      <path d="M2 12 H17 C24 12 24 22 16 22 H8 L2 28 Z" fill="#FFFFFF"/>
+    </g>
+  </defs>
+
+  <!-- BUCKLER -->
+  <g transform="translate(40,80)">
+    <rect width="260" height="620" rx="36" fill="#1C1C1E"/>
+    <rect x="8" y="12" width="244" height="560" rx="28" fill="#F7F5F2"/>
+    <text x="26" y="28" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#111111">9:41</text>
+    <rect x="8" y="34" width="244" height="52" fill="#FFFFFF"/>
+    <rect x="18" y="42" width="128" height="36" rx="8" fill="#010101"/>
+    <text x="28" y="65" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#CDC2B1">BUCKLER</text>
+    <text x="218" y="64" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#6B7280">Sair</text>
+    <text x="22" y="108" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" fill="#010101">Cotacao Feira</text>
+    <text x="22" y="126" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#6B7280">SKU, volumes, calcula</text>
+    <rect x="20" y="140" width="220" height="72" rx="12" fill="#FFFFFF" stroke="#E5E5E5"/>
+    <text x="32" y="162" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#111111">Cliente e rota</text>
+    <text x="32" y="180" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#6B7280">SBC-SP &gt; Fortaleza-CE</text>
+    <text x="32" y="196" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#6B7280">2930 km</text>
+    <rect x="20" y="222" width="220" height="88" rx="12" fill="#FFFFFF" stroke="#E5E5E5"/>
+    <text x="32" y="244" font-family="Consolas, monospace" font-size="13" font-weight="700" fill="#010101">M2-1001</text>
+    <rect x="116" y="230" width="88" height="16" rx="8" fill="#E8E2D8"/>
+    <text x="124" y="242" font-family="Segoe UI, Arial, sans-serif" font-size="9" fill="#010101">3 vol / completo</text>
+    <text x="32" y="264" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#6B7280">CHEST PRESS</text>
+    <text x="32" y="284" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#111111">200 kg / 1.52 m3</text>
+    <rect x="20" y="320" width="220" height="96" rx="12" fill="#FFFFFF" stroke="#CDC2B1" stroke-width="1.2"/>
+    <text x="32" y="340" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#6B7280">Frete estimado</text>
+    <text x="32" y="370" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800" fill="#010101">R$ 1.375,27</text>
+    <text x="32" y="390" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#6B7280">Pedagio 12% / 2801-3000</text>
+    <rect x="20" y="430" width="220" height="44" rx="10" fill="#010101"/>
+    <text x="86" y="457" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700" fill="#CDC2B1">Salvar COT</text>
+    <use href="#fb-mark" x="24" y="524"/>
+    <text x="58" y="542" font-family="Segoe UI, Arial, sans-serif" font-size="9" fill="#111111">Fitness Brasil 2026</text>
+    <text x="130" y="600" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#CDC2B1">Buckler</text>
+    <text x="130" y="616" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#888888">bucklerfit.com.br  #CDC2B1</text>
+  </g>
+
+  <!-- KONNEN -->
+  <g transform="translate(350,80)">
+    <rect width="260" height="620" rx="36" fill="#1C1C1E"/>
+    <rect x="8" y="12" width="244" height="560" rx="28" fill="#F5F5F5"/>
+    <text x="26" y="28" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#111111">9:41</text>
+    <rect x="8" y="34" width="244" height="52" fill="#FFFFFF"/>
+    <rect x="18" y="42" width="150" height="36" rx="8" fill="#111111"/>
+    <g transform="translate(24,48) scale(0.7)"><use href="#konnen-k"/></g>
+    <text x="50" y="58" font-family="Arial, sans-serif" font-size="9" font-weight="800" fill="#FFFFFF">KONNEN</text>
+    <text x="50" y="70" font-family="Segoe UI, Arial, sans-serif" font-size="7" font-style="italic" fill="#FFD600">FITNESS</text>
+    <text x="218" y="64" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#6B7280">Sair</text>
+    <text x="22" y="108" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" fill="#111111">Cotacao Feira</text>
+    <text x="22" y="126" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#6B7280">SKU, volumes, calcula</text>
+    <rect x="20" y="140" width="220" height="72" rx="12" fill="#FFFFFF" stroke="#E5E5E5"/>
+    <text x="32" y="162" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#111111">Cliente e rota</text>
+    <text x="32" y="180" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#6B7280">SBC-SP &gt; Fortaleza-CE</text>
+    <text x="32" y="196" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#6B7280">2930 km</text>
+    <rect x="20" y="222" width="220" height="88" rx="12" fill="#FFFFFF" stroke="#FFD600"/>
+    <text x="32" y="244" font-family="Consolas, monospace" font-size="13" font-weight="700" fill="#111111">M2-1001</text>
+    <rect x="116" y="230" width="88" height="16" rx="8" fill="#FFF4C2"/>
+    <text x="124" y="242" font-family="Segoe UI, Arial, sans-serif" font-size="9" fill="#111111">3 vol / completo</text>
+    <text x="32" y="264" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#6B7280">CHEST PRESS</text>
+    <text x="32" y="284" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#111111">200 kg / 1.52 m3</text>
+    <rect x="20" y="320" width="220" height="96" rx="12" fill="#FFFFFF" stroke="#FFD600" stroke-width="1.2"/>
+    <text x="32" y="340" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#555555">Frete estimado</text>
+    <text x="32" y="370" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800" fill="#000000">R$ 1.375,27</text>
+    <text x="32" y="390" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#555555">Pedagio 12% / 2801-3000</text>
+    <rect x="20" y="430" width="220" height="44" rx="10" fill="#FFD600"/>
+    <text x="86" y="457" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700" fill="#000000">Salvar COT</text>
+    <use href="#fb-mark" x="24" y="524"/>
+    <text x="58" y="542" font-family="Segoe UI, Arial, sans-serif" font-size="9" fill="#111111">Fitness Brasil 2026</text>
+    <text x="130" y="600" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#111111">Konnen</text>
+    <text x="130" y="616" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#888888">konnenfitness.com.br  #FFD600</text>
+  </g>
+
+  <!-- BOOST -->
+  <g transform="translate(660,80)">
+    <rect width="260" height="620" rx="36" fill="#1C1C1E"/>
+    <rect x="8" y="12" width="244" height="560" rx="28" fill="#F7F8FA"/>
+    <text x="26" y="28" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#111111">9:41</text>
+    <rect x="8" y="34" width="244" height="52" fill="#FFFFFF"/>
+    <rect x="18" y="42" width="132" height="36" rx="8" fill="#000000"/>
+    <text x="28" y="58" font-family="Arial, sans-serif" font-size="11" font-weight="800" fill="#FFFFFF">BOOST</text>
+    <text x="28" y="70" font-family="Segoe UI, Arial, sans-serif" font-size="6" fill="#FFFFFF">EQUIPMENT</text>
+    <text x="218" y="64" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#6B7280">Sair</text>
+    <text x="22" y="108" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" fill="#111111">Cotacao Feira</text>
+    <text x="22" y="126" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#6B7280">SKU, volumes, calcula</text>
+    <rect x="20" y="140" width="220" height="72" rx="12" fill="#FFFFFF" stroke="#E5E5E5"/>
+    <text x="32" y="162" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#111111">Cliente e rota</text>
+    <text x="32" y="180" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#6B7280">SBC-SP &gt; Fortaleza-CE</text>
+    <text x="32" y="196" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#6B7280">2930 km</text>
+    <rect x="20" y="222" width="220" height="88" rx="12" fill="#FFFFFF" stroke="#C5D2F5"/>
+    <text x="32" y="244" font-family="Consolas, monospace" font-size="13" font-weight="700" fill="#111111">M2-1001</text>
+    <rect x="116" y="230" width="88" height="16" rx="8" fill="#DCE4F8"/>
+    <text x="124" y="242" font-family="Segoe UI, Arial, sans-serif" font-size="9" fill="#486FD9">3 vol / completo</text>
+    <text x="32" y="264" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#6B7280">CHEST PRESS</text>
+    <text x="32" y="284" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#111111">200 kg / 1.52 m3</text>
+    <rect x="20" y="320" width="220" height="96" rx="12" fill="#FFFFFF" stroke="#486FD9" stroke-width="1.2"/>
+    <text x="32" y="340" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#6B7280">Frete estimado</text>
+    <text x="32" y="370" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800" fill="#486FD9">R$ 1.375,27</text>
+    <text x="32" y="390" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#6B7280">Pedagio 12% / 2801-3000</text>
+    <rect x="20" y="430" width="220" height="44" rx="10" fill="#486FD9"/>
+    <text x="86" y="457" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">Salvar COT</text>
+    <use href="#fb-mark" x="24" y="524"/>
+    <text x="58" y="542" font-family="Segoe UI, Arial, sans-serif" font-size="9" fill="#111111">Fitness Brasil 2026</text>
+    <text x="130" y="600" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#486FD9">Boost Equipment</text>
+    <text x="130" y="616" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#888888">boostequipment.com.br  #486FD9</text>
+  </g>
+
+  <!-- REEBOK -->
+  <g transform="translate(970,80)">
+    <rect width="260" height="620" rx="36" fill="#1C1C1E"/>
+    <rect x="8" y="12" width="244" height="560" rx="28" fill="#F7F6F4"/>
+    <text x="26" y="28" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#111111">9:41</text>
+    <rect x="8" y="34" width="244" height="52" fill="#FFFFFF"/>
+    <rect x="18" y="42" width="132" height="36" rx="8" fill="#000000"/>
+    <g transform="translate(26,44) scale(0.72)"><use href="#reebok-vector"/></g>
+    <text x="26" y="72" font-family="Arial, sans-serif" font-size="6" font-weight="700" fill="#FFFFFF">REEBOK FITNESS</text>
+    <text x="218" y="64" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#525150">Sair</text>
+    <text x="22" y="108" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" fill="#111111">Cotacao Feira</text>
+    <text x="22" y="126" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#525150">SKU, volumes, calcula</text>
+    <rect x="20" y="140" width="220" height="72" rx="12" fill="#FFFFFF" stroke="#E8C8B8"/>
+    <text x="32" y="162" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#111111">Cliente e rota</text>
+    <text x="32" y="180" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#525150">SBC-SP &gt; Fortaleza-CE</text>
+    <text x="32" y="196" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#525150">2930 km</text>
+    <rect x="20" y="222" width="220" height="88" rx="12" fill="#FFFFFF" stroke="#E8C8B8"/>
+    <text x="32" y="244" font-family="Consolas, monospace" font-size="13" font-weight="700" fill="#111111">M2-1001</text>
+    <rect x="116" y="230" width="88" height="16" rx="8" fill="#FBCFBB"/>
+    <text x="124" y="242" font-family="Segoe UI, Arial, sans-serif" font-size="9" fill="#7A2A1C">3 vol / completo</text>
+    <text x="32" y="264" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#525150">CHEST PRESS</text>
+    <text x="32" y="284" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#111111">200 kg / 1.52 m3</text>
+    <rect x="20" y="320" width="220" height="96" rx="12" fill="#FFFFFF" stroke="#FF1714" stroke-width="1.2"/>
+    <text x="32" y="340" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#525150">Frete estimado</text>
+    <text x="32" y="370" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800" fill="#FF1714">R$ 1.375,27</text>
+    <text x="32" y="390" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#525150">Pedagio 12% / 2801-3000</text>
+    <rect x="20" y="430" width="220" height="44" rx="10" fill="#FF1714"/>
+    <text x="86" y="457" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">Salvar COT</text>
+    <use href="#fb-mark" x="24" y="524"/>
+    <text x="58" y="542" font-family="Segoe UI, Arial, sans-serif" font-size="9" fill="#111111">Fitness Brasil 2026</text>
+    <text x="130" y="600" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#FF1714">Reebok Fitness</text>
+    <text x="130" y="616" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#888888">reebokfitness.info  #FF1714</text>
+  </g>
+</svg>

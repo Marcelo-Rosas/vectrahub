@@ -8,7 +8,19 @@
     "strict": false,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
-    "types": []
+    "types": ["node"],
+    "paths": {
+      "@/*": ["../src/*"]
+    }
   },
-  "include": ["./deno-cli.d.ts", "./render-contract-from-payload.ts", "./smoke-contract-pdf.ts"]
+  "include": [
+    "./deno-cli.d.ts",
+    "./render-contract-from-payload.ts",
+    "./smoke-contract-pdf.ts",
+    "./clone-pricing-cargo-to-hub.ts",
+    "./smoke-antt-hub-pdf-ui.ts",
+    "./convert-packing-xls-to-catalog.ts",
+    "./lib/packing-xls-adapters.ts",
+    "../src/vite-env.d.ts"
+  ]
 }

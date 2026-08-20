@@ -50,6 +50,7 @@ import { resolvePisoAnttCarreteiroReais } from '@/lib/carreteiro-cost';
 import { resolveAnttRsKm, resolvePisoAnttTotalReais } from '@/lib/antt-rs-km';
 import { enrichStoredBreakdownAnttMeta } from '@/lib/enrich-breakdown-antt-meta';
 import { mergeBreakdownWithNegotiatedDiscount } from '@/lib/quote-breakdown-utils';
+import { contractSplitsForPanel } from '@/lib/contract-split';
 import {
   buildQuoteFinancialStripFromBreakdown,
   resolveBaseMotoristaFracionadoReais,
@@ -1545,9 +1546,11 @@ export function QuoteDetailModal({
                         quoteId={quote.id}
                         stage={quote.stage}
                         quoteCode={quote.quote_code}
-                        freightType={quote.freight_type}
-                        clientName={quote.client_name}
-                        shipperName={quote.shipper_name}
+                        quoteValue={Number(quote.value) || 0}
+                        quoteUpdatedAt={quote.updated_at}
+                        expectedSplits={contractSplitsForPanel(
+                          (quote as unknown as Record<string, unknown>).contract_splits
+                        )}
                       />
                     </div>
 

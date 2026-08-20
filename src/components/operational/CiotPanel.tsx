@@ -81,6 +81,7 @@ export function CiotPanel({
   const updateOrder = useUpdateOrder();
   const [isGenerating, setIsGenerating] = useState(false);
   const [manualCiot, setManualCiot] = useState('');
+  const [manualCiotCnpj, setManualCiotCnpj] = useState('');
   const [savingManual, setSavingManual] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [cancelProtocol, setCancelProtocol] = useState('');
@@ -256,18 +257,49 @@ export function CiotPanel({
       toast.error('Informe o número do CIOT (mín. 8 dígitos)');
       return;
     }
+    const cnpjResp = manualCiotCnpj.replace(/\D/g, '').slice(0, 14);
+    if (cnpjResp && cnpjResp.length !== 14) {
+      toast.error('CNPJ responsável do CIOT deve ter 14 dígitos (ou deixe vazio = Vectra)');
+      return;
+    }
     setSavingManual(true);
     try {
+      const pb = (order as { pricing_breakdown?: Record<string, unknown> | null })
+        .pricing_breakdown;
+      const currentBreakdown = pb && typeof pb === 'object' ? pb : {};
+      const currentMeta =
+        currentBreakdown.meta && typeof currentBreakdown.meta === 'object'
+          ? (currentBreakdown.meta as Record<string, unknown>)
+          : {};
+      const updates: Record<string, unknown> = {
+        ciot_number: n,
+        ciot_status: 'generated',
+      };
+      if (cnpjResp.length === 14) {
+        updates.pricing_breakdown = {
+          ...currentBreakdown,
+          meta: {
+            ...currentMeta,
+            ciot: {
+              number: n,
+              cnpjResponsavel: cnpjResp,
+              source: 'partner_external',
+            },
+          },
+        };
+      }
       await updateOrder.mutateAsync({
         id: order.id,
-        updates: {
-          ciot_number: n,
-          ciot_status: 'generated',
-        },
+        updates: updates as never,
       });
       await insertCiotOperation({ ciotNumber: n, source: 'manual' });
-      toast.success(`CIOT ${n} gravado na OS + histórico`);
+      toast.success(
+        cnpjResp.length === 14
+          ? `CIOT ${n} gravado (responsável ${cnpjResp})`
+          : `CIOT ${n} gravado na OS + histórico`
+      );
       setManualCiot('');
+      setManualCiotCnpj('');
       await qc.invalidateQueries({ queryKey: ['ciot-operations', order.id] });
       await refetch();
     } catch (e: unknown) {
@@ -430,6 +462,16 @@ export function CiotPanel({
                   value={manualCiot}
                   onChange={(e) => setManualCiot(e.target.value.replace(/\D/g, '').slice(0, 16))}
                 />
+                <Input
+                  id="manual-ciot-cnpj"
+                  className="font-mono max-w-[11rem]"
+                  placeholder="CNPJ resp. (parceiro)"
+                  title="CNPJ de quem gerou o CIOT no e-FRETE. Vazio = Vectra."
+                  value={manualCiotCnpj}
+                  onChange={(e) =>
+                    setManualCiotCnpj(e.target.value.replace(/\D/g, '').slice(0, 14))
+                  }
+                />
                 <Button
                   size="sm"
                   variant="outline"
@@ -439,6 +481,10 @@ export function CiotPanel({
                   {savingManual ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Gravar na OS'}
                 </Button>
               </div>
+              <p className="text-[11px] text-muted-foreground">
+                CIOT fracionado de parceiro: informe o CNPJ responsável (ex.: 32156321000176). Sem
+                CNPJ, o MDF-e usa a Vectra como responsável.
+              </p>
             </div>
           )}
 

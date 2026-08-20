@@ -488,6 +488,20 @@ export interface VpoEmissionRecord {
   emittedAt?: string;
   /** Recibo AILOG getReciboViagem / emitirReciboViagem (JSON, sem PDF). */
   recibo?: VpoReciboViagem | null;
+  /** webrouter | partner_external — IdVpo/CIOT gerado por fracionador parceiro. */
+  source?: 'webrouter' | 'partner_external' | string;
+  /** Focus categoria_combinacao_veicular (SEFAZ 731), ex.: 04 = 3 eixos. */
+  categoriaCombinacaoVeicular?: string;
+  partnerMdfeNumero?: string;
+  partnerMdfeChave?: string;
+}
+
+/** CIOT na OS — próprio (e-FRETE) ou fracionado de parceiro. */
+export interface CiotOrderMeta {
+  number: string;
+  cnpjResponsavel: string;
+  source?: 'efrete' | 'manual' | 'partner_external' | string;
+  partnerMdfeNumero?: string;
 }
 
 export interface StoredPricingBreakdown {
@@ -514,6 +528,8 @@ export interface StoredPricingBreakdown {
 
     /** Emissão VPO (WebRouter criarViagem) persistida na OS. */
     vpo?: VpoEmissionRecord;
+    /** CIOT próprio ou de parceiro fracionado (cnpjResponsavel ≠ Vectra). */
+    ciot?: CiotOrderMeta;
 
     /** KM por UF (para restauração e recálculo ICMS proporcional) */
     kmByUf?: Record<string, number>;
