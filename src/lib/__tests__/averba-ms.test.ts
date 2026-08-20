@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatEmailList, parseEmailList } from '@/lib/averba-ms';
+import { AVERBA_MS_TO_DEFAULT, formatEmailList, parseEmailList } from '@/lib/averba-ms';
 
 describe('parseEmailList', () => {
   it('aceita virgula, ponto-e-virgula e quebra de linha', () => {
@@ -14,5 +14,16 @@ describe('parseEmailList', () => {
 describe('formatEmailList', () => {
   it('uma linha por e-mail', () => {
     expect(formatEmailList(['a@x.com', 'b@y.com'])).toBe('a@x.com\nb@y.com');
+  });
+});
+
+describe('AVERBA_MS_TO_DEFAULT', () => {
+  it('MS no domínio .com.br (espelho do envio Fairfax)', () => {
+    expect(AVERBA_MS_TO_DEFAULT).toEqual([
+      'operacional.cargo@fairfax.com.br',
+      'kevin.cercal@msseguros.com.br',
+      'Fellipe.medeiros@msseguros.com.br',
+      'Ruan.nascimento@msseguros.com.br',
+    ]);
   });
 });

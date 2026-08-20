@@ -1,0 +1,358 @@
+{
+  "scrapedAt": "2026-08-19T18:07:24.317Z",
+  "source": "https://www.konnenfitness.com.br",
+  "lines": [
+    "exoform"
+  ],
+  "products": [
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-abdominal/",
+      "slug": "exoform-abdominal",
+      "name": "ABDOMINAL",
+      "sku": "FE9714",
+      "weightKg": 141.5,
+      "stackWeightKg": 106,
+      "stackLbs": "235",
+      "dimensionsMm": [
+        1383,
+        1202,
+        1491
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-abdutora-adutora/",
+      "slug": "exoform-abdutora-adutora",
+      "name": "ABDUTORA / ADUTORA",
+      "sku": "FE9708",
+      "weightKg": 165.8,
+      "stackWeightKg": 106,
+      "stackLbs": "235",
+      "dimensionsMm": [
+        1776,
+        1546,
+        1488
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-biceps-unilateral/",
+      "slug": "exoform-biceps-unilateral",
+      "name": "BÍCEPS UNILATERAL",
+      "sku": "FE9703",
+      "weightKg": 169.1,
+      "stackWeightKg": 106,
+      "stackLbs": "235",
+      "dimensionsMm": [
+        1149,
+        1567,
+        1490
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-cadeira-extensora/",
+      "slug": "exoform-cadeira-extensora",
+      "name": "CADEIRA EXTENSORA",
+      "sku": "FE9705",
+      "weightKg": 169.6,
+      "stackWeightKg": 134,
+      "stackLbs": "295",
+      "dimensionsMm": [
+        1264,
+        1239,
+        1489
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-cadeira-flexora/",
+      "slug": "exoform-cadeira-flexora",
+      "name": "CADEIRA FLEXORA",
+      "sku": "FE9706",
+      "weightKg": 183.6,
+      "stackWeightKg": 134,
+      "stackLbs": "295",
+      "dimensionsMm": [
+        1240,
+        1541,
+        1489
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-desenvolvimento/",
+      "slug": "exoform-desenvolvimento",
+      "name": "DESENVOLVIMENTO",
+      "sku": "FE9712",
+      "weightKg": 168.7,
+      "stackWeightKg": 106,
+      "stackLbs": "235",
+      "dimensionsMm": [
+        1762,
+        1422,
+        1492
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-elevacao-lateral/",
+      "slug": "exoform-elevacao-lateral",
+      "name": "ELEVAÇÃO LATERAL",
+      "sku": "FE9724",
+      "weightKg": 187.5,
+      "stackWeightKg": 90,
+      "stackLbs": "200",
+      "dimensionsMm": [
+        1266,
+        1261,
+        1491
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-extensao-de-triceps/",
+      "slug": "exoform-extensao-de-triceps",
+      "name": "EXTENSÃO DE TRÍCEPS",
+      "sku": "FE9723",
+      "weightKg": 163.5,
+      "stackWeightKg": 106,
+      "stackLbs": "235",
+      "dimensionsMm": [
+        1149,
+        1580,
+        1490
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-extensor-lombar/",
+      "slug": "exoform-extensor-lombar",
+      "name": "EXTENSOR LOMBAR",
+      "sku": "FE9732",
+      "weightKg": 185.4,
+      "stackWeightKg": 106,
+      "stackLbs": "235",
+      "dimensionsMm": [
+        1383,
+        1203,
+        1492
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-gluteo/",
+      "slug": "exoform-gluteo",
+      "name": "GLÚTEO",
+      "sku": "FE9726",
+      "weightKg": 168.5,
+      "stackWeightKg": 134,
+      "stackLbs": "295",
+      "dimensionsMm": [
+        1307,
+        1483,
+        1488
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-graviton/",
+      "slug": "exoform-graviton",
+      "name": "GRAVITON",
+      "sku": "FE9720",
+      "weightKg": 243.5,
+      "stackWeightKg": 106,
+      "stackLbs": "235",
+      "dimensionsMm": [
+        1750,
+        1378,
+        2197
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-leg-press/",
+      "slug": "exoform-leg-press",
+      "name": "LEG PRESS",
+      "sku": "FE9710",
+      "weightKg": 279,
+      "stackWeightKg": 134,
+      "stackLbs": "295",
+      "dimensionsMm": [
+        1781,
+        1293,
+        1491
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-mesa-flexora/",
+      "slug": "exoform-mesa-flexora",
+      "name": "MESA FLEXORA",
+      "sku": "FE9721",
+      "weightKg": 154.2,
+      "stackWeightKg": 134,
+      "stackLbs": "295",
+      "dimensionsMm": [
+        1606,
+        1193,
+        1492
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-panturrilha-em-pe/",
+      "slug": "exoform-panturrilha-em-pe",
+      "name": "PANTURRILHA EM PÉ",
+      "sku": "FE9716",
+      "weightKg": 167.8,
+      "stackWeightKg": 134,
+      "stackLbs": "295",
+      "dimensionsMm": [
+        1265,
+        1186,
+        1721
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-peitoral-dorsal/",
+      "slug": "exoform-peitoral-dorsal",
+      "name": "PEITORAL / DORSAL",
+      "sku": "FE9715",
+      "weightKg": 160.7,
+      "stackWeightKg": 106,
+      "stackLbs": "235",
+      "dimensionsMm": [
+        1296,
+        1758,
+        1490
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-puxada-alta/",
+      "slug": "exoform-puxada-alta",
+      "name": "PUXADA ALTA",
+      "sku": "FE9702",
+      "weightKg": 177.7,
+      "stackWeightKg": 134,
+      "stackLbs": "295",
+      "dimensionsMm": [
+        1304,
+        1226,
+        2109
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-remada-sentada/",
+      "slug": "exoform-remada-sentada",
+      "name": "REMADA SENTADA",
+      "sku": "FE9719",
+      "weightKg": 174.8,
+      "stackWeightKg": 134,
+      "stackLbs": "295",
+      "dimensionsMm": [
+        1996,
+        1127,
+        1492
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-rotacao-de-torso/",
+      "slug": "exoform-rotacao-de-torso",
+      "name": "ROTAÇÃO DE TORSO",
+      "sku": "FE9718",
+      "weightKg": 176,
+      "stackWeightKg": 106,
+      "stackLbs": "235",
+      "dimensionsMm": [
+        1293,
+        1346,
+        1490
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-supino-vertical/",
+      "slug": "exoform-supino-vertical",
+      "name": "SUPINO VERTICAL",
+      "sku": "FE9701",
+      "weightKg": 169.7,
+      "stackWeightKg": 134,
+      "stackLbs": "295",
+      "dimensionsMm": [
+        1230,
+        1570,
+        1490
+      ],
+      "parseErrors": []
+    },
+    {
+      "lineId": "exoform",
+      "lineLabel": "Linha Exoform (FE97)",
+      "url": "https://www.konnenfitness.com.br/produto/exoform-voador-peitoral/",
+      "slug": "exoform-voador-peitoral",
+      "name": "VOADOR PEITORAL",
+      "sku": "FE9704",
+      "weightKg": 166.2,
+      "stackWeightKg": 106,
+      "stackLbs": "235",
+      "dimensionsMm": [
+        1197,
+        1551,
+        1489
+      ],
+      "parseErrors": []
+    }
+  ],
+  "summary": {
+    "byStack": {
+      "235 lb (106 kg)": 10,
+      "295 lb (134 kg)": 9,
+      "200 lb (90 kg)": 1
+    },
+    "errors": 0,
+    "total": 20
+  }
+}

@@ -1,0 +1,258 @@
+{
+  "success": true,
+  "data": {
+    "km_distance": 3568.2,
+    "toll": 535.88995,
+    "toll_tag": 543.2999,
+    "toll_plazas": [
+      {
+        "nome": "Pedagio Laguna Norte",
+        "cidade": "Laguna",
+        "uf": "SC",
+        "valor": 9,
+        "valorTag": 9,
+        "ordemPassagem": 1
+      },
+      {
+        "nome": "Pedagio Palhoca Norte",
+        "cidade": "Palhoça",
+        "uf": "SC",
+        "valor": 17.1,
+        "valorTag": 17.1,
+        "ordemPassagem": 2
+      },
+      {
+        "nome": "Pedagio Porto Belo Norte",
+        "cidade": "Porto Belo",
+        "uf": "SC",
+        "valor": 17.1,
+        "valorTag": 17.1,
+        "ordemPassagem": 3
+      },
+      {
+        "nome": "Pedagio Araquari Norte",
+        "cidade": "Araquari",
+        "uf": "SC",
+        "valor": 17.1,
+        "valorTag": 17.1,
+        "ordemPassagem": 4
+      },
+      {
+        "nome": "Pedagio Garuva Norte",
+        "cidade": "Garuva",
+        "uf": "SC",
+        "valor": 17.1,
+        "valorTag": 17.1,
+        "ordemPassagem": 5
+      },
+      {
+        "nome": "Pedagio Sao Jose Pinhais A Norte",
+        "cidade": "São José dos Pinhais",
+        "uf": "PR",
+        "valor": 17.1,
+        "valorTag": 17.1,
+        "ordemPassagem": 6
+      },
+      {
+        "nome": "P6 - Pedagio Campina Grande Norte",
+        "cidade": "Campina Grande do Sul",
+        "uf": "PR",
+        "valor": 12.9,
+        "valorTag": 12.9,
+        "ordemPassagem": 7
+      },
+      {
+        "nome": "P5 - Pedagio Barra Do Turvo Norte",
+        "cidade": "Barra do Turvo",
+        "uf": "SP",
+        "valor": 12.9,
+        "valorTag": 12.9,
+        "ordemPassagem": 8
+      },
+      {
+        "nome": "P4 - Pedagio Cajati Norte",
+        "cidade": "Cajati",
+        "uf": "SP",
+        "valor": 12.9,
+        "valorTag": 12.9,
+        "ordemPassagem": 9
+      },
+      {
+        "nome": "P3 - Pedagio Registro Norte",
+        "cidade": "Juquiá",
+        "uf": "SP",
+        "valor": 12.9,
+        "valorTag": 12.9,
+        "ordemPassagem": 10
+      },
+      {
+        "nome": "P2 - Pedagio Miracatu Norte",
+        "cidade": "Miracatu",
+        "uf": "SP",
+        "valor": 12.9,
+        "valorTag": 12.9,
+        "ordemPassagem": 11
+      },
+      {
+        "nome": "P1 - Pedagio Itapecerica Da Serra Norte",
+        "cidade": "Itapecerica da Serra",
+        "uf": "SP",
+        "valor": 12.9,
+        "valorTag": 12.9,
+        "ordemPassagem": 12
+      },
+      {
+        "nome": "Pedagio Castello Norte",
+        "cidade": "Osasco",
+        "uf": "SP",
+        "valor": 10.95,
+        "valorTag": 10.95,
+        "ordemPassagem": 13
+      },
+      {
+        "nome": "Pedagio Free Flow Rod.Fernão Dias (km 226) Norte (Saida)",
+        "cidade": "São Paulo",
+        "uf": "SP",
+        "valor": 6.14,
+        "valorTag": 5.56,
+        "ordemPassagem": 14
+      },
+      {
+        "nome": "P1 - Pedagio Mairipora Norte",
+        "cidade": "Mairiporã",
+        "uf": "SP",
+        "valor": 11.1,
+        "valorTag": 10.55,
+        "ordemPassagem": 15
+      },
+      {
+        "nome": "P2 - Pedagio Vargem Norte",
+        "cidade": "Vargem",
+        "uf": "SP",
+        "valor": 11.1,
+        "valorTag": 10.55,
+        "ordemPassagem": 16
+      },
+      {
+        "nome": "P3 - Pedagio Cambui Norte",
+        "cidade": "Cambuí",
+        "uf": "MG",
+        "valor": 11.1,
+        "valorTag": 10.55,
+        "ordemPassagem": 17
+      },
+      {
+        "nome": "P4 - Pedagio Goncalo Do Sapucai Norte",
+        "cidade": "São Gonçalo do Sapucaí",
+        "uf": "MG",
+        "valor": 11.1,
+        "valorTag": 10.55,
+        "ordemPassagem": 18
+      },
+      {
+        "nome": "P5 - Pedagio Carmo Da Cachoeira Norte",
+        "cidade": "Carmo da Cachoeira",
+        "uf": "MG",
+        "valor": 11.1,
+        "valorTag": 10.55,
+        "ordemPassagem": 19
+      },
+      {
+        "nome": "P6 - Pedagio Santo Antonio Do Amparo Norte",
+        "cidade": "Santo Antônio do Amparo",
+        "uf": "MG",
+        "valor": 11.1,
+        "valorTag": 10.55,
+        "ordemPassagem": 20
+      },
+      {
+        "nome": "P7 - Pedagio Carmopolis Norte",
+        "cidade": "Carmópolis de Minas",
+        "uf": "MG",
+        "valor": 11.1,
+        "valorTag": 10.55,
+        "ordemPassagem": 21
+      },
+      {
+        "nome": "P8 - Pedagio Itatiaiucu Norte",
+        "cidade": "Itatiaiuçu",
+        "uf": "MG",
+        "valor": 11.1,
+        "valorTag": 10.55,
+        "ordemPassagem": 22
+      },
+      {
+        "nome": "Pedagio P8 Capim Branco Norte",
+        "cidade": "Capim Branco",
+        "uf": "MG",
+        "valor": 46.5,
+        "valorTag": 44.19,
+        "ordemPassagem": 23
+      },
+      {
+        "nome": "Pedagio P5 Curvelo Norte",
+        "cidade": "Curvelo",
+        "uf": "MG",
+        "valor": 31.8,
+        "valorTag": 31.8,
+        "ordemPassagem": 24
+      },
+      {
+        "nome": "Pedagio P4 Corinto Norte",
+        "cidade": "Corinto",
+        "uf": "MG",
+        "valor": 31.8,
+        "valorTag": 31.8,
+        "ordemPassagem": 25
+      },
+      {
+        "nome": "Pedagio P3 Buenopolis Norte",
+        "cidade": "Buenópolis",
+        "uf": "MG",
+        "valor": 31.8,
+        "valorTag": 31.8,
+        "ordemPassagem": 26
+      },
+      {
+        "nome": "Pedagio P2 Bocaiuva Norte",
+        "cidade": "Bocaiuva",
+        "uf": "MG",
+        "valor": 31.8,
+        "valorTag": 31.8,
+        "ordemPassagem": 27
+      },
+      {
+        "nome": "Pedagio P1 Montes Claros Norte",
+        "cidade": "Montes Claros",
+        "uf": "MG",
+        "valor": 31.8,
+        "valorTag": 31.8,
+        "ordemPassagem": 28
+      },
+      {
+        "nome": "Pedagio Cia Aeroporto Leste",
+        "cidade": "Salvador",
+        "uf": "BA",
+        "valor": 23.1,
+        "valorTag": 23.1,
+        "ordemPassagem": 29
+      },
+      {
+        "nome": "Pedagio Estrada Do Coco Norte",
+        "cidade": "Camaçari",
+        "uf": "BA",
+        "valor": 29.5,
+        "valorTag": 44.2,
+        "ordemPassagem": 30
+      }
+    ],
+    "km_by_uf": {
+      "SC": 575.508064516129,
+      "PR": 230.20322580645163,
+      "SP": 1035.9145161290323,
+      "MG": 1381.2193548387095,
+      "BA": 345.3048387096774
+    },
+    "source": "webrouter"
+  }
+}

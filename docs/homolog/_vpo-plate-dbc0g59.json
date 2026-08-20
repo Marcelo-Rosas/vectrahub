@@ -1,0 +1,112 @@
+[
+  {
+    "emissor": "SEMPARAR",
+    "placa": "DBC0G59",
+    "http": 200,
+    "body": {
+      "emissor": "SEMPARAR",
+      "id": null,
+      "idContrato": null,
+      "nomeProprietario": "CLEONALDO FERREIRA CARNEIRO",
+      "numeroDocumentoProprietario": null,
+      "placa": "DBC0G59",
+      "descricao": "FORD CAT>1 CARGO - CAT 03- 03 EIXOS ROD DUPLA",
+      "quantidadeEixos": 3,
+      "tag": "0736905613",
+      "status": "SUCESSO",
+      "ativo": true,
+      "descricaoCategoria": null,
+      "idCategoria": "4",
+      "mensagemErro": null,
+      "rntrcProprietario": null
+    }
+  },
+  {
+    "emissor": "CONECTCAR",
+    "placa": "DBC0G59",
+    "http": 200,
+    "body": {
+      "emissor": "CONECTCAR",
+      "id": null,
+      "idContrato": null,
+      "nomeProprietario": null,
+      "numeroDocumentoProprietario": null,
+      "placa": null,
+      "descricao": "Placa invalida",
+      "quantidadeEixos": 0,
+      "tag": null,
+      "status": "PLACA_INVALIDA",
+      "ativo": false,
+      "descricaoCategoria": null,
+      "idCategoria": null,
+      "mensagemErro": null,
+      "rntrcProprietario": null
+    }
+  },
+  {
+    "emissor": "VELOE",
+    "placa": "DBC0G59",
+    "http": 200,
+    "body": {
+      "emissor": "VELOE",
+      "id": null,
+      "idContrato": null,
+      "nomeProprietario": null,
+      "numeroDocumentoProprietario": null,
+      "placa": null,
+      "descricao": null,
+      "quantidadeEixos": 0,
+      "tag": null,
+      "status": "VEICULO_INVALIDO",
+      "ativo": false,
+      "descricaoCategoria": null,
+      "idCategoria": null,
+      "mensagemErro": "Placa não é cliente Veloe.",
+      "rntrcProprietario": null
+    }
+  },
+  {
+    "emissor": "MOVEMAIS",
+    "placa": "DBC0G59",
+    "http": 200,
+    "body": {
+      "emissor": "MOVEMAIS",
+      "id": null,
+      "idContrato": null,
+      "nomeProprietario": null,
+      "numeroDocumentoProprietario": null,
+      "placa": null,
+      "descricao": null,
+      "quantidadeEixos": 0,
+      "tag": null,
+      "status": "VEICULO_INVALIDO",
+      "ativo": false,
+      "descricaoCategoria": null,
+      "idCategoria": null,
+      "mensagemErro": "Falha, veiculo nao encontrado.",
+      "rntrcProprietario": null
+    }
+  },
+  {
+    "emissor": "REPOM",
+    "placa": "DBC0G59",
+    "http": 200,
+    "body": {
+      "emissor": "REPOM",
+      "id": null,
+      "idContrato": null,
+      "nomeProprietario": null,
+      "numeroDocumentoProprietario": null,
+      "placa": "DBC0G59",
+      "descricao": null,
+      "quantidadeEixos": 0,
+      "tag": null,
+      "status": "VEICULO_INVALIDO",
+      "ativo": false,
+      "descricaoCategoria": null,
+      "idCategoria": null,
+      "mensagemErro": "Veículo não encontrado.",
+      "rntrcProprietario": null
+    }
+  }
+]

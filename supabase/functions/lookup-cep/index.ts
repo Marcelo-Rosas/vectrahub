@@ -1,4 +1,4 @@
-import { corsHeaders } from '../_shared/cors.ts';
+import { getCorsHeaders } from '../_shared/cors.ts';
 import { corsPreflight, resolveSupabaseContext } from '../_shared/supabase-server.ts';
 
 interface CepData {
@@ -96,6 +96,8 @@ function formatAddress(data: CepData): string {
 Deno.serve(async (req) => {
   const pre = corsPreflight(req);
   if (pre) return pre;
+
+  const corsHeaders = getCorsHeaders(req);
 
   const { error: authCtxError } = await resolveSupabaseContext(req, 'none');
   if (authCtxError) {

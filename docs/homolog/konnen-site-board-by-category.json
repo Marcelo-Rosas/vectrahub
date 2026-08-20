@@ -1,0 +1,4917 @@
+{
+  "scrapedAt": "2026-08-19T19:25:14.503Z",
+  "catalogSkuCount": 472,
+  "categories": {
+    "baterias": {
+      "label": "Baterias de Peso",
+      "summary": {
+        "lines": 6,
+        "pagesFetched": 14,
+        "productsScraped": 123,
+        "uniqueSkus": 98,
+        "inCatalog": 51,
+        "gaps": 72,
+        "coveragePct": 41,
+        "withWeightKg": 112,
+        "withStackKg": 109,
+        "withDimensions": 108,
+        "withStackLbsMapped": 76
+      },
+      "lines": [
+        {
+          "id": "exoform",
+          "label": "Linha Exoform (FE97)",
+          "url": "https://www.konnenfitness.com.br/categoria-produto/baterias-de-peso/linha-exoform/",
+          "pages": 2,
+          "site": 20,
+          "inCatalog": 20,
+          "gaps": 0,
+          "coveragePct": 100,
+          "gapSkus": []
+        },
+        {
+          "id": "linha-lcs",
+          "label": "Linha LCS",
+          "url": "https://www.konnenfitness.com.br/categoria-produto/baterias-de-peso/linha-lcs/",
+          "pages": 1,
+          "site": 7,
+          "inCatalog": 0,
+          "gaps": 7,
+          "coveragePct": 0,
+          "gapSkus": [
+            "LCS101",
+            "LCS201",
+            "LCS402",
+            "LCS601",
+            "LCS608",
+            "LCS630",
+            "LCS705"
+          ]
+        },
+        {
+          "id": "linha-if",
+          "label": "Linha IF (IF93)",
+          "url": "https://www.konnenfitness.com.br/categoria-produto/baterias-de-peso/linha-if/",
+          "pages": 3,
+          "site": 32,
+          "inCatalog": 31,
+          "gaps": 1,
+          "coveragePct": 97,
+          "gapSkus": [
+            "IF9337"
+          ]
+        },
+        {
+          "id": "linha-torq",
+          "label": "Linha Torq",
+          "url": "https://www.konnenfitness.com.br/categoria-produto/baterias-de-peso/linha-torq/",
+          "pages": 3,
+          "site": 14,
+          "inCatalog": 0,
+          "gaps": 14,
+          "coveragePct": 0,
+          "gapSkus": [
+            "AM8001",
+            "AM8004",
+            "AM8006",
+            "AM8007",
+            "AM8008",
+            "AM8009",
+            "AM8010",
+            "AM8013",
+            "AM8014",
+            "AM8014",
+            "AM8015",
+            "AM8017",
+            "AM8018",
+            "AM8019"
+          ]
+        },
+        {
+          "id": "linha-new-encore",
+          "label": "Linha New Encore",
+          "url": "https://www.konnenfitness.com.br/categoria-produto/baterias-de-peso/linha-new-encore/",
+          "pages": 3,
+          "site": 25,
+          "inCatalog": 0,
+          "gaps": 25,
+          "coveragePct": 0,
+          "gapSkus": [
+            "VX9501",
+            "VX9502",
+            "VX9503",
+            "VX9504",
+            "VX9505",
+            "VX9506",
+            "VX9508",
+            "VX9510",
+            "VX9512",
+            "VX9514",
+            "VX9515",
+            "VX9516",
+            "VX9517",
+            "VX9518",
+            "VX9519",
+            "VX9520",
+            "VX9521",
+            "VX9522",
+            "VX9524",
+            "VX9528",
+            "VX9529",
+            "VX9533",
+            "VX9534",
+            "VX9538",
+            "VX9539"
+          ]
+        },
+        {
+          "id": "booty-builder",
+          "label": "Booty Builder",
+          "url": "https://www.konnenfitness.com.br/categoria-produto/baterias-de-peso/booty-builder/",
+          "pages": 2,
+          "site": 1,
+          "inCatalog": 0,
+          "gaps": 1,
+          "coveragePct": 0,
+          "gapSkus": [
+            "BBV8.0"
+          ]
+        }
+      ],
+      "products": [
+        {
+          "lineId": "exoform",
+          "sku": "FE9714",
+          "slug": "exoform-abdominal",
+          "name": "ABDOMINAL",
+          "inCatalog": true,
+          "weightKg": 141.5,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1383,
+            1202,
+            1491
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-abdominal/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9708",
+          "slug": "exoform-abdutora-adutora",
+          "name": "ABDUTORA / ADUTORA",
+          "inCatalog": true,
+          "weightKg": 165.8,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1776,
+            1546,
+            1488
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-abdutora-adutora/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9703",
+          "slug": "exoform-biceps-unilateral",
+          "name": "BÍCEPS UNILATERAL",
+          "inCatalog": true,
+          "weightKg": 169.1,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1149,
+            1567,
+            1490
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-biceps-unilateral/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9705",
+          "slug": "exoform-cadeira-extensora",
+          "name": "CADEIRA EXTENSORA",
+          "inCatalog": true,
+          "weightKg": 169.6,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1264,
+            1239,
+            1489
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-cadeira-extensora/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9706",
+          "slug": "exoform-cadeira-flexora",
+          "name": "CADEIRA FLEXORA",
+          "inCatalog": true,
+          "weightKg": 183.6,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1240,
+            1541,
+            1489
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-cadeira-flexora/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9712",
+          "slug": "exoform-desenvolvimento",
+          "name": "DESENVOLVIMENTO",
+          "inCatalog": true,
+          "weightKg": 168.7,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1762,
+            1422,
+            1492
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-desenvolvimento/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9724",
+          "slug": "exoform-elevacao-lateral",
+          "name": "ELEVAÇÃO LATERAL",
+          "inCatalog": true,
+          "weightKg": 187.5,
+          "stackWeightKg": 90,
+          "stackLbs": "200",
+          "dimensionsMm": [
+            1266,
+            1261,
+            1491
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-elevacao-lateral/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9723",
+          "slug": "exoform-extensao-de-triceps",
+          "name": "EXTENSÃO DE TRÍCEPS",
+          "inCatalog": true,
+          "weightKg": 163.5,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1149,
+            1580,
+            1490
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-extensao-de-triceps/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9732",
+          "slug": "exoform-extensor-lombar",
+          "name": "EXTENSOR LOMBAR",
+          "inCatalog": true,
+          "weightKg": 185.4,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1383,
+            1203,
+            1492
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-extensor-lombar/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9726",
+          "slug": "exoform-gluteo",
+          "name": "GLÚTEO",
+          "inCatalog": true,
+          "weightKg": 168.5,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1307,
+            1483,
+            1488
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-gluteo/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9720",
+          "slug": "exoform-graviton",
+          "name": "GRAVITON",
+          "inCatalog": true,
+          "weightKg": 243.5,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1750,
+            1378,
+            2197
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-graviton/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9710",
+          "slug": "exoform-leg-press",
+          "name": "LEG PRESS",
+          "inCatalog": true,
+          "weightKg": 279,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1781,
+            1293,
+            1491
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-leg-press/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9721",
+          "slug": "exoform-mesa-flexora",
+          "name": "MESA FLEXORA",
+          "inCatalog": true,
+          "weightKg": 154.2,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1606,
+            1193,
+            1492
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-mesa-flexora/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9716",
+          "slug": "exoform-panturrilha-em-pe",
+          "name": "PANTURRILHA EM PÉ",
+          "inCatalog": true,
+          "weightKg": 167.8,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1265,
+            1186,
+            1721
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-panturrilha-em-pe/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9715",
+          "slug": "exoform-peitoral-dorsal",
+          "name": "PEITORAL / DORSAL",
+          "inCatalog": true,
+          "weightKg": 160.7,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1296,
+            1758,
+            1490
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-peitoral-dorsal/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9702",
+          "slug": "exoform-puxada-alta",
+          "name": "PUXADA ALTA",
+          "inCatalog": true,
+          "weightKg": 177.7,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1304,
+            1226,
+            2109
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-puxada-alta/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9719",
+          "slug": "exoform-remada-sentada",
+          "name": "REMADA SENTADA",
+          "inCatalog": true,
+          "weightKg": 174.8,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1996,
+            1127,
+            1492
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-remada-sentada/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9718",
+          "slug": "exoform-rotacao-de-torso",
+          "name": "ROTAÇÃO DE TORSO",
+          "inCatalog": true,
+          "weightKg": 176,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1293,
+            1346,
+            1490
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-rotacao-de-torso/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9701",
+          "slug": "exoform-supino-vertical",
+          "name": "SUPINO VERTICAL",
+          "inCatalog": true,
+          "weightKg": 169.7,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1230,
+            1570,
+            1490
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-supino-vertical/"
+        },
+        {
+          "lineId": "exoform",
+          "sku": "FE9704",
+          "slug": "exoform-voador-peitoral",
+          "name": "VOADOR PEITORAL",
+          "inCatalog": true,
+          "weightKg": 166.2,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1197,
+            1551,
+            1489
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/exoform-voador-peitoral/"
+        },
+        {
+          "lineId": "linha-lcs",
+          "sku": "LCS608",
+          "slug": "3d-abductor",
+          "name": "3D ABDUCTOR",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1718,
+            1822,
+            1450
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/3d-abductor/",
+          "parseErrors": [
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "linha-lcs",
+          "sku": "LCS402",
+          "slug": "lcs-45-degree-glute-extension",
+          "name": "45 DEGREE GLUTE EXTENSION",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1718,
+            1703,
+            1254
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/lcs-45-degree-glute-extension/",
+          "parseErrors": [
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "linha-lcs",
+          "sku": "LCS201",
+          "slug": "lcs-chest-press",
+          "name": "CHEST PRESS",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2401,
+            1719,
+            1558
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/lcs-chest-press/",
+          "parseErrors": [
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "linha-lcs",
+          "sku": "LCS630",
+          "slug": "lcs-kneel-glute-extension",
+          "name": "KNEEL GLUTE EXTENSION",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1718,
+            2156,
+            1254
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/lcs-kneel-glute-extension/",
+          "parseErrors": [
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "linha-lcs",
+          "sku": "LCS601",
+          "slug": "lcs-leg-press-squat",
+          "name": "LEG PRESS / SQUAT",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            763,
+            250,
+            576
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/lcs-leg-press-squat/",
+          "parseErrors": [
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "linha-lcs",
+          "sku": "LCS705",
+          "slug": "seated-leg-extension-e-prone-leg-curl",
+          "name": "SEATED LEG EXTENSION& PRONE LEG CURL",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1718,
+            1822,
+            1450
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/seated-leg-extension-e-prone-leg-curl/",
+          "parseErrors": [
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "linha-lcs",
+          "sku": "LCS101",
+          "slug": "shoulder-press-2",
+          "name": "SHOULDER PRESS",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1717,
+            1307,
+            1850
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/shoulder-press-2/",
+          "parseErrors": [
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9334",
+          "slug": "abdominal-back-extension-2",
+          "name": "ABDOMINAL / BACK EXTENSION",
+          "inCatalog": true,
+          "weightKg": 135.2,
+          "stackWeightKg": 95,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1592,
+            1253,
+            1531
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/abdominal-back-extension-2/",
+          "parseErrors": [
+            "stack_lbs_unmapped:95"
+          ]
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9330",
+          "slug": "dual-adjustable-pullely",
+          "name": "Dual adjustable Pullely",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/dual-adjustable-pullely/",
+          "parseErrors": [
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9337",
+          "slug": "forearm-training",
+          "name": "FOREARM TRAINING",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/forearm-training/",
+          "parseErrors": [
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9327",
+          "slug": "if-4-stack-multi-station",
+          "name": "4 STACK MULTISTATION",
+          "inCatalog": true,
+          "weightKg": 258.6,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            3450,
+            2445,
+            2338
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-4-stack-multi-station/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9314",
+          "slug": "if-abdominal",
+          "name": "ABDOMINAL",
+          "inCatalog": true,
+          "weightKg": 89.5,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1304,
+            1484,
+            1490
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-abdominal/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9308",
+          "slug": "if-abductor-adductor",
+          "name": "ABDUCTOR / ADDUCTOR",
+          "inCatalog": true,
+          "weightKg": 98.5,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1570,
+            935,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-abductor-adductor/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9335",
+          "slug": "if-abductor",
+          "name": "ABDUCTOR",
+          "inCatalog": true,
+          "weightKg": 95,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1583,
+            946,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-abductor/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9336",
+          "slug": "if-adductor",
+          "name": "ADDUCTOR",
+          "inCatalog": true,
+          "weightKg": 95,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1583,
+            1036,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-adductor/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9325",
+          "slug": "if-adjustable-hi-lo-pulley",
+          "name": "ADJUSTABLE HI-LO PULLEY",
+          "inCatalog": true,
+          "weightKg": 108,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1449,
+            1258,
+            2338
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-adjustable-hi-lo-pulley/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9333",
+          "slug": "if-arm-curl-tricep-extension",
+          "name": "ARM CURL /TRICEP EXTENSION",
+          "inCatalog": true,
+          "weightKg": 110,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1327,
+            1203,
+            1503
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-arm-curl-tricep-extension/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9323",
+          "slug": "if-arm-extension",
+          "name": "ARM EXTENSION",
+          "inCatalog": true,
+          "weightKg": 91,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1079,
+            1028,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-arm-extension/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9320",
+          "slug": "if-assisted-chin-dip-combo",
+          "name": "ASSISTED CHIN/DIP COMBO",
+          "inCatalog": true,
+          "weightKg": 107,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1309,
+            1256,
+            2498
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-assisted-chin-dip-combo/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9332",
+          "slug": "if-back-extension",
+          "name": "BACK EXTENSION",
+          "inCatalog": true,
+          "weightKg": 98,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1120,
+            1034,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-back-extension/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9303",
+          "slug": "if-biceps-arm-curl",
+          "name": "BICEPS – ARM CURL",
+          "inCatalog": true,
+          "weightKg": 90,
+          "stackWeightKg": 90,
+          "stackLbs": "200",
+          "dimensionsMm": [
+            1216,
+            1028,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-biceps-arm-curl/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9301",
+          "slug": "if-chest-press",
+          "name": "CHEST PRESS",
+          "inCatalog": true,
+          "weightKg": 97.1,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1040,
+            1360,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-chest-press/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9326",
+          "slug": "if-glute",
+          "name": "GLUTE",
+          "inCatalog": true,
+          "weightKg": 90,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1068,
+            1034,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-glute/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9302",
+          "slug": "if-lat-pulldown-2",
+          "name": "LAT PULLDOWN",
+          "inCatalog": true,
+          "weightKg": 100,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1585,
+            1318,
+            1891
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-lat-pulldown-2/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9322",
+          "slug": "if-lat-pulldown-vertical-row",
+          "name": "LAT PULLDOWN / VERTICAL ROW",
+          "inCatalog": true,
+          "weightKg": 90,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1886,
+            1223,
+            2227
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-lat-pulldown-vertical-row/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9324",
+          "slug": "if-lateral-raise",
+          "name": "LATERAL RAISE",
+          "inCatalog": true,
+          "weightKg": 85,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1179,
+            750,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-lateral-raise/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9306",
+          "slug": "if-leg-curl",
+          "name": "LEG CURL",
+          "inCatalog": true,
+          "weightKg": 95,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1148,
+            1034,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-leg-curl/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9328",
+          "slug": "if-leg-extension-leg-curl",
+          "name": "LEG EXTENSION / LEG CURL",
+          "inCatalog": true,
+          "weightKg": 105,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1272,
+            1270,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-leg-extension-leg-curl/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9305",
+          "slug": "if-leg-extension",
+          "name": "LEG EXTENSION",
+          "inCatalog": true,
+          "weightKg": 101.5,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1146,
+            1050,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-leg-extension/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9310",
+          "slug": "if-leg-press",
+          "name": "LEG PRESS",
+          "inCatalog": true,
+          "weightKg": 120.5,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1790,
+            1168,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-leg-press/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9329",
+          "slug": "if-multi-press",
+          "name": "MULTI PRESS",
+          "inCatalog": true,
+          "weightKg": 97.5,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            2026,
+            1446,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-multi-press/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9315",
+          "slug": "if-pec-fly-rear-delt",
+          "name": "PEC FLY / REAR DELT",
+          "inCatalog": true,
+          "weightKg": 90,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1420,
+            1493,
+            1863
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-pec-fly-rear-delt/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9304",
+          "slug": "if-pectoral",
+          "name": "PECTORAL",
+          "inCatalog": true,
+          "weightKg": 95,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1736,
+            806,
+            1503
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-pectoral/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9321",
+          "slug": "if-prone-leg-curl",
+          "name": "PRONE LEG CURL",
+          "inCatalog": true,
+          "weightKg": 101.5,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1510,
+            1150,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-prone-leg-curl/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9319",
+          "slug": "if-seat-row",
+          "name": "SEAT ROW",
+          "inCatalog": true,
+          "weightKg": 91.5,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1818,
+            870,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-seat-row/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9317",
+          "slug": "if-seated-dip",
+          "name": "SEATED DIP",
+          "inCatalog": true,
+          "weightKg": 97.5,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1227,
+            1212,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-seated-dip/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9312",
+          "slug": "if-shoulder-press",
+          "name": "SHOULDER PRESS",
+          "inCatalog": true,
+          "weightKg": 102.6,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1149,
+            1456,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-shoulder-press/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9316",
+          "slug": "if-stand-calf-raise",
+          "name": "STAND CALF RAISE",
+          "inCatalog": true,
+          "weightKg": 106,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1150,
+            1105,
+            1775
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-stand-calf-raise/"
+        },
+        {
+          "lineId": "linha-if",
+          "sku": "IF9318",
+          "slug": "if-torso-rotation",
+          "name": "TORSO ROTATION",
+          "inCatalog": true,
+          "weightKg": 96,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1240,
+            1105,
+            1530
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/if-torso-rotation/"
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8010",
+          "slug": "abdominal-5",
+          "name": "Abdominal",
+          "inCatalog": false,
+          "weightKg": 212,
+          "stackWeightKg": 80,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1410,
+            960,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/abdominal-5/",
+          "parseErrors": [
+            "stack_lbs_unmapped:80"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8019",
+          "slug": "abdutora",
+          "name": "Abdutora",
+          "inCatalog": false,
+          "weightKg": 197,
+          "stackWeightKg": 100,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1635,
+            820,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/abdutora/",
+          "parseErrors": [
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": null,
+          "slug": "adutora-e-abdutora",
+          "name": "Adutora e Abdutora",
+          "inCatalog": false,
+          "weightKg": 228,
+          "stackWeightKg": 80,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1564,
+            805,
+            1606
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/adutora-e-abdutora/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:80"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8018",
+          "slug": "adutora",
+          "name": "Adutora",
+          "inCatalog": false,
+          "weightKg": 199,
+          "stackWeightKg": 100,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1635,
+            820,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/adutora/",
+          "parseErrors": [
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8006",
+          "slug": "biceps-scott",
+          "name": "Bíceps Scott",
+          "inCatalog": false,
+          "weightKg": 208,
+          "stackWeightKg": 80,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1230,
+            959,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/biceps-scott/",
+          "parseErrors": [
+            "stack_lbs_unmapped:80"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": null,
+          "slug": "biceps-triceps-2",
+          "name": "Bíceps / Tríceps",
+          "inCatalog": false,
+          "weightKg": 241,
+          "stackWeightKg": 80,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1400,
+            1030,
+            1606
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/biceps-triceps-2/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:80"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": null,
+          "slug": "cadeira-extensora-flexora",
+          "name": "Cadeira Extensora / Flexora",
+          "inCatalog": false,
+          "weightKg": 228,
+          "stackWeightKg": 80,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1540,
+            1030,
+            1606
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cadeira-extensora-flexora/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:80"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8014",
+          "slug": "cadeira-extensora",
+          "name": "Cadeira Extensora",
+          "inCatalog": false,
+          "weightKg": 275,
+          "stackWeightKg": 120,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1436,
+            1046,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cadeira-extensora/",
+          "parseErrors": [
+            "stack_lbs_unmapped:120"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8013",
+          "slug": "cadeira-flexora",
+          "name": "Cadeira Flexora",
+          "inCatalog": false,
+          "weightKg": 212,
+          "stackWeightKg": 80,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1436,
+            1046,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cadeira-flexora/",
+          "parseErrors": [
+            "stack_lbs_unmapped:80"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": null,
+          "slug": "gluteo",
+          "name": "Glúteo",
+          "inCatalog": false,
+          "weightKg": 193,
+          "stackWeightKg": 80,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1400,
+            936,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/gluteo/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:80"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8008",
+          "slug": "graviton",
+          "name": "Graviton",
+          "inCatalog": false,
+          "weightKg": 266,
+          "stackWeightKg": 100,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1420,
+            1330,
+            2433
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/graviton/",
+          "parseErrors": [
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8014",
+          "slug": "leg-extesion",
+          "name": "LEG EXTENSION",
+          "inCatalog": false,
+          "weightKg": 126.5,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1617,
+            1264,
+            1508
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/leg-extesion/"
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8015",
+          "slug": "leg-press-horizontal",
+          "name": "Leg Press Horizontal",
+          "inCatalog": false,
+          "weightKg": 275,
+          "stackWeightKg": 120,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1980,
+            1034,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/leg-press-horizontal/",
+          "parseErrors": [
+            "stack_lbs_unmapped:120"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": null,
+          "slug": "lombar-abdominal",
+          "name": "Lombar / Abdominal",
+          "inCatalog": false,
+          "weightKg": 233,
+          "stackWeightKg": 80,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1550,
+            1185,
+            1606
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/lombar-abdominal/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:80"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8009",
+          "slug": "lombar",
+          "name": "Lombar",
+          "inCatalog": false,
+          "weightKg": 183,
+          "stackWeightKg": 100,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1330,
+            1030,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/lombar/",
+          "parseErrors": [
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": null,
+          "slug": "mesa-flexora",
+          "name": "Mesa Flexora",
+          "inCatalog": false,
+          "weightKg": 187,
+          "stackWeightKg": 80,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1600,
+            1013,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/mesa-flexora/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:80"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": null,
+          "slug": "multi-press-3",
+          "name": "Multi Press",
+          "inCatalog": false,
+          "weightKg": 236,
+          "stackWeightKg": 100,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1879,
+            1430,
+            1606
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/multi-press-3/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8017",
+          "slug": "panturrilha-sentada",
+          "name": "Panturrilha Sentada",
+          "inCatalog": false,
+          "weightKg": 203,
+          "stackWeightKg": 100,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1589,
+            1132,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/panturrilha-sentada/",
+          "parseErrors": [
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": null,
+          "slug": "peck-deck",
+          "name": "Peck Deck",
+          "inCatalog": false,
+          "weightKg": 275,
+          "stackWeightKg": 100,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1457,
+            1460,
+            2030
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/peck-deck/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": null,
+          "slug": "puxada-alta-remada-baixa",
+          "name": "Puxada Alta / Remada Baixa",
+          "inCatalog": false,
+          "weightKg": 264,
+          "stackWeightKg": 100,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1553,
+            1480,
+            2208
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/puxada-alta-remada-baixa/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": null,
+          "slug": "puxada-alta",
+          "name": "Puxada Alta",
+          "inCatalog": false,
+          "weightKg": 185,
+          "stackWeightKg": 100,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1339,
+            1366,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/puxada-alta/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": null,
+          "slug": "remada-baixa",
+          "name": "Remada Baixa",
+          "inCatalog": false,
+          "weightKg": 176,
+          "stackWeightKg": 100,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1786,
+            1040,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/remada-baixa/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8004",
+          "slug": "remada-vertical",
+          "name": "Remada Vertical",
+          "inCatalog": false,
+          "weightKg": 210,
+          "stackWeightKg": 100,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1589,
+            930,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/remada-vertical/",
+          "parseErrors": [
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8001",
+          "slug": "torq-supino-vertical",
+          "name": "Supino Vertical",
+          "inCatalog": false,
+          "weightKg": 206,
+          "stackWeightKg": 100,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1475,
+            1450,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/torq-supino-vertical/",
+          "parseErrors": [
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-torq",
+          "sku": "AM8007",
+          "slug": "triceps-paralela",
+          "name": "Tríceps Paralela",
+          "inCatalog": false,
+          "weightKg": 204,
+          "stackWeightKg": 100,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1481,
+            1160,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/triceps-paralela/",
+          "parseErrors": [
+            "stack_lbs_unmapped:100"
+          ]
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9534",
+          "slug": "abdominal-back-extension",
+          "name": "ABDOMINAL/BACK EXTENSION",
+          "inCatalog": false,
+          "weightKg": 135.2,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1208,
+            1235,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/abdominal-back-extension/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9514",
+          "slug": "abdominal",
+          "name": "ABDOMINAL",
+          "inCatalog": false,
+          "weightKg": 116.2,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1348,
+            1168,
+            1581
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/abdominal/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9508",
+          "slug": "abductor-adductor",
+          "name": "ABDUCTOR / ADDUCTOR",
+          "inCatalog": false,
+          "weightKg": 131.1,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1696,
+            1560,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/abductor-adductor/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9503",
+          "slug": "arm-curl-4",
+          "name": "ARM CURL",
+          "inCatalog": false,
+          "weightKg": 115.5,
+          "stackWeightKg": 90,
+          "stackLbs": "200",
+          "dimensionsMm": [
+            1310,
+            1214,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/arm-curl-4/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9533",
+          "slug": "arm-curl-triceps-extension",
+          "name": "ARM CURL/TRICEPS EXTENSION",
+          "inCatalog": false,
+          "weightKg": 132.5,
+          "stackWeightKg": 90,
+          "stackLbs": "200",
+          "dimensionsMm": [
+            1300,
+            1225,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/arm-curl-triceps-extension/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": null,
+          "slug": "back-extension",
+          "name": "BACK EXTENSION",
+          "inCatalog": false,
+          "weightKg": 123.7,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1233,
+            1185,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/back-extension/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9516",
+          "slug": "calf-raise",
+          "name": "CALF RAISE",
+          "inCatalog": false,
+          "weightKg": 120.2,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1289,
+            1158,
+            1715
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/calf-raise/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9501",
+          "slug": "chest-press-3",
+          "name": "CHEST PRESS",
+          "inCatalog": false,
+          "weightKg": 127.4,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1475,
+            1200,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/chest-press-3/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9538",
+          "slug": "hip-thrust",
+          "name": "HIP THRUST",
+          "inCatalog": false,
+          "weightKg": 255,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1563,
+            1290,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/hip-thrust/",
+          "parseErrors": [
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9539",
+          "slug": "horizontal-adjustable-leg-press",
+          "name": "HORIZONTAL ADJUSTABLE LEG PRESS",
+          "inCatalog": false,
+          "weightKg": 325,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1857,
+            1090,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/horizontal-adjustable-leg-press/",
+          "parseErrors": [
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9522",
+          "slug": "lat-pulldown-vertical-row",
+          "name": "LAT PULLDOWN/VERTICAL ROW",
+          "inCatalog": false,
+          "weightKg": 120,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1900,
+            900,
+            2230
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/lat-pulldown-vertical-row/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9502",
+          "slug": "lat-pulldown",
+          "name": "LAT PULLDOWN",
+          "inCatalog": false,
+          "weightKg": 147.7,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1440,
+            1384,
+            1889
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/lat-pulldown/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9524",
+          "slug": "lateral-raise",
+          "name": "LATERAL RAISE",
+          "inCatalog": false,
+          "weightKg": 117.5,
+          "stackWeightKg": 107,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1222,
+            1213,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/lateral-raise/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9505",
+          "slug": "leg-extension-2",
+          "name": "LEG EXTENSION",
+          "inCatalog": false,
+          "weightKg": 133.1,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1575,
+            1189,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/leg-extension-2/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9528",
+          "slug": "leg-extension-leg-curl",
+          "name": "LEG EXTENSION/LEG CURL",
+          "inCatalog": false,
+          "weightKg": 167,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1350,
+            1227,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/leg-extension-leg-curl/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9510",
+          "slug": "leg-press-4",
+          "name": "LEG PRESS",
+          "inCatalog": false,
+          "weightKg": 211.3,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1850,
+            1150,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/leg-press-4/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9529",
+          "slug": "multi-press",
+          "name": "MULTI PRESS",
+          "inCatalog": false,
+          "weightKg": 166,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1950,
+            1460,
+            1667
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/multi-press/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9515",
+          "slug": "pec-fly-rear-delt",
+          "name": "PEC FLY / REAR DELT",
+          "inCatalog": false,
+          "weightKg": 132,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1302,
+            1275,
+            2048
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/pec-fly-rear-delt/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9504",
+          "slug": "pectoral",
+          "name": "PECTORAL",
+          "inCatalog": false,
+          "weightKg": 145.2,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1500,
+            1460,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/pectoral/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9521",
+          "slug": "prone-leg-curl",
+          "name": "PRONE LEG CURL",
+          "inCatalog": false,
+          "weightKg": 131.5,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1443,
+            1146,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/prone-leg-curl/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9517",
+          "slug": "seated-dip",
+          "name": "SEATED DIP",
+          "inCatalog": false,
+          "weightKg": 142.5,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1794,
+            1260,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/seated-dip/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9506",
+          "slug": "seated-leg-curl",
+          "name": "SEATED LEG CURL",
+          "inCatalog": false,
+          "weightKg": 149.6,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1536,
+            1187,
+            1489
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/seated-leg-curl/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9512",
+          "slug": "shoulder-press-3",
+          "name": "SHOULDER PRESS",
+          "inCatalog": false,
+          "weightKg": 137.4,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1565,
+            1450,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/shoulder-press-3/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9518",
+          "slug": "torso-rotation",
+          "name": "TORSO ROTATION",
+          "inCatalog": false,
+          "weightKg": 150.8,
+          "stackWeightKg": 106,
+          "stackLbs": "235",
+          "dimensionsMm": [
+            1221,
+            1202,
+            1506
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/torso-rotation/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9519",
+          "slug": "vertical-row",
+          "name": "VERTICAL ROW",
+          "inCatalog": false,
+          "weightKg": 126.5,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1617,
+            1264,
+            1508
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/vertical-row/"
+        },
+        {
+          "lineId": "linha-new-encore",
+          "sku": "VX9520",
+          "slug": "weight-assisted-chin-dip-combo",
+          "name": "WEIGHT ASSISTED CHIN/DIP COMBO",
+          "inCatalog": false,
+          "weightKg": 171,
+          "stackWeightKg": 134,
+          "stackLbs": "295",
+          "dimensionsMm": [
+            1573,
+            1315,
+            2286
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/weight-assisted-chin-dip-combo/"
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": null,
+          "slug": "booty-builder-abdutora-em-pe",
+          "name": "ABDUTORA EM PÉ",
+          "inCatalog": false,
+          "weightKg": 263,
+          "stackWeightKg": 120,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/booty-builder-abdutora-em-pe/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:120"
+          ]
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": null,
+          "slug": "booty-builder-abdutora-multi-3d",
+          "name": "ABDUTORA MULTI-3D",
+          "inCatalog": false,
+          "weightKg": 510,
+          "stackWeightKg": 160,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/booty-builder-abdutora-multi-3d/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:160"
+          ]
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": null,
+          "slug": "booty-builder-adutora-em-pe",
+          "name": "ADUTORA EM PÉ",
+          "inCatalog": false,
+          "weightKg": 263,
+          "stackWeightKg": 90,
+          "stackLbs": "200",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/booty-builder-adutora-em-pe/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": null,
+          "slug": "booty-builder-agachamento-terra",
+          "name": "AGACHAMENTO TERRA",
+          "inCatalog": false,
+          "weightKg": 510,
+          "stackWeightKg": 160,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/booty-builder-agachamento-terra/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:160"
+          ]
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": null,
+          "slug": "booty-builder-elevacao-em-pe",
+          "name": "ELEVAÇÃO EM PÉ",
+          "inCatalog": false,
+          "weightKg": 263,
+          "stackWeightKg": 90,
+          "stackLbs": "200",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/booty-builder-elevacao-em-pe/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": null,
+          "slug": "booty-builder-elevacao-pelvica-com-barra",
+          "name": "ELEVAÇÃO PÉLVICA COM BARRA",
+          "inCatalog": false,
+          "weightKg": 125,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/booty-builder-elevacao-pelvica-com-barra/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": "BBV8.0",
+          "slug": "booty-builder-elevacao-pelvica",
+          "name": "ELEVAÇÃO PÉLVICA",
+          "inCatalog": false,
+          "weightKg": 340,
+          "stackWeightKg": 160,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/booty-builder-elevacao-pelvica/",
+          "parseErrors": [
+            "stack_lbs_unmapped:160"
+          ]
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": null,
+          "slug": "booty-builder-extensao-de-costas",
+          "name": "EXTENSÃO DE COSTAS",
+          "inCatalog": false,
+          "weightKg": 255,
+          "stackWeightKg": 120,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/booty-builder-extensao-de-costas/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:120"
+          ]
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": null,
+          "slug": "booty-builder-gluteo-em-pe",
+          "name": "GLÚTEO EM PÉ",
+          "inCatalog": false,
+          "weightKg": 181,
+          "stackWeightKg": 50,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/booty-builder-gluteo-em-pe/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:50"
+          ]
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": null,
+          "slug": "booty-builder-leg-pendulo",
+          "name": "LEG PÊNDULO",
+          "inCatalog": false,
+          "weightKg": 390,
+          "stackWeightKg": 160,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/booty-builder-leg-pendulo/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:160"
+          ]
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": null,
+          "slug": "booty-builder-rack-agachamento",
+          "name": "RACK AGACHAMENTO",
+          "inCatalog": false,
+          "weightKg": 263,
+          "stackWeightKg": 120,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/booty-builder-rack-agachamento/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_lbs_unmapped:120"
+          ]
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": null,
+          "slug": "multi-angle-glute-press",
+          "name": "MULTI ANGLE GLUTE PRESS",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/multi-angle-glute-press/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_weight_missing"
+          ]
+        },
+        {
+          "lineId": "booty-builder",
+          "sku": null,
+          "slug": "multi-leg-press-hack-squat",
+          "name": "MULTI LEG PRESS HACK SQUAT",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/multi-leg-press-hack-squat/",
+          "parseErrors": [
+            "sku_missing",
+            "stack_weight_missing"
+          ]
+        }
+      ]
+    },
+    "articulados": {
+      "label": "Articulados",
+      "summary": {
+        "lines": 4,
+        "pagesFetched": 11,
+        "productsScraped": 107,
+        "uniqueSkus": 56,
+        "inCatalog": 27,
+        "gaps": 80,
+        "coveragePct": 25,
+        "withWeightKg": 78,
+        "withStackKg": 0,
+        "withDimensions": 79,
+        "withStackLbsMapped": 0
+      },
+      "lines": [
+        {
+          "id": "articulados",
+          "label": "Articulados (todas)",
+          "url": "https://www.konnenfitness.com.br/categoria-produto/articulados/",
+          "pages": 4,
+          "site": 18,
+          "inCatalog": 7,
+          "gaps": 11,
+          "coveragePct": 39,
+          "gapSkus": [
+            "ECP401",
+            "ITF8402",
+            "ITF8402",
+            "SL7001B",
+            "SL7018B",
+            "SL7023B",
+            "SL7036B",
+            "SL7038B",
+            "SL7051",
+            "SL7051B",
+            "SL7055B"
+          ]
+        },
+        {
+          "id": "linha-ecp",
+          "label": "Linha ECP",
+          "url": "https://www.konnenfitness.com.br/categoria-produto/articulados/linha-ecp/",
+          "pages": 2,
+          "site": 3,
+          "inCatalog": 0,
+          "gaps": 3,
+          "coveragePct": 0,
+          "gapSkus": [
+            "ECP401",
+            "ECP604",
+            "ECP630"
+          ]
+        },
+        {
+          "id": "linha-ifp",
+          "label": "Linha IFP",
+          "url": "https://www.konnenfitness.com.br/categoria-produto/articulados/linha-ifp/",
+          "pages": 2,
+          "site": 21,
+          "inCatalog": 20,
+          "gaps": 1,
+          "coveragePct": 95,
+          "gapSkus": [
+            "IFP1614"
+          ]
+        },
+        {
+          "id": "linha-sl",
+          "label": "Linha SL",
+          "url": "https://www.konnenfitness.com.br/categoria-produto/articulados/linha-sl/",
+          "pages": 3,
+          "site": 27,
+          "inCatalog": 0,
+          "gaps": 27,
+          "coveragePct": 0,
+          "gapSkus": [
+            "SL7001B",
+            "SL7002B",
+            "SL7003B",
+            "SL7004B",
+            "SL7005B",
+            "SL7006B",
+            "SL7007B",
+            "SL7008B",
+            "SL7017B",
+            "SL7018B",
+            "SL7019B",
+            "SL7020B",
+            "SL7021B",
+            "SL7022B",
+            "SL7023B",
+            "SL7024B",
+            "SL7025B",
+            "SL7026B",
+            "SL7032B",
+            "SL7034B",
+            "SL7036B",
+            "SL7038B",
+            "SL7040B",
+            "SL7046B",
+            "SL7051B",
+            "SL7055B",
+            "SL7057B"
+          ]
+        }
+      ],
+      "products": [
+        {
+          "lineId": "articulados",
+          "sku": "SL7036B",
+          "slug": "ab-crunch",
+          "name": "AB Crunch",
+          "inCatalog": false,
+          "weightKg": 132,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1623,
+            1267,
+            1642
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/ab-crunch/"
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "agachamento-pendulo",
+          "name": "Agachamento Pêndulo",
+          "inCatalog": false,
+          "weightKg": 205,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            2430,
+            1410,
+            1670
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/agachamento-pendulo/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "agachamento-sumo",
+          "name": "Agachamento Sumô",
+          "inCatalog": false,
+          "weightKg": 181,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1745,
+            1712,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/agachamento-sumo/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": "SL7018B",
+          "slug": "arm-curl-2",
+          "name": "ARM CURL",
+          "inCatalog": false,
+          "weightKg": 70,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1136,
+            860,
+            1016
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/arm-curl-2/"
+        },
+        {
+          "lineId": "articulados",
+          "sku": "SL7018",
+          "slug": "arm-curl",
+          "name": "ARM CURL",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/arm-curl/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": "SL7051B",
+          "slug": "assisted-nordic-ham",
+          "name": "ASSISTED NORDIC HAM",
+          "inCatalog": false,
+          "weightKg": 101,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1648,
+            1323,
+            1684
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/assisted-nordic-ham/"
+        },
+        {
+          "lineId": "articulados",
+          "sku": "SL7055B",
+          "slug": "belt-squat",
+          "name": "BELT SQUAT",
+          "inCatalog": false,
+          "weightKg": 146,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1972,
+            1541,
+            1134
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/belt-squat/"
+        },
+        {
+          "lineId": "articulados",
+          "sku": "SL7023B",
+          "slug": "bicep-curl",
+          "name": "BICEP CURL",
+          "inCatalog": false,
+          "weightKg": 114,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1492,
+            1045,
+            1204
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/bicep-curl/"
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "cadeira-abdutora",
+          "name": "Cadeira Abdutora",
+          "inCatalog": false,
+          "weightKg": 158,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1745,
+            1566,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cadeira-abdutora/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "cadeira-adutora",
+          "name": "Cadeira Adutora",
+          "inCatalog": false,
+          "weightKg": 151,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1745,
+            1566,
+            1605
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cadeira-adutora/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "cadeira-extensora-2",
+          "name": "Cadeira Extensora",
+          "inCatalog": false,
+          "weightKg": 187,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1620,
+            1760,
+            1290
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cadeira-extensora-2/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": "SL7001B",
+          "slug": "chest-press-2",
+          "name": "CHEST PRESS",
+          "inCatalog": false,
+          "weightKg": 170.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1937,
+            1370,
+            1717
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/chest-press-2/"
+        },
+        {
+          "lineId": "articulados",
+          "sku": "SL7001",
+          "slug": "chest-press",
+          "name": "CHEST PRESS",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/chest-press/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "crossover",
+          "name": "Crossover",
+          "inCatalog": false,
+          "weightKg": 429,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1550,
+            1060,
+            2190
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/crossover/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "desenvolvimento-2",
+          "name": "Desenvolvimento",
+          "inCatalog": false,
+          "weightKg": 186,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1967,
+            1547,
+            1523
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/desenvolvimento-2/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": "ECP401",
+          "slug": "ecp-ab",
+          "name": "AB",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-ab/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "ecp-chest-decline-chest-press",
+          "name": "CHEST & DECLINE CHEST PRESS",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-chest-decline-chest-press/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "ecp-chest-press",
+          "name": "CHEST PRESS",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-chest-press/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "ecp-decline-pec-fly",
+          "name": "(DECLINE) PEC FLY",
+          "inCatalog": false,
+          "weightKg": 150,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            2198,
+            1612,
+            1125
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/ecp-decline-pec-fly/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "ecp-french-press",
+          "name": "FRENCH PRESS",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-french-press/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "elevacao-pelvica-guiada-2",
+          "name": "Elevação Pélvica Guiada",
+          "inCatalog": false,
+          "weightKg": 225,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            2070,
+            1802,
+            1590
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/elevacao-pelvica-guiada-2/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "elevacao-pelvica-guiada",
+          "name": "Elevação Pélvica Guiada",
+          "inCatalog": false,
+          "weightKg": 105,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1570,
+            1630,
+            970
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/elevacao-pelvica-guiada/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "elevacao-pelvica",
+          "name": "Elevação Pélvica",
+          "inCatalog": false,
+          "weightKg": 194,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1650,
+            2150,
+            1600
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/elevacao-pelvica/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "extensao-de-triceps",
+          "name": "Extensão de Tríceps",
+          "inCatalog": false,
+          "weightKg": 126,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1575,
+            1630,
+            1120
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/extensao-de-triceps/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "extensor-de-gluteo-dual-45",
+          "name": "Extensor de Glúteo Dual 45",
+          "inCatalog": false,
+          "weightKg": 176,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1712,
+            1392,
+            1450
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/extensor-de-gluteo-dual-45/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "flexora-em-pe",
+          "name": "Flexora em Pé",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1559,
+            2068,
+            1483
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/flexora-em-pe/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": "SL7038B",
+          "slug": "glute-trainer",
+          "name": "GLUTE TRAINER",
+          "inCatalog": false,
+          "weightKg": 114.7,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1620,
+            1610,
+            1110
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/glute-trainer/"
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "gluteo-pendulo",
+          "name": "Glúteo Pêndulo",
+          "inCatalog": false,
+          "weightKg": 152,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1825,
+            1550,
+            1480
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/gluteo-pendulo/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "graviton-2",
+          "name": "Graviton",
+          "inCatalog": false,
+          "weightKg": 210,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            2410,
+            2480,
+            2000
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/graviton-2/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": "ITF8402",
+          "slug": "itf-back-extension-bench-2",
+          "name": "BACK EXTENSION BENCH",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/itf-back-extension-bench-2/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": "ITF8402",
+          "slug": "itf-back-extension-bench",
+          "name": "BACK EXTENSION BENCH",
+          "inCatalog": false,
+          "weightKg": 65.9,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1797,
+            716,
+            1067
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-back-extension-bench/"
+        },
+        {
+          "lineId": "articulados",
+          "sku": "SL7051",
+          "slug": "sterling-assisted-nordic-ham",
+          "name": "ASSISTED NORDIC HAM",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/sterling-assisted-nordic-ham/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": "IFP1615",
+          "slug": "sterling-belt-squat",
+          "name": "BELT SQUAT",
+          "inCatalog": true,
+          "weightKg": 77.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1615,
+            1250,
+            1032
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-belt-squat/"
+        },
+        {
+          "lineId": "articulados",
+          "sku": "SL7023",
+          "slug": "sterling-bicep-curl",
+          "name": "BICEP CURL",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/sterling-bicep-curl/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "articulados",
+          "sku": "IFP1706",
+          "slug": "sterling-biceps-triceps",
+          "name": "BICEPS/TRICEPS",
+          "inCatalog": true,
+          "weightKg": 47.3,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1092,
+            708,
+            1287
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-biceps-triceps/"
+        },
+        {
+          "lineId": "articulados",
+          "sku": "IFP1501",
+          "slug": "sterling-seated-arm-curl",
+          "name": "ARM CURL",
+          "inCatalog": true,
+          "weightKg": 56,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1302,
+            707,
+            988
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-seated-arm-curl/"
+        },
+        {
+          "lineId": "articulados",
+          "sku": "IFP1613",
+          "slug": "sterling-vertical-leg-press",
+          "name": "VERTICAL LEG PRESS",
+          "inCatalog": true,
+          "weightKg": 110.4,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1655,
+            1214,
+            1711
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-vertical-leg-press/"
+        },
+        {
+          "lineId": "articulados",
+          "sku": null,
+          "slug": "voador-inclinado",
+          "name": "Voador Inclinado",
+          "inCatalog": false,
+          "weightKg": 198,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/voador-inclinado/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": "ECP401",
+          "slug": "ecp-ab",
+          "name": "AB",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-ab/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-chest-decline-chest-press",
+          "name": "CHEST & DECLINE CHEST PRESS",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-chest-decline-chest-press/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-chest-press",
+          "name": "CHEST PRESS",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-chest-press/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-decline-pec-fly",
+          "name": "(DECLINE) PEC FLY",
+          "inCatalog": false,
+          "weightKg": 150,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            2198,
+            1612,
+            1125
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/ecp-decline-pec-fly/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-french-press",
+          "name": "FRENCH PRESS",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-french-press/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-hack-articulated",
+          "name": "HACK ARTICULATED",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-hack-articulated/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-hack-squat-2",
+          "name": "HACK SQUAT",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-hack-squat-2/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-high-row",
+          "name": "HIGH ROW",
+          "inCatalog": false,
+          "weightKg": 210,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            2124,
+            1686,
+            2298
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/ecp-high-row/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": "ECP630",
+          "slug": "ecp-kneel-glute-extension",
+          "name": "KNEEL GLUTE EXTENSION",
+          "inCatalog": false,
+          "weightKg": 270,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2041,
+            1270,
+            1174
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/ecp-kneel-glute-extension/"
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-kneel-glute-kickback",
+          "name": "KNEEL GLUTE KICKBACK",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-kneel-glute-kickback/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-multi-lat-pull-down",
+          "name": "MULTI LAT PULL DOWN",
+          "inCatalog": false,
+          "weightKg": 210,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            1908,
+            1686,
+            2201
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/ecp-multi-lat-pull-down/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-multi-squat",
+          "name": "MULTI SQUAT",
+          "inCatalog": false,
+          "weightKg": 200,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            2391,
+            1395,
+            1484
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/ecp-multi-squat/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": "ECP604",
+          "slug": "ecp-prone-leg-curl-5",
+          "name": "PRONE LEG CURL",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-prone-leg-curl-5/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-pull-down",
+          "name": "PULL DOWN",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-pull-down/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-pullover-2",
+          "name": "PULLOVER",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-pullover-2/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-seated-biceps",
+          "name": "SEATED BICEPS",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-seated-biceps/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-seated-leg-extesion",
+          "name": "SEATED LEG EXTESION",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-seated-leg-extesion/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-seated-row-2",
+          "name": "SEATED ROW",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-seated-row-2/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-shoulder-press-6",
+          "name": "SHOULDER PRESS",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-shoulder-press-6/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-smith",
+          "name": "SMITH",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-smith/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ecp",
+          "sku": null,
+          "slug": "ecp-standing-lateral-raise-4",
+          "name": "STANDING LATERAL RAISE",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/ecp-standing-lateral-raise-4/",
+          "parseErrors": [
+            "sku_missing",
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1614",
+          "slug": "pelvic-elevation",
+          "name": "Pelvic elevation",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/pelvic-elevation/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1615",
+          "slug": "sterling-belt-squat",
+          "name": "BELT SQUAT",
+          "inCatalog": true,
+          "weightKg": 77.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1615,
+            1250,
+            1032
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-belt-squat/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1706",
+          "slug": "sterling-biceps-triceps",
+          "name": "BICEPS/TRICEPS",
+          "inCatalog": true,
+          "weightKg": 47.3,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1092,
+            708,
+            1287
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-biceps-triceps/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1711",
+          "slug": "sterling-hack-squat-leg-press",
+          "name": "HACK SQUAT/LEG PRESS",
+          "inCatalog": true,
+          "weightKg": 150.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2634,
+            1020,
+            1373
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-hack-squat-leg-press/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1617",
+          "slug": "sterling-hack-squat",
+          "name": "HACK SQUAT",
+          "inCatalog": true,
+          "weightKg": 100,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1982,
+            1485,
+            1318
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-hack-squat/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1301",
+          "slug": "sterling-lat-pulldown",
+          "name": "LAT PULLDOWN",
+          "inCatalog": true,
+          "weightKg": 95,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1703,
+            1339,
+            2047
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-lat-pulldown/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1707",
+          "slug": "sterling-leverage-squat-calf",
+          "name": "LEVERAGE SQUAT / CALF",
+          "inCatalog": true,
+          "weightKg": 115.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1490,
+            1445,
+            1550
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-leverage-squat-calf/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1604",
+          "slug": "sterling-prone-leg-curl",
+          "name": "PRONE LEG CURL",
+          "inCatalog": true,
+          "weightKg": 75.9,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1623,
+            1202,
+            798
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-prone-leg-curl/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1619",
+          "slug": "sterling-reverse-hyperextension",
+          "name": "REVERSE HYPEREXTENSION",
+          "inCatalog": true,
+          "weightKg": 63,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1310,
+            797,
+            1153
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-reverse-hyperextension/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1501",
+          "slug": "sterling-seated-arm-curl",
+          "name": "ARM CURL",
+          "inCatalog": true,
+          "weightKg": 56,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1302,
+            707,
+            988
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-seated-arm-curl/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1623",
+          "slug": "sterling-seated-calf-raise",
+          "name": "SEATED CALF RAISE",
+          "inCatalog": true,
+          "weightKg": 38.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1368,
+            566,
+            849
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-seated-calf-raise/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1201",
+          "slug": "sterling-seated-chest-press",
+          "name": "SEATED CHEST PRESS",
+          "inCatalog": true,
+          "weightKg": 64.2,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1276,
+            984,
+            1248
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-seated-chest-press/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1605",
+          "slug": "sterling-seated-leg-extension",
+          "name": "SEATED LEG EXTENSION",
+          "inCatalog": true,
+          "weightKg": 63.4,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1246,
+            1173,
+            995
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-seated-leg-extension/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1302",
+          "slug": "sterling-seated-row",
+          "name": "SEATED ROW",
+          "inCatalog": true,
+          "weightKg": 75,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1470,
+            1020,
+            1340
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-seated-row/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1101",
+          "slug": "sterling-seated-shoulder-press",
+          "name": "SEATED SHOULDER PRESS",
+          "inCatalog": true,
+          "weightKg": 87,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1579,
+            1520,
+            1069
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-seated-shoulder-press/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1206",
+          "slug": "sterling-standing-chest-fly",
+          "name": "STANDING CHEST FLY",
+          "inCatalog": true,
+          "weightKg": 70,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1515,
+            1310,
+            1491
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-standing-chest-fly/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1622",
+          "slug": "sterling-standing-hip-abductor",
+          "name": "STANDING HIP ABDUCTOR",
+          "inCatalog": true,
+          "weightKg": 83.9,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1720,
+            595,
+            1280
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-standing-hip-abductor/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1103",
+          "slug": "sterling-standing-lateral-raise",
+          "name": "STANDING LATERAL RAISE",
+          "inCatalog": true,
+          "weightKg": 57.3,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1165,
+            885,
+            1550
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-standing-lateral-raise/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1305",
+          "slug": "sterling-t-bar-row",
+          "name": "T – BAR ROW",
+          "inCatalog": true,
+          "weightKg": 23,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2079,
+            908,
+            635
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-t-bar-row/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1616",
+          "slug": "sterling-vertical-hip-thrust",
+          "name": "VERTICAL HIP THRUST",
+          "inCatalog": true,
+          "weightKg": 67.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1220,
+            1098,
+            1165
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-vertical-hip-thrust/"
+        },
+        {
+          "lineId": "linha-ifp",
+          "sku": "IFP1613",
+          "slug": "sterling-vertical-leg-press",
+          "name": "VERTICAL LEG PRESS",
+          "inCatalog": true,
+          "weightKg": 110.4,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1655,
+            1214,
+            1711
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-vertical-leg-press/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7036B",
+          "slug": "ab-crunch",
+          "name": "AB Crunch",
+          "inCatalog": false,
+          "weightKg": 132,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1623,
+            1267,
+            1642
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/ab-crunch/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7018B",
+          "slug": "arm-curl-2",
+          "name": "ARM CURL",
+          "inCatalog": false,
+          "weightKg": 70,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1136,
+            860,
+            1016
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/arm-curl-2/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7051B",
+          "slug": "assisted-nordic-ham",
+          "name": "ASSISTED NORDIC HAM",
+          "inCatalog": false,
+          "weightKg": 101,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1648,
+            1323,
+            1684
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/assisted-nordic-ham/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7055B",
+          "slug": "belt-squat",
+          "name": "BELT SQUAT",
+          "inCatalog": false,
+          "weightKg": 146,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1972,
+            1541,
+            1134
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/belt-squat/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7023B",
+          "slug": "bicep-curl",
+          "name": "BICEP CURL",
+          "inCatalog": false,
+          "weightKg": 114,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1492,
+            1045,
+            1204
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/bicep-curl/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7001B",
+          "slug": "chest-press-2",
+          "name": "CHEST PRESS",
+          "inCatalog": false,
+          "weightKg": 170.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1937,
+            1370,
+            1717
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/chest-press-2/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7038B",
+          "slug": "glute-trainer",
+          "name": "GLUTE TRAINER",
+          "inCatalog": false,
+          "weightKg": 114.7,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1620,
+            1610,
+            1110
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/glute-trainer/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7021B",
+          "slug": "hack-squat",
+          "name": "HACK SQUAT",
+          "inCatalog": false,
+          "weightKg": 235.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2205,
+            1880,
+            1285
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/hack-squat/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7005B",
+          "slug": "incline-press-2",
+          "name": "INCLINE PRESS",
+          "inCatalog": false,
+          "weightKg": 184,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1900,
+            1523,
+            1779
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/incline-press-2/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7025B",
+          "slug": "leg-extension",
+          "name": "LEG EXTENSION",
+          "inCatalog": false,
+          "weightKg": 130.9,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1270,
+            1690,
+            1005
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/leg-extension/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7006B",
+          "slug": "leg-press-2",
+          "name": "LEG PRESS",
+          "inCatalog": false,
+          "weightKg": 195,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2226,
+            1421,
+            1415
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/leg-press-2/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7004B",
+          "slug": "low-row",
+          "name": "LOW ROW",
+          "inCatalog": false,
+          "weightKg": 170,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1761,
+            1458,
+            1650
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/low-row/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7057B",
+          "slug": "pendulum-squat",
+          "name": "PENDULUM SQUAT",
+          "inCatalog": false,
+          "weightKg": 250,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2252,
+            1314,
+            1675
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/pendulum-squat/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7002B",
+          "slug": "pulldown",
+          "name": "PULLDOWN",
+          "inCatalog": false,
+          "weightKg": 169,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1482,
+            1489,
+            1967
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/pulldown/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7008B",
+          "slug": "rear-kick-2",
+          "name": "REAR KICK",
+          "inCatalog": false,
+          "weightKg": 144,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1680,
+            1229,
+            1636
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/rear-kick-2/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7020B",
+          "slug": "reverse-leg-press-2",
+          "name": "REVERSE LEG PRESS",
+          "inCatalog": false,
+          "weightKg": 249,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2499,
+            1879,
+            1544
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/reverse-leg-press-2/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7007B",
+          "slug": "row-3",
+          "name": "ROW",
+          "inCatalog": false,
+          "weightKg": 160,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1815,
+            1500,
+            1334
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/row-3/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7017B",
+          "slug": "seated-calf-raise-2",
+          "name": "SEATED CALF RAISE",
+          "inCatalog": false,
+          "weightKg": 56,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1475,
+            765,
+            845
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/seated-calf-raise-2/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7003B",
+          "slug": "shoulder-press",
+          "name": "SHOULDER PRESS",
+          "inCatalog": false,
+          "weightKg": 171.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1558,
+            1818,
+            1487
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/shoulder-press/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7040B",
+          "slug": "squat-lunge",
+          "name": "SQUAT LUNGE",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1700,
+            1670,
+            640
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/squat-lunge/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7034B",
+          "slug": "squat-standing-calf-raise",
+          "name": "SQUAT/ STANDING CALF RAISE",
+          "inCatalog": false,
+          "weightKg": 212,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2260,
+            1260,
+            1800
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/squat-standing-calf-raise/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7032B",
+          "slug": "standing-calf-raise",
+          "name": "STANDING CALF RAISE",
+          "inCatalog": false,
+          "weightKg": 146.2,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1615,
+            1375,
+            1730
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/standing-calf-raise/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7026B",
+          "slug": "standing-leg-curl",
+          "name": "STANDING LEG CURL",
+          "inCatalog": false,
+          "weightKg": 141.1,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1430,
+            1045,
+            1200
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/standing-leg-curl/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7019B",
+          "slug": "sterling-incline-row",
+          "name": "INCLINE ROW",
+          "inCatalog": false,
+          "weightKg": 89,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1960,
+            1020,
+            1253
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-incline-row/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7046B",
+          "slug": "sterling-lateral-super-chest-press",
+          "name": "LATERAL SUPER CHEST PRESS",
+          "inCatalog": false,
+          "weightKg": 147.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2502,
+            2179,
+            1136
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/sterling-lateral-super-chest-press/"
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7022B",
+          "slug": "sterling-utility-bench",
+          "name": "UTILITY BENCH",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/sterling-utility-bench/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "linha-sl",
+          "sku": "SL7024B",
+          "slug": "tricep-dip",
+          "name": "TRICEP DIP",
+          "inCatalog": false,
+          "weightKg": 166.3,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1733,
+            1580,
+            1202
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/tricep-dip/"
+        }
+      ]
+    },
+    "bancos": {
+      "label": "Bancos e Racks",
+      "summary": {
+        "lines": 1,
+        "pagesFetched": 2,
+        "productsScraped": 18,
+        "uniqueSkus": 17,
+        "inCatalog": 1,
+        "gaps": 17,
+        "coveragePct": 6,
+        "withWeightKg": 8,
+        "withStackKg": 0,
+        "withDimensions": 15,
+        "withStackLbsMapped": 0
+      },
+      "lines": [
+        {
+          "id": "bancos-e-racks",
+          "label": "Bancos e Racks",
+          "url": "https://www.konnenfitness.com.br/categoria-produto/bancos-e-racks/",
+          "pages": 2,
+          "site": 17,
+          "inCatalog": 1,
+          "gaps": 16,
+          "coveragePct": 6,
+          "gapSkus": [
+            "ITF8101",
+            "ITF8201",
+            "ITF8202",
+            "ITF8203",
+            "ITF8204",
+            "ITF8301",
+            "ITF8401",
+            "ITF8404",
+            "ITF8406",
+            "ITF8501",
+            "ITF8601",
+            "ITF8701",
+            "ITF8721",
+            "ITF8801",
+            "ITF8802",
+            "SL7022B"
+          ]
+        }
+      ],
+      "products": [
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8201",
+          "slug": "itf-3-way-olympic-bench",
+          "name": "3-WAY OLYMPIC BENCH",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2401,
+            1719,
+            1558
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-3-way-olympic-bench/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8401",
+          "slug": "itf-adjustable-ab-bench",
+          "name": "ADJUSTABLE AB BENCH",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1722,
+            735,
+            898
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-adjustable-ab-bench/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8802",
+          "slug": "itf-fi-bench",
+          "name": "FI-BENCH",
+          "inCatalog": false,
+          "weightKg": 43.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1436,
+            699,
+            430
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-fi-bench/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8801",
+          "slug": "itf-flat-bench",
+          "name": "FLAT BENCH",
+          "inCatalog": false,
+          "weightKg": 24.8,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1339,
+            673,
+            430
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-flat-bench/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8406",
+          "slug": "itf-glute-ham-bench",
+          "name": "GLUTE & HAM BENCH",
+          "inCatalog": false,
+          "weightKg": 82.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1299,
+            969,
+            1281
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-glute-ham-bench/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8701",
+          "slug": "itf-knee-raise",
+          "name": "KNEE RAISE",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1199,
+            787,
+            1511
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-knee-raise/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8202",
+          "slug": "itf-olympic-flat-bench",
+          "name": "OLYMPIC FLAT BENCH",
+          "inCatalog": false,
+          "weightKg": 70.4,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1718,
+            1703,
+            1254
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-olympic-flat-bench/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8203",
+          "slug": "itf-olympic-incline-bench-2",
+          "name": "OLYMPIC INCLINE BENCH",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1718,
+            2156,
+            1254
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-olympic-incline-bench-2/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8204",
+          "slug": "itf-olympic-incline-bench",
+          "name": "OLYMPIC INCLINE BENCH",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1718,
+            1822,
+            1450
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-olympic-incline-bench/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8404",
+          "slug": "itf-roman-bench",
+          "name": "ROMAN BENCH",
+          "inCatalog": false,
+          "weightKg": 35.8,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1182,
+            657,
+            692
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-roman-bench/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8301",
+          "slug": "itf-seal-row-bench",
+          "name": "SEAL ROW BENCH",
+          "inCatalog": false,
+          "weightKg": 61.7,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1328,
+            1275,
+            973
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-seal-row-bench/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8501",
+          "slug": "itf-seated-arm-curl-benc",
+          "name": "SEATED ARM CURL BENC",
+          "inCatalog": false,
+          "weightKg": 38.7,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1045,
+            816,
+            879
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-seated-arm-curl-benc/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8601",
+          "slug": "itf-squat-rack",
+          "name": "Squat rack",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1776,
+            1722,
+            1890
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-squat-rack/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8101",
+          "slug": "itf-vertical-smith-2",
+          "name": "OLYMPIC SHOULDER BENCH",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1717,
+            1307,
+            1
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/itf-vertical-smith-2/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "ITF8721",
+          "slug": "itf-vertical-smith",
+          "name": "VERTICAL SMITH",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/itf-vertical-smith/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": null,
+          "slug": "plate-rack",
+          "name": "PLATE RACK",
+          "inCatalog": false,
+          "weightKg": 32,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": [
+            961,
+            716,
+            1212
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/plate-rack/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "SL7022B",
+          "slug": "sterling-utility-bench",
+          "name": "UTILITY BENCH",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/sterling-utility-bench/"
+        },
+        {
+          "lineId": "bancos-e-racks",
+          "sku": "IFP1613",
+          "slug": "sterling-vertical-leg-press",
+          "name": "",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/sterling-vertical-leg-press/"
+        }
+      ]
+    },
+    "cardio": {
+      "label": "Cardio",
+      "summary": {
+        "lines": 1,
+        "pagesFetched": 3,
+        "productsScraped": 29,
+        "uniqueSkus": 23,
+        "inCatalog": 11,
+        "gaps": 18,
+        "coveragePct": 38,
+        "withWeightKg": 11,
+        "withStackKg": 0,
+        "withDimensions": 19,
+        "withStackLbsMapped": 0
+      },
+      "lines": [
+        {
+          "id": "cardio",
+          "label": "Cardio",
+          "url": "https://www.konnenfitness.com.br/categoria-produto/cardio/",
+          "pages": 3,
+          "site": 23,
+          "inCatalog": 11,
+          "gaps": 12,
+          "coveragePct": 48,
+          "gapSkus": [
+            "E12",
+            "E12T",
+            "E8",
+            "E8T",
+            "HB007",
+            "HR007",
+            "HSP-PRO",
+            "K-RUN",
+            "R7",
+            "U7",
+            "XSC500",
+            "XSC750"
+          ]
+        }
+      ],
+      "products": [
+        {
+          "lineId": "cardio",
+          "sku": null,
+          "slug": "bike-ergometrica-horizontal",
+          "name": "Bike Ergométrica Horizontal",
+          "inCatalog": false,
+          "weightKg": 88.6,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/bike-ergometrica-horizontal/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "cardio",
+          "sku": "HB007",
+          "slug": "cardio-air-bike",
+          "name": "AIR BIKE",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/cardio-air-bike/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "cardio",
+          "sku": "HSP-PRO",
+          "slug": "cardio-air-resistence-dual-arm",
+          "name": "AIR RESISTENCE DUAL ARM",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2500,
+            1100,
+            2400
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-air-resistence-dual-arm/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "HR007",
+          "slug": "cardio-arc-runner",
+          "name": "Arc Runner",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1830,
+            850,
+            1691
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-arc-runner/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "R7",
+          "slug": "cardio-bicicleta-ergometrica-r7",
+          "name": "BICICLETA ERGOMÉTRICA R7",
+          "inCatalog": false,
+          "weightKg": 83.2,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1670,
+            634,
+            1326
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-bicicleta-ergometrica-r7/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "U7",
+          "slug": "cardio-bicicleta-ergometrica-u7",
+          "name": "BICICLETA ERGOMÉTRICA U7",
+          "inCatalog": false,
+          "weightKg": 67.4,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1132,
+            628,
+            1478
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-bicicleta-ergometrica-u7/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": null,
+          "slug": "cardio-bike-ergometrica-vertical",
+          "name": "Bike Ergométrica Vertical",
+          "inCatalog": false,
+          "weightKg": 67.5,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/cardio-bike-ergometrica-vertical/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "cardio",
+          "sku": "ECE5",
+          "slug": "cardio-ece5",
+          "name": "ECE5",
+          "inCatalog": true,
+          "weightKg": 162.2,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1849,
+            812,
+            1800
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-ece5/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": null,
+          "slug": "cardio-elipitico",
+          "name": "Elípitico",
+          "inCatalog": false,
+          "weightKg": 118,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/cardio-elipitico/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "cardio",
+          "sku": "RE500",
+          "slug": "cardio-elliptical-re500",
+          "name": "Elliptical RE500",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2180,
+            742,
+            1610
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-elliptical-re500/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "AC800",
+          "slug": "cardio-esteira-ac800",
+          "name": "ESTEIRA AC800",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2126,
+            933,
+            1598
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-ac800/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "E12",
+          "slug": "cardio-esteira-e12",
+          "name": "ESTEIRA E12",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2210,
+            1030,
+            1680
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-e12/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "E12T",
+          "slug": "cardio-esteira-e12t",
+          "name": "ESTEIRA E12T",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2210,
+            1030,
+            1680
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-e12t/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "E8",
+          "slug": "cardio-esteira-e8",
+          "name": "ESTEIRA E8",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2090,
+            876,
+            1625
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-e8/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "E8T",
+          "slug": "cardio-esteira-e8t",
+          "name": "ESTEIRA E8T",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2090,
+            876,
+            1625
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-e8t/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "K-RUN",
+          "slug": "cardio-esteira-k",
+          "name": "ESTEIRA K-RUN",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2048,
+            955,
+            1545
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-k/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": null,
+          "slug": "cardio-esteira-profissional-com-tela",
+          "name": "Esteira Profissional com Tela AC850",
+          "inCatalog": false,
+          "weightKg": 206.4,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-profissional-com-tela/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "cardio",
+          "sku": "V9",
+          "slug": "cardio-esteira-v9",
+          "name": "ESTEIRA V9",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2083,
+            951,
+            1649
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-v9/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "V9T",
+          "slug": "cardio-esteira-v9t",
+          "name": "ESTEIRA V9T+",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-v9t/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        },
+        {
+          "lineId": "cardio",
+          "sku": "HB005",
+          "slug": "cardio-hb005-air-bike",
+          "name": "HB005 -AIR BIKE",
+          "inCatalog": true,
+          "weightKg": 80,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1272,
+            648,
+            1340
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-hb005-air-bike/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "HSR005",
+          "slug": "cardio-hsr005",
+          "name": "SIMULADOR DE REMO",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            2240,
+            365,
+            1060
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-hsr005/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "PS300",
+          "slug": "cardio-ps300-spinning",
+          "name": "PS300 – SPINNING",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1188,
+            528,
+            1170
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-ps300-spinning/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "PS460",
+          "slug": "cardio-ps460-spinning",
+          "name": "PS460 – SPINNING",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1317,
+            604,
+            1057
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-ps460-spinning/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": null,
+          "slug": "cardio-remo-sky-row-2",
+          "name": "Remo (Sky Row)",
+          "inCatalog": false,
+          "weightKg": 66.5,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/cardio-remo-sky-row-2/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "cardio",
+          "sku": "HSR007",
+          "slug": "cardio-remo-sky-row",
+          "name": "REMO – SKY ROW",
+          "inCatalog": true,
+          "weightKg": 66.5,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/cardio-remo-sky-row/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "XSC700",
+          "slug": "cardio-simluador-de-escada",
+          "name": "SIMULADOR DE ESCADA",
+          "inCatalog": true,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1408,
+            928,
+            2185
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-simluador-de-escada/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": null,
+          "slug": "cardio-simulador-de-escada-2",
+          "name": "Simulador de Escalada",
+          "inCatalog": false,
+          "weightKg": 92,
+          "stackWeightKg": null,
+          "stackLbs": "",
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/cardio-simulador-de-escada-2/",
+          "parseErrors": [
+            "sku_missing"
+          ]
+        },
+        {
+          "lineId": "cardio",
+          "sku": "XSC750",
+          "slug": "cardio-simulador-de-escada-com-tela",
+          "name": "SIMULADOR DE ESCADA COM TELA",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": [
+            1408,
+            928,
+            2185
+          ],
+          "url": "https://www.konnenfitness.com.br/produto/cardio-simulador-de-escada-com-tela/"
+        },
+        {
+          "lineId": "cardio",
+          "sku": "XSC500",
+          "slug": "cardio-stair-climber",
+          "name": "Stair Climber",
+          "inCatalog": false,
+          "weightKg": null,
+          "stackWeightKg": null,
+          "stackLbs": null,
+          "dimensionsMm": null,
+          "url": "https://www.konnenfitness.com.br/produto/cardio-stair-climber/",
+          "parseErrors": [
+            "specs_missing"
+          ]
+        }
+      ]
+    }
+  }
+}

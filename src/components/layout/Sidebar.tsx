@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { BrandLogo } from '@/components/BrandLogo';
 import { useLayout } from '@/components/layout/useLayout';
+import { useUserRole, type UserProfile } from '@/hooks/useUserRole';
 import { FAIR_APP_HOME } from '@/lib/fair-origins';
 
 const navItems = [

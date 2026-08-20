@@ -10,6 +10,9 @@ import {
   buildShipperProductCatalog,
   catalogEntriesByLine,
   catalogLineCounts,
+  catalogProductLines,
+  pruneAliasWeightPlates,
+  skuProductLine,
   parseBrDecimal,
   parseLegacyBoxDimension,
   searchShipperCatalog,
@@ -103,6 +106,7 @@ describe('linhas Buckler FM PF LD FW M2', () => {
     expect(catalog.get('GL-1002')!.weightKgPerUnit).toBe(213);
     expect(catalogEntriesByLine(catalog, 'M2')).toHaveLength(10);
     expect(catalogEntriesByLine(catalog, 'FW')[0]?.sku).toBe('FW-2025');
+    expect(catalogProductLines(catalog)).toEqual(['FM', 'PF', 'LD', 'FW', 'M2', 'GL']);
   });
 });
 
@@ -293,12 +297,14 @@ const konnenMergedCatalog = buildShipperProductCatalog(
 );
 
 describe('buildShipperProductCatalog — fixture Konnen merged (todas linhas)', () => {
-  it('455 SKUs únicos', () => {
-    expect(konnenMergedCatalog.size).toBe(455);
+  it('472 SKUs únicos (stack WS composto na cotação)', () => {
+    expect(konnenMergedCatalog.size).toBe(472);
     expect(konnenMergedCatalog.has('TN01')).toBe(true);
     expect(konnenMergedCatalog.has('AC2990')).toBe(true);
     expect(konnenMergedCatalog.has('FE9701')).toBe(true);
-    expect(konnenMergedCatalog.has('IT95WS-160')).toBe(true);
+    expect(konnenMergedCatalog.has('IF9302')).toBe(true);
+    expect(konnenMergedCatalog.get('IF9302')?.boxesTotal).toBe(3);
+    expect(konnenMergedCatalog.has('IF93WS-295')).toBe(true);
     expect(konnenMergedCatalog.has('IF1560')).toBe(true);
     expect(konnenMergedCatalog.has('IFP1101')).toBe(true);
     expect(konnenMergedCatalog.has('RKC01UDB-002')).toBe(true);
@@ -313,5 +319,28 @@ describe('buildShipperProductCatalog — fixture Konnen merged (todas linhas)', 
   it('soma grupos ≈ peso bruto (amostra)', () => {
     const failed = validateCatalogWeights(konnenMergedCatalog).filter((c) => !c.ok);
     expect(failed.length).toBeLessThan(20);
+  });
+
+  it('cluster IMPULSE / XMASTER / ROCKIT; IT95WS some se FEWS já existe', () => {
+    expect(skuProductLine('AC2990')).toBe('IMPULSE');
+    expect(skuProductLine('IFP1617')).toBe('IMPULSE');
+    expect(skuProductLine('FEWS-160')).toBe('IMPULSE');
+    expect(skuProductLine('XMT-FCDB-2.5KG')).toBe('XMASTER');
+    expect(skuProductLine('RKC01UDB-002')).toBe('ROCKIT');
+    expect(skuProductLine('RKC01PUKB-004')).toBe('ROCKIT');
+    expect(skuProductLine('FM-1024D')).toBe('FM');
+
+    const pruned = pruneAliasWeightPlates(konnenMergedCatalog);
+    expect(pruned.has('FEWS-160')).toBe(true);
+    expect(pruned.has('IT95WS-160')).toBe(false);
+    expect(pruned.has('IT95WS-295')).toBe(false);
+    expect(pruned.size).toBe(konnenMergedCatalog.size - 4);
+
+    const counts = catalogLineCounts(pruned);
+    expect(catalogProductLines(pruned).slice(0, 3)).toEqual(['IMPULSE', 'XMASTER', 'ROCKIT']);
+    expect(counts.IMPULSE).toBeGreaterThan(200);
+    expect(counts.XMASTER).toBeGreaterThan(40);
+    expect(counts.ROCKIT).toBeGreaterThan(50);
+    expect(counts.OUTROS).toBeUndefined();
   });
 });

@@ -1,0 +1,62 @@
+[
+  {
+    "url": "prod",
+    "emissor": "SEMPARAR",
+    "http": 200,
+    "body": "{\"emissor\":\"SEMPARAR\",\"id\":null,\"idContrato\":null,\"nomeProprietario\":\"SILVIO ADRIANO\",\"numeroDocumentoProprietario\":null,\"placa\":\"QJL1771\",\"descricao\":\"IVECO CAT>1 ECTECTOR - CAT 03- 03 EIXOS ROD DUPLA\",\"quantidadeEixos\":3,\"tag\":\"0737371360\",\"status\":\"SUCESSO\",\"ativo\":true,\"descricaoCategoria\":null,\"idCategoria\":\"4\",\"mensagemErro\":null,\"rntrcProprietario\":null}"
+  },
+  {
+    "url": "prod",
+    "emissor": "CONECTCAR",
+    "http": 200,
+    "body": "{\"emissor\":\"CONECTCAR\",\"id\":null,\"idContrato\":null,\"nomeProprietario\":null,\"numeroDocumentoProprietario\":null,\"placa\":null,\"descricao\":\"Placa invalida\",\"quantidadeEixos\":0,\"tag\":null,\"status\":\"PLACA_INVALIDA\",\"ativo\":false,\"descricaoCategoria\":null,\"idCategoria\":null,\"mensagemErro\":null,\"rntrcProprietario\":null}"
+  },
+  {
+    "url": "prod",
+    "emissor": "VELOE",
+    "http": 200,
+    "body": "{\"emissor\":\"VELOE\",\"id\":null,\"idContrato\":null,\"nomeProprietario\":null,\"numeroDocumentoProprietario\":null,\"placa\":null,\"descricao\":null,\"quantidadeEixos\":0,\"tag\":null,\"status\":\"VEICULO_INVALIDO\",\"ativo\":false,\"descricaoCategoria\":null,\"idCategoria\":null,\"mensagemErro\":\"Placa não é cliente Veloe.\",\"rntrcProprietario\":null}"
+  },
+  {
+    "url": "prod",
+    "emissor": "MOVEMAIS",
+    "http": 200,
+    "body": "{\"emissor\":\"MOVEMAIS\",\"id\":null,\"idContrato\":null,\"nomeProprietario\":null,\"numeroDocumentoProprietario\":null,\"placa\":null,\"descricao\":null,\"quantidadeEixos\":0,\"tag\":null,\"status\":\"VEICULO_INVALIDO\",\"ativo\":false,\"descricaoCategoria\":null,\"idCategoria\":null,\"mensagemErro\":\"Falha, veiculo nao encontrado.\",\"rntrcProprietario\":null}"
+  },
+  {
+    "url": "prod",
+    "emissor": "REPOM",
+    "http": 200,
+    "body": "{\"emissor\":\"REPOM\",\"id\":null,\"idContrato\":null,\"nomeProprietario\":null,\"numeroDocumentoProprietario\":null,\"placa\":\"QJL1771\",\"descricao\":null,\"quantidadeEixos\":0,\"tag\":null,\"status\":\"VEICULO_INVALIDO\",\"ativo\":false,\"descricaoCategoria\":null,\"idCategoria\":null,\"mensagemErro\":\"Veículo não encontrado.\",\"rntrcProprietario\":null}"
+  },
+  {
+    "url": "hml",
+    "emissor": "SEMPARAR",
+    "http": 200,
+    "body": ""
+  },
+  {
+    "url": "hml",
+    "emissor": "CONECTCAR",
+    "http": 200,
+    "body": ""
+  },
+  {
+    "url": "hml",
+    "emissor": "VELOE",
+    "http": 200,
+    "body": ""
+  },
+  {
+    "url": "hml",
+    "emissor": "MOVEMAIS",
+    "http": 200,
+    "body": ""
+  },
+  {
+    "url": "hml",
+    "emissor": "REPOM",
+    "http": 200,
+    "body": ""
+  }
+]

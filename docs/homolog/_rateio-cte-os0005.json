@@ -1,0 +1,45 @@
+{
+  "os_number": "OS-2026-08-0005",
+  "quote_code": "COT-2026-08-0008",
+  "freight_total": 26000.0,
+  "destination_cep": "60340005",
+  "destination": "Fortaleza - CE",
+  "client_name": "ACADEMIA DUMBBELLS LTDA",
+  "sum_check": 26000.0,
+  "rule": "valor_prestacao = freight * (km_embarcador_destino / sum(kms)); last absorbs cents",
+  "legs": [
+    {
+      "role": "principal",
+      "shipper_id": "c4a8d3dd-2b6f-4b38-9103-ab8ac8090379",
+      "name": "KONNEN FITNESS",
+      "cnpj": "09447411000102",
+      "origin_cep": "88317100",
+      "origin_label": "Itajaí - SC",
+      "emit_cte_via": "cfn",
+      "km": 3782.8,
+      "valor_prestacao": 14638.88,
+      "share_pct": 56.3,
+      "nfe_docs": [],
+      "warning": null
+    },
+    {
+      "role": "additional",
+      "shipper_id": "253aad1b-b941-4db9-a7ed-05c43ac29352",
+      "name": "BUCKLER FIT",
+      "cnpj": "50982431000330",
+      "origin_cep": "09840000",
+      "origin_label": "São Bernardo do Campo - SP",
+      "emit_cte_via": "active",
+      "km": 2935.8,
+      "valor_prestacao": 11361.12,
+      "share_pct": 43.7,
+      "nfe_docs": [],
+      "warning": "emit_cte_via=active — CFN pode bloquear (shipper_not_routed_to_cfn)"
+    }
+  ],
+  "cte_cancelled_bug": "CT-es nº5/6 cancelados tinham R$ 26.000 cada só no KONNEN — rateio não rodou",
+  "blockers": [
+    "NFs sem nfe_key/validation_metadata — extrair chave DANFE/XML antes de emitir",
+    "BUCKLER FIT: emit_cte_via=active (precisa 'cfn' para emitir no Hub)"
+  ]
+}

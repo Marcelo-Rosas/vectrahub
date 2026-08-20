@@ -16,7 +16,6 @@ import {
   XCircle,
   Clock,
   Pencil,
-  ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,8 +30,6 @@ import { useUpdateOrder, type OrderWithOccurrences } from '@/hooks/useOrders';
 import { FiscalEmissionPipeline } from '@/components/modals/order-detail/FiscalEmissionPipeline';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-
-const EFRETE_FRETES_URL = 'https://sistema.efrete.com.br/Transportadoras/Fretes';
 
 interface CiotPanelProps {
   order: OrderWithOccurrences;
@@ -373,8 +370,8 @@ export function CiotPanel({
 
       <p className="text-sm rounded-md border border-muted bg-muted/30 p-3 text-muted-foreground">
         Passo <strong className="text-foreground">após VPO</strong>,{' '}
-        <strong className="text-foreground">antes do MDF-e</strong>. Número grava em{' '}
-        <code className="text-xs">orders.ciot_number</code> → Focus{' '}
+        <strong className="text-foreground">antes do MDF-e</strong>. CIOT e VPO usam a mesma chave
+        WebRouter/AILOG. Número grava em <code className="text-xs">orders.ciot_number</code> → Focus{' '}
         <code className="text-xs">modal_rodoviario.ciot[]</code> (SEFAZ 304). Frete CIOT ={' '}
         <code className="text-xs">carreteiro_real</code> (piso{' '}
         <code className="text-xs">carreteiro_antt</code>).
@@ -388,17 +385,9 @@ export function CiotPanel({
               <Shield className="w-4 h-4 text-primary" />
               Status do CIOT
             </span>
-            <Button variant="outline" size="sm" className="h-8 gap-1.5 shrink-0" asChild>
-              <a
-                href={EFRETE_FRETES_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Abrir portal e-FRETE (Fretes)"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Abrir e-FRETE
-              </a>
-            </Button>
+            {canManage && !ciotActive ? (
+              <span className="text-[11px] text-muted-foreground">AILOG / WebRouter</span>
+            ) : null}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -439,20 +428,10 @@ export function CiotPanel({
             <div className="space-y-2 rounded-md border border-dashed p-3">
               <Label htmlFor="manual-ciot" className="flex items-center gap-1.5 text-xs">
                 <Pencil className="w-3 h-3" />
-                Colar CIOT manual (portal e-FRETE)
+                Colar CIOT manual (contingência)
               </Label>
               <p className="text-xs text-muted-foreground">
-                Emita no portal →{' '}
-                <a
-                  href={EFRETE_FRETES_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline underline-offset-2 inline-flex items-center gap-0.5"
-                >
-                  sistema.efrete.com.br/Transportadoras/Fretes
-                  <ExternalLink className="w-3 h-3" />
-                </a>{' '}
-                e cole o número aqui.
+                Preferência: botão Gerar CIOT (AILOG). Se já emitiu fora, cole o número aqui.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Input
@@ -466,7 +445,7 @@ export function CiotPanel({
                   id="manual-ciot-cnpj"
                   className="font-mono max-w-[11rem]"
                   placeholder="CNPJ resp. (parceiro)"
-                  title="CNPJ de quem gerou o CIOT no e-FRETE. Vazio = Vectra."
+                  title="CNPJ responsável no MDF-e. Vazio = Vectra."
                   value={manualCiotCnpj}
                   onChange={(e) =>
                     setManualCiotCnpj(e.target.value.replace(/\D/g, '').slice(0, 14))
@@ -491,20 +470,10 @@ export function CiotPanel({
           {canManage && ciotActive && (
             <div className="space-y-2 rounded-md border border-dashed border-destructive/40 bg-destructive/5 p-3">
               <Label htmlFor="cancel-ciot-proto" className="text-xs">
-                Cancelado no portal e-FRETE? Marcar na OS (ex.: prot. C16000000728753)
+                Cancelado no AILOG? Marcar na OS
               </Label>
               <p className="text-xs text-muted-foreground">
-                Cancele em{' '}
-                <a
-                  href={EFRETE_FRETES_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline underline-offset-2 inline-flex items-center gap-0.5"
-                >
-                  e-FRETE Fretes
-                  <ExternalLink className="w-3 h-3" />
-                </a>{' '}
-                e informe o protocolo abaixo.
+                Após cancelar no WebRouter, informe o protocolo (opcional) e marque na OS.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Input

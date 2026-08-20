@@ -1,0 +1,48 @@
+{
+  "ingested_at": "2026-08-12T16:55:39.803065+00:00",
+  "orders": [
+    "OS-2026-08-0004",
+    "OS-2026-08-0005"
+  ],
+  "sources": {
+    "ciot_pdf": "C:\\\\Users\\\\marce\\\\Downloads\\\\520021362773 - Rogerio Barreto de Mello.pdf",
+    "damdfe_pdf": "C:\\\\Users\\\\marce\\\\Downloads\\\\DAMDFe 1552.pdf"
+  },
+  "ciot": {
+    "number": "520021362773",
+    "serie": "1871",
+    "status": "Aberto",
+    "tipo": "Carga Fracionada",
+    "contratante_cnpj": "50122476000173",
+    "contratante": "TRANSPORTADORA ITUCARGAS LTDA",
+    "embarcador_cnpj": "32156321000176",
+    "contratado_cpf": "05337892738",
+    "placa": "EFO7869",
+    "eixos": 3,
+    "origem": "Itu/SP",
+    "destino": "Mossoro/RN"
+  },
+  "partner_mdfe": {
+    "numero": 1552,
+    "chave": "35260850122476000173580010000015521000017715",
+    "emitente_cnpj": "50122476000173",
+    "uf_carreg": "SP",
+    "uf_descar": "RN",
+    "placa": "EFO7869",
+    "reboque": null,
+    "ciot": "520021362773",
+    "vpo": {
+      "pagador": "32156321000176",
+      "fornecedora": "04088208000165",
+      "emissor": "SEMPARAR",
+      "n_comprovante": "108158229"
+    },
+    "cte_chave": "35260850122476000173570010000059141000059146"
+  },
+  "replaced": {
+    "ciot": "520021175387",
+    "partner_mdfe": 517,
+    "idVpo": "53794902488385050991",
+    "fornecedora_old": "65697260000103"
+  }
+}

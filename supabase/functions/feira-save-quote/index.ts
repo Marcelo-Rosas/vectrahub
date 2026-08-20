@@ -23,6 +23,16 @@ type HubIn = {
   pricing_breakdown?: unknown;
 };
 
+type GateIn = {
+  modality?: 'lotacao' | 'fracionado';
+  freight_type_label?: 'Dedicado' | 'Fracionado';
+  vehicle_type_code?: string | null;
+  billable_weight_kg?: number;
+  alerts?: { level: string; code: string; message: string }[];
+  coverage_incomplete?: boolean;
+  mode_source?: 'auto' | 'manual';
+};
+
 type Body = {
   id?: string;
   destination?: string;
@@ -34,6 +44,7 @@ type Body = {
   client?: ClientIn;
   lines?: LineIn[];
   hub?: HubIn;
+  gate?: GateIn;
 };
 
 function num(value: unknown, fallback = 0): number {
@@ -234,6 +245,13 @@ Deno.serve(async (req) => {
     total_exibido: totalExibido,
     event_flag: company.event_flag,
     status: 'draft',
+    freight_modality: body.gate?.modality ?? null,
+    freight_type_label: body.gate?.freight_type_label ?? null,
+    vehicle_type_code: body.gate?.vehicle_type_code ?? null,
+    billable_weight_kg: body.gate?.billable_weight_kg ?? null,
+    gate_alerts: body.gate?.alerts ?? null,
+    coverage_incomplete: body.gate?.coverage_incomplete ?? false,
+    gate_mode_source: body.gate?.mode_source ?? null,
     pricing_breakdown: {
       seller_email: email,
       hub_toll: hubToll,

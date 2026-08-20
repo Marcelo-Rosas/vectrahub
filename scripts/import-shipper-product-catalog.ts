@@ -57,7 +57,7 @@ function loadCatalogRows(): ShipperCatalogRawRow[] {
   ) as ShipperCatalogRawRow[];
 }
 
-function boxRows(productId: string, entry: ShipperProductCatalogEntry) {
+function publicBoxRows(productId: string, entry: ShipperProductCatalogEntry) {
   return entry.boxTypes.map((b) => ({
     product_id: productId,
     box_type: b.boxType,
@@ -67,6 +67,19 @@ function boxRows(productId: string, entry: ShipperProductCatalogEntry) {
     boxes_per_unit: b.boxesPerUnit,
     group_weight_kg: b.groupWeightKg,
     volume_m3: b.volumeM3,
+  }));
+}
+
+function feiraBoxRows(
+  productId: string,
+  companyId: string,
+  sku: string,
+  entry: ShipperProductCatalogEntry
+) {
+  return publicBoxRows(productId, entry).map((row) => ({
+    ...row,
+    company_id: companyId,
+    sku,
   }));
 }
 
@@ -148,7 +161,7 @@ async function main() {
     await sr.from('shipper_product_boxes').delete().eq('product_id', product.id);
     const { error: bErr } = await sr
       .from('shipper_product_boxes')
-      .insert(boxRows(product.id, entry));
+      .insert(publicBoxRows(product.id, entry));
     if (bErr) throw new Error(`public ${entry.sku} boxes: ${bErr.message}`);
     upsertedPublic++;
 
@@ -172,7 +185,7 @@ async function main() {
     if (fpErr) throw new Error(`feira ${entry.sku}: ${fpErr.message}`);
 
     await feira.from('product_boxes').delete().eq('product_id', fp.id);
-    const boxes = boxRows(fp.id, entry);
+    const boxes = feiraBoxRows(fp.id, companyId, entry.sku, entry);
     const { error: fbErr } = await feira.from('product_boxes').insert(boxes);
     if (fbErr) throw new Error(`feira ${entry.sku} boxes: ${fbErr.message}`);
     upsertedFeira++;

@@ -1,0 +1,250 @@
+[
+  {
+    "lineId": "cardio",
+    "lineLabel": "Cardio",
+    "group": "cardio",
+    "profile": "full",
+    "url": "https://www.konnenfitness.com.br/produto/cardio-air-bike/",
+    "slug": "cardio-air-bike",
+    "name": "AIR BIKE",
+    "sku": "HB007",
+    "weightKg": null,
+    "stackWeightKg": null,
+    "stackLbs": null,
+    "dimensionsMm": null,
+    "descriptionText": "",
+    "parseErrors": [
+      "specs_missing"
+    ],
+    "inCatalog": false
+  },
+  {
+    "lineId": "cardio",
+    "lineLabel": "Cardio",
+    "group": "cardio",
+    "profile": "full",
+    "url": "https://www.konnenfitness.com.br/produto/cardio-air-resistence-dual-arm/",
+    "slug": "cardio-air-resistence-dual-arm",
+    "name": "AIR RESISTENCE DUAL ARM",
+    "sku": "HSP-PRO",
+    "weightKg": null,
+    "stackWeightKg": null,
+    "stackLbs": null,
+    "dimensionsMm": [
+      2500,
+      1100,
+      2400
+    ],
+    "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Medida: 2500 x 1100 x 2400 mm Peso da Máquina: 150 kg",
+    "parseErrors": [],
+    "inCatalog": false
+  },
+  {
+    "lineId": "cardio",
+    "lineLabel": "Cardio",
+    "group": "cardio",
+    "profile": "full",
+    "url": "https://www.konnenfitness.com.br/produto/cardio-arc-runner/",
+    "slug": "cardio-arc-runner",
+    "name": "Arc Runner",
+    "sku": "HR007",
+    "weightKg": null,
+    "stackWeightKg": null,
+    "stackLbs": null,
+    "dimensionsMm": [
+      1830,
+      850,
+      1691
+    ],
+    "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Tela: LCD de 8,6″ Motor : Não aplicável (movida a energia do usuário) Velocidade : Controlada pelo usuário (sem limite máximo) Declinação & Inclinação : Não especificado (esteira curva) Peso Usuário : Não especificado Área da lona : 1545 × 436 mm Programação : Início rápido, Intervalos (20/10, 10/20, Personalizado), Metas (Tempo, Distância, Calorias), Modo de frequência cardíaca Medida: 1830 × 850 × 1691 mm Peso da Máquina : Não especificado (Peso bruto e líquido a definir) Voltagem : Não requer eletricidade (Alimentação do console: 3 × Pilhas AA) Suporte integrado para garrafa de água",
+    "parseErrors": [],
+    "inCatalog": false
+  },
+  {
+    "lineId": "cardio",
+    "lineLabel": "Cardio",
+    "group": "cardio",
+    "profile": "full",
+    "url": "https://www.konnenfitness.com.br/produto/cardio-bicicleta-ergometrica-r7/",
+    "slug": "cardio-bicicleta-ergometrica-r7",
+    "name": "BICICLETA ERGOMÉTRICA R7",
+    "sku": "R7",
+    "weightKg": 83.2,
+    "stackWeightKg": null,
+    "stackLbs": null,
+    "dimensionsMm": [
+      1670,
+      634,
+      1326
+    ],
+    "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Peso Max do usuário: 150 kg Plataforma horizontal Assento com ajuste horizontal Programas padrão: 12 Programação: Velocidade, tempo, distância, caloria, frequência cardíaca, RPM etc. Tela: 6 janelas de LED + LED matriz de pontos Suporte: Tablet, telefone, porta-revistas, porta-copos e garrafa de água Sistema de som compatível com MP3 Monitor de frequência cardíaca Medida: 1670 x 634 x 1326mm Peso: 83,2kg",
+    "parseErrors": [],
+    "inCatalog": false
+  },
+  {
+    "lineId": "cardio",
+    "lineLabel": "Cardio",
+    "group": "cardio",
+    "profile": "full",
+    "url": "https://www.konnenfitness.com.br/produto/cardio-bicicleta-ergometrica-u7/",
+    "slug": "cardio-bicicleta-ergometrica-u7",
+    "name": "BICICLETA ERGOMÉTRICA U7",
+    "sku": "U7",
+    "weightKg": 67.4,
+    "stackWeightKg": null,
+    "stackLbs": null,
+    "dimensionsMm": [
+      1132,
+      628,
+      1478
+    ],
+    "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Peso Max do usuário: 150 kg Plataforma vertical Assento com ajuste vertical Programas padrão: 12 Programação: Velocidade, tempo, distância, caloria, frequência cardíaca, RPM etc. Tela: Display de led + led matriz de pontos Suporte: Tablet, telefone, porta-revistas, porta-copos e garrafa de água Sistema de som compatível com MP3 Monitor de frequência cardíaca Medida: 1132 x 628x 1478 mm Peso: 67,4 kg",
+    "parseErrors": [],
+    "inCatalog": false
+  },
+  {
+    "lineId": "cardio",
+    "lineLabel": "Cardio",
+    "group": "cardio",
+    "profile": "full",
+    "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-e12/",
+    "slug": "cardio-esteira-e12",
+    "name": "ESTEIRA E12",
+    "sku": "E12",
+    "weightKg": null,
+    "stackWeightKg": null,
+    "stackLbs": null,
+    "dimensionsMm": [
+      2210,
+      1030,
+      1680
+    ],
+    "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Informações: Motor: 7.0PHP (PEAK POWER) Velocidade: 0.8 – 25 km/h Declinação & Inclinação: -3% – 18% Peso Usuário: 180 Kg Área da lona: 1630 x 600 mm Programação: Velocidade, tempo, distância, caloria, frequência cardíaca, programa de corridas Medida: 2210 x 1030 x 1680 mm Lubrificação: Preventiva automática Peso da Máquina: 225 kg Voltagem: 220V Auto falantes Entrada: USB Ventilador Suporte: Tablet/Celular Carregador de celular por indução",
+    "parseErrors": [],
+    "inCatalog": false
+  },
+  {
+    "lineId": "cardio",
+    "lineLabel": "Cardio",
+    "group": "cardio",
+    "profile": "full",
+    "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-e12t/",
+    "slug": "cardio-esteira-e12t",
+    "name": "ESTEIRA E12T",
+    "sku": "E12T",
+    "weightKg": null,
+    "stackWeightKg": null,
+    "stackLbs": null,
+    "dimensionsMm": [
+      2210,
+      1030,
+      1680
+    ],
+    "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Informações: Tela: Mutimídia 27″ Touch Motor: 7.0PHP (PEAK POWER) Velocidade: 0.8 – 25 km/h Declinação & Inclinação: -3% – 18% Peso Usuário: 180 Kg Área da lona: 1630 x 600 mm Programação: Velocidade, tempo, distância, caloria, frequência cardíaca, programa de corridas Medida: 2210 x 1030 x 1680 mm Lubrificação: Preventiva automática Peso da Máquina: 225 kg Voltagem: 220V Auto falantes Entrada: USB Ventilador Suporte: Tablet/Celular Carregador de celular por indução",
+    "parseErrors": [],
+    "inCatalog": false
+  },
+  {
+    "lineId": "cardio",
+    "lineLabel": "Cardio",
+    "group": "cardio",
+    "profile": "full",
+    "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-e8/",
+    "slug": "cardio-esteira-e8",
+    "name": "ESTEIRA E8",
+    "sku": "E8",
+    "weightKg": null,
+    "stackWeightKg": null,
+    "stackLbs": null,
+    "dimensionsMm": [
+      2090,
+      876,
+      1625
+    ],
+    "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Tela: Display LED Motor: 4.5 PHP Velocidade: 0.8 – 25 Km/h Peso Máx. usuário : 180 kg Área de corrida: 1550 X 580 mm Entrada: USB Ventilador Medida: 2090 x 876 x 1625 mm Lubrificação: manual periódica Voltagem: 220v Inclinação: 0 – 18% Suporte: Tablet/Celular Carregador de celular por indução",
+    "parseErrors": [],
+    "inCatalog": false
+  },
+  {
+    "lineId": "cardio",
+    "lineLabel": "Cardio",
+    "group": "cardio",
+    "profile": "full",
+    "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-e8t/",
+    "slug": "cardio-esteira-e8t",
+    "name": "ESTEIRA E8T",
+    "sku": "E8T",
+    "weightKg": null,
+    "stackWeightKg": null,
+    "stackLbs": null,
+    "dimensionsMm": [
+      2090,
+      876,
+      1625
+    ],
+    "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Tela: multimídia 21,5″ Motor: 4.5 PHP Velocidade: 0.8 – 25 Km/h Peso Máx. usuário : 180 kg Área de corrida: 1550 X 580 mm Entrada: USB Ventilador Medida: 2090 x 876 x 1625 mm Lubrificação: manual periódica Voltagem: 220v Inclinação: 0 – 18% Suporte: Tablet/Celular Carregador de celular por indução",
+    "parseErrors": [],
+    "inCatalog": false
+  },
+  {
+    "lineId": "cardio",
+    "lineLabel": "Cardio",
+    "group": "cardio",
+    "profile": "full",
+    "url": "https://www.konnenfitness.com.br/produto/cardio-esteira-k/",
+    "slug": "cardio-esteira-k",
+    "name": "ESTEIRA K-RUN",
+    "sku": "K-RUN",
+    "weightKg": null,
+    "stackWeightKg": null,
+    "stackLbs": null,
+    "dimensionsMm": [
+      2048,
+      955,
+      1545
+    ],
+    "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Motor: 3.0 PHP Velocidade: 0.8 – 20 Km/h Peso Máx. usuário : 180 kg Área de corrida: 1550 X 580 mm Entrada: USB Ventilador Medida: 2048 x 955 x 1545 mm Lubrificação: manual periódica Voltagem: 220v Inclinação: 0 – 18% Suporte: Tablet/Celular",
+    "parseErrors": [],
+    "inCatalog": false
+  },
+  {
+    "lineId": "cardio",
+    "lineLabel": "Cardio",
+    "group": "cardio",
+    "profile": "full",
+    "url": "https://www.konnenfitness.com.br/produto/cardio-simulador-de-escada-com-tela/",
+    "slug": "cardio-simulador-de-escada-com-tela",
+    "name": "SIMULADOR DE ESCADA COM TELA",
+    "sku": "XSC750",
+    "weightKg": null,
+    "stackWeightKg": null,
+    "stackLbs": null,
+    "dimensionsMm": [
+      1408,
+      928,
+      2185
+    ],
+    "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Tela: TFT 15,6″ Medida: 1408 x 928 x 2185mm Peso max. do usuário: 180kg Sistema de resistência: Plugin magnético Níveis de resistência: 20 Medida: 1421 x 928 x 2248mm Medida do degrau: 559 x 254 x 202 mm Faixa de velocidade: 24-176 passos/min Voltagem: 100-240V Programação: Tempo, passos, calorias, velocidade, frequência cardíaca Apoio para celular com carregamento por indução Porta copos, revistas, celular Apoio para celular com carregamento por indução http://www.konnenfitness.com.br/wp-content/uploads/2025/06/2987bd7a.mp4",
+    "parseErrors": [],
+    "inCatalog": false
+  },
+  {
+    "lineId": "cardio",
+    "lineLabel": "Cardio",
+    "group": "cardio",
+    "profile": "full",
+    "url": "https://www.konnenfitness.com.br/produto/cardio-stair-climber/",
+    "slug": "cardio-stair-climber",
+    "name": "Stair Climber",
+    "sku": "XSC500",
+    "weightKg": null,
+    "stackWeightKg": null,
+    "stackLbs": null,
+    "dimensionsMm": null,
+    "descriptionText": "",
+    "parseErrors": [
+      "specs_missing"
+    ],
+    "inCatalog": false
+  }
+]

@@ -1,0 +1,205 @@
+{
+  "researchedAt": "2026-08-19T19:40:00.000Z",
+  "summary": {
+    "finding": "Packing carton (caixa A/B/C mm) NÃO publicado na web para LCS, Torq (AM) e Encore (VX). Impulse OEM publica só medida montada + peso. IT95/VX95 tem gross weight mas sem Package Size. Booty Builder (OEM bootybuilder.com) tem shipping dimensions confirmadas para V8 hip thrust e Multi-Angle Glute Press.",
+    "actionRequired": "Solicitar packing list Ploomes/Konnen para LCS/Torq/Encore. Booty: usar shipping dims abaixo como proxy até packing por SKU."
+  },
+  "lines": {
+    "linha-lcs": {
+      "label": "Linha LCS",
+      "oem": "Impulse Health Tech (LCS series)",
+      "packingPublic": false,
+      "source": "https://www.impulsehealthtech.com/lcs-series/",
+      "note": "Série belt-driven. Konnen site scrape tem dims erradas em LCS601 (763×250×576). Usar Impulse OEM.",
+      "products": [
+        {
+          "sku": "LCS101",
+          "name": "SHOULDER PRESS",
+          "productDimMm": [1760, 1737, 1489],
+          "productWeightKg": 260.2,
+          "packing": null,
+          "source": "impulsehealthtech.com/lcs101-shoulder-press-product"
+        },
+        {
+          "sku": "LCS201",
+          "name": "CHEST PRESS",
+          "productDimMm": [1671, 1719, 1770],
+          "productWeightKg": 237,
+          "packing": null,
+          "source": "impulsehealthtech.com/lcs201-chest-press-product"
+        },
+        {
+          "sku": "LCS402",
+          "name": "45° HIP EXTENSION / GLUTE EXTENSION",
+          "productDimMm": [1706, 1290, 1487],
+          "productWeightKg": 236.9,
+          "packing": null,
+          "source": "impulsehealthtech.com/lcs402"
+        },
+        {
+          "sku": "LCS601",
+          "name": "LEG PRESS & HACK SQUAT",
+          "productDimMm": [2121, 1351, 1487],
+          "productWeightKg": 314.9,
+          "packing": null,
+          "source": "impulsehealthtech.com/lcs601-leg-press-hack-squat-product",
+          "konnenSiteDimWrong": [763, 250, 576]
+        },
+        {
+          "sku": "LCS608",
+          "name": "3D ABDUCTOR",
+          "productDimMm": [1800, 1394, 1487],
+          "productWeightKg": 296.3,
+          "packing": null,
+          "source": "impulsehealthtech.com/lcs-series (LSC608 typo on site)"
+        },
+        {
+          "sku": "LCS630",
+          "name": "KNEEL HIP THRUST",
+          "productDimMm": [1657, 1208, 1487],
+          "productWeightKg": 188.5,
+          "packing": null,
+          "source": "impulsehealthtech.com/lcs630"
+        },
+        {
+          "sku": "LCS705",
+          "name": "LEG EXTENSION & CURL",
+          "productDimMm": [1124, 1340, 1489],
+          "productWeightKg": 182,
+          "packing": null,
+          "source": "impulsehealthtech.com/lcs705-leg-extension-curl-product"
+        }
+      ]
+    },
+    "linha-torq": {
+      "label": "Linha Torq",
+      "oem": "Konnen nacional (AM8xxx) — sem ficha Impulse pública",
+      "packingPublic": false,
+      "source": "https://www.konnenfitness.com.br/produtos/linha-torq",
+      "note": "Stack 80/100/120 kg (sem map WS no catálogo). Dims do scrape site Konnen audit 2026-08-19.",
+      "products": [
+        { "sku": "AM8001", "name": "Supino Vertical", "productDimMm": [1475, 1450, 1605], "productWeightKg": 206, "stackKg": 100, "packing": null },
+        { "sku": "AM8004", "name": "Remada Vertical", "productDimMm": [1589, 930, 1605], "productWeightKg": 210, "stackKg": 80, "packing": null },
+        { "sku": "AM8006", "name": "Bíceps Scott", "productDimMm": [1230, 959, 1605], "productWeightKg": 208, "stackKg": 80, "packing": null },
+        { "sku": "AM8007", "name": "Tríceps Paralela", "productDimMm": [1481, 1160, 1605], "productWeightKg": 204, "stackKg": 80, "packing": null },
+        { "sku": "AM8008", "name": "Graviton", "productDimMm": [1420, 1330, 2433], "productWeightKg": 266, "stackKg": null, "packing": null },
+        { "sku": "AM8009", "name": "Lombar", "productDimMm": [1330, 1030, 1605], "productWeightKg": 183, "stackKg": 80, "packing": null },
+        { "sku": "AM8010", "name": "Abdominal", "productDimMm": [1410, 960, 1605], "productWeightKg": 212, "stackKg": 80, "packing": null },
+        { "sku": "AM8013", "name": "Cadeira Flexora", "productDimMm": [1436, 1046, 1605], "productWeightKg": 212, "stackKg": 100, "packing": null },
+        { "sku": "AM8014", "name": "Cadeira Extensora", "productDimMm": [1436, 1046, 1605], "productWeightKg": 275, "stackKg": 120, "packing": null },
+        { "sku": "AM8015", "name": "Leg Press Horizontal", "productDimMm": [1980, 1034, 1605], "productWeightKg": 275, "stackKg": 120, "packing": null },
+        { "sku": "AM8017", "name": "Panturrilha Sentada", "productDimMm": [1589, 1132, 1605], "productWeightKg": 203, "stackKg": 80, "packing": null },
+        { "sku": "AM8018", "name": "Adutora", "productDimMm": [1635, 820, 1605], "productWeightKg": 199, "stackKg": 100, "packing": null },
+        { "sku": "AM8019", "name": "Abdutora", "productDimMm": [1635, 820, 1605], "productWeightKg": 197, "stackKg": 100, "packing": null }
+      ]
+    },
+    "linha-new-encore": {
+      "label": "Linha New Encore (VX95)",
+      "oem": "Impulse IT95 series (VX9501 = IT9501 rebrand)",
+      "packingPublic": false,
+      "referenceWithCartons": "IF93 publica 4 caixas (1465×815×210 etc) — IT95/VX95 NÃO publica Package Size",
+      "source": "https://www.impulsehealthtech.com/chest-press-3-product/",
+      "products": [
+        { "sku": "VX9501", "itAlias": "IT9501", "name": "CHEST PRESS", "productDimMm": [1475, 1200, 1506], "netKg": 127.4, "grossKg": 150.2, "stackLbs": "160/200/235/295", "packing": null },
+        { "sku": "VX9502", "itAlias": "IT9502", "name": "LAT PULLDOWN", "productDimMm": [1440, 1384, 1889], "netKg": 147.7, "grossKg": null, "packing": null },
+        { "sku": "VX9503", "itAlias": "IT9503", "name": "ARM CURL", "productDimMm": [1310, 1214, 1506], "netKg": 115.5, "grossKg": null, "packing": null },
+        { "sku": "VX9504", "itAlias": "IT9504", "name": "PECTORAL", "productDimMm": [1500, 1460, 1506], "netKg": 145.2, "grossKg": null, "packing": null },
+        { "sku": "VX9505", "itAlias": "IT9505", "name": "LEG EXTENSION", "productDimMm": [1575, 1189, 1506], "netKg": 133.1, "grossKg": null, "packing": null },
+        { "sku": "VX9506", "itAlias": "IT9506", "name": "SEATED LEG CURL", "productDimMm": [1536, 1187, 1489], "netKg": 149.6, "grossKg": null, "packing": null },
+        { "sku": "VX9508", "itAlias": "IT9508", "name": "ABDUCTOR / ADDUCTOR", "productDimMm": [1696, 1560, 1506], "netKg": 131.1, "grossKg": null, "packing": null },
+        { "sku": "VX9510", "itAlias": "IT9510", "name": "LEG PRESS", "productDimMm": [1850, 1150, 1506], "netKg": 211.3, "grossKg": 244, "packing": null },
+        { "sku": "VX9512", "itAlias": "IT9512", "name": "SHOULDER PRESS", "productDimMm": [1565, 1450, 1506], "netKg": 137.4, "grossKg": null, "packing": null },
+        { "sku": "VX9514", "itAlias": "IT9514", "name": "ABDOMINAL", "productDimMm": [1348, 1168, 1581], "netKg": 116.2, "grossKg": 138.6, "packing": null },
+        { "sku": "VX9515", "itAlias": "IT9515", "name": "PEC FLY / REAR DELT", "productDimMm": [1302, 1275, 2048], "netKg": 132, "grossKg": null, "packing": null },
+        { "sku": "VX9516", "itAlias": "IT9516", "name": "CALF RAISE", "productDimMm": [1289, 1158, 1715], "netKg": 120.2, "grossKg": null, "packing": null },
+        { "sku": "VX9517", "itAlias": "IT9517", "name": "SEATED DIP", "productDimMm": [1794, 1260, 1506], "netKg": 142.5, "grossKg": null, "packing": null },
+        { "sku": "VX9518", "itAlias": "IT9518", "name": "TORSO ROTATION", "productDimMm": [1221, 1202, 1506], "netKg": 150.8, "grossKg": null, "packing": null },
+        { "sku": "VX9519", "itAlias": "IT9519", "name": "VERTICAL ROW", "productDimMm": [1617, 1264, 1508], "netKg": 126.5, "grossKg": null, "packing": null },
+        { "sku": "VX9520", "itAlias": "IT9520", "name": "WEIGHT ASSISTED CHIN/DIP", "productDimMm": [1573, 1315, 2286], "netKg": 171, "grossKg": null, "packing": null },
+        { "sku": "VX9521", "itAlias": "IT9521", "name": "PRONE LEG CURL", "productDimMm": [1443, 1146, 1506], "netKg": 131.5, "grossKg": null, "packing": null },
+        { "sku": "VX9522", "itAlias": "IT9522", "name": "LAT PULLDOWN/VERTICAL ROW", "productDimMm": [1900, 900, 2230], "netKg": 120, "grossKg": null, "packing": null },
+        { "sku": "VX9524", "itAlias": "IT9524", "name": "LATERAL RAISE", "productDimMm": [1222, 1213, 1506], "netKg": 117.5, "grossKg": null, "packing": null },
+        { "sku": "VX9528", "itAlias": "IT9528", "name": "LEG EXTENSION/LEG CURL", "productDimMm": [1350, 1227, 1506], "netKg": 167, "grossKg": null, "packing": null },
+        { "sku": "VX9529", "itAlias": "IT9529", "name": "MULTI PRESS", "productDimMm": [1950, 1460, 1667], "netKg": 166, "grossKg": null, "packing": null },
+        { "sku": "VX9533", "itAlias": "IT9533", "name": "ARM CURL/TRICEPS", "productDimMm": [1300, 1225, 1506], "netKg": 132.5, "grossKg": null, "packing": null },
+        { "sku": "VX9534", "itAlias": "IT9534", "name": "ABDOMINAL/BACK EXTENSION", "productDimMm": [1208, 1235, 1506], "netKg": 135.2, "grossKg": null, "packing": null },
+        { "sku": "VX9538", "itAlias": "IT9538", "name": "HIP THRUST", "productDimMm": [1563, 1290, 1506], "netKg": 255, "grossKg": null, "packing": null },
+        { "sku": "VX9539", "itAlias": "IT9539", "name": "HORIZONTAL ADJ LEG PRESS", "productDimMm": [1857, 1090, 1506], "netKg": 325, "grossKg": null, "packing": null }
+      ]
+    },
+    "booty-builder": {
+      "label": "Booty Builder (BBV8.0)",
+      "oem": "Booty Builder AS (bootybuilder.com) — Konnen distribuidor BR",
+      "packingPublic": true,
+      "source": "https://bootybuilder.com/",
+      "products": [
+        {
+          "slug": "booty-builder-elevacao-pelvica",
+          "sku": "BBV8.0",
+          "name": "ELEVAÇÃO PÉLVICA / Hip Thrust V8",
+          "productDimMm": [2010, 970, 1570],
+          "productWeightKg": 340,
+          "stackKg": 160,
+          "packing": {
+            "boxes": 1,
+            "form": "pallet + wooden crate, almost fully assembled",
+            "shippingDimMm": [1200, 800, 1750],
+            "shippingDimAltMm": [[1130, 870, 1765], [1220, 820, 2180]],
+            "shippingWeightKg": 430,
+            "sources": [
+              "https://www.bwhfitness.pt/produtos/booty-builder/booty-builder-v8-46993",
+              "https://bootybuilder.com/product/booty-builder-selectorized-hip-thrust-machine/",
+              "https://www.cycfitness.co.uk/uploads/products/files/booty-builder-v8-3581.pdf"
+            ]
+          }
+        },
+        {
+          "slug": "multi-angle-glute-press",
+          "name": "MULTI ANGLE GLUTE PRESS",
+          "productDimMm": [1300, 1160, 1790],
+          "packing": {
+            "boxes": 1,
+            "form": "pallet",
+            "shippingDimMm": [1300, 1160, 1790],
+            "sources": [
+              "https://bootybuilder.com/product/booty-builder-multi-angle-glute-press/",
+              "https://oprema.fit/product/booty-builder-multi-angle-glute-press-selectorized/"
+            ]
+          }
+        },
+        {
+          "slug": "booty-builder-abdutora-multi-3d",
+          "name": "ABDUTORA MULTI-3D",
+          "productWeightKg": 510,
+          "stackKg": 160,
+          "productDimMm": [1730, 1320, 1600],
+          "packing": null,
+          "note": "Sem shipping dims públicas — pedir Konnen/Booty Builder OEM"
+        },
+        {
+          "slug": "booty-builder-leg-pendulo",
+          "name": "LEG PÊNDULO",
+          "productWeightKg": 390,
+          "packing": null
+        },
+        {
+          "slug": "booty-builder-*",
+          "name": "Demais 9 modelos (abdutora/adutora/elevacao/rack/etc)",
+          "packing": null,
+          "note": "Site Konnen tem peso/stack; packing não publicado. Proxy: palete ~1200×800×1750 para modelos V8 similares até ficha OEM."
+        }
+      ]
+    }
+  },
+  "referenceIf93Cartons": {
+    "note": "Única linha Konnen com caixas públicas na Impulse — usar como formato esperado no Ploomes",
+    "example": "IF9328 Leg Extension",
+    "boxes": [
+      { "code": "IF9328ZJ-WXBOX1", "L": 1465, "W": 815, "H": 210 },
+      { "code": "IF9328ZJ-WXBOX2", "L": 1115, "W": 885, "H": 330 },
+      { "code": "IF9328KBX-WXBOX1", "L": 725, "W": 670, "H": 370 },
+      { "code": "IF9328KBQ-WXBOX1", "L": 1205, "W": 685, "H": 230 }
+    ],
+    "source": "https://www.impulsehealthtech.com/if9328-leg-extension-product/"
+  }
+}

@@ -1,0 +1,28 @@
+[
+  {
+    "sku": "IF9301",
+    "quantity": 1,
+    "stackWeightKg": 134
+  },
+  {
+    "sku": "IF9302",
+    "quantity": 1,
+    "stackWeightKg": 134
+  },
+  {
+    "sku": "IF9303",
+    "quantity": 1,
+    "stackWeightKg": 90
+  },
+  {
+    "sku": "IF9304",
+    "quantity": 1,
+    "stackWeightKg": 106
+  },
+  {
+    "sku": "IF9305",
+    "quantity": 3,
+    "stackWeightKg": 134
+  }
+]
+total=18

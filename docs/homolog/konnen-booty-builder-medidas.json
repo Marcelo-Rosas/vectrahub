@@ -1,0 +1,110 @@
+{
+  "source": "Varredura D:\\ (1515 xlsx) + C:\\Users\\marce\\Downloads — zero SKU Booty/BBV no Ploomes. Medidas montadas do scrape site Konnen; shipping de bootybuilder.com onde existe.",
+  "localScan": {
+    "dDriveXlsxScanned": 1515,
+    "bootyHitsInExcel": 0,
+    "relatedOnly": [
+      "D:/Equipamentos_Konnen.xlsx row 21 — Elevação Pélvica genérica (col C=glute trainer, D=vazio)",
+      "D:/Produtos (22).xlsx row 839 — IFP1616 Vertical hip thrust (não Booty Builder)"
+    ],
+    "boxDimensionKonnen": "Cópia de Box Dimension to Konnen 23.3.10.xlsx — sem linhas booty/BBV"
+  },
+  "products": [
+    {
+      "slug": "booty-builder-elevacao-pelvica",
+      "sku": "BBV8.0",
+      "name": "ELEVAÇÃO PÉLVICA (Hip Thrust V8)",
+      "montadoMm": [2010, 970, 1570],
+      "pesoKg": 340,
+      "stackKg": 160,
+      "shippingMm": [1200, 800, 1750],
+      "shippingKg": 430,
+      "shippingSource": "bootybuilder.com / palete 1 caixa madeira"
+    },
+    {
+      "slug": "multi-angle-glute-press",
+      "name": "MULTI ANGLE GLUTE PRESS",
+      "montadoMm": [1300, 1160, 1790],
+      "shippingMm": [1300, 1160, 1790],
+      "shippingSource": "bootybuilder.com"
+    },
+    {
+      "slug": "multi-leg-press-hack-squat",
+      "name": "MULTI LEG PRESS HACK SQUAT",
+      "montadoMm": [1470, 850, 1850],
+      "shippingMm": [1470, 850, 1850],
+      "shippingSource": "bootybuilder.com (site Konnen desc)"
+    },
+    {
+      "slug": "booty-builder-abdutora-em-pe",
+      "montadoMm": [1600, 860, 1570],
+      "pesoKg": 263,
+      "stackKg": 120,
+      "packingLocal": null
+    },
+    {
+      "slug": "booty-builder-abdutora-multi-3d",
+      "montadoMm": [1730, 1320, 1600],
+      "pesoKg": 510,
+      "stackKg": 160,
+      "packingLocal": null
+    },
+    {
+      "slug": "booty-builder-adutora-em-pe",
+      "montadoMm": [1600, 1370, 1600],
+      "pesoKg": 263,
+      "stackKg": 90,
+      "packingLocal": null
+    },
+    {
+      "slug": "booty-builder-elevacao-em-pe",
+      "montadoMm": [1600, 1370, 1600],
+      "pesoKg": 263,
+      "stackKg": 90,
+      "packingLocal": null
+    },
+    {
+      "slug": "booty-builder-elevacao-pelvica-com-barra",
+      "montadoMm": [1880, 1010, 500],
+      "pesoKg": 125,
+      "packingLocal": null
+    },
+    {
+      "slug": "booty-builder-extensao-de-costas",
+      "montadoMm": [1220, 990, 1570],
+      "pesoKg": 255,
+      "stackKg": 120,
+      "packingLocal": null
+    },
+    {
+      "slug": "booty-builder-gluteo-em-pe",
+      "montadoMm": [1500, 890, 1570],
+      "pesoKg": 181,
+      "stackKg": 50,
+      "packingLocal": null
+    },
+    {
+      "slug": "booty-builder-leg-pendulo",
+      "montadoMm": [1370, 1090, 1850],
+      "pesoKg": 390,
+      "stackKg": 160,
+      "packingLocal": null
+    },
+    {
+      "slug": "booty-builder-rack-agachamento",
+      "montadoMm": [1600, 860, 1570],
+      "pesoKg": 263,
+      "stackKg": 120,
+      "packingLocal": null
+    },
+    {
+      "slug": "booty-builder-agachamento-terra",
+      "pesoKg": 510,
+      "stackKg": 160,
+      "montadoMm": null,
+      "packingLocal": null,
+      "note": "página site sem Medida parseável no scrape"
+    }
+  ],
+  "ploomesColumnsNote": "Produtos (10): col C=Grupo, D=Valor — nenhuma linha Booty/BBV. Caixas A/B/C/D packing (estilo IF93) não existem no D: para Booty."
+}

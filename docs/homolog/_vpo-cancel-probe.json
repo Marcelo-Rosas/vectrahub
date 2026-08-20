@@ -1,0 +1,25 @@
+{
+  "request_ids": {
+    "idViagemAILog": 822403,
+    "idViagemOSA": 108011627,
+    "idANTT": "45990169007768973091"
+  },
+  "response": {
+    "status": "VIAGEM_NAO_PODE_SER_CANCELADA",
+    "mensagem": null,
+    "protocoloCancelamento": null,
+    "result": {
+      "emissor": "SEMPARAR",
+      "embarcador": {
+        "razaoSocial": "VECTRA CARGO LTDA",
+        "documento": "59650913000104"
+      },
+      "idViagemOSA": 108011627,
+      "idViagemVPO": 822403,
+      "pedagios": [],
+      "anotacoes": "Probe cancel OS-2026-08-0003 transbordo rota — teste API",
+      "idProtocoloEmissao": null,
+      "placaVeiculo": null
+    }
+  }
+}

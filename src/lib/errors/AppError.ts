@@ -143,12 +143,22 @@ export function mapToAppError(error: unknown, context?: Record<string, unknown>)
       context,
     });
   }
-  if (/network|timeout|fetch failed|Failed to fetch|ECONNRESET|502|503|504/i.test(msg)) {
-    return new AppError('TRANSIENT', msg || 'Falha de rede. Tente novamente.', {
-      status,
-      cause: error,
-      context,
-    });
+  if (
+    /network|timeout|fetch failed|Failed to fetch|Failed to send a request to the Edge Function|ECONNRESET|502|503|504/i.test(
+      msg
+    )
+  ) {
+    return new AppError(
+      'TRANSIENT',
+      msg.includes('Failed to send a request')
+        ? 'Conexão interrompida com o servidor. Atualize a página — a emissão pode ter concluído.'
+        : msg || 'Falha de rede. Tente novamente.',
+      {
+        status,
+        cause: error,
+        context,
+      }
+    );
   }
 
   return new AppError('UNKNOWN', msg || 'Erro inesperado.', { status, cause: error, context });

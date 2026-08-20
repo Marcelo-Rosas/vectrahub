@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useFairResolvedTenant } from '@/hooks/useFairCompanies';
 import {
+  pruneAliasWeightPlates,
   type ShipperProductCatalog,
   type ShipperProductCatalogEntry,
 } from '@/lib/shipper-product-catalog';
@@ -78,7 +79,7 @@ export function useFairProductCatalog() {
         .eq('active', true)
         .order('sku');
       if (error) throw error;
-      return catalogFromRows((data ?? []) as ProductRow[]);
+      return pruneAliasWeightPlates(catalogFromRows((data ?? []) as ProductRow[]));
     },
     staleTime: 1000 * 60 * 10,
   });

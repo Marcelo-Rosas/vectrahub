@@ -1,0 +1,148 @@
+{
+  "run_id": "20260820-022505-ee639301",
+  "mode": "passive",
+  "target_summary": "https://app.vectracargo.com.br, https://app.feira.vectracargo.com.br, https://lrbtbrpoklgwaaclbufz.supabase.co (+3 more)",
+  "started_at": "2026-08-20T02:25:05.404632+00:00",
+  "finished_at": "2026-08-20T02:25:17.012027+00:00",
+  "critical_stop_triggered": false,
+  "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 5
+  },
+  "findings": [
+    {
+      "id": "368eade0-17d3-449a-b426-f4194321d9ce",
+      "scanner": "rate_limit",
+      "title": "No rate-limit headers observed on SPA",
+      "severity": "info",
+      "cvss_score": 0.0,
+      "owasp": [
+        "A07:2021-Identification and Authentication Failures"
+      ],
+      "description": "Sent 8 GET requests; no X-RateLimit-* or 429 observed. Status distribution: {200: 8}. Latency p50=213ms.",
+      "remediation": "Document rate limits at CDN/WAF/Supabase Auth layer; expose Retry-After on throttled endpoints.",
+      "timestamp": "2026-08-20T02:25:07.728825+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://app.vectracargo.com.br/",
+        "method": "GET",
+        "request_headers": {},
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:25:07 GMT",
+          "content-type": "text/html; charset=utf-8",
+          "transfer-encoding": "chunked",
+          "connection": "keep-alive",
+          "x-frame-options": "DENY",
+          "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=fRIiUHm6zlti8oF%2F%2B3%2FqvQ%2BAjMe5VyhXM7pLkBINaObMYTaR1L1cC7Q5ncMT60pApos6jnsWdI02xRO%2Fad3kch6j2mkSzvtscmLAH01%2BL4sz4S3Tz23dZnrwshY%2FLTpk386d894nD44P8LjYzTOxj6uqs8ok\"}]}",
+          "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+          "access-control-allow-origin": "*",
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "x-content-type-options": "nosniff",
+          "content-security-policy": "frame-ancestors 'self'",
+          "referrer-policy": "strict-origin-when-cross-origin",
+          "vary": "accept-encoding",
+          "server": "cloudflare",
+          "cf-cache-status": "DYNAMIC",
+          "content-encoding": "br",
+          "cf-ray": "a2ddf217cbb65594-EWR",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {
+          "request_index": 8
+        }
+      }
+    },
+    {
+      "id": "d10fe2cd-3cbc-4b7c-ba87-e97fbbc67933",
+      "scanner": "cors",
+      "title": "No critical CORS misconfigurations detected",
+      "severity": "info",
+      "cvss_score": 0.0,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "Tested malicious origins; no reflect+credentials pattern.",
+      "remediation": "Re-test after CORS policy changes.",
+      "timestamp": "2026-08-20T02:25:14.660399+00:00",
+      "critical_stop": false,
+      "evidence": null
+    },
+    {
+      "id": "c10be290-19b0-49cf-a831-66e6d24b2674",
+      "scanner": "pii_leak",
+      "title": "No sensitive patterns in scanned public paths",
+      "severity": "info",
+      "cvss_score": 0.0,
+      "owasp": [
+        "A01:2021-Broken Access Control",
+        "A02:2021-Cryptographic Failures"
+      ],
+      "description": "Passive regex scan on configured paths.",
+      "remediation": "Extend scan with authenticated endpoints via --token.",
+      "timestamp": "2026-08-20T02:25:16.226293+00:00",
+      "critical_stop": false,
+      "evidence": null
+    },
+    {
+      "id": "3dbc1749-96c8-413c-b264-94a27ae20acb",
+      "scanner": "user_enum",
+      "title": "No obvious user enumeration signals",
+      "severity": "info",
+      "cvss_score": 0.0,
+      "owasp": [
+        "A07:2021-Identification and Authentication Failures"
+      ],
+      "description": "Compared login/recover responses (limited passive sample).",
+      "remediation": "Configure existing_email in preset for deeper login compare.",
+      "timestamp": "2026-08-20T02:25:16.499992+00:00",
+      "critical_stop": false,
+      "evidence": null
+    },
+    {
+      "id": "d2bfd325-d162-4fff-9cb4-1a718c9a21a4",
+      "scanner": "clickjacking",
+      "title": "Clickjacking headers present or CSP frame-ancestors set",
+      "severity": "info",
+      "cvss_score": 0.0,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "Checked X-Frame-Options and CSP on SPA targets.",
+      "remediation": "Verify headers on all routes including error pages.",
+      "timestamp": "2026-08-20T02:25:17.010025+00:00",
+      "critical_stop": false,
+      "evidence": null
+    }
+  ],
+  "skipped": [
+    {
+      "scanner": "jwt",
+      "reason": "No token provided (--token or SAAS_AUDIT_TOKEN)"
+    },
+    {
+      "scanner": "sqli",
+      "reason": "SQLi disabled in passive mode (use --mode active)"
+    },
+    {
+      "scanner": "idor",
+      "reason": "IDOR disabled in passive mode (requires 2 user tokens)"
+    }
+  ],
+  "metadata": {
+    "targets": [
+      "https://app.vectracargo.com.br",
+      "https://app.feira.vectracargo.com.br",
+      "https://lrbtbrpoklgwaaclbufz.supabase.co",
+      "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate-freight",
+      "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/feira-save-quote",
+      "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/lookup-cep"
+    ],
+    "preset": "vectra.prod"
+  }
+}

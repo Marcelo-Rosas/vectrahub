@@ -278,6 +278,218 @@ export function mergeCatalogRows(
   return [...kept, ...overlay];
 }
 
+/** Ploomes: metros se max(L,W,H) ≤ 100, senão mm. */
+function parsePloomesDimMm(value: unknown, maxDimHint: number): number {
+  const n = parseNum(value);
+  if (n <= 0) return 0;
+  return maxDimHint <= 100 ? Math.round(n * 1000) : Math.round(n);
+}
+
+function normalizePloomesSku(raw: string): string {
+  return raw.trim().toUpperCase().replace(/\s+/g, '').replace(/–/g, '-');
+}
+
+const WEIGHT_PLATE_BOX_RE = /^(FEWS|IF93WS|IT95WS)-(\d+)-(\d+)$/;
+const KIT_BOX_SUFFIX_RE = /^(.+)-(\d+)$/;
+
+/**
+ * Planilha Ploomes (Código, Nome, Grupo, C/L/A, Peso, M³) — caixas `-1..4` e weight plates.
+ */
+export function parsePloomesGrid(rows: unknown[][]): {
+  kitOverlays: ShipperCatalogRawRow[];
+  weightPlateKits: Map<string, ShipperCatalogRawRow[]>;
+} {
+  const headerAt = findHeaderRow(rows, ['código', 'nome']);
+  if (headerAt < 0) return { kitOverlays: [], weightPlateKits: new Map() };
+
+  const header = rows[headerAt] as unknown[];
+  const h = headerIndex(
+    header,
+    'código',
+    'nome',
+    'grupo',
+    'comprimento',
+    'largura',
+    'altura',
+    'peso'
+  );
+  const codeCol = h.código ?? 0;
+  const nameCol = h.nome ?? 1;
+  const lenCol = h.comprimento ?? 3;
+  const widCol = h.largura ?? 4;
+  const hCol = h.altura ?? 5;
+  const gwCol = h.peso ?? 6;
+
+  const kitBoxes = new Map<
+    string,
+    Array<{ gw: number; l: number; w: number; h: number; produto: string }>
+  >();
+  const weightPlateKits = new Map<string, ShipperCatalogRawRow[]>();
+  const plateBoxParts = new Map<
+    string,
+    Array<{ gw: number; l: number; w: number; h: number; produto: string }>
+  >();
+
+  for (let i = headerAt + 1; i < rows.length; i++) {
+    const row = rows[i] as unknown[];
+    const codeRaw = String(row[codeCol] ?? '').trim();
+    if (!codeRaw) continue;
+    const code = normalizePloomesSku(codeRaw);
+    const name = String(row[nameCol] ?? '').trim() || code;
+    const rawLens = [row[lenCol], row[widCol], row[hCol]].map(parseNum);
+    const maxRaw = Math.max(...rawLens);
+    const l = parsePloomesDimMm(row[lenCol], maxRaw);
+    const w = parsePloomesDimMm(row[widCol], maxRaw);
+    const hMm = parsePloomesDimMm(row[hCol], maxRaw);
+    const gw = parseNum(row[gwCol]);
+    if (l <= 0 || w <= 0 || hMm <= 0 || gw <= 0) continue;
+
+    const plateMatch = code.match(WEIGHT_PLATE_BOX_RE);
+    if (plateMatch) {
+      const kitSku = `${plateMatch[1]}-${plateMatch[2]}`;
+      const list = plateBoxParts.get(kitSku) ?? [];
+      list.push({ gw, l, w, h: hMm, produto: name });
+      plateBoxParts.set(kitSku, list);
+      continue;
+    }
+
+    const kitMatch = code.match(KIT_BOX_SUFFIX_RE);
+    if (!kitMatch) continue;
+    const parentSku = kitMatch[1]!;
+    if (WEIGHT_PLATE_BOX_RE.test(`${parentSku}-1`)) continue;
+
+    const list = kitBoxes.get(parentSku) ?? [];
+    list.push({ gw, l, w, h: hMm, produto: name });
+    kitBoxes.set(parentSku, list);
+  }
+
+  for (const [kitSku, boxes] of plateBoxParts) {
+    const produto = boxes[0]?.produto.replace(/\s*-\s*Box\s*\d+.*/i, '').trim() || kitSku;
+    weightPlateKits.set(kitSku, finalizeKit(kitSku, produto, boxes));
+  }
+
+  const kitOverlays: ShipperCatalogRawRow[] = [];
+  for (const [parentSku, boxes] of kitBoxes) {
+    const produto = boxes[0]?.produto.replace(/\s*-\s*Box\s*\d+.*/i, '').trim() || parentSku;
+    kitOverlays.push(...finalizeKit(parentSku, produto, boxes));
+  }
+
+  return { kitOverlays, weightPlateKits };
+}
+
+const EQUIPMENT_WS_RULES = [
+  {
+    test: (sku: string) => /^FE97[A-Z0-9]+$/.test(sku) && !sku.startsWith('FEWS'),
+    wsPrefix: 'FEWS',
+  },
+  {
+    test: (sku: string) => /^IF93[A-Z0-9]+$/.test(sku) && !sku.includes('WS-'),
+    wsPrefix: 'IF93WS',
+  },
+  { test: (sku: string) => /^IT95\d/.test(sku) && !sku.includes('WS-'), wsPrefix: 'IT95WS' },
+] as const;
+
+const DEFAULT_STACK_LBS = '295';
+
+/**
+ * Anexa caixas de weight stack ao kit do equipamento (ex. IF9302 + IF93WS-295 → 7 caixas).
+ * Remove SKUs WS avulsos absorvidos.
+ */
+export function mergeWeightPlatesIntoEquipmentKits(
+  rows: ShipperCatalogRawRow[],
+  opts: {
+    defaultStackLbs?: string;
+    weightPlateKits?: Map<string, ShipperCatalogRawRow[]>;
+  } = {}
+): ShipperCatalogRawRow[] {
+  const stackLbs = opts.defaultStackLbs ?? DEFAULT_STACK_LBS;
+  const bySku = new Map<string, ShipperCatalogRawRow[]>();
+  for (const row of rows) {
+    const sku = String(row.Item ?? '')
+      .trim()
+      .toUpperCase();
+    if (!sku) continue;
+    const list = bySku.get(sku) ?? [];
+    list.push(row);
+    bySku.set(sku, list);
+  }
+
+  const absorbedWs = new Set<string>();
+  const mergedEquipment = new Map<string, ShipperCatalogRawRow[]>();
+
+  for (const rule of EQUIPMENT_WS_RULES) {
+    for (const [sku, equipRows] of bySku) {
+      if (!rule.test(sku)) continue;
+      const wsSku = `${rule.wsPrefix}-${stackLbs}`;
+      const wsRows = opts.weightPlateKits?.get(wsSku) ?? bySku.get(wsSku);
+      if (!wsRows?.length) continue;
+
+      const produto = String(equipRows[0]?.Produto ?? '').trim() || sku;
+      const equipBoxes = equipRows.map((r) => ({
+        gw: parseNum(r['Peso Estimado do Grupo (kg)']),
+        l: parseDimensionFieldMm(r.COMPRIMENTO),
+        w: parseDimensionFieldMm(r.LARGURA),
+        h: parseDimensionFieldMm(r.ALTURA),
+      }));
+      const plateBoxes = wsRows.map((r) => ({
+        gw: parseNum(r['Peso Estimado do Grupo (kg)']),
+        l: parseDimensionFieldMm(r.COMPRIMENTO),
+        w: parseDimensionFieldMm(r.LARGURA),
+        h: parseDimensionFieldMm(r.ALTURA),
+      }));
+
+      if (
+        equipBoxes.some((b) => b.l <= 0 || b.gw <= 0) ||
+        plateBoxes.some((b) => b.l <= 0 || b.gw <= 0)
+      ) {
+        continue;
+      }
+
+      mergedEquipment.set(sku, finalizeKit(sku, produto, [...equipBoxes, ...plateBoxes]));
+      absorbedWs.add(wsSku);
+    }
+  }
+
+  const out: ShipperCatalogRawRow[] = [];
+  for (const [sku, skuRows] of bySku) {
+    if (absorbedWs.has(sku)) continue;
+    if (mergedEquipment.has(sku)) {
+      out.push(...mergedEquipment.get(sku)!);
+      continue;
+    }
+    out.push(...skuRows);
+  }
+  return out;
+}
+
+function parseDimensionFieldMm(value: string | number): number {
+  if (typeof value === 'number') return Math.max(0, Math.round(value));
+  const digits = String(value).replace(/\D/g, '');
+  return digits ? parseInt(digits, 10) : 0;
+}
+
+export function overlayPloomesKitGaps(
+  base: ShipperCatalogRawRow[],
+  kitOverlays: ShipperCatalogRawRow[]
+): ShipperCatalogRawRow[] {
+  if (kitOverlays.length === 0) return base;
+  const overlaySkus = new Set(kitOverlays.map((r) => String(r.Item).toUpperCase()));
+  const baseSkus = new Set(base.map((r) => String(r.Item).toUpperCase()));
+  const replace = new Set<string>();
+  for (const sku of overlaySkus) {
+    if (!baseSkus.has(sku)) {
+      replace.add(sku);
+      continue;
+    }
+    const baseRows = base.filter((r) => String(r.Item).toUpperCase() === sku);
+    const missingDims = baseRows.some((r) => parseDimensionFieldMm(r.COMPRIMENTO) <= 0);
+    if (missingDims) replace.add(sku);
+  }
+  const kept = base.filter((r) => !replace.has(String(r.Item).toUpperCase()));
+  const added = kitOverlays.filter((r) => replace.has(String(r.Item).toUpperCase()));
+  return [...kept, ...added];
+}
+
 export function assertNoSkuCollisions(
   chunks: Array<{ label: string; rows: ShipperCatalogRawRow[] }>
 ): void {

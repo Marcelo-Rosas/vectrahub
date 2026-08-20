@@ -1,0 +1,694 @@
+{
+  "run_id": "20260820-020447-cd74c999",
+  "mode": "passive",
+  "target_summary": "https://app.vectracargo.com.br, https://app.feira.vectracargo.com.br, https://lrbtbrpoklgwaaclbufz.supabase.co (+3 more)",
+  "started_at": "2026-08-20T02:04:47.835120+00:00",
+  "finished_at": "2026-08-20T02:04:56.570443+00:00",
+  "critical_stop_triggered": false,
+  "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 14,
+    "low": 0,
+    "info": 0
+  },
+  "findings": [
+    {
+      "id": "fb459ed9-2965-4b67-848f-6c30df0711e1",
+      "scanner": "cors",
+      "title": "CORS wildcard on Edge Function",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "GET https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate-freight Origin=https://evil.com → ACAO=* ACAC=",
+      "remediation": "Use strict origin allowlist; never reflect arbitrary origins with credentials. Prefer Vary: Origin without wildcard fallback.",
+      "timestamp": "2026-08-20T02:04:51.779381+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate-freight",
+        "method": "GET",
+        "request_headers": {
+          "Origin": "https://evil.com"
+        },
+        "request_body": null,
+        "status_code": 401,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:51 GMT",
+          "content-type": "application/json",
+          "content-length": "94",
+          "connection": "keep-alive",
+          "cf-ray": "a2ddd465cdcb1352-GRU",
+          "cf-cache-status": "DYNAMIC",
+          "access-control-allow-origin": "*",
+          "content-encoding": "gzip",
+          "server": "cloudflare",
+          "vary": "Accept-Encoding",
+          "x-content-type-options": "nosniff",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "endpoint-load-metrics": "application_utilization:4,named_metrics.queue_depth:4",
+          "sb-gateway-version": "1",
+          "sb-project-ref": "lrbtbrpoklgwaaclbufz",
+          "sb-request-id": "01a01ce9-fba4-703e-ad43-027fbd21142b",
+          "x-deno-execution-id": "914810b8-3046-4c4d-9fbe-5e6514a27d1d",
+          "x-sb-edge-region": "sa-east-1",
+          "x-served-by": "supabase-edge-runtime",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "set-cookie": "[REDACTED]",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "5d7db536-622c-4d01-82d5-667775562699",
+      "scanner": "cors",
+      "title": "CORS wildcard on Edge Function",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "OPTIONS https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate-freight Origin=https://evil.com → ACAO=* ACAC=",
+      "remediation": "Use strict origin allowlist; never reflect arbitrary origins with credentials. Prefer Vary: Origin without wildcard fallback.",
+      "timestamp": "2026-08-20T02:04:52.007033+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate-freight",
+        "method": "OPTIONS",
+        "request_headers": {
+          "Origin": "https://evil.com"
+        },
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:52 GMT",
+          "content-type": "text/plain;charset=UTF-8",
+          "transfer-encoding": "chunked",
+          "connection": "keep-alive",
+          "cf-ray": "a2ddd468ad491352-GRU",
+          "cf-cache-status": "DYNAMIC",
+          "access-control-allow-origin": "*",
+          "content-encoding": "gzip",
+          "server": "cloudflare",
+          "vary": "Accept-Encoding",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "endpoint-load-metrics": "application_utilization:5,named_metrics.queue_depth:5",
+          "sb-gateway-version": "1",
+          "sb-project-ref": "lrbtbrpoklgwaaclbufz",
+          "sb-request-id": "01a01ce9-fd72-776d-96d2-63bea92c2ac0",
+          "x-deno-execution-id": "9e4a0c07-a0e9-4998-8f96-ea51eee6a661",
+          "x-sb-edge-region": "sa-east-1",
+          "x-served-by": "supabase-edge-runtime",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "1166e169-461f-48d7-befc-54165d4647d6",
+      "scanner": "cors",
+      "title": "CORS wildcard on Edge Function",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "GET https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate-freight Origin=https://attacker.com → ACAO=* ACAC=",
+      "remediation": "Use strict origin allowlist; never reflect arbitrary origins with credentials. Prefer Vary: Origin without wildcard fallback.",
+      "timestamp": "2026-08-20T02:04:52.218084+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate-freight",
+        "method": "GET",
+        "request_headers": {
+          "Origin": "https://attacker.com"
+        },
+        "request_body": null,
+        "status_code": 401,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:52 GMT",
+          "content-type": "application/json",
+          "content-length": "94",
+          "connection": "keep-alive",
+          "cf-ray": "a2ddd46a19301352-GRU",
+          "cf-cache-status": "DYNAMIC",
+          "access-control-allow-origin": "*",
+          "content-encoding": "gzip",
+          "server": "cloudflare",
+          "vary": "Accept-Encoding",
+          "x-content-type-options": "nosniff",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "endpoint-load-metrics": "application_utilization:4,named_metrics.queue_depth:4",
+          "sb-gateway-version": "1",
+          "sb-project-ref": "lrbtbrpoklgwaaclbufz",
+          "sb-request-id": "01a01ce9-fe55-7524-8895-486becda086c",
+          "x-deno-execution-id": "b8b5715d-01bc-4018-9e5a-8fb8b8b489ec",
+          "x-sb-edge-region": "sa-east-1",
+          "x-served-by": "supabase-edge-runtime",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "714bb9ed-c0a6-4db5-b8d7-ebd387c9854f",
+      "scanner": "cors",
+      "title": "CORS wildcard on Edge Function",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "OPTIONS https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate-freight Origin=https://attacker.com → ACAO=* ACAC=",
+      "remediation": "Use strict origin allowlist; never reflect arbitrary origins with credentials. Prefer Vary: Origin without wildcard fallback.",
+      "timestamp": "2026-08-20T02:04:52.425819+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate-freight",
+        "method": "OPTIONS",
+        "request_headers": {
+          "Origin": "https://attacker.com"
+        },
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:52 GMT",
+          "content-type": "text/plain;charset=UTF-8",
+          "transfer-encoding": "chunked",
+          "connection": "keep-alive",
+          "cf-ray": "a2ddd46b6ccd1352-GRU",
+          "cf-cache-status": "DYNAMIC",
+          "access-control-allow-origin": "*",
+          "content-encoding": "gzip",
+          "server": "cloudflare",
+          "vary": "Accept-Encoding",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "endpoint-load-metrics": "application_utilization:6,named_metrics.queue_depth:6",
+          "sb-gateway-version": "1",
+          "sb-project-ref": "lrbtbrpoklgwaaclbufz",
+          "sb-request-id": "01a01ce9-ff2b-7d1c-8761-39bec712b960",
+          "x-deno-execution-id": "2e2d29e6-ba20-4f52-a7cf-d0d8c2d7b636",
+          "x-sb-edge-region": "sa-east-1",
+          "x-served-by": "supabase-edge-runtime",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "dda90372-1537-4bd3-9213-470cc5e04240",
+      "scanner": "cors",
+      "title": "CORS wildcard on Edge Function",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "GET https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/feira-save-quote Origin=https://evil.com → ACAO=* ACAC=",
+      "remediation": "Use strict origin allowlist; never reflect arbitrary origins with credentials. Prefer Vary: Origin without wildcard fallback.",
+      "timestamp": "2026-08-20T02:04:53.116094+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/feira-save-quote",
+        "method": "GET",
+        "request_headers": {
+          "Origin": "https://evil.com"
+        },
+        "request_body": null,
+        "status_code": 405,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:53 GMT",
+          "content-type": "application/json",
+          "content-length": "50",
+          "connection": "keep-alive",
+          "cf-ray": "a2ddd46f68911352-GRU",
+          "cf-cache-status": "DYNAMIC",
+          "access-control-allow-origin": "*",
+          "content-encoding": "gzip",
+          "server": "cloudflare",
+          "vary": "Accept-Encoding",
+          "x-content-type-options": "nosniff",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "endpoint-load-metrics": "application_utilization:5,named_metrics.queue_depth:5",
+          "sb-gateway-version": "1",
+          "sb-project-ref": "lrbtbrpoklgwaaclbufz",
+          "sb-request-id": "01a01cea-01a5-71d0-87ee-8a5f3f041716",
+          "x-deno-execution-id": "d01fdbfa-142e-4d1b-92f0-18639ca24cfb",
+          "x-sb-edge-region": "sa-east-1",
+          "x-served-by": "supabase-edge-runtime",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "8557d6f5-11f9-4752-a576-a9709f53edee",
+      "scanner": "cors",
+      "title": "CORS wildcard on Edge Function",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "OPTIONS https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/feira-save-quote Origin=https://evil.com → ACAO=* ACAC=",
+      "remediation": "Use strict origin allowlist; never reflect arbitrary origins with credentials. Prefer Vary: Origin without wildcard fallback.",
+      "timestamp": "2026-08-20T02:04:53.334348+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/feira-save-quote",
+        "method": "OPTIONS",
+        "request_headers": {
+          "Origin": "https://evil.com"
+        },
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:53 GMT",
+          "content-type": "text/plain;charset=UTF-8",
+          "transfer-encoding": "chunked",
+          "connection": "keep-alive",
+          "cf-ray": "a2ddd4710d8b1352-GRU",
+          "cf-cache-status": "DYNAMIC",
+          "access-control-allow-origin": "*",
+          "content-encoding": "gzip",
+          "server": "cloudflare",
+          "vary": "Accept-Encoding",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "endpoint-load-metrics": "application_utilization:4,named_metrics.queue_depth:4",
+          "sb-gateway-version": "1",
+          "sb-project-ref": "lrbtbrpoklgwaaclbufz",
+          "sb-request-id": "01a01cea-02a9-75f1-a84c-c2ae099f4c66",
+          "x-deno-execution-id": "5e438e3a-5122-4382-a7c0-d40df393847a",
+          "x-sb-edge-region": "sa-east-1",
+          "x-served-by": "supabase-edge-runtime",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "8471ff38-4b3a-49e6-9ab4-90aa1801f968",
+      "scanner": "cors",
+      "title": "CORS wildcard on Edge Function",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "GET https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/feira-save-quote Origin=https://attacker.com → ACAO=* ACAC=",
+      "remediation": "Use strict origin allowlist; never reflect arbitrary origins with credentials. Prefer Vary: Origin without wildcard fallback.",
+      "timestamp": "2026-08-20T02:04:53.527454+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/feira-save-quote",
+        "method": "GET",
+        "request_headers": {
+          "Origin": "https://attacker.com"
+        },
+        "request_body": null,
+        "status_code": 405,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:53 GMT",
+          "content-type": "application/json",
+          "content-length": "50",
+          "connection": "keep-alive",
+          "cf-ray": "a2ddd47269ee1352-GRU",
+          "cf-cache-status": "DYNAMIC",
+          "access-control-allow-origin": "*",
+          "content-encoding": "gzip",
+          "server": "cloudflare",
+          "vary": "Accept-Encoding",
+          "x-content-type-options": "nosniff",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "endpoint-load-metrics": "application_utilization:5,named_metrics.queue_depth:5",
+          "sb-gateway-version": "1",
+          "sb-project-ref": "lrbtbrpoklgwaaclbufz",
+          "sb-request-id": "01a01cea-0384-701d-a07a-658a654be1b1",
+          "x-deno-execution-id": "32e3a36c-7883-42f2-9ca9-512c44871efa",
+          "x-sb-edge-region": "sa-east-1",
+          "x-served-by": "supabase-edge-runtime",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "3122ee6b-243a-48ad-a88f-be3f004c0fed",
+      "scanner": "cors",
+      "title": "CORS wildcard on Edge Function",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "OPTIONS https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/feira-save-quote Origin=https://attacker.com → ACAO=* ACAC=",
+      "remediation": "Use strict origin allowlist; never reflect arbitrary origins with credentials. Prefer Vary: Origin without wildcard fallback.",
+      "timestamp": "2026-08-20T02:04:53.728376+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/feira-save-quote",
+        "method": "OPTIONS",
+        "request_headers": {
+          "Origin": "https://attacker.com"
+        },
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:53 GMT",
+          "content-type": "text/plain;charset=UTF-8",
+          "transfer-encoding": "chunked",
+          "connection": "keep-alive",
+          "cf-ray": "a2ddd4739dc51352-GRU",
+          "cf-cache-status": "DYNAMIC",
+          "access-control-allow-origin": "*",
+          "content-encoding": "gzip",
+          "server": "cloudflare",
+          "vary": "Accept-Encoding",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "endpoint-load-metrics": "application_utilization:5,named_metrics.queue_depth:5",
+          "sb-gateway-version": "1",
+          "sb-project-ref": "lrbtbrpoklgwaaclbufz",
+          "sb-request-id": "01a01cea-0448-7720-bfb8-14781ba9a098",
+          "x-deno-execution-id": "3ec79fb9-c8ea-4dbb-ad00-7ca27ce0cd88",
+          "x-sb-edge-region": "sa-east-1",
+          "x-served-by": "supabase-edge-runtime",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "22eb1c16-f612-48b9-919b-9e8ca323a36f",
+      "scanner": "cors",
+      "title": "CORS wildcard on Edge Function",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "GET https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/lookup-cep Origin=https://evil.com → ACAO=* ACAC=",
+      "remediation": "Use strict origin allowlist; never reflect arbitrary origins with credentials. Prefer Vary: Origin without wildcard fallback.",
+      "timestamp": "2026-08-20T02:04:54.414728+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/lookup-cep",
+        "method": "GET",
+        "request_headers": {
+          "Origin": "https://evil.com"
+        },
+        "request_body": null,
+        "status_code": 400,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:54 GMT",
+          "content-type": "application/json",
+          "content-length": "79",
+          "connection": "keep-alive",
+          "cf-ray": "a2ddd4777fdf1352-GRU",
+          "cf-cache-status": "DYNAMIC",
+          "access-control-allow-origin": "*",
+          "content-encoding": "gzip",
+          "server": "cloudflare",
+          "vary": "Accept-Encoding",
+          "x-content-type-options": "nosniff",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "endpoint-load-metrics": "application_utilization:5,named_metrics.queue_depth:5",
+          "sb-gateway-version": "1",
+          "sb-project-ref": "lrbtbrpoklgwaaclbufz",
+          "sb-request-id": "01a01cea-06ae-729f-88b7-6b2064d41ddc",
+          "x-deno-execution-id": "b293e4e2-79f4-44df-a3c2-faadecb8db43",
+          "x-sb-edge-region": "sa-east-1",
+          "x-served-by": "supabase-edge-runtime",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "8938e2da-60b0-47ef-888d-7340e6d87c5d",
+      "scanner": "cors",
+      "title": "CORS wildcard on Edge Function",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "OPTIONS https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/lookup-cep Origin=https://evil.com → ACAO=* ACAC=",
+      "remediation": "Use strict origin allowlist; never reflect arbitrary origins with credentials. Prefer Vary: Origin without wildcard fallback.",
+      "timestamp": "2026-08-20T02:04:54.608795+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/lookup-cep",
+        "method": "OPTIONS",
+        "request_headers": {
+          "Origin": "https://evil.com"
+        },
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:54 GMT",
+          "content-type": "text/plain;charset=UTF-8",
+          "transfer-encoding": "chunked",
+          "connection": "keep-alive",
+          "cf-ray": "a2ddd4792ce51352-GRU",
+          "cf-cache-status": "DYNAMIC",
+          "access-control-allow-origin": "*",
+          "content-encoding": "gzip",
+          "server": "cloudflare",
+          "vary": "Accept-Encoding",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "endpoint-load-metrics": "application_utilization:5,named_metrics.queue_depth:5",
+          "sb-gateway-version": "1",
+          "sb-project-ref": "lrbtbrpoklgwaaclbufz",
+          "sb-request-id": "01a01cea-07c0-7879-94fc-e45dadf2ba9a",
+          "x-deno-execution-id": "34e500aa-a1b2-42f5-a536-ca91db7c8389",
+          "x-sb-edge-region": "sa-east-1",
+          "x-served-by": "supabase-edge-runtime",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "67443967-94f3-4c6b-bb36-400565978503",
+      "scanner": "cors",
+      "title": "CORS wildcard on Edge Function",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "GET https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/lookup-cep Origin=https://attacker.com → ACAO=* ACAC=",
+      "remediation": "Use strict origin allowlist; never reflect arbitrary origins with credentials. Prefer Vary: Origin without wildcard fallback.",
+      "timestamp": "2026-08-20T02:04:54.819178+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/lookup-cep",
+        "method": "GET",
+        "request_headers": {
+          "Origin": "https://attacker.com"
+        },
+        "request_body": null,
+        "status_code": 400,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:54 GMT",
+          "content-type": "application/json",
+          "content-length": "79",
+          "connection": "keep-alive",
+          "cf-ray": "a2ddd47a682f1352-GRU",
+          "cf-cache-status": "DYNAMIC",
+          "access-control-allow-origin": "*",
+          "content-encoding": "gzip",
+          "server": "cloudflare",
+          "vary": "Accept-Encoding",
+          "x-content-type-options": "nosniff",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "endpoint-load-metrics": "application_utilization:5,named_metrics.queue_depth:5",
+          "sb-gateway-version": "1",
+          "sb-project-ref": "lrbtbrpoklgwaaclbufz",
+          "sb-request-id": "01a01cea-0888-7ebb-aa66-11910ce51f1d",
+          "x-deno-execution-id": "66adbb31-8fad-4048-a4bc-73ef5773d549",
+          "x-sb-edge-region": "sa-east-1",
+          "x-served-by": "supabase-edge-runtime",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "8829e41e-44ed-419b-8ae1-d570a1de91f6",
+      "scanner": "cors",
+      "title": "CORS wildcard on Edge Function",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "OPTIONS https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/lookup-cep Origin=https://attacker.com → ACAO=* ACAC=",
+      "remediation": "Use strict origin allowlist; never reflect arbitrary origins with credentials. Prefer Vary: Origin without wildcard fallback.",
+      "timestamp": "2026-08-20T02:04:55.000275+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/lookup-cep",
+        "method": "OPTIONS",
+        "request_headers": {
+          "Origin": "https://attacker.com"
+        },
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:55 GMT",
+          "content-type": "text/plain;charset=UTF-8",
+          "transfer-encoding": "chunked",
+          "connection": "keep-alive",
+          "cf-ray": "a2ddd47bab8d1352-GRU",
+          "cf-cache-status": "DYNAMIC",
+          "access-control-allow-origin": "*",
+          "content-encoding": "gzip",
+          "server": "cloudflare",
+          "vary": "Accept-Encoding",
+          "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-api-key",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "endpoint-load-metrics": "application_utilization:5,named_metrics.queue_depth:5",
+          "sb-gateway-version": "1",
+          "sb-project-ref": "lrbtbrpoklgwaaclbufz",
+          "sb-request-id": "01a01cea-094c-70b5-a87d-3c0bb302e25b",
+          "x-deno-execution-id": "4502245f-3772-40a2-a034-cd94dd0e58de",
+          "x-sb-edge-region": "sa-east-1",
+          "x-served-by": "supabase-edge-runtime",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "959aa98d-5c70-4c32-9bf9-74e5f1ca9e30",
+      "scanner": "clickjacking",
+      "title": "Missing clickjacking protection headers",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "No X-Frame-Options or CSP frame-ancestors on https://app.vectracargo.com.br. PoC saved to C:\\Users\\marce\\vectra-hub\\tools\\security-audit\\poc\\clickjacking_poc.html",
+      "remediation": "Set X-Frame-Options: DENY or CSP frame-ancestors 'self'; configure in Cloudflare _headers.",
+      "timestamp": "2026-08-20T02:04:56.029898+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://app.vectracargo.com.br",
+        "method": "GET",
+        "request_headers": {},
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:56 GMT",
+          "content-type": "text/html; charset=utf-8",
+          "transfer-encoding": "chunked",
+          "connection": "keep-alive",
+          "x-content-type-options": "nosniff",
+          "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=0P3TgF3kmKASmyu1FfqyzGWKHIsDqOfI7lF%2B%2Fkc5GI0xWRJVLCvm9S9evQTrGguVj52dWbaFJ9uN1b1gXyVBjPEmr%2B3DJMTm%2B2y4n02yiVlCG7tZb7VRmJta5VVy5NoIeKclGBqXIETkOe4q1hXnzlXVz0Jl\"}]}",
+          "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+          "access-control-allow-origin": "*",
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "referrer-policy": "strict-origin-when-cross-origin",
+          "vary": "accept-encoding",
+          "server": "cloudflare",
+          "cf-cache-status": "DYNAMIC",
+          "content-encoding": "br",
+          "cf-ray": "a2ddd481ff834213-EWR",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    },
+    {
+      "id": "c7f5b166-2d21-4681-97de-8495b4444ea7",
+      "scanner": "clickjacking",
+      "title": "Missing clickjacking protection headers",
+      "severity": "medium",
+      "cvss_score": 5.5,
+      "owasp": [
+        "A05:2021-Security Misconfiguration"
+      ],
+      "description": "No X-Frame-Options or CSP frame-ancestors on https://app.feira.vectracargo.com.br. PoC saved to C:\\Users\\marce\\vectra-hub\\tools\\security-audit\\poc\\clickjacking_poc.html",
+      "remediation": "Set X-Frame-Options: DENY or CSP frame-ancestors 'self'; configure in Cloudflare _headers.",
+      "timestamp": "2026-08-20T02:04:56.568940+00:00",
+      "critical_stop": false,
+      "evidence": {
+        "url": "https://app.feira.vectracargo.com.br",
+        "method": "GET",
+        "request_headers": {},
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "date": "Thu, 20 Aug 2026 02:04:56 GMT",
+          "content-type": "text/html; charset=utf-8",
+          "transfer-encoding": "chunked",
+          "connection": "keep-alive",
+          "x-content-type-options": "nosniff",
+          "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=oWDJHWkOmFJ6xtnHbZE%2FFQo6w8Aul3yZJuFh0Yts12VRgHE5YmFojJ77jfDct0%2FpoTBrtEaqvoiNpC15qDnALyomG8POcAafKsvcP7wz6jMPlM6uxE%2BGt0ltF0UOR0FxjgAuMxGAmif3svP4jI5bW6g%2F9XK6KIkyv90U\"}]}",
+          "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+          "access-control-allow-origin": "*",
+          "cache-control": "no-cache, no-store, must-revalidate",
+          "referrer-policy": "strict-origin-when-cross-origin",
+          "vary": "accept-encoding",
+          "server": "cloudflare",
+          "cf-cache-status": "DYNAMIC",
+          "content-encoding": "br",
+          "cf-ray": "a2ddd4859c38453e-ATL",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        },
+        "response_snippet": null,
+        "extra": {}
+      }
+    }
+  ],
+  "skipped": [],
+  "metadata": {
+    "targets": [
+      "https://app.vectracargo.com.br",
+      "https://app.feira.vectracargo.com.br",
+      "https://lrbtbrpoklgwaaclbufz.supabase.co",
+      "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate-freight",
+      "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/feira-save-quote",
+      "https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/lookup-cep"
+    ],
+    "preset": "vectra.prod"
+  }
+}

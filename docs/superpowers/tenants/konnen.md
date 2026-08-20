@@ -15,6 +15,6 @@ Fonte: `feira.companies`.
 
 **IHRSA comercial âncora = Buckler.** Konnen existe no schema para multi-tenant.
 
-**Catálogo:** há rows em `feira.products` neste `company_id`, mas packing **incompleto** (linhas Impulse/Xmaster/Rockit fundidas; SKUs/caixas a auditar). UI não deve cair em fixture.
+**Catálogo:** `feira.products` por `company_id`. Chips UI: **IMPULSE** (AC/IF/IFP/SL/FE/TN/TB + FEWS weight plate), **XMASTER** (`XMT*`), **ROCKIT** (`RKC*`). `IT95WS-*` = alias do mesmo WEIGHT PLATE que `FEWS-*` → some da lista se FEWS já existe.
 
 **Clientes:** só `feira.clients`. Contratos CIF/FOB Hub não leem esta tabela.

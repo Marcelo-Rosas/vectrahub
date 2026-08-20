@@ -37,7 +37,9 @@ export default function Drivers() {
     ? drivers?.filter(
         (d) =>
           d.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-          (d.phone && d.phone.includes(debouncedSearchTerm))
+          (d.phone && d.phone.includes(debouncedSearchTerm)) ||
+          (d.cpf && d.cpf.replace(/\D/g, '').includes(debouncedSearchTerm.replace(/\D/g, ''))) ||
+          (d.antt && d.antt.replace(/\D/g, '').includes(debouncedSearchTerm.replace(/\D/g, '')))
       )
     : drivers;
 
@@ -109,7 +111,7 @@ export default function Drivers() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por nome ou telefone..."
+              placeholder="Buscar nome, telefone, CPF ou RNTRC..."
               className="pl-10 w-80"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -175,6 +177,9 @@ export default function Drivers() {
                     Vínculo
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                    CPF / RNTRC
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                     Telefone
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
@@ -217,6 +222,12 @@ export default function Drivers() {
                             (driver.rntrc_registry_type as 'TAC' | 'ETC' | null | undefined) ?? null
                           }
                         />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-0.5 text-sm font-mono text-foreground">
+                        <span>{driver.cpf || '—'}</span>
+                        <span className="text-muted-foreground">{driver.antt || 'sem RNTRC'}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">

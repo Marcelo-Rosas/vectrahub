@@ -1,12 +1,8 @@
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary';
 import { useLocation } from 'react-router-dom';
 import { ErrorFallback } from '@/components/ui/ErrorFallback';
+import { isChunkLoadError, reloadForChunkError } from '@/lib/lazy-with-retry';
 import { logger } from '@/lib/logger';
-
-function isChunkLoadError(error: unknown): boolean {
-  const msg = error instanceof Error ? error.message : String(error);
-  return /Failed to fetch dynamically imported module|Loading chunk|ChunkLoadError/i.test(msg);
-}
 
 interface SectionErrorBoundaryProps {
   children: React.ReactNode;
@@ -32,7 +28,7 @@ export function GlobalErrorBoundary({ children }: { children: React.ReactNode })
       )}
       onError={(error, info) => {
         if (isChunkLoadError(error)) {
-          window.location.reload();
+          reloadForChunkError();
           return;
         }
         logger.captureException(error, { componentStack: info.componentStack ?? '' });
@@ -57,7 +53,7 @@ export function SectionErrorBoundary({
       )}
       onError={(error, info) => {
         if (isChunkLoadError(error)) {
-          window.location.reload();
+          reloadForChunkError();
           return;
         }
         logger.captureException(error, { componentStack: info.componentStack ?? '' });

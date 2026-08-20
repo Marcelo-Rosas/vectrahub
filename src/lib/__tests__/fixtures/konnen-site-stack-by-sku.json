@@ -1,0 +1,440 @@
+{
+  "FE9714": {
+    "sku": "FE9714",
+    "name": "ABDOMINAL",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "FE9708": {
+    "sku": "FE9708",
+    "name": "ABDUTORA / ADUTORA",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "FE9703": {
+    "sku": "FE9703",
+    "name": "BÍCEPS UNILATERAL",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "FE9705": {
+    "sku": "FE9705",
+    "name": "CADEIRA EXTENSORA",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "FE9706": {
+    "sku": "FE9706",
+    "name": "CADEIRA FLEXORA",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "FE9712": {
+    "sku": "FE9712",
+    "name": "DESENVOLVIMENTO",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "FE9724": {
+    "sku": "FE9724",
+    "name": "ELEVAÇÃO LATERAL",
+    "stackWeightKg": 90,
+    "stackLbs": "200"
+  },
+  "FE9723": {
+    "sku": "FE9723",
+    "name": "EXTENSÃO DE TRÍCEPS",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "FE9732": {
+    "sku": "FE9732",
+    "name": "EXTENSOR LOMBAR",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "FE9726": {
+    "sku": "FE9726",
+    "name": "GLÚTEO",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "FE9720": {
+    "sku": "FE9720",
+    "name": "GRAVITON",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "FE9710": {
+    "sku": "FE9710",
+    "name": "LEG PRESS",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "FE9721": {
+    "sku": "FE9721",
+    "name": "MESA FLEXORA",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "FE9716": {
+    "sku": "FE9716",
+    "name": "PANTURRILHA EM PÉ",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "FE9715": {
+    "sku": "FE9715",
+    "name": "PEITORAL / DORSAL",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "FE9702": {
+    "sku": "FE9702",
+    "name": "PUXADA ALTA",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "FE9719": {
+    "sku": "FE9719",
+    "name": "REMADA SENTADA",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "FE9718": {
+    "sku": "FE9718",
+    "name": "ROTAÇÃO DE TORSO",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "FE9701": {
+    "sku": "FE9701",
+    "name": "SUPINO VERTICAL",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "FE9704": {
+    "sku": "FE9704",
+    "name": "VOADOR PEITORAL",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "IF9327": {
+    "sku": "IF9327",
+    "name": "4 STACK MULTISTATION",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "IF9314": {
+    "sku": "IF9314",
+    "name": "ABDOMINAL",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9308": {
+    "sku": "IF9308",
+    "name": "ABDUCTOR / ADDUCTOR",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9335": {
+    "sku": "IF9335",
+    "name": "ABDUCTOR",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9336": {
+    "sku": "IF9336",
+    "name": "ADDUCTOR",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9325": {
+    "sku": "IF9325",
+    "name": "ADJUSTABLE HI-LO PULLEY",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9333": {
+    "sku": "IF9333",
+    "name": "ARM CURL /TRICEP EXTENSION",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "IF9323": {
+    "sku": "IF9323",
+    "name": "ARM EXTENSION",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9320": {
+    "sku": "IF9320",
+    "name": "ASSISTED CHIN/DIP COMBO",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9332": {
+    "sku": "IF9332",
+    "name": "BACK EXTENSION",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "IF9303": {
+    "sku": "IF9303",
+    "name": "BICEPS – ARM CURL",
+    "stackWeightKg": 90,
+    "stackLbs": "200"
+  },
+  "IF9301": {
+    "sku": "IF9301",
+    "name": "CHEST PRESS",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9326": {
+    "sku": "IF9326",
+    "name": "GLUTE",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "IF9302": {
+    "sku": "IF9302",
+    "name": "LAT PULLDOWN",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9322": {
+    "sku": "IF9322",
+    "name": "LAT PULLDOWN / VERTICAL ROW",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9324": {
+    "sku": "IF9324",
+    "name": "LATERAL RAISE",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "IF9306": {
+    "sku": "IF9306",
+    "name": "LEG CURL",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9328": {
+    "sku": "IF9328",
+    "name": "LEG EXTENSION / LEG CURL",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9305": {
+    "sku": "IF9305",
+    "name": "LEG EXTENSION",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9310": {
+    "sku": "IF9310",
+    "name": "LEG PRESS",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9329": {
+    "sku": "IF9329",
+    "name": "MULTI PRESS",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "IF9315": {
+    "sku": "IF9315",
+    "name": "PEC FLY / REAR DELT",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9304": {
+    "sku": "IF9304",
+    "name": "PECTORAL",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "IF9321": {
+    "sku": "IF9321",
+    "name": "PRONE LEG CURL",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9319": {
+    "sku": "IF9319",
+    "name": "SEAT ROW",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9317": {
+    "sku": "IF9317",
+    "name": "SEATED DIP",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "IF9312": {
+    "sku": "IF9312",
+    "name": "SHOULDER PRESS",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "IF9316": {
+    "sku": "IF9316",
+    "name": "STAND CALF RAISE",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "IF9318": {
+    "sku": "IF9318",
+    "name": "TORSO ROTATION",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "AM8014": {
+    "sku": "AM8014",
+    "name": "LEG EXTENSION",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9534": {
+    "sku": "VX9534",
+    "name": "ABDOMINAL/BACK EXTENSION",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "VX9514": {
+    "sku": "VX9514",
+    "name": "ABDOMINAL",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "VX9508": {
+    "sku": "VX9508",
+    "name": "ABDUCTOR / ADDUCTOR",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9503": {
+    "sku": "VX9503",
+    "name": "ARM CURL",
+    "stackWeightKg": 90,
+    "stackLbs": "200"
+  },
+  "VX9533": {
+    "sku": "VX9533",
+    "name": "ARM CURL/TRICEPS EXTENSION",
+    "stackWeightKg": 90,
+    "stackLbs": "200"
+  },
+  "VX9516": {
+    "sku": "VX9516",
+    "name": "CALF RAISE",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9501": {
+    "sku": "VX9501",
+    "name": "CHEST PRESS",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9522": {
+    "sku": "VX9522",
+    "name": "LAT PULLDOWN/VERTICAL ROW",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9502": {
+    "sku": "VX9502",
+    "name": "LAT PULLDOWN",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9524": {
+    "sku": "VX9524",
+    "name": "LATERAL RAISE",
+    "stackWeightKg": 107,
+    "stackLbs": "235"
+  },
+  "VX9505": {
+    "sku": "VX9505",
+    "name": "LEG EXTENSION",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9528": {
+    "sku": "VX9528",
+    "name": "LEG EXTENSION/LEG CURL",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9510": {
+    "sku": "VX9510",
+    "name": "LEG PRESS",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9529": {
+    "sku": "VX9529",
+    "name": "MULTI PRESS",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "VX9515": {
+    "sku": "VX9515",
+    "name": "PEC FLY / REAR DELT",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9504": {
+    "sku": "VX9504",
+    "name": "PECTORAL",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "VX9521": {
+    "sku": "VX9521",
+    "name": "PRONE LEG CURL",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9517": {
+    "sku": "VX9517",
+    "name": "SEATED DIP",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "VX9506": {
+    "sku": "VX9506",
+    "name": "SEATED LEG CURL",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9512": {
+    "sku": "VX9512",
+    "name": "SHOULDER PRESS",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "VX9518": {
+    "sku": "VX9518",
+    "name": "TORSO ROTATION",
+    "stackWeightKg": 106,
+    "stackLbs": "235"
+  },
+  "VX9519": {
+    "sku": "VX9519",
+    "name": "VERTICAL ROW",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  },
+  "VX9520": {
+    "sku": "VX9520",
+    "name": "WEIGHT ASSISTED CHIN/DIP COMBO",
+    "stackWeightKg": 134,
+    "stackLbs": "295"
+  }
+}

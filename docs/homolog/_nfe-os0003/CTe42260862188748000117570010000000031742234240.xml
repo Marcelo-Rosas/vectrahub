@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cteProc xmlns="http://www.portalfiscal.inf.br/cte" versao="4.00"><CTe xmlns="http://www.portalfiscal.inf.br/cte"><infCte versao="4.00" Id="CTe42260862188748000117570010000000031742234240"><ide><cUF>42</cUF><cCT>74223424</cCT><CFOP>6353</CFOP><natOp>PRESTACAO DE SERVICO DE TRANSPORTE</natOp><mod>57</mod><serie>1</serie><nCT>3</nCT><dhEmi>2026-08-08T18:57:10-03:00</dhEmi><tpImp>1</tpImp><tpEmis>1</tpEmis><cDV>0</cDV><tpAmb>1</tpAmb><tpCTe>0</tpCTe><procEmi>0</procEmi><verProc>0.1.0</verProc><cMunEnv>4218707</cMunEnv><xMunEnv>TUBARAO</xMunEnv><UFEnv>SC</UFEnv><modal>01</modal><tpServ>0</tpServ><cMunIni>4218707</cMunIni><xMunIni>Tubarão</xMunIni><UFIni>SC</UFIni><cMunFim>2927408</cMunFim><xMunFim>SALVADOR</xMunFim><UFFim>BA</UFFim><retira>0</retira><xDetRetira>EQUIPAMENTOS</xDetRetira><indIEToma>1</indIEToma><toma3><toma>0</toma></toma3></ide><emit><CNPJ>62188748000117</CNPJ><IE>263768406</IE><IEST>263768406</IEST><xNome>VECTRA HUB LTDA</xNome><xFant>VECTRA HUB</xFant><enderEmit><xLgr>Rodovia Jorge Lacerda</xLgr><nro>725</nro><xBairro>Espinheiros</xBairro><cMun>4208203</cMun><xMun>Itajaí</xMun><CEP>88317100</CEP><UF>SC</UF><fone>47988509714</fone></enderEmit><CRT>1</CRT></emit><rem><CNPJ>17621295000116</CNPJ><IE>258346590</IE><xNome>AC7 COMERCIO DE ARTIGOS ESPORTIVOS E TELEVENDAS LTDA</xNome><fone>4831910777</fone><enderReme><xLgr>ANTONIO HULSE</xLgr><nro>658</nro><xBairro>HUMAITA</xBairro><cMun>4218707</cMun><xMun>TUBARAO</xMun><CEP>88704315</CEP><UF>SC</UF><cPais>1058</cPais><xPais>Brasil</xPais></enderReme></rem><exped><CNPJ>17621295000116</CNPJ><IE>258346590</IE><xNome>AC7 COMERCIO DE ARTIGOS ESPORTIVOS E TELEVENDAS LTDA</xNome><fone>4831910777</fone><enderExped><xLgr>ANTONIO HULSE</xLgr><nro>658</nro><xBairro>HUMAITA</xBairro><cMun>4218707</cMun><xMun>TUBARAO</xMun><CEP>88704315</CEP><UF>SC</UF><cPais>1058</cPais><xPais>Brasil</xPais></enderExped></exped><receb><CPF>51491397500</CPF><IE/><xNome>ERVINO BINOW JUNIOR</xNome><fone>71996364642</fone><enderReceb><xLgr>RESIDENCIAL Itaparica</xLgr><nro>S/N</nro><xCpl>QUADRA H2 LOTE12</xCpl><xBairro>ALPHAVILLE I</xBairro><cMun>2927408</cMun><xMun>SALVADOR</xMun><CEP>41701020</CEP><UF>BA</UF><cPais>1058</cPais><xPais>Brasil</xPais></enderReceb></receb><dest><CPF>51491397500</CPF><IE/><xNome>ERVINO BINOW JUNIOR</xNome><fone>71996364642</fone><enderDest><xLgr>RESIDENCIAL Itaparica</xLgr><nro>S/N</nro><xCpl>QUADRA H2 LOTE12</xCpl><xBairro>ALPHAVILLE I</xBairro><cMun>2927408</cMun><xMun>SALVADOR</xMun><CEP>41701020</CEP><UF>BA</UF><cPais>1058</cPais><xPais>Brasil</xPais></enderDest></dest><vPrest><vTPrest>8320.35</vTPrest><vRec>8320.35</vRec></vPrest><imp><ICMS><ICMS00><CST>00</CST><vBC>0</vBC><pICMS>0</pICMS><vICMS>0</vICMS></ICMS00></ICMS><vTotTrib>0</vTotTrib></imp><infCTeNorm><infCarga><vCarga>0</vCarga><proPred>EQUIPAMENTOS</proPred><infQ><cUnid>01</cUnid><tpMed>PESO BRUTO</tpMed><qCarga>1806.0000</qCarga></infQ></infCarga><infDoc><infNFe><chave>42260817621295000116550010000163721000146620</chave></infNFe></infDoc><infModal versaoModal="4.00"><rodo><RNTRC>59734055</RNTRC></rodo></infModal></infCTeNorm><infRespTec><CNPJ>07504505000132</CNPJ><xContato>Ricardo Acras</xContato><email>contato@focusnfe.com.br</email><fone>41991820810</fone></infRespTec></infCte><infCTeSupl><qrCodCTe>https://dfe-portal.svrs.rs.gov.br/cte/qrCode?chCTe=42260862188748000117570010000000031742234240&amp;tpAmb=1</qrCodCTe></infCTeSupl><Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><Reference URI="#CTe42260862188748000117570010000000031742234240"><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/><Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><DigestValue>YFq5UHcOzxugqv1GLFml6W/PEm4=</DigestValue></Reference></SignedInfo><SignatureValue>PeczS4kx/Cq8JMsCrFN42yTegLFpUXsNO1KODdkPk0YOevwHdrobVJ68XTybfB0BS8jehr/Oh/Ww
+BpZM7fkLXDG7T14Mr8rv5Ti7XGRrBFR4av8Ih2+Xr2swZkYkh6lIdrBSHAx7joCVBoctoiUMOzkF
+AK3vYGphEZ/0xX/NKkbhqH/ebkuDNNZM7bpIYtsvhBlhRj7w6XD+6vfn+mcMLJ+T+ZikmWX9+4Dv
+ogPX5YPS67l4VxHCcKFcBj5+XFYbjvIlw5KHwQB/gVxhbButuUowKmSN+ngBiPc2lohyZvnYeVuy
+YTGEY/dlGpynKTD5RuA5l4Mk/j9JMrOg4P2kJw==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIH2jCCBcKgAwIBAgIKV+ik5onzT1yERDANBgkqhkiG9w0BAQsFADBbMQswCQYDVQQGEwJCUjEW
+MBQGA1UECwwNQUMgU3luZ3VsYXJJRDETMBEGA1UECgwKSUNQLUJyYXNpbDEfMB0GA1UEAwwWQUMg
+U3luZ3VsYXJJRCBNdWx0aXBsYTAeFw0yNTA4MTUxMjA5MTlaFw0yNjA4MTUxMjA5MTlaMIHEMQsw
+CQYDVQQGEwJCUjETMBEGA1UECgwKSUNQLUJyYXNpbDEiMCAGA1UECwwZQ2VydGlmaWNhZG8gRGln
+aXRhbCBQSiBBMTEZMBcGA1UECwwQVmlkZW9jb25mZXJlbmNpYTEXMBUGA1UECwwONDEzNDc4MDkw
+MDAxNzExHzAdBgNVBAsMFkFDIFN5bmd1bGFySUQgTXVsdGlwbGExJzAlBgNVBAMMHlZFQ1RSQSBI
+VUIgTFREQTo2MjE4ODc0ODAwMDExNzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMR4
+8zPkHTCjJ8xIoTHc6u2rhaENhLzFVW43MGhe/aWJmyeAFJPkyY9kY3tQGwfOWgn6w344OwkqX3jb
+DJZDVqN0kyP04eG8IMx3xltnA9XXptCNmrd7s7SpIkHBnoRe53OEu4MBLJMaQFH8yMDHdGuOSbJH
+x6TkPYX8dDXKHLD9yf01rDFakhm4cjo8kO2zT/YotS8Duqm2Gusyfg+JyOMsm2GKseuOaeLx0zji
+S4XE0WDWau2NdBbiX6nbyTkniWXGQby/bU7owp9ebCuQeb1+0uOqwIvcFEZVPXCd9V7KTGwhlCxz
+xT1uDjMGf+Iue6gZGKJ829up6gI1svzPB4kCAwEAAaOCAzQwggMwMA4GA1UdDwEB/wQEAwIF4DAd
+BgNVHSUEFjAUBggrBgEFBQcDBAYIKwYBBQUHAwIwCQYDVR0TBAIwADAfBgNVHSMEGDAWgBST4f9+
+HeX15E3hOWKLIWmV5q9yFjAdBgNVHQ4EFgQUFt0cDfkWada9Nk36nKvUUFzyR2swfwYIKwYBBQUH
+AQEEczBxMG8GCCsGAQUFBzAChmNodHRwOi8vc3luZ3VsYXJpZC5jb20uYnIvcmVwb3NpdG9yaW8v
+YWMtc3luZ3VsYXJpZC1tdWx0aXBsYS9jZXJ0aWZpY2Fkb3MvYWMtc3luZ3VsYXJpZC1tdWx0aXBs
+YS5wN2IwgYIGA1UdIAR7MHkwdwYHYEwBAgGBBTBsMGoGCCsGAQUFBwIBFl5odHRwOi8vc3luZ3Vs
+YXJpZC5jb20uYnIvcmVwb3NpdG9yaW8vYWMtc3luZ3VsYXJpZC1tdWx0aXBsYS9kcGMvZHBjLWFj
+LXN5bmd1bGFySUQtbXVsdGlwbGEucGRmMIHIBgNVHREEgcAwgb2gIQYFYEwBAwKgGAQWTUFSQ0VM
+TyBBQklTU1VMTyBST1NBU6AZBgVgTAEDA6AQBA42MjE4ODc0ODAwMDExN6BCBgVgTAEDBKA5BDcw
+MzA5MTk3OTA4MjM1Nzg3NzE3MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwoBcG
+BWBMAQMHoA4EDDAwMDAwMDAwMDAwMIEgbWFyY2Vsby5yb3Nhc0B2ZWN0cmFjYXJnby5jb20uYnIw
+geIGA1UdHwSB2jCB1zBvoG2ga4ZpaHR0cDovL2ljcC1icmFzaWwuc3luZ3VsYXJpZC5jb20uYnIv
+cmVwb3NpdG9yaW8vYWMtc3luZ3VsYXJpZC1tdWx0aXBsYS9sY3IvbGNyLWFjLXN5bmd1bGFyaWQt
+bXVsdGlwbGEuY3JsMGSgYqBghl5odHRwOi8vc3luZ3VsYXJpZC5jb20uYnIvcmVwb3NpdG9yaW8v
+YWMtc3luZ3VsYXJpZC1tdWx0aXBsYS9sY3IvbGNyLWFjLXN5bmd1bGFyaWQtbXVsdGlwbGEuY3Js
+MA0GCSqGSIb3DQEBCwUAA4ICAQAXbPXwmCkEa4qC6g8Q3nKPbuJwW1Cl2hAbql5/UbNEEk4pR2ah
+5DdL1ORHVHHY4Mq5o1RNC9XmM5EmutXXvWLmiEZWNvpSXm7Ovput4jAjf6TOuk1QBRpS9jKGxvhr
+fvSz8Utsa3Cj4W6KrJLp5GNDgtd76lIlzYNlWvwHC0lEKeNY7zqWj1T/8k124n8nk+/z/Ir6phy4
+pdwQPJExzoPDMehXrJ1jgyl0T1ZeL6CVsnTG7OJQL4ueBVnvdELRvuoqwqfKwEiLwbybw3ecxioT
+tntNjY0JgpkJJsX3IoyN/l4K738ahJtndEiQ7IYorcZi7HTEF72qe3TZzwZT+EG55IBYdM86AEBi
+TlCGqjGWFy7KxLMVH9H7+P/PtxWcuNXzq2otVk/K+qJVqeDiKh+IlOKXMYjF1KRWq+8kg+M2epon
++hu/Vqrw6JOlE3XRemYlMY3wROjFL7NmbR6VVWqx/1YfHGF5+WLdczmag3sMtvmw9LqQ3Y3BsmEM
+ar34XtaWM4cPdq9iirvP0JsrfJWrD8J+C/Qgj2kG5tlnB5f/z5g1VdjJzSoJ8HdSxJNy6YTXiJCM
+Y+z2jjOD71EdehDzm9YOkcCV9otO7EP9W0g9aH7nSGjRqKfSPifZFRCOCRPjsvDflHvbKcNJcFcc
+cSNBdGYRs4pfAP1SGC2CTQvhmw==</X509Certificate></X509Data></KeyInfo></Signature></CTe><protCTe versao="4.00"><infProt Id="CTe342260449034158"><tpAmb>1</tpAmb><verAplic>RS20260718130906</verAplic><chCTe>42260862188748000117570010000000031742234240</chCTe><dhRecbto>2026-08-08T18:57:13-03:00</dhRecbto><nProt>342260449034158</nProt><digVal>YFq5UHcOzxugqv1GLFml6W/PEm4=</digVal><cStat>100</cStat><xMotivo>Autorizado o uso do CT-e</xMotivo></infProt></protCTe></cteProc>

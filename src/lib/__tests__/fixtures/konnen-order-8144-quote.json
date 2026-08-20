@@ -1,0 +1,589 @@
+{
+  "client": {
+    "document": "50902729000121",
+    "name": "Dg Academias Ltda",
+    "zipCode": "60741575",
+    "city": "Fortaleza",
+    "state": "CE",
+    "address": "Avenida Augusto Dos Anjos 1140",
+    "email": "apollobarros@hotmail.com"
+  },
+  "cargoValue": 1354668.3,
+  "lines": [
+    {
+      "sku": "AB7017",
+      "quantity": 1
+    },
+    {
+      "sku": "AB7019",
+      "quantity": 6
+    },
+    {
+      "sku": "AB7019-1,2M",
+      "quantity": 1
+    },
+    {
+      "sku": "AB7032",
+      "quantity": 1
+    },
+    {
+      "sku": "AB7119",
+      "quantity": 2
+    },
+    {
+      "sku": "AB7155",
+      "quantity": 3
+    },
+    {
+      "sku": "BRTW-10",
+      "quantity": 50
+    },
+    {
+      "sku": "BRTW-2.5",
+      "quantity": 14
+    },
+    {
+      "sku": "BRTW-20",
+      "quantity": 50
+    },
+    {
+      "sku": "BRTW-5",
+      "quantity": 30
+    },
+    {
+      "sku": "E3036A",
+      "quantity": 1
+    },
+    {
+      "sku": "E3039A",
+      "quantity": 3
+    },
+    {
+      "sku": "E3042A",
+      "quantity": 2
+    },
+    {
+      "sku": "E3043A",
+      "quantity": 2
+    },
+    {
+      "sku": "E3044A",
+      "quantity": 1
+    },
+    {
+      "sku": "E3045A",
+      "quantity": 1
+    },
+    {
+      "sku": "E3047A",
+      "quantity": 1
+    },
+    {
+      "sku": "E3050A",
+      "quantity": 1
+    },
+    {
+      "sku": "E3055A",
+      "quantity": 1
+    },
+    {
+      "sku": "E3057A",
+      "quantity": 2
+    },
+    {
+      "sku": "E3061A",
+      "quantity": 1
+    },
+    {
+      "sku": "E3063A",
+      "quantity": 2
+    },
+    {
+      "sku": "E3065A",
+      "quantity": 1
+    },
+    {
+      "sku": "E8",
+      "quantity": 20
+    },
+    {
+      "sku": "ECE5",
+      "quantity": 3
+    },
+    {
+      "sku": "HB005",
+      "quantity": 3
+    },
+    {
+      "sku": "HSR005",
+      "quantity": 3
+    },
+    {
+      "sku": "IF9301",
+      "quantity": 1,
+      "stackWeightKg": 134
+    },
+    {
+      "sku": "IF9302",
+      "quantity": 1,
+      "stackWeightKg": 134
+    },
+    {
+      "sku": "IF9303",
+      "quantity": 1,
+      "stackWeightKg": 90
+    },
+    {
+      "sku": "IF9304",
+      "quantity": 1,
+      "stackWeightKg": 106
+    },
+    {
+      "sku": "IF9305",
+      "quantity": 3,
+      "stackWeightKg": 134
+    },
+    {
+      "sku": "IF9306",
+      "quantity": 2,
+      "stackWeightKg": 134
+    },
+    {
+      "sku": "IF9310",
+      "quantity": 1,
+      "stackWeightKg": 134
+    },
+    {
+      "sku": "IF9312",
+      "quantity": 1,
+      "stackWeightKg": 106
+    },
+    {
+      "sku": "IF9315",
+      "quantity": 2,
+      "stackWeightKg": 134
+    },
+    {
+      "sku": "IF9317",
+      "quantity": 1,
+      "stackWeightKg": 106
+    },
+    {
+      "sku": "IF9319",
+      "quantity": 1,
+      "stackWeightKg": 134
+    },
+    {
+      "sku": "IF9320",
+      "quantity": 1,
+      "stackWeightKg": 134
+    },
+    {
+      "sku": "IF9321",
+      "quantity": 2,
+      "stackWeightKg": 134
+    },
+    {
+      "sku": "IF9322",
+      "quantity": 3,
+      "stackWeightKg": 134
+    },
+    {
+      "sku": "IF9324",
+      "quantity": 1,
+      "stackWeightKg": 106
+    },
+    {
+      "sku": "IF9326",
+      "quantity": 1,
+      "stackWeightKg": 106
+    },
+    {
+      "sku": "IF9335",
+      "quantity": 2,
+      "stackWeightKg": 134
+    },
+    {
+      "sku": "IF9336",
+      "quantity": 2,
+      "stackWeightKg": 134
+    },
+    {
+      "sku": "IFCC",
+      "quantity": 2
+    },
+    {
+      "sku": "IFFT",
+      "quantity": 2
+    },
+    {
+      "sku": "IFP1103",
+      "quantity": 1
+    },
+    {
+      "sku": "IFP1201",
+      "quantity": 1
+    },
+    {
+      "sku": "IFP1206",
+      "quantity": 1
+    },
+    {
+      "sku": "IFP1613",
+      "quantity": 1
+    },
+    {
+      "sku": "IFP1615",
+      "quantity": 1
+    },
+    {
+      "sku": "IFP1617",
+      "quantity": 1
+    },
+    {
+      "sku": "IFP1622",
+      "quantity": 1
+    },
+    {
+      "sku": "IFP1623",
+      "quantity": 2
+    },
+    {
+      "sku": "IT9529",
+      "quantity": 1
+    },
+    {
+      "sku": "P6111-15R",
+      "quantity": 1
+    },
+    {
+      "sku": "P6111-15W",
+      "quantity": 1
+    },
+    {
+      "sku": "P6111-20R",
+      "quantity": 1
+    },
+    {
+      "sku": "P6111-20W",
+      "quantity": 1
+    },
+    {
+      "sku": "P6111-25R",
+      "quantity": 1
+    },
+    {
+      "sku": "P6111-25W",
+      "quantity": 1
+    },
+    {
+      "sku": "P6111-30R",
+      "quantity": 1
+    },
+    {
+      "sku": "P6111-30W",
+      "quantity": 1
+    },
+    {
+      "sku": "P6111-35R",
+      "quantity": 1
+    },
+    {
+      "sku": "P6111-35W",
+      "quantity": 1
+    },
+    {
+      "sku": "PS300",
+      "quantity": 3
+    },
+    {
+      "sku": "R7",
+      "quantity": 2
+    },
+    {
+      "sku": "RKC01UDB",
+      "quantity": 1
+    },
+    {
+      "sku": "RKC01UDB-S780",
+      "quantity": 2
+    },
+    {
+      "sku": "RKC02DBR-015",
+      "quantity": 2
+    },
+    {
+      "sku": "RKC02VDR-010X",
+      "quantity": 1
+    },
+    {
+      "sku": "TM06",
+      "quantity": 1
+    },
+    {
+      "sku": "TM07",
+      "quantity": 1
+    },
+    {
+      "sku": "TM15",
+      "quantity": 1
+    },
+    {
+      "sku": "TM25",
+      "quantity": 1
+    },
+    {
+      "sku": "TM27",
+      "quantity": 1
+    },
+    {
+      "sku": "TM56",
+      "quantity": 1
+    },
+    {
+      "sku": "TM72",
+      "quantity": 1
+    },
+    {
+      "sku": "TM91",
+      "quantity": 2
+    },
+    {
+      "sku": "TM92",
+      "quantity": 1
+    }
+  ],
+  "orderNo": "8144",
+  "unmatched": [
+    {
+      "rawSku": "AB7017",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "AB7019",
+      "quantity": 6,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "AB7019-1,2M",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "AB7032",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "AB7119",
+      "quantity": 2,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "AB7155",
+      "quantity": 3,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "BRTW-10",
+      "quantity": 50,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "BRTW-2.5",
+      "quantity": 14,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "BRTW-20",
+      "quantity": 50,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "BRTW-5",
+      "quantity": 30,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3036A",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3039A",
+      "quantity": 3,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3042A",
+      "quantity": 2,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3043A",
+      "quantity": 2,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3044A",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3045A",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3047A",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3050A",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3055A",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3057A",
+      "quantity": 2,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3061A",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3063A",
+      "quantity": 2,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E3065A",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "E8",
+      "quantity": 20,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "P6111-15R",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "P6111-15W",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "P6111-20R",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "P6111-20W",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "P6111-25R",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "P6111-25W",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "P6111-30R",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "P6111-30W",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "P6111-35R",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "P6111-35W",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "R7",
+      "quantity": 2,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "RKC01UDB",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "RKC01UDB-S780",
+      "quantity": 2,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "TM06",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "TM07",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "TM15",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "TM25",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "TM27",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "TM56",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "TM72",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "TM91",
+      "quantity": 2,
+      "hint": "SKU não encontrado em feira.products"
+    },
+    {
+      "rawSku": "TM92",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    }
+  ]
+}
