@@ -1,0 +1,4366 @@
+{
+  "schemaVersion": 1,
+  "scrapedAt": "2026-08-21T01:44:11.786Z",
+  "source": "https://www.bucklerfit.com.br",
+  "routes": [
+    {
+      "slug": "pin-loaded",
+      "kind": "category",
+      "url": "https://www.bucklerfit.com.br/category/pin-loaded"
+    },
+    {
+      "slug": "cardio",
+      "kind": "category",
+      "url": "https://www.bucklerfit.com.br/category/cardio"
+    },
+    {
+      "slug": "benches-and-racks",
+      "kind": "category",
+      "url": "https://www.bucklerfit.com.br/category/benches-and-racks"
+    },
+    {
+      "slug": "plate-loaded",
+      "kind": "category",
+      "url": "https://www.bucklerfit.com.br/category/plate-loaded"
+    },
+    {
+      "slug": "cable-cross",
+      "kind": "category",
+      "url": "https://www.bucklerfit.com.br/category/cable-cross"
+    },
+    {
+      "slug": "serie-cardio",
+      "kind": "series",
+      "url": "https://www.bucklerfit.com.br/category/serie-cardio"
+    },
+    {
+      "slug": "duet",
+      "kind": "series",
+      "url": "https://www.bucklerfit.com.br/category/duet"
+    },
+    {
+      "slug": "infinite",
+      "kind": "series",
+      "url": "https://www.bucklerfit.com.br/category/infinite"
+    },
+    {
+      "slug": "prime",
+      "kind": "series",
+      "url": "https://www.bucklerfit.com.br/category/prime"
+    },
+    {
+      "slug": "olimpea",
+      "kind": "series",
+      "url": "https://www.bucklerfit.com.br/category/olimpea"
+    },
+    {
+      "slug": "essencial",
+      "kind": "series",
+      "url": "https://www.bucklerfit.com.br/category/essencial"
+    },
+    {
+      "slug": "acessorios",
+      "kind": "acessorios",
+      "url": "https://www.bucklerfit.com.br/acessorios"
+    }
+  ],
+  "products": [
+    {
+      "sku": "PF-1001",
+      "name": "DUET PF-1001 CHEST PRESS/ SHOULDER PRESS Supino reto/inclinado e desenvolvimento de ombro",
+      "slug": "duet-pf-1001-chest-press-shoulder-press-supino-reto-inclinado-e-desenvolvimento-de-ombro",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1001-chest-press-shoulder-press-supino-reto-inclinado-e-desenvolvimento-de-ombro",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac5ecb59ab6a385d8b825_PF-1001-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Duet"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "PF-1002",
+      "name": "DUET PF-1002 BICEPS CURL/ TRICEPS EXTENSION Bíceps scott/tríceps testa",
+      "slug": "duet-pf-1002-biceps-curl-triceps-extension-biceps-scott-triceps-testa",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1002-biceps-curl-triceps-extension-biceps-scott-triceps-testa",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac4fceb71dc26b3c8add0_PF-1002-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Duet"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "PF-1003",
+      "name": "DUET PF-1003 PEC FLY/ REAR DELT Peitoral voador/Deltóide posterior",
+      "slug": "duet-pf-1003-pec-fly-rear-delt-peitoral-voador-deltoide-posterior",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1003-pec-fly-rear-delt-peitoral-voador-deltoide-posterior",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac5c86429006d00672654_PF-1003-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Duet"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "PF-1004",
+      "name": "DUET PF-1004 LAT PULL DOWN/ SEATED ROW Remada alta/baixa",
+      "slug": "duet-pf-1004-lat-pull-down-seated-row-remada-alta-baixa",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1004-lat-pull-down-seated-row-remada-alta-baixa",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac5a0f4c1713dd64e67aa_PF-1004-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Duet"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "PF-1005",
+      "name": "DUET PF-1005 BACK EXTENSION/ AB CRUNCH Abdominal/extensão de lombar",
+      "slug": "duet-pf-1005-back-extension-ab-crunch-abdominal-extensao-de-lombar",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1005-back-extension-ab-crunch-abdominal-extensao-de-lombar",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac3d8c7a3a3061ce253cb_PF-1005-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Duet"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "PF-1006",
+      "name": "DUET PF-1006 HIP ABDUCTOR/ ADDUTOR Cadeira abdutora/adutora",
+      "slug": "duet-pf-1006-hip-abductor-addutor-cadeira-abdutora-adutora",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1006-hip-abductor-addutor-cadeira-abdutora-adutora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac450c6d9b40f9bdb0957_PF-1006-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Duet"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "PF-1007",
+      "name": "DUET PF-1007 LEG CURL/ EXTENSION Cadeira extensora/mesa flexora",
+      "slug": "duet-pf-1007-leg-curl-extension-cadeira-extensora-mesa-flexora",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1007-leg-curl-extension-cadeira-extensora-mesa-flexora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac4d29665c2cea3f7bdbd_PF-1007-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Duet"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "PF-1008",
+      "name": "DUET PF-1008 ASSISTANT CHIN/DIP Graviton",
+      "slug": "duet-pf-1008-assistant-chin-dip-graviton",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1008-assistant-chin-dip-graviton",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787da5cb4174c13c9b517a1_M2-1020-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Duet"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "PF-1009",
+      "name": "DUET PF-1009 LEG PRESS/ CALF RAISE Leg Press horizontal/panturrilha sentado",
+      "slug": "duet-pf-1009-leg-press-calf-raise-leg-press-horizontal-panturrilha-sentado",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1009-leg-press-calf-raise-leg-press-horizontal-panturrilha-sentado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac49f79f16635a2777da7_PF-1009-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Duet"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "PF-1010",
+      "name": "DUET PF-1010 DOUBLE PULLEY MACHINE Polia dupla",
+      "slug": "duet-pf-1010-double-pulley-machine-polia-dupla",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1010-double-pulley-machine-polia-dupla",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac473791e78aa166ffcd8_PF-1010-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Duet"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-1001 SEATED CHEST PRESS Supino vertical",
+      "slug": "infinite-m7pro-1001-seated-chest-press-supino-vertical",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-1001-seated-chest-press-supino-vertical",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68078d79efbae28704ca3baf_M7-1001%201-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-1002 LATERAL RAISE Elevação lateral",
+      "slug": "infinite-m7pro-1002-lateral-raise-elevacao-lateral",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-1002-lateral-raise-elevacao-lateral",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ad0c50ca84098b703f500_M7-1002-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-1003 SHOULDER PRESS Desenvolvimento de ombro",
+      "slug": "infinite-m7pro-1003-shoulder-press-desenvolvimento-de-ombro",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-1003-shoulder-press-desenvolvimento-de-ombro",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ad1046288bb9f8571faa3_M7-1003-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-1004 ABDOMINAL CRUNCH Abdominal crunch",
+      "slug": "infinite-m7pro-1004-abdominal-crunch-abdominal-crunch",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-1004-abdominal-crunch-abdominal-crunch",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ace90b16660fd620cfd0c_M7-1004-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-1005 BICEPS CURL Bíceps rosca",
+      "slug": "infinite-m7pro-1005-biceps-curl-biceps-rosca",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-1005-biceps-curl-biceps-rosca",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ad0782fdafad9f549688a_M7-1005-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-1006 TRICEPS EXTENSION Extensão de tríceps",
+      "slug": "infinite-m7pro-1006-triceps-extension-extensao-de-triceps",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-1006-triceps-extension-extensao-de-triceps",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ad0135415582c6603ada5_M7-1006-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-1007 PECTORAL MACHINE Máquina de peito",
+      "slug": "infinite-m7pro-1007-pectoral-machine-maquina-de-peito",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-1007-pectoral-machine-maquina-de-peito",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdbf07c6401f3759e1df0_M7-1007-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-1008 LAT PULL DOWN Puxada alta",
+      "slug": "infinite-m7pro-1008-lat-pull-down-puxada-alta",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-1008-lat-pull-down-puxada-alta",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ad1cc39ae8a66e7f60aa8_M7-1008-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-1009 SEATED ROW/REAR DELT Remada/Deltoide posterior",
+      "slug": "infinite-m7pro-1009-seated-row-rear-delt-remada-deltoide-posterior",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-1009-seated-row-rear-delt-remada-deltoide-posterior",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ad153a0ac00b65098bbf5_M7-1009-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-1010 CHIN/DIP ASSIST Graviton",
+      "slug": "infinite-m7pro-1010-chin-dip-assist-graviton",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-1010-chin-dip-assist-graviton",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ad197389a2a071fe2e92a_M7-1010-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-1011 PEC FLY/REAR DELT Peitoral voador/Deltoide posterior",
+      "slug": "infinite-m7pro-1011-pec-fly-rear-delt-peitoral-voador-deltoide-posterior",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-1011-pec-fly-rear-delt-peitoral-voador-deltoide-posterior",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ad1fec5b4c7e6b2ed6a54_M7-1011-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-1012 BACK EXTENSION Extensão lombar",
+      "slug": "infinite-m7pro-1012-back-extension-extensao-lombar",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-1012-back-extension-extensao-lombar",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ad122389a2a071fe2896a_M7-1012-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-2001 HIP ABDUTOR Cadeira abdutora",
+      "slug": "infinite-m7pro-2001-hip-abdutor-cadeira-abdutora",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-2001-hip-abdutor-cadeira-abdutora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acf4939ae8a66e7f40e6f_M7-2001-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-2002 HIP ADDUCTOR Cadeira adutora",
+      "slug": "infinite-m7pro-2002-hip-adductor-cadeira-adutora",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-2002-hip-adductor-cadeira-adutora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acf6c45b94c2ce9522133_M7-2002-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-2003 LEG EXTENSION Cadeira extensora",
+      "slug": "infinite-m7pro-2003-leg-extension-cadeira-extensora",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-2003-leg-extension-cadeira-extensora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acfe245b94c2ce9527d3f_M7-2003-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-2004 SEATED LEG CURL Cadeira flexora",
+      "slug": "infinite-m7pro-2004-seated-leg-curl-cadeira-flexora",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-2004-seated-leg-curl-cadeira-flexora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acfa3fb94f44d2bc5548f_M7-2004-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-2005 SEATED LEG PRESS Leg press horizontal",
+      "slug": "infinite-m7pro-2005-seated-leg-press-leg-press-horizontal",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-2005-seated-leg-press-leg-press-horizontal",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ad04def38ffac0642535b_M7-2005-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-2007 STANDING CALF RAISE Panturrilha em pé",
+      "slug": "infinite-m7pro-2007-standing-calf-raise-panturrilha-em-pe",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-2007-standing-calf-raise-panturrilha-em-pe",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acf2d82da7ce63272b414_M7-2007-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-2008 GLUTE MACHINE Extensão de glúteo",
+      "slug": "infinite-m7pro-2008-glute-machine-extensao-de-gluteo",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-2008-glute-machine-extensao-de-gluteo",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679aced1b16660fd620d37a1_M7-2008-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE M7PRO-2009 PRONE LEG CURL Mesa flexora",
+      "slug": "infinite-m7pro-2009-prone-leg-curl-mesa-flexora",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-m7pro-2009-prone-leg-curl-mesa-flexora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acfc789b2490566353f42_M7-2009-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1001",
+      "name": "PRIME M2-1001 CHEST PRESS Supino vertical",
+      "slug": "prime-m2-1001-chest-press-supino-vertical",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1001-chest-press-supino-vertical",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787d758aac7192f35288109_M2-1001-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1002",
+      "name": "PRIME M2-1002 LATERAL RAISE Elevação lateral",
+      "slug": "prime-m2-1002-lateral-raise-elevacao-lateral",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1002-lateral-raise-elevacao-lateral",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787db20f37da6b42f52d17a_M2-1002-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1003",
+      "name": "PRIME M2-1003 HIP ABDUCTOR Cadeira abdutora",
+      "slug": "prime-m2-1003-hip-abductor-cadeira-abdutora",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1003-hip-abductor-cadeira-abdutora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e4dcb4b3bd6c723e846d_M2-1003-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1004",
+      "name": "PRIME M2-1004 HIP ADDUCTOR Cadeira adutora",
+      "slug": "prime-m2-1004-hip-adductor-cadeira-adutora",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1004-hip-adductor-cadeira-adutora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e52bd854b99dd708e386_M2-1004-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1005",
+      "name": "PRIME M2-1005 LEG EXTENSION Cadeira extensora",
+      "slug": "prime-m2-1005-leg-extension-cadeira-extensora",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1005-leg-extension-cadeira-extensora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e3f6b4b3bd6c723d74f4_M2-1005-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1006",
+      "name": "PRIME M2-1006 PRONE LEG CURL Mesa flexora",
+      "slug": "prime-m2-1006-prone-leg-curl-mesa-flexora",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1006-prone-leg-curl-mesa-flexora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e4307a316a8a96baae1c_M2-1006-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1007",
+      "name": "PRIME M2-1007 SHOULDER PRESS Desenvolvimento de ombro",
+      "slug": "prime-m2-1007-shoulder-press-desenvolvimento-de-ombro",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1007-shoulder-press-desenvolvimento-de-ombro",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787dad07ec0570e0650493f_M2-1007-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1008",
+      "name": "PRIME M2-1008 ABDOMINAL CRUNCH Abdominal crunch",
+      "slug": "prime-m2-1008-abdominal-crunch-abdominal-crunch",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1008-abdominal-crunch-abdominal-crunch",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e6c3fbe59fdabb4796e9_M2-1008-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1009",
+      "name": "PRIME M2-1009 SEATED LEG PRESS Leg press horizontal",
+      "slug": "prime-m2-1009-seated-leg-press-leg-press-horizontal",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1009-seated-leg-press-leg-press-horizontal",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e3bb7a316a8a96ba0184_M2-1009-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1010A",
+      "name": "PRIME M2-1010A BICEPS CURL SCOTT Bíceps scott",
+      "slug": "prime-m2-1010a-biceps-curl-scott-biceps-scott",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1010a-biceps-curl-scott-biceps-scott",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e2a93b7c5781496a32d7_M2-1010A-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1010B",
+      "name": "PRIME M2-1010B BICEPS CURL Bíceps rosca",
+      "slug": "prime-m2-1010b-biceps-curl-biceps-rosca",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1010b-biceps-curl-biceps-rosca",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/67a01e34c43e958e9eb7bc38_M2-1010%20(1).jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1011A",
+      "name": "PRIME M2-1011A TRICEPS EXTENSION Tríceps testa",
+      "slug": "prime-m2-1011a-triceps-extension-triceps-testa",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1011a-triceps-extension-triceps-testa",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e340dbb04c535892d592_M2-1011A-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1011B",
+      "name": "PRIME M2-1011B TRICEPS EXTENSION Extensão de tríceps",
+      "slug": "prime-m2-1011b-triceps-extension-extensao-de-triceps",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1011b-triceps-extension-extensao-de-triceps",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/67a01e73248ec737005394b7_M2-1011%20(1).jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1013A",
+      "name": "PRIME M2-1013A LAT PULL DOWN PULLEY Puxada alta polia",
+      "slug": "prime-m2-1013a-lat-pull-down-pulley-puxada-alta-polia",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1013a-lat-pull-down-pulley-puxada-alta-polia",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787d95935626fd6049634b0_M2-1013A-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1013",
+      "name": "PRIME M2-1013 LAT PULL DOWN Puxada alta",
+      "slug": "prime-m2-1013-lat-pull-down-puxada-alta",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1013-lat-pull-down-puxada-alta",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787d8f09a5192b59f48ce38_M2-1013-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1014",
+      "name": "PRIME M2-1014 MULTI HIP Apolete",
+      "slug": "prime-m2-1014-multi-hip-apolete",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1014-multi-hip-apolete",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e652fc8dedc507c336a7_M2-1014-min.png",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1015",
+      "name": "PRIME M2-1015 ROW/REAR DELT Remada/Deltoide posterior",
+      "slug": "prime-m2-1015-row-rear-delt-remada-deltoide-posterior",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1015-row-rear-delt-remada-deltoide-posterior",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787da3a75ca503dfcacc9e3_M2-1015-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1016",
+      "name": "PRIME M2-1016 BACK EXTENTION Extensão lombar",
+      "slug": "prime-m2-1016-back-extention-extensao-lombar",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1016-back-extention-extensao-lombar",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787da9bc51138323f652612_M2-1016-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1017",
+      "name": "PRIME M2-1017 PEC FLY/REAR DELT Peitoral voador/Deltóide posterior",
+      "slug": "prime-m2-1017-pec-fly-rear-delt-peitoral-voador-deltoide-posterior",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1017-pec-fly-rear-delt-peitoral-voador-deltoide-posterior",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787d8aa35626fd60495a648_M2-1017-min.jpg",
+      "categories": [
+        "Cardio",
+        "Pin Loaded"
+      ],
+      "series": [],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1018",
+      "name": "PRIME M2-1018 SEATED LOW ROW Remada baixa",
+      "slug": "prime-m2-1018-seated-low-row-remada-baixa",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1018-seated-low-row-remada-baixa",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787d9ef690d383e98e3634c_M2-1018-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1019",
+      "name": "PRIME M2-1019 STANDING CALF RAISE Panturrilha em pé",
+      "slug": "prime-m2-1019-standing-calf-raise-panturrilha-em-pe",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1019-standing-calf-raise-panturrilha-em-pe",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e59db7d023e81a465542_M2-1019-min.png",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1020",
+      "name": "PRIME M2-1020 CHIN/DIP ASSIST Graviton",
+      "slug": "prime-m2-1020-chin-dip-assist-graviton",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1020-chin-dip-assist-graviton",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787da5cb4174c13c9b517a1_M2-1020-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1021",
+      "name": "PRIME M2-1021 TORSO ROTATION Rotação de tronco",
+      "slug": "prime-m2-1021-torso-rotation-rotacao-de-tronco",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1021-torso-rotation-rotacao-de-tronco",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e70048a399bef799ec6d_M2-1021-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1022",
+      "name": "PRIME M2-1022 GLUTE MACHINE Extensão de glúteo",
+      "slug": "prime-m2-1022-glute-machine-extensao-de-gluteo",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1022-glute-machine-extensao-de-gluteo",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e5f9bff90714eee3be75_M2-1022-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "M2-1023",
+      "name": "PRIME M2-1023 SEATED LEG CURL Cadeira flexora",
+      "slug": "prime-m2-1023-seated-leg-curl-cadeira-flexora",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1023-seated-leg-curl-cadeira-flexora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6787e46bc5129e461a288411_M2-1023-min.jpg",
+      "categories": [
+        "Pin Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "pin-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "Airbike Comercial",
+      "slug": "airbike-comercial",
+      "productUrl": "https://www.bucklerfit.com.br/product/airbike-comercial",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/693c2f9eabbd6edf0a779c7c_AB900%2B.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "Bicicleta Horizontal com Touch Screen",
+      "slug": "bicicleta-horizontal-com-touch-screen",
+      "productUrl": "https://www.bucklerfit.com.br/product/bicicleta-horizontal-com-touch-screen",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/693c31a80f0c7378b16ebbb8_CR800%2B%20ENT.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "Bicicleta Horizontal LED",
+      "slug": "bicicleta-horizontal-led",
+      "productUrl": "https://www.bucklerfit.com.br/product/bicicleta-horizontal-led",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/693c31a80f0c7378b16ebbb8_CR800%2B%20ENT.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "Bicicleta Indoor Spirit com Console, Luz e Coach Light (resistência eletromagnética)",
+      "slug": "bicicleta-indoor-spirit-com-console-luz-e-coach-light-resistencia-eletromagnetica",
+      "productUrl": "https://www.bucklerfit.com.br/product/bicicleta-indoor-spirit-com-console-luz-e-coach-light-resistencia-eletromagnetica",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/693c461612c796564450b2d4_SBC900.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "Bicicleta Indoor Spirit (resistência eletromagnética)",
+      "slug": "bicicleta-indoor-spirit-resistencia-eletromagnetica",
+      "productUrl": "https://www.bucklerfit.com.br/product/bicicleta-indoor-spirit-resistencia-eletromagnetica",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/693c32dddb01d7b3a363eedb_SBC800.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "Bicicleta Vertical com Touch Screen",
+      "slug": "bicicleta-vertical-com-touch-screen",
+      "productUrl": "https://www.bucklerfit.com.br/product/bicicleta-vertical-com-touch-screen",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/693c470cd20aa896e853ec18_CU800%2B%20ENT.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "Bicicleta Vertical LED",
+      "slug": "bicicleta-vertical-led",
+      "productUrl": "https://www.bucklerfit.com.br/product/bicicleta-vertical-led",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/693c4784b72523056ece9765_CU800%2B.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "Elíptico Led",
+      "slug": "eliptico-led-2",
+      "productUrl": "https://www.bucklerfit.com.br/product/eliptico-led-2",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/693c4784b72523056ece9765_CU800%2B.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "Elíptico LED",
+      "slug": "eliptico-led",
+      "productUrl": "https://www.bucklerfit.com.br/product/eliptico-led",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/693c31d773125325f656a20f_CE800%2B.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "Elíptico Touch Screen",
+      "slug": "eliptico-touch-screen",
+      "productUrl": "https://www.bucklerfit.com.br/product/eliptico-touch-screen",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/693c4e86d83d0aae07e4c2ff_CE800%2B%20ENT.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE ELLIPTICAL RE-6800E LED",
+      "slug": "infinite-elliptical-re-6800e-led",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-elliptical-re-6800e-led",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677ef2651fe40bf83313261a_INFINITE%20RE-6900E-min.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE RCT-900A TREADMILL",
+      "slug": "infinite-rct-900a-treadmill",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-rct-900a-treadmill",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677ef0edf4ed6887cdae8b14_INFINITE_RCT-900A-min.jpg",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE RCT-900M TREADMILL",
+      "slug": "infinite-rct-900m-treadmill",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-rct-900m-treadmill",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677ef175a0af25517f6f0659_INFINITE_RCT-900M.jpg",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE RCT-950 TREADMILL",
+      "slug": "infinite-rct-950-treadmill",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-rct-950-treadmill",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677ef1cd05d0ed1bad003965_INFINITE_RCT-950-min.jpg",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "RS-800",
+      "name": "INFINITE RS-800 STAIR MILL",
+      "slug": "infinite-rs-800-stair-mill",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-rs-800-stair-mill",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677ef2b7626b40556ccb6de5_INFINITE%20RS-800%20STAIR%20MILL-min.jpg",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE TREADMILL LED",
+      "slug": "infinite-treadmill-led",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-treadmill-led",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677edf0e9dc7dfee716b63f0_Tread_04-min.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE TREADMILL TOUCH",
+      "slug": "infinite-treadmill-touch",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-treadmill-touch",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677edf6a01ca869c5bb3344b_Tread_03-min.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME ELLIPTICAL E12-V5 LED",
+      "slug": "prime-elliptical-e12-v5-led",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-elliptical-e12-v5-led",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677ee0d4bd7257ea424121f8_Elliptical_03-min.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME ELLIPTICAL E17-V8 LED",
+      "slug": "prime-elliptical-e17-v8-led-1",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-elliptical-e17-v8-led-1",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677ef0899c004eaa8e65cda2_PRIME_Elliptical_LED%201-min.jpg",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HORIZONTAL BIKE R11-V4 LED",
+      "slug": "prime-horizontal-bike-r11-v4-led",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-horizontal-bike-r11-v4-led",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677ee2ee98a1a83527419fb3_Bike_02-min.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME TREADMILL 6841EA LED",
+      "slug": "prime-treadmill-6841ea-led",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-treadmill-6841ea-led",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677ed6b187617d210b96ab71_Tread_02-min.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME TREADMILL 6841TA TOUCH",
+      "slug": "prime-treadmill-6841ta-touch",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-treadmill-6841ta-touch",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677ed6d278c4f0e316087efe_Tred_01-min.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME VERTICAL BIKE B11-V3 LED",
+      "slug": "prime-vertical-bike-b11-v3-led",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-vertical-bike-b11-v3-led",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677ee25f78c4f0e3161314ad_Bike_04-min.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME VERTICAL BIKE B11-V4 TOUCH",
+      "slug": "prime-vertical-bike-b11-v4-touch",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-vertical-bike-b11-v4-touch",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/677ee2a9ea340e37a576c673_Bike_03-min.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "Remo (Rower)",
+      "slug": "remo-rower",
+      "productUrl": "https://www.bucklerfit.com.br/product/remo-rower",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/693c4f1d63d393a3ee9a6b5a_CRW800%2B.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "Stepper",
+      "slug": "stepper",
+      "productUrl": "https://www.bucklerfit.com.br/product/stepper",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/693c53972a964e5d1892f927_CS800%2B.png",
+      "categories": [
+        "Cardio"
+      ],
+      "series": [],
+      "scrapedFromRoute": "cardio",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1001",
+      "name": "INFINITE FW-1001 OLYMPIC FLAT BENCH Banco supino reto",
+      "slug": "infinite-fw-1001-olympic-flat-bench-banco-supino-reto",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1001-olympic-flat-bench-banco-supino-reto",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acadd441d45ebe57849d3_FW-1001-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1002",
+      "name": "INFINITE FW-1002 OLYMPIC INCLINE BENCH Banco supino inclinado",
+      "slug": "infinite-fw-1002-olympic-incline-bench-banco-supino-inclinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1002-olympic-incline-bench-banco-supino-inclinado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acab8e479b285ef79739f_FW-1002-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1003",
+      "name": "INFINITE FW-1003 OLYMPIC DECLINE BENCH Banco supino declinado",
+      "slug": "infinite-fw-1003-olympic-decline-bench-banco-supino-declinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1003-olympic-decline-bench-banco-supino-declinado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679aca84eb71dc26b3cdcf17_FW-1003-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1004",
+      "name": "INFINITE FW-1004 SEATED ARM CURL Banco scott",
+      "slug": "infinite-fw-1004-seated-arm-curl-banco-scott",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1004-seated-arm-curl-banco-scott",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac91d6330557967f1d356_FW-1004-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1005",
+      "name": "INFINITE FW-1005 T-BAR ROW Remada cavalinho I",
+      "slug": "infinite-fw-1005-t-bar-row-remada-cavalinho-i",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1005-t-bar-row-remada-cavalinho-i",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac8d5455b7e428aaddba5_FW-1005-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1006",
+      "name": "INFINITE FW-1006 HYPEREXTENSION Banco romano",
+      "slug": "infinite-fw-1006-hyperextension-banco-romano",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1006-hyperextension-banco-romano",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac9010afd67c0af8ace40_FW-1006-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1007",
+      "name": "INFINITE FW-1007 ASSIST ABDOMINAL BENCH Banco abdominal",
+      "slug": "infinite-fw-1007-assist-abdominal-bench-banco-abdominal",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1007-assist-abdominal-bench-banco-abdominal",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac8b20afd67c0af8a8eff_FW-1007-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1008",
+      "name": "INFINITE FW-1008 90-DEGREE BENCH Banco 90°",
+      "slug": "infinite-fw-1008-90-degree-bench-banco-90deg",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1008-90-degree-bench-banco-90deg",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac9e8cdd2863b47119277_FW-1008-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1009",
+      "name": "INFINITE FW-1009 FLAT BENCH Banco reto",
+      "slug": "infinite-fw-1009-flat-bench-banco-reto",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1009-flat-bench-banco-reto",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac97daedd52134413b901_FW-1009-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1010",
+      "name": "INFINITE FW-1010 55-DEGREE BENCH Banco 55°",
+      "slug": "infinite-fw-1010-55-degree-bench-banco-55deg",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1010-55-degree-bench-banco-55deg",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679aca15eb71dc26b3cd6176_FW-1010-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1011",
+      "name": "INFINITE FW-1011 LYING T-BAR ROW",
+      "slug": "infinite-fw-1011-lying-t-bar-row",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1011-lying-t-bar-row",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/67fee504464b6bc0e774a585_FW-1011-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1012",
+      "name": "INFINITE FW-1012 ADJUSTABLE ABDOMINAL Banco abdominal",
+      "slug": "infinite-fw-1012-adjustable-abdominal-banco-abdominal",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1012-adjustable-abdominal-banco-abdominal",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac949c5738a7044cb511b_FW-1012-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1013A",
+      "name": "INFINITE FW-1013A ADJUSTABLE BENCH Banco ajustável fluído",
+      "slug": "infinite-fw-1013a-adjustable-bench-banco-ajustavel-fluido",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1013a-adjustable-bench-banco-ajustavel-fluido",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679aca5fe4120e610cde1218_FW-1013A-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1013",
+      "name": "INFINITE FW-1013 ADJUSTABLE BENCH Banco ajustável garra",
+      "slug": "infinite-fw-1013-adjustable-bench-banco-ajustavel-garra",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1013-adjustable-bench-banco-ajustavel-garra",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679aca34c5738a7044cc5cc1_FW-1013-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1014",
+      "name": "INFINITE FW-1014 BARBELL RACK Suporte de barra montada",
+      "slug": "infinite-fw-1014-barbell-rack-suporte-de-barra-montada",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1014-barbell-rack-suporte-de-barra-montada",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac819e4120e610cdc28c1_FW-1014-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1015",
+      "name": "INFINITE FW-1015 DUMBBELL RACK-DOUBLE Suporte para Halteres - 10 pares",
+      "slug": "infinite-fw-1015-dumbbell-rack-double-suporte-para-halteres---10-pares",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1015-dumbbell-rack-double-suporte-para-halteres---10-pares",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac837bff72decd2d163b4_FW-1015-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1016",
+      "name": "INFINITE FW-1016 PLATE RACK Suporte para anilhas",
+      "slug": "infinite-fw-1016-plate-rack-suporte-para-anilhas",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1016-plate-rack-suporte-para-anilhas",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac78e6429006d0068eb34_FW-1016-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1017",
+      "name": "INFINITE FW-1017 SEATED CALF RAISE Panturrilha sentada",
+      "slug": "infinite-fw-1017-seated-calf-raise-panturrilha-sentada",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1017-seated-calf-raise-panturrilha-sentada",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac891a1c9d579d70e4235_FW-1017-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1018",
+      "name": "INFINITE FW-1018 SQUAT RACK Suporte para agachamento",
+      "slug": "infinite-fw-1018-squat-rack-suporte-para-agachamento",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1018-squat-rack-suporte-para-agachamento",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac865b0e297a86da9aef2_FW-1018-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-1019",
+      "name": "INFINITE FW-1019 30-DEGREE BENCH Banco 30°",
+      "slug": "infinite-fw-1019-30-degree-bench-banco-30deg",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1019-30-degree-bench-banco-30deg",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679ac9a0cb6e4f730fcbfc7b_FW-1019-min.jpg",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2001",
+      "name": "PRIME FW-2001 OLYMPIC FLAT BENCH Banco supino reto",
+      "slug": "prime-fw-2001-olympic-flat-bench-banco-supino-reto",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2001-olympic-flat-bench-banco-supino-reto",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe686780bb2a0603e09ff_FW-2001-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2002",
+      "name": "PRIME FW-2002 OLYMPIC INCLINE BENCH Banco supino inclinado",
+      "slug": "prime-fw-2002-olympic-incline-bench-banco-supino-inclinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2002-olympic-incline-bench-banco-supino-inclinado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe013f74a09b6cd678b80_FW-2002-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2003",
+      "name": "PRIME FW-2003 OLYMPIC DECLINE BENCH Banco supino declinado",
+      "slug": "prime-fw-2003-olympic-decline-bench-banco-supino-declinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2003-olympic-decline-bench-banco-supino-declinado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdff027d250b7303d1057_FW-2003-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2004",
+      "name": "PRIME FW-2004 SEATED ARMY CURL Banco scott",
+      "slug": "prime-fw-2004-seated-army-curl-banco-scott",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2004-seated-army-curl-banco-scott",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fde5045ca11634c589878_FW-2004-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2005",
+      "name": "PRIME FW-2005 T-BAR ROW Remada cavalinho",
+      "slug": "prime-fw-2005-t-bar-row-remada-cavalinho",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2005-t-bar-row-remada-cavalinho",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fddfe6fc515e0da0c679a_FW-2005-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2006",
+      "name": "PRIME FW-2006 HYPEREXTENSION Banco romano",
+      "slug": "prime-fw-2006-hyperextension-banco-romano",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2006-hyperextension-banco-romano",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fda9af9807ab814ad9a6a_FW-2006-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2007",
+      "name": "PRIME FW-2007 ASSIST ABDOMINAL BENCH Banco abdominal",
+      "slug": "prime-fw-2007-assist-abdominal-bench-banco-abdominal",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2007-assist-abdominal-bench-banco-abdominal",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdd65f74a09b6cd652503_FW-2007-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2008",
+      "name": "PRIME FW-2008 ADJUSTABLE BENCH Banco ajustável garra",
+      "slug": "prime-fw-2008-adjustable-bench-banco-ajustavel-garra",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2008-adjustable-bench-banco-ajustavel-garra",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdf037545f2e4979a274d_FW-2008-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2009",
+      "name": "PRIME FW-2009 FLAT BENCH Banco reto",
+      "slug": "prime-fw-2009-flat-bench-banco-reto",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2009-flat-bench-banco-reto",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdecb7751d57cc15064a4_FW-2009-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2010",
+      "name": "PRIME FW-2010 55-DEGREE BENCH Banco inclinado 55°",
+      "slug": "prime-fw-2010-55-degree-bench-banco-inclinado-55deg",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2010-55-degree-bench-banco-inclinado-55deg",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fde107c70ae782fee3353_FW-2010-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2012",
+      "name": "PRIME FW-2012 LYING T-BAR ROW Remada cavalinho com apoio",
+      "slug": "prime-fw-2012-lying-t-bar-row-remada-cavalinho-com-apoio",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2012-lying-t-bar-row-remada-cavalinho-com-apoio",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fde9cdade6090363437b5_FW-2012-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2013",
+      "name": "PRIME FW-2013 ADJUSTABLE ABDOMINAL BENCH Banco declinado",
+      "slug": "prime-fw-2013-adjustable-abdominal-bench-banco-declinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2013-adjustable-abdominal-bench-banco-declinado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdee47c6401f375a07036_FW-2013-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2014",
+      "name": "PRIME FW-2014 BARBELL RACK Suporte de barra montada",
+      "slug": "prime-fw-2014-barbell-rack-suporte-de-barra-montada",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2014-barbell-rack-suporte-de-barra-montada",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdc6b527ef28525d0a4a7_FW-2014-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2015",
+      "name": "PRIME FW-2015 DUMBBELL RACK-DOUBLE Suporte para Halteres - 10 pares",
+      "slug": "prime-fw-2015-dumbbell-rack-double-suporte-para-halteres---10-pares",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2015-dumbbell-rack-double-suporte-para-halteres---10-pares",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdca7a8667238fe262801_FW-2015-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2016",
+      "name": "PRIME FW-2016 PLATE RACK Suporte para anilhas",
+      "slug": "prime-fw-2016-plate-rack-suporte-para-anilhas",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2016-plate-rack-suporte-para-anilhas",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdb767c6401f3759db8bd_FW-2016-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2017",
+      "name": "PRIME FW-2017 SEATED CALF RAISE Panturrilha sentada",
+      "slug": "prime-fw-2017-seated-calf-raise-panturrilha-sentada",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2017-seated-calf-raise-panturrilha-sentada",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdc1bafe375c88ce818a1_FW-2017-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2018",
+      "name": "PRIME FW-2018 SQUAT RACK Suporte para agachamento",
+      "slug": "prime-fw-2018-squat-rack-suporte-para-agachamento",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2018-squat-rack-suporte-para-agachamento",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdcc7b209a3b771a0cb7f_FW-2018-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2019",
+      "name": "PRIME FW-2019 30-DEGREE BENCH Banco inclinado 30°",
+      "slug": "prime-fw-2019-30-degree-bench-banco-inclinado-30deg",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2019-30-degree-bench-banco-inclinado-30deg",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdf3c7545f2e4979a579d_FW-2019-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2020",
+      "name": "PRIME FW-2020 90 - DEGREE BENCH Banco 90°",
+      "slug": "prime-fw-2020-90---degree-bench-banco-90deg",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2020-90---degree-bench-banco-90deg",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fde7ab2a6908facba10df_FW-2020-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2023",
+      "name": "PRIME FW-2023 DUMBBELL RACK-SINGLE Suporte para Halteres - 5 pares",
+      "slug": "prime-fw-2023-dumbbell-rack-single-suporte-para-halteres---5-pares",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2023-dumbbell-rack-single-suporte-para-halteres---5-pares",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdc3ebd27c1a7952d504e_FW-2023-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2025",
+      "name": "PRIME FW-2025 LEG RAISE Paralela",
+      "slug": "prime-fw-2025-leg-raise-paralela",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2025-leg-raise-paralela",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdd97abc45b4c90c57774_FW-2025-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2027",
+      "name": "PRIME FW-2027 ABDOMINAL EXTENSION Paralela com abdominal",
+      "slug": "prime-fw-2027-abdominal-extension-paralela-com-abdominal",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2027-abdominal-extension-paralela-com-abdominal",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdd1a3b8e660c2b5c4f0f_FW-2027-min.png",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2028",
+      "name": "PRIME FW-2028 ADJUSTABLE BENCH Banco ajustável pino",
+      "slug": "prime-fw-2028-adjustable-bench-banco-ajustavel-pino",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2028-adjustable-bench-banco-ajustavel-pino",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdf9148979e3da5750c34_FW-2028-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FW-2029",
+      "name": "PRIME FW-2029 GLUTE HAM RAISE Desenvolvimento glúteo",
+      "slug": "prime-fw-2029-glute-ham-raise-desenvolvimento-gluteo",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2029-glute-ham-raise-desenvolvimento-gluteo",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fdd787c70ae782feda8df_FW-2029-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "benches-and-racks",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-1024D",
+      "name": "INFINITE FM-1024D 45° DEGREE LEG PRESS Leg press linear 45°",
+      "slug": "infinite-fm-1024d-45deg-degree-leg-press-leg-press-linear-45deg",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1024d-45deg-degree-leg-press-leg-press-linear-45deg",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acce882a26a8948d29f41_FM-1024D-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE FM-1024E DEGREE LEG PRESS Agachamento no hack (Cadeirinha)",
+      "slug": "infinite-fm-1024e-degree-leg-press-agachamento-no-hack-cadeirinha",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1024e-degree-leg-press-agachamento-no-hack-cadeirinha",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679accb0b0e297a86dadc731_FM-1024E-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "INFINITE FM-1024F HACK SQUAT Agachamento no hack",
+      "slug": "infinite-fm-1024f-hack-squat-agachamento-no-hack",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1024f-hack-squat-agachamento-no-hack",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679accc8cb6e4f730fcf1bb1_FM-1024F-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1001",
+      "name": "INFINITE LD-1001 CHEST PRESS",
+      "slug": "infinite-ld-1001-chest-press",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1001-chest-press",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/67feef37f2444842210dbfae_HSPRO-1001-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1002",
+      "name": "INFINITE LD-1002 HORIZONTAL BENCH PRESS Supino horizontal",
+      "slug": "infinite-ld-1002-horizontal-bench-press-supino-horizontal",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1002-horizontal-bench-press-supino-horizontal",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083b3844ab9250fdbbb037_HSPRO-1002-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1003",
+      "name": "INFINITE LD-1003 SHOULDER PRESS Desenvolvimento de ombro",
+      "slug": "infinite-ld-1003-shoulder-press-desenvolvimento-de-ombro",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1003-shoulder-press-desenvolvimento-de-ombro",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083a5afdee991e89203b3c_HSPRO-1003-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1004",
+      "name": "INFINITE LD-1004 LATERAL RAISE/DELTOID Elevação lateral/posterior deltoide",
+      "slug": "infinite-ld-1004-lateral-raise-deltoid-elevacao-lateral-posterior-deltoide",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1004-lateral-raise-deltoid-elevacao-lateral-posterior-deltoide",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083a47a03e9ad587a6eb2b_HSPRO-1004-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1005",
+      "name": "INFINITE LD-1005 SEATED BICEPS CURL Bíceps scott",
+      "slug": "infinite-ld-1005-seated-biceps-curl-biceps-scott",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1005-seated-biceps-curl-biceps-scott",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083a0e63525d9ff4a5aace_HSPRO-1005-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1006",
+      "name": "INFINITE LD-1006 HIGH ROW Puxada alta pronada",
+      "slug": "infinite-ld-1006-high-row-puxada-alta-pronada",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1006-high-row-puxada-alta-pronada",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083a6aaffaefbe4ecfae41_HSPRO-1006-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1007",
+      "name": "INFINITE LD-1007 BENCH SMITH MACHINE Supino guiado reto/declinado",
+      "slug": "infinite-ld-1007-bench-smith-machine-supino-guiado-reto-declinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1007-bench-smith-machine-supino-guiado-reto-declinado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083aef2439612a4c99af1a_HSPRO-1007-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1008",
+      "name": "INFINITE LD-1008 BENCH SMITH MACHINE Supino guiado inclinado/ desenvolvimento",
+      "slug": "infinite-ld-1008-bench-smith-machine-supino-guiado-inclinado-desenvolvimento",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1008-bench-smith-machine-supino-guiado-inclinado-desenvolvimento",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083ad763525d9ff4a68f4c_HSPRO-1008-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1009",
+      "name": "INFINITE LD-1009 ROWING Remada reta",
+      "slug": "infinite-ld-1009-rowing-remada-reta",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1009-rowing-remada-reta",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083aade5d66cddaf6cb545_HSPRO-1009-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1010",
+      "name": "INFINITE LD-1010 WIDE CHEST PRESS",
+      "slug": "infinite-ld-1010-wide-chest-press",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1010-wide-chest-press",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/67feef85ce384b4caa854e54_HSPRO-1010-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1011",
+      "name": "INFINITE LD-1011 LEVEL ROW Remada curvada supinada",
+      "slug": "infinite-ld-1011-level-row-remada-curvada-supinada",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1011-level-row-remada-curvada-supinada",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083a99b733688a545dcec3_HSPRO-1011-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1012",
+      "name": "INFINITE LD-1012 FRONT LAT PULLDOWN Puxada alta supinada",
+      "slug": "infinite-ld-1012-front-lat-pulldown-puxada-alta-supinada",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1012-front-lat-pulldown-puxada-alta-supinada",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083a82a90a17873a6e708b_HSPRO-1012-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1013",
+      "name": "INFINITE LD-1013 PECTORAL MACHINE Crucifixo inclinado",
+      "slug": "infinite-ld-1013-pectoral-machine-crucifixo-inclinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1013-pectoral-machine-crucifixo-inclinado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083b2347338121f1a0b113_HSPRO-1013-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1014",
+      "name": "INFINITE LD-1014 LOW ROW Remada curvada neutra",
+      "slug": "infinite-ld-1014-low-row-remada-curvada-neutra",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1014-low-row-remada-curvada-neutra",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083ac324725f36e63e1182_HSPRO-1014-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1015",
+      "name": "INFINITE LD-1015 INCLINE CHEST PRESS",
+      "slug": "infinite-ld-1015-incline-chest-press",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1015-incline-chest-press",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/67feef67f11b9414a07079d1_HSPRO-1015-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1016",
+      "name": "INFINITE LD-1016 TRÍCEPS EXTENSION",
+      "slug": "infinite-ld-1016-triceps-extension",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1016-triceps-extension",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/67feef15a95c855875a5dabd_LD-1016-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-1018",
+      "name": "INFINITE LD-1018 LAT PULLDOWN PUXADA ALTA",
+      "slug": "infinite-ld-1018-lat-pulldown-puxada-alta",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1018-lat-pulldown-puxada-alta",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806c7634ee8aa0a7a9db269_1018-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-2001",
+      "name": "INFINITE LD-2001 SEATED LEG EXTENSION Cadeira extensora unilateral",
+      "slug": "infinite-ld-2001-seated-leg-extension-cadeira-extensora-unilateral",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2001-seated-leg-extension-cadeira-extensora-unilateral",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/680839bce651d5d571466e2f_HSPRO-2001-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-2002",
+      "name": "INFINITE LD-2002 KNEELING LEG CURL Flexora ajoelhada unilateral",
+      "slug": "infinite-ld-2002-kneeling-leg-curl-flexora-ajoelhada-unilateral",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2002-kneeling-leg-curl-flexora-ajoelhada-unilateral",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/680839768c744c9aed3707da_HSPRO-2002-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-2003",
+      "name": "INFINITE LD-2003 BOTH WAY SQUAT Super agachamento",
+      "slug": "infinite-ld-2003-both-way-squat-super-agachamento",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2003-both-way-squat-super-agachamento",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68083a2f3ee981239f56b623_HSPRO-2003-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-2004",
+      "name": "INFINITE LD-2004 BELT SQUAT Agachamento sumô com cinto",
+      "slug": "infinite-ld-2004-belt-squat-agachamento-sumo-com-cinto",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2004-belt-squat-agachamento-sumo-com-cinto",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/680839eb02bdaa2eb331d53c_HSPRO-2004-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-2005",
+      "name": "INFINITE LD-2005 BUTTOCKS BRIDGE Elevação pélvica",
+      "slug": "infinite-ld-2005-buttocks-bridge-elevacao-pelvica",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2005-buttocks-bridge-elevacao-pelvica",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/680839a03ee981239f565a93_HSPRO-2005-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-2006",
+      "name": "INFINITE LD-2006 PENDULUM SQUAT Agachamento no pêndulo",
+      "slug": "infinite-ld-2006-pendulum-squat-agachamento-no-pendulo",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2006-pendulum-squat-agachamento-no-pendulo",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/680839d347338121f19f88b8_HSPRO-2006-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-2007",
+      "name": "INFINITE LD-2007 GLUTE MACHINE Glúteo 4 apoios",
+      "slug": "infinite-ld-2007-glute-machine-gluteo-4-apoios",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2007-glute-machine-gluteo-4-apoios",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6808398e24725f36e63d2beb_HSPRO-2007-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-2008",
+      "name": "INFINITE LD-2008 GLUTE MACHINE Extensão de glúteo",
+      "slug": "infinite-ld-2008-glute-machine-extensao-de-gluteo",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2008-glute-machine-extensao-de-gluteo",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6808395caa15b491c6c85dc8_HSPRO-2008-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-2009",
+      "name": "INFINITE LD-2009 HIP ABDUCTOR Cadeira abdutora sentada/em pé",
+      "slug": "infinite-ld-2009-hip-abductor-cadeira-abdutora-sentada-em-pe",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2009-hip-abductor-cadeira-abdutora-sentada-em-pe",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/680838bc070a68b07d6d1652_HSPRO-2009-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-2010",
+      "name": "INFINITE LD-2010 HIP ADDUCTOR",
+      "slug": "infinite-ld-2010-hip-adductor",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2010-hip-adductor",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/67feeeff0534f99dba14a727_LD-2010-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "LD-2011",
+      "name": "INFINITE LD-2011 LEG PRESS",
+      "slug": "infinite-ld-2011-leg-press",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2011-leg-press",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/67feeee9464b6bc0e77c1893_LD-2011jpeg-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1001 ISO-LATERAL BENCH PRESS Supino reto",
+      "slug": "prime-hs-1001-iso-lateral-bench-press-supino-reto",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1001-iso-lateral-bench-press-supino-reto",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fec39a8667238fe350531_HS-1001-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1003 ISO-LATERAL CHEST PRESS Supino declinado",
+      "slug": "prime-hs-1003-iso-lateral-chest-press-supino-declinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1003-iso-lateral-chest-press-supino-declinado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679febffc86e2a1d5dff9f0c_HS-1003-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1004 ISO-LATERAL LEVEL ROW Remada supinada curvada",
+      "slug": "prime-hs-1004-iso-lateral-level-row-remada-supinada-curvada",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1004-iso-lateral-level-row-remada-supinada-curvada",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679feb5b89017aa5c624096c_HS-1004-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1005 ISO-LATERAL FRONT LAT PULLDOWN Puxada alta supinada",
+      "slug": "prime-hs-1005-iso-lateral-front-lat-pulldown-puxada-alta-supinada",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1005-iso-lateral-front-lat-pulldown-puxada-alta-supinada",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679feb92023621e9b7377b67_HS-1005-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1006 ISO-LATERAL HIGH ROW Puxada alta pronada",
+      "slug": "prime-hs-1006-iso-lateral-high-row-puxada-alta-pronada",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1006-iso-lateral-high-row-puxada-alta-pronada",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679feb417d31b0d7f235830c_HS-1006-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1007 HORIZONTAL BENCH PRESS Supino horizontal",
+      "slug": "prime-hs-1007-horizontal-bench-press-supino-horizontal",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1007-horizontal-bench-press-supino-horizontal",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679febe517b8fc6ceff59312_HS-1007-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1008 ISO-LATERAL INCLINE CHEST PRESS Supino inclinado",
+      "slug": "prime-hs-1008-iso-lateral-incline-chest-press-supino-inclinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1008-iso-lateral-incline-chest-press-supino-inclinado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fec1eafe375c88cf76972_HS-1008-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1009 ISO-LATERAL LOW ROW Remada curvada neutra",
+      "slug": "prime-hs-1009-iso-lateral-low-row-remada-curvada-neutra",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1009-iso-lateral-low-row-remada-curvada-neutra",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe940972aeb89a64df3e0_HS-1009-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1011 ISO-LATERAL ROWING Remada reta",
+      "slug": "prime-hs-1011-iso-lateral-rowing-remada-reta",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1011-iso-lateral-rowing-remada-reta",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679feb27b209a3b771ae5d14_HS-1011-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1012A SHOULDER PRESS Desenvolvimento de ombro inclinado",
+      "slug": "prime-hs-1012a-shoulder-press-desenvolvimento-de-ombro-inclinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1012a-shoulder-press-desenvolvimento-de-ombro-inclinado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fea7ec8e146310b039d8d_HS-1012A-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1012B SHOULDER PRESS Desenvolvimento de ombro",
+      "slug": "prime-hs-1012b-shoulder-press-desenvolvimento-de-ombro",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1012b-shoulder-press-desenvolvimento-de-ombro",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679feb010f6c3d4d748eff98_HS-1012B-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1013 SUPER INCLINE PRESSSupino super inclinado",
+      "slug": "prime-hs-1013-super-incline-presssupino-super-inclinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1013-super-incline-presssupino-super-inclinado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679febb07d31b0d7f235e4ba_HS-1013-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1014 ISO-LATERAL WIDE CHEST Supino amplo",
+      "slug": "prime-hs-1014-iso-lateral-wide-chest-supino-amplo",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1014-iso-lateral-wide-chest-supino-amplo",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679febc310ee26136f7d4b73_HS-1014-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1015 ISO-LATERAL WIDE PULLDOWN Puxada frente",
+      "slug": "prime-hs-1015-iso-lateral-wide-pulldown-puxada-frente",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1015-iso-lateral-wide-pulldown-puxada-frente",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679feadfc43e958e9e8e9b78_HS-1015-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1016 LATERAL RAISE inclinado Elevação lateral",
+      "slug": "prime-hs-1016-lateral-raise-inclinado-elevacao-lateral",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1016-lateral-raise-inclinado-elevacao-lateral",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679feaa448979e3da5802e00_HS-1016-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1017 PULLOVER",
+      "slug": "prime-hs-1017-pullover",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1017-pullover",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe81a741ee16bbdf97823_HS-1017A-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1018 SEATED BÍCEPS CURL Bíceps scott",
+      "slug": "prime-hs-1018-seated-biceps-curl-biceps-scott",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1018-seated-biceps-curl-biceps-scott",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fea127a37b38866866de1_HS-1018-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1020 – Standing Calf Raise (Panturrilha em pé)",
+      "slug": "prime-hs-1020---standing-calf-raise-panturrilha-em-pe",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1020---standing-calf-raise-panturrilha-em-pe",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806cfb7241731e1b241e345_HS-1020-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1021 – Iso-Lateral Leg Curl (Mesa flexora unilateral)",
+      "slug": "prime-hs-1021---iso-lateral-leg-curl-mesa-flexora-unilateral",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1021---iso-lateral-leg-curl-mesa-flexora-unilateral",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d145eb431624c9b69f8d_HS-1021-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1022 – Leg Extension (Cadeira extensora unilateral)",
+      "slug": "prime-hs-1022---leg-extension-cadeira-extensora-unilateral",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1022---leg-extension-cadeira-extensora-unilateral",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d1aa36b1aea22cbe79d9_HS-1022-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1023 LEG PRESS Leg press horizontal unilateral",
+      "slug": "prime-hs-1023-leg-press-leg-press-horizontal-unilateral",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1023-leg-press-leg-press-horizontal-unilateral",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe996f9807ab814baf935_HS-1023-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1025 – Super Horizontal Calf (Panturrilha horizontal)",
+      "slug": "prime-hs-1025---super-horizontal-calf-panturrilha-horizontal",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1025---super-horizontal-calf-panturrilha-horizontal",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d207755a69c826b25926_HS-1025-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1027C – Smith Machine with Power Hack (Agachamento livre com Smith)",
+      "slug": "prime-hs-1027c---smith-machine-with-power-hack-agachamento-livre-com-smith",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1027c---smith-machine-with-power-hack-agachamento-livre-com-smith",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d255bfd71ac879d0a351_HS-1027C-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1028 – Squat Lunge (Agachamento afundo)",
+      "slug": "prime-hs-1028---squat-lunge-agachamento-afundo",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1028---squat-lunge-agachamento-afundo",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d2c69e1910ed271bcf8e_HS-1028-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1029 LINEAR LEG PRESS Leg press linear 45°",
+      "slug": "prime-hs-1029-linear-leg-press-leg-press-linear-45deg",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1029-linear-leg-press-leg-press-linear-45deg",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe97dc43e958e9e8d68ca_HS-1029-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1030 – Iso-Lateral Kneeling Leg Curl (Flexora unilateral ajoelhada)",
+      "slug": "prime-hs-1030---iso-lateral-kneeling-leg-curl-flexora-unilateral-ajoelhada",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1030---iso-lateral-kneeling-leg-curl-flexora-unilateral-ajoelhada",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d3093785c738e719e71f_HS-1030-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1031 TRICEPS EXTENSION Extensão de tríceps",
+      "slug": "prime-hs-1031-triceps-extension-extensao-de-triceps",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1031-triceps-extension-extensao-de-triceps",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe9d8b2a6908facc5d98f_HS-1031-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1032 SEATED/STANDING SHRUG Encolhimento de ombro",
+      "slug": "prime-hs-1032-seated-standing-shrug-encolhimento-de-ombro",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1032-seated-standing-shrug-encolhimento-de-ombro",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fea546fc515e0da17cda4_HS-1032-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1033 – Hack Squat (Agachamento no Hack)",
+      "slug": "prime-hs-1033---hack-squat-agachamento-no-hack",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1033---hack-squat-agachamento-no-hack",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d37af19e5458f5be64aa_HS-1033-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1034 – Tibia Dorsal Flexion (Flexão de tíbia)",
+      "slug": "prime-hs-1034---tibia-dorsal-flexion-flexao-de-tibia",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1034---tibia-dorsal-flexion-flexao-de-tibia",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d3ccf02e424488ed2fc2_HS-1034-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1035 – Bothway Squat (Super Agachamento)",
+      "slug": "prime-hs-1035---bothway-squat-super-agachamento",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1035---bothway-squat-super-agachamento",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d4163785c738e71ad735_HS-1035-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1036 FOREARM TENSION Antebraço",
+      "slug": "prime-hs-1036-forearm-tension-antebraco",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1036-forearm-tension-antebraco",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe9b33b8e660c2b6858f5_HS-1036-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1037 – Abdominal Crunch",
+      "slug": "prime-hs-1037---abdominal-crunch",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1037---abdominal-crunch",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d4571df5e49ceef48ae9_HS-1037-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1038 ABDUTOR (Cadeira Abdutora)",
+      "slug": "prime-hs-1038-abdutor-cadeira-abdutora",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1038-abdutor-cadeira-abdutora",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/68078c1e1dc31730f950295d_HS-1038-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1039 – Vertical Leg Press (Leg Press 90°)",
+      "slug": "prime-hs-1039---vertical-leg-press-leg-press-90deg",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1039---vertical-leg-press-leg-press-90deg",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d518c3f03eab37a8032f_HS-1039-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1040 4-WAYNECK Extensão, flexão e abdução de cervical",
+      "slug": "prime-hs-1040-4-wayneck-extensao-flexao-e-abducao-de-cervical",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1040-4-wayneck-extensao-flexao-e-abducao-de-cervical",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe9f348979e3da57f9df2_HS-1040-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1042 – Chin Up Dip (Paralela com barra fixa)",
+      "slug": "prime-hs-1042---chin-up-dip-paralela-com-barra-fixa",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1042---chin-up-dip-paralela-com-barra-fixa",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d56bf1c3f1df63dd2fc1_HS-1042-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1043 OLYMPIC POWER RACK Suporte para agachamento olímpico",
+      "slug": "prime-hs-1043-olympic-power-rack-suporte-para-agachamento-olimpico",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1043-olympic-power-rack-suporte-para-agachamento-olimpico",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d5e771102fe6fc81cdf7_HS-1043-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1044 – Half Rack (Meio suporte para agachamento)",
+      "slug": "prime-hs-1044---half-rack-meio-suporte-para-agachamento",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1044---half-rack-meio-suporte-para-agachamento",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d63e920173980c6d5b81_HS-1044-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1045 – Power Cage (Super Gaiola)",
+      "slug": "prime-hs-1045---power-cage-super-gaiola",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1045---power-cage-super-gaiola",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d6a307c983f2d30d8a0f_HS-1045-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1047 – Multi Function Power Cage (Gaiola multifuncional)",
+      "slug": "prime-hs-1047---multi-function-power-cage-gaiola-multifuncional",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1047---multi-function-power-cage-gaiola-multifuncional",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d70dc3f03eab37a93bb9_HS-1047-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1048 PECTORAL MACHINE Crucifixo inclinado",
+      "slug": "prime-hs-1048-pectoral-machine-crucifixo-inclinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1048-pectoral-machine-crucifixo-inclinado",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe909e0257e50e20e88fa_HS-1048-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1049A – Buttocks Bridge (Elevação pélvica)",
+      "slug": "prime-hs-1049a---buttocks-bridge-elevacao-pelvica",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1049a---buttocks-bridge-elevacao-pelvica",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6806d74a7f9e3e11b601f38c_HS-1049A-min.jpg",
+      "categories": [
+        "Plate Loaded"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "plate-loaded",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-1001",
+      "name": "INFINITE FM-1001 DUAL ADJUSTABLE PULLEY Crossover angular",
+      "slug": "infinite-fm-1001-dual-adjustable-pulley-crossover-angular",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1001-dual-adjustable-pulley-crossover-angular",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acb9b9e1330356ad4fd23_FM-1001-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-1002",
+      "name": "INFINITE FM-1002 DUAL ADJUSTABLE PULLEY Crossover angular",
+      "slug": "infinite-fm-1002-dual-adjustable-pulley-crossover-angular",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1002-dual-adjustable-pulley-crossover-angular",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acc8feb0cd791c5b6332c_FM-1002-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-1005",
+      "name": "INFINITE FM-1005 MULTI JUNGLE 4 STACK Multi estações 4",
+      "slug": "infinite-fm-1005-multi-jungle-4-stack-multi-estacoes-4",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1005-multi-jungle-4-stack-multi-estacoes-4",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acc14389c342e5459a616_FM-1005-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-1006",
+      "name": "INFINITE FM-1006 MULTI JUNGLE 5 STACK Multi estações 5",
+      "slug": "infinite-fm-1006-multi-jungle-5-stack-multi-estacoes-5",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1006-multi-jungle-5-stack-multi-estacoes-5",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acbf3509128c7a3364bec_FM-1006-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-1007",
+      "name": "INFINITE FM-1007 MULTI JUNGLE 8 STACK Multi estações 8",
+      "slug": "infinite-fm-1007-multi-jungle-8-stack-multi-estacoes-8",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1007-multi-jungle-8-stack-multi-estacoes-8",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acbd2a36dfef978049288_FM-1007-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-1008",
+      "name": "INFINITE FM-1008 CABLE CROSSOVER Crossover",
+      "slug": "infinite-fm-1008-cable-crossover-crossover",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1008-cable-crossover-crossover",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acc4e82a26a8948d22a57_FM-1008-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-1009",
+      "name": "INFINITE FM-1009 SMITH MACHINE COUNTER BALANCE Máquina smith",
+      "slug": "infinite-fm-1009-smith-machine-counter-balance-maquina-smith",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1009-smith-machine-counter-balance-maquina-smith",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679acc300afd67c0af8d929b_FM-1009-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-2001",
+      "name": "PRIME FM-2001 DUAL ADJUSTABLE PULLEY Crossover angular",
+      "slug": "prime-fm-2001-dual-adjustable-pulley-crossover-angular",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fm-2001-dual-adjustable-pulley-crossover-angular",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe792bd27c1a795386da8_FM-2001-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-2003A",
+      "name": "PRIME FM-2003A CABLE CROSSOVER Crossover",
+      "slug": "prime-fm-2003a-cable-crossover-crossover",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fm-2003a-cable-crossover-crossover",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe6fe972aeb89a64b7f63_FM-2003A-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-2004",
+      "name": "PRIME FM-2004 MULTI JUNGLE 4 STACK Multi estações 4",
+      "slug": "prime-fm-2004-multi-jungle-4-stack-multi-estacoes-4",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fm-2004-multi-jungle-4-stack-multi-estacoes-4",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe74a7d31b0d7f231b164_FM-2004-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-2005",
+      "name": "PRIME FM-2005 MULTI JUNGLE 5 STACK Multi estações 5",
+      "slug": "prime-fm-2005-multi-jungle-5-stack-multi-estacoes-5",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fm-2005-multi-jungle-5-stack-multi-estacoes-5",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe716afe375c88cf200a7_FM-2005-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-2006",
+      "name": "PRIME FM-2006 MULTI JUNGLE 8 STACK Multi estações 8",
+      "slug": "prime-fm-2006-multi-jungle-8-stack-multi-estacoes-8",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fm-2006-multi-jungle-8-stack-multi-estacoes-8",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fed19527ef28525df5178_FM-2006-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": "FM-2007",
+      "name": "PRIME FM-2007 SMITH MACHINE Máquina smith",
+      "slug": "prime-fm-2007-smith-machine-maquina-smith",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fm-2007-smith-machine-maquina-smith",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/679fe773248ec737002902ac_FM-2007-min.jpg",
+      "categories": [
+        "Cable Cross"
+      ],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "cable-cross",
+      "scrapedFromKind": "category"
+    },
+    {
+      "sku": null,
+      "name": "ANILHA CHROME STEEL",
+      "slug": "anilha-chrome-steel",
+      "productUrl": "https://www.bucklerfit.com.br/product/anilha-chrome-steel",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6939a8e149fd2fe13c684174_692dd881472d449ade895855_Anilha-Infinite.png",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "infinite",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "ANILHA TITANIUM GOLD",
+      "slug": "anilha-titanium-gold",
+      "productUrl": "https://www.bucklerfit.com.br/product/anilha-titanium-gold",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6939a8e149fd2fe13c68417a_692dd81d961103cdc69842ce_anilha-titanium.png",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "infinite",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "HALTER CHROME STEEL",
+      "slug": "halter-chrome-steel",
+      "productUrl": "https://www.bucklerfit.com.br/product/halter-chrome-steel",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6939a8e149fd2fe13c684171_692dd8655d4b6144712beb10_dumbells.png",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "infinite",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "HALTER TITANIUM GOLD",
+      "slug": "halter-titanium-gold",
+      "productUrl": "https://www.bucklerfit.com.br/product/halter-titanium-gold",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6939a8e149fd2fe13c684180_692dd79f8f2909d2f07ce486_dumbells-titanium.png",
+      "categories": [],
+      "series": [
+        "Infinite"
+      ],
+      "scrapedFromRoute": "infinite",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "ANILHA DE URETANO CPU",
+      "slug": "anilha-de-uretano",
+      "productUrl": "https://www.bucklerfit.com.br/product/anilha-de-uretano",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6939a8e049fd2fe13c684164_6939a2f29c10340fb83afca3_Anilha_uretano-v03.png",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "prime",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "ANILHA DE URETANO E CROMO TPU",
+      "slug": "anilha-uretano",
+      "productUrl": "https://www.bucklerfit.com.br/product/anilha-uretano",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/695e5af3999c3c4d6573d603_Buckler-iron-prime_anilha-01-CATALOG.png",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "prime",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "ANILHA DE URETANO TPU",
+      "slug": "anilha-de-uretano-tpu",
+      "productUrl": "https://www.bucklerfit.com.br/product/anilha-de-uretano-tpu",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6939a8e149fd2fe13c68416e_6939a78a01f8131e9e8d3aff_Anilha_uretano-v04.png",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "prime",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "BARRA FIXA DE URETANO CPU",
+      "slug": "barra-fixa-de-uretano-cpu",
+      "productUrl": "https://www.bucklerfit.com.br/product/barra-fixa-de-uretano-cpu",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/695e55ca7c009643c7c90550_barra%20fixa%20prime-02-CARALOG.png",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "prime",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "BARRA FIXA E W DE URETANO CPU",
+      "slug": "barra-fixa-e-w-uretano",
+      "productUrl": "https://www.bucklerfit.com.br/product/barra-fixa-e-w-uretano",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6939a8df49fd2fe13c684151_692dd6585fbf04af1ec7479b_Barra-Curl.png",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "prime",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "BARRA FIXA RETA E W DE URETANO E CROMO CPU",
+      "slug": "barra-fixa-reta-e-w-uretano-cromo",
+      "productUrl": "https://www.bucklerfit.com.br/product/barra-fixa-reta-e-w-uretano-cromo",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/695e5bc57bf82499d21668e4_braara%20fixa-01.png",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "prime",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "HALTER DE URETANO CPU",
+      "slug": "halter-uretano",
+      "productUrl": "https://www.bucklerfit.com.br/product/halter-uretano",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6939a8e149fd2fe13c684177_692dd606dc6da1ad88b08ef2_dumbell.png",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "prime",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "HALTER DE URETANO E CROMO TPU",
+      "slug": "halter-de-uretano-e-cromo",
+      "productUrl": "https://www.bucklerfit.com.br/product/halter-de-uretano-e-cromo",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/695e5c33f5452c69b79547ea_Buckler-Iron_uretano-10-CATALOGO%20(1).png",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "prime",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "HALTER DE URETANO TPU",
+      "slug": "halter-de-uretano-tpu",
+      "productUrl": "https://www.bucklerfit.com.br/product/halter-de-uretano-tpu",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/695e5a5793842c2e5ed2c587_novo%20dumbell-v02.png",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "prime",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "PRIME HS-1010 SISSY SQUAT Agachamento sissy",
+      "slug": "prime-hs-1010-sissy-squat-agachamento-sissy",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-hs-1010-sissy-squat-agachamento-sissy",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/67feef85ce384b4caa854e54_HSPRO-1010-min.jpg",
+      "categories": [],
+      "series": [
+        "Prime"
+      ],
+      "scrapedFromRoute": "prime",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "COLOUR RUBER BUMPER",
+      "slug": "colour-ruber-bumper-2",
+      "productUrl": "https://www.bucklerfit.com.br/product/colour-ruber-bumper-2",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/695bdf9fdb40c73669275fba_10kg_Olimpea.png",
+      "categories": [],
+      "series": [
+        "Olimpea"
+      ],
+      "scrapedFromRoute": "olimpea",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "BARRA OLÍMPICA (RETA E W)",
+      "slug": "barra-olimpica-reta-e-w",
+      "productUrl": "https://www.bucklerfit.com.br/product/barra-olimpica-reta-e-w",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/695e555e980624e00ba0caa1_Barra%20Buckler.png",
+      "categories": [],
+      "series": [
+        "Essencial"
+      ],
+      "scrapedFromRoute": "essencial",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "SUPORTE DE BARRA MONTADA",
+      "slug": "suporte-de-barra-montada",
+      "productUrl": "https://www.bucklerfit.com.br/product/suporte-de-barra-montada",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/695e55b4a6907198c46af101_FW-1014-CATALOG.png",
+      "categories": [],
+      "series": [
+        "Essencial"
+      ],
+      "scrapedFromRoute": "essencial",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "SUPORTE DE BARRAS",
+      "slug": "suporte-de-barras",
+      "productUrl": "https://www.bucklerfit.com.br/product/suporte-de-barras",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6939a8e149fd2fe13c684183_692dd7137c52654cca5f64bc_canhoneira.png",
+      "categories": [],
+      "series": [
+        "Essencial"
+      ],
+      "scrapedFromRoute": "essencial",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "SUPORTE PARA ANILHAS",
+      "slug": "suporte-para-anilhas",
+      "productUrl": "https://www.bucklerfit.com.br/product/suporte-para-anilhas",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/695e55987c428ab700e6da15_FW-1016-CATALOG.png",
+      "categories": [],
+      "series": [
+        "Essencial"
+      ],
+      "scrapedFromRoute": "essencial",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "SUPORTE PARA HALTERES - 10 PARES",
+      "slug": "suporte-para-halteres-10-pares",
+      "productUrl": "https://www.bucklerfit.com.br/product/suporte-para-halteres-10-pares",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/6939ac232fcfca330da40976_FW-1015-CATALOG.png",
+      "categories": [],
+      "series": [
+        "Essencial"
+      ],
+      "scrapedFromRoute": "essencial",
+      "scrapedFromKind": "series"
+    },
+    {
+      "sku": null,
+      "name": "SUPORTE PARA HALTERES - 5 PARES",
+      "slug": "suporte-para-halteres-5-pares",
+      "productUrl": "https://www.bucklerfit.com.br/product/suporte-para-halteres-5-pares",
+      "imageUrl": "https://cdn.prod.website-files.com/66e9d3e7a6f59aedfd7b9f4a/695e5bf467f8560444ac016b_FW-2023.png",
+      "categories": [],
+      "series": [
+        "Essencial"
+      ],
+      "scrapedFromRoute": "essencial",
+      "scrapedFromKind": "series"
+    }
+  ],
+  "skuIndex": {
+    "PF-1001": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Duet"
+      ],
+      "name": "DUET PF-1001 CHEST PRESS/ SHOULDER PRESS Supino reto/inclinado e desenvolvimento de ombro",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1001-chest-press-shoulder-press-supino-reto-inclinado-e-desenvolvimento-de-ombro"
+    },
+    "PF-1002": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Duet"
+      ],
+      "name": "DUET PF-1002 BICEPS CURL/ TRICEPS EXTENSION Bíceps scott/tríceps testa",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1002-biceps-curl-triceps-extension-biceps-scott-triceps-testa"
+    },
+    "PF-1003": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Duet"
+      ],
+      "name": "DUET PF-1003 PEC FLY/ REAR DELT Peitoral voador/Deltóide posterior",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1003-pec-fly-rear-delt-peitoral-voador-deltoide-posterior"
+    },
+    "PF-1004": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Duet"
+      ],
+      "name": "DUET PF-1004 LAT PULL DOWN/ SEATED ROW Remada alta/baixa",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1004-lat-pull-down-seated-row-remada-alta-baixa"
+    },
+    "PF-1005": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Duet"
+      ],
+      "name": "DUET PF-1005 BACK EXTENSION/ AB CRUNCH Abdominal/extensão de lombar",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1005-back-extension-ab-crunch-abdominal-extensao-de-lombar"
+    },
+    "PF-1006": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Duet"
+      ],
+      "name": "DUET PF-1006 HIP ABDUCTOR/ ADDUTOR Cadeira abdutora/adutora",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1006-hip-abductor-addutor-cadeira-abdutora-adutora"
+    },
+    "PF-1007": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Duet"
+      ],
+      "name": "DUET PF-1007 LEG CURL/ EXTENSION Cadeira extensora/mesa flexora",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1007-leg-curl-extension-cadeira-extensora-mesa-flexora"
+    },
+    "PF-1008": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Duet"
+      ],
+      "name": "DUET PF-1008 ASSISTANT CHIN/DIP Graviton",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1008-assistant-chin-dip-graviton"
+    },
+    "PF-1009": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Duet"
+      ],
+      "name": "DUET PF-1009 LEG PRESS/ CALF RAISE Leg Press horizontal/panturrilha sentado",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1009-leg-press-calf-raise-leg-press-horizontal-panturrilha-sentado"
+    },
+    "PF-1010": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Duet"
+      ],
+      "name": "DUET PF-1010 DOUBLE PULLEY MACHINE Polia dupla",
+      "productUrl": "https://www.bucklerfit.com.br/product/duet-pf-1010-double-pulley-machine-polia-dupla"
+    },
+    "M2-1001": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1001 CHEST PRESS Supino vertical",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1001-chest-press-supino-vertical"
+    },
+    "M2-1002": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1002 LATERAL RAISE Elevação lateral",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1002-lateral-raise-elevacao-lateral"
+    },
+    "M2-1003": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1003 HIP ABDUCTOR Cadeira abdutora",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1003-hip-abductor-cadeira-abdutora"
+    },
+    "M2-1004": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1004 HIP ADDUCTOR Cadeira adutora",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1004-hip-adductor-cadeira-adutora"
+    },
+    "M2-1005": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1005 LEG EXTENSION Cadeira extensora",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1005-leg-extension-cadeira-extensora"
+    },
+    "M2-1006": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1006 PRONE LEG CURL Mesa flexora",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1006-prone-leg-curl-mesa-flexora"
+    },
+    "M2-1007": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1007 SHOULDER PRESS Desenvolvimento de ombro",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1007-shoulder-press-desenvolvimento-de-ombro"
+    },
+    "M2-1008": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1008 ABDOMINAL CRUNCH Abdominal crunch",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1008-abdominal-crunch-abdominal-crunch"
+    },
+    "M2-1009": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1009 SEATED LEG PRESS Leg press horizontal",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1009-seated-leg-press-leg-press-horizontal"
+    },
+    "M2-1010A": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1010A BICEPS CURL SCOTT Bíceps scott",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1010a-biceps-curl-scott-biceps-scott"
+    },
+    "M2-1010B": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1010B BICEPS CURL Bíceps rosca",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1010b-biceps-curl-biceps-rosca"
+    },
+    "M2-1011A": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1011A TRICEPS EXTENSION Tríceps testa",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1011a-triceps-extension-triceps-testa"
+    },
+    "M2-1011B": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1011B TRICEPS EXTENSION Extensão de tríceps",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1011b-triceps-extension-extensao-de-triceps"
+    },
+    "M2-1013A": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1013A LAT PULL DOWN PULLEY Puxada alta polia",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1013a-lat-pull-down-pulley-puxada-alta-polia"
+    },
+    "M2-1013": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1013 LAT PULL DOWN Puxada alta",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1013-lat-pull-down-puxada-alta"
+    },
+    "M2-1014": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1014 MULTI HIP Apolete",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1014-multi-hip-apolete"
+    },
+    "M2-1015": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1015 ROW/REAR DELT Remada/Deltoide posterior",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1015-row-rear-delt-remada-deltoide-posterior"
+    },
+    "M2-1016": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1016 BACK EXTENTION Extensão lombar",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1016-back-extention-extensao-lombar"
+    },
+    "M2-1017": {
+      "catalogGroup": "CARDIO",
+      "series": [],
+      "name": "PRIME M2-1017 PEC FLY/REAR DELT Peitoral voador/Deltóide posterior",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1017-pec-fly-rear-delt-peitoral-voador-deltoide-posterior"
+    },
+    "M2-1018": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1018 SEATED LOW ROW Remada baixa",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1018-seated-low-row-remada-baixa"
+    },
+    "M2-1019": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1019 STANDING CALF RAISE Panturrilha em pé",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1019-standing-calf-raise-panturrilha-em-pe"
+    },
+    "M2-1020": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1020 CHIN/DIP ASSIST Graviton",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1020-chin-dip-assist-graviton"
+    },
+    "M2-1021": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1021 TORSO ROTATION Rotação de tronco",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1021-torso-rotation-rotacao-de-tronco"
+    },
+    "M2-1022": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1022 GLUTE MACHINE Extensão de glúteo",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1022-glute-machine-extensao-de-gluteo"
+    },
+    "M2-1023": {
+      "catalogGroup": "PIN LOADED",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME M2-1023 SEATED LEG CURL Cadeira flexora",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-m2-1023-seated-leg-curl-cadeira-flexora"
+    },
+    "RS-800": {
+      "catalogGroup": "CARDIO",
+      "series": [],
+      "name": "INFINITE RS-800 STAIR MILL",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-rs-800-stair-mill"
+    },
+    "FW-1001": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1001 OLYMPIC FLAT BENCH Banco supino reto",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1001-olympic-flat-bench-banco-supino-reto"
+    },
+    "FW-1002": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1002 OLYMPIC INCLINE BENCH Banco supino inclinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1002-olympic-incline-bench-banco-supino-inclinado"
+    },
+    "FW-1003": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1003 OLYMPIC DECLINE BENCH Banco supino declinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1003-olympic-decline-bench-banco-supino-declinado"
+    },
+    "FW-1004": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1004 SEATED ARM CURL Banco scott",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1004-seated-arm-curl-banco-scott"
+    },
+    "FW-1005": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1005 T-BAR ROW Remada cavalinho I",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1005-t-bar-row-remada-cavalinho-i"
+    },
+    "FW-1006": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1006 HYPEREXTENSION Banco romano",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1006-hyperextension-banco-romano"
+    },
+    "FW-1007": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1007 ASSIST ABDOMINAL BENCH Banco abdominal",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1007-assist-abdominal-bench-banco-abdominal"
+    },
+    "FW-1008": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1008 90-DEGREE BENCH Banco 90°",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1008-90-degree-bench-banco-90deg"
+    },
+    "FW-1009": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1009 FLAT BENCH Banco reto",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1009-flat-bench-banco-reto"
+    },
+    "FW-1010": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1010 55-DEGREE BENCH Banco 55°",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1010-55-degree-bench-banco-55deg"
+    },
+    "FW-1011": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1011 LYING T-BAR ROW",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1011-lying-t-bar-row"
+    },
+    "FW-1012": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1012 ADJUSTABLE ABDOMINAL Banco abdominal",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1012-adjustable-abdominal-banco-abdominal"
+    },
+    "FW-1013A": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1013A ADJUSTABLE BENCH Banco ajustável fluído",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1013a-adjustable-bench-banco-ajustavel-fluido"
+    },
+    "FW-1013": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1013 ADJUSTABLE BENCH Banco ajustável garra",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1013-adjustable-bench-banco-ajustavel-garra"
+    },
+    "FW-1014": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1014 BARBELL RACK Suporte de barra montada",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1014-barbell-rack-suporte-de-barra-montada"
+    },
+    "FW-1015": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1015 DUMBBELL RACK-DOUBLE Suporte para Halteres - 10 pares",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1015-dumbbell-rack-double-suporte-para-halteres---10-pares"
+    },
+    "FW-1016": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1016 PLATE RACK Suporte para anilhas",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1016-plate-rack-suporte-para-anilhas"
+    },
+    "FW-1017": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1017 SEATED CALF RAISE Panturrilha sentada",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1017-seated-calf-raise-panturrilha-sentada"
+    },
+    "FW-1018": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1018 SQUAT RACK Suporte para agachamento",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1018-squat-rack-suporte-para-agachamento"
+    },
+    "FW-1019": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FW-1019 30-DEGREE BENCH Banco 30°",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fw-1019-30-degree-bench-banco-30deg"
+    },
+    "FW-2001": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2001 OLYMPIC FLAT BENCH Banco supino reto",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2001-olympic-flat-bench-banco-supino-reto"
+    },
+    "FW-2002": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2002 OLYMPIC INCLINE BENCH Banco supino inclinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2002-olympic-incline-bench-banco-supino-inclinado"
+    },
+    "FW-2003": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2003 OLYMPIC DECLINE BENCH Banco supino declinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2003-olympic-decline-bench-banco-supino-declinado"
+    },
+    "FW-2004": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2004 SEATED ARMY CURL Banco scott",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2004-seated-army-curl-banco-scott"
+    },
+    "FW-2005": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2005 T-BAR ROW Remada cavalinho",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2005-t-bar-row-remada-cavalinho"
+    },
+    "FW-2006": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2006 HYPEREXTENSION Banco romano",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2006-hyperextension-banco-romano"
+    },
+    "FW-2007": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2007 ASSIST ABDOMINAL BENCH Banco abdominal",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2007-assist-abdominal-bench-banco-abdominal"
+    },
+    "FW-2008": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2008 ADJUSTABLE BENCH Banco ajustável garra",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2008-adjustable-bench-banco-ajustavel-garra"
+    },
+    "FW-2009": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2009 FLAT BENCH Banco reto",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2009-flat-bench-banco-reto"
+    },
+    "FW-2010": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2010 55-DEGREE BENCH Banco inclinado 55°",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2010-55-degree-bench-banco-inclinado-55deg"
+    },
+    "FW-2012": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2012 LYING T-BAR ROW Remada cavalinho com apoio",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2012-lying-t-bar-row-remada-cavalinho-com-apoio"
+    },
+    "FW-2013": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2013 ADJUSTABLE ABDOMINAL BENCH Banco declinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2013-adjustable-abdominal-bench-banco-declinado"
+    },
+    "FW-2014": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2014 BARBELL RACK Suporte de barra montada",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2014-barbell-rack-suporte-de-barra-montada"
+    },
+    "FW-2015": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2015 DUMBBELL RACK-DOUBLE Suporte para Halteres - 10 pares",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2015-dumbbell-rack-double-suporte-para-halteres---10-pares"
+    },
+    "FW-2016": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2016 PLATE RACK Suporte para anilhas",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2016-plate-rack-suporte-para-anilhas"
+    },
+    "FW-2017": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2017 SEATED CALF RAISE Panturrilha sentada",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2017-seated-calf-raise-panturrilha-sentada"
+    },
+    "FW-2018": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2018 SQUAT RACK Suporte para agachamento",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2018-squat-rack-suporte-para-agachamento"
+    },
+    "FW-2019": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2019 30-DEGREE BENCH Banco inclinado 30°",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2019-30-degree-bench-banco-inclinado-30deg"
+    },
+    "FW-2020": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2020 90 - DEGREE BENCH Banco 90°",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2020-90---degree-bench-banco-90deg"
+    },
+    "FW-2023": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2023 DUMBBELL RACK-SINGLE Suporte para Halteres - 5 pares",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2023-dumbbell-rack-single-suporte-para-halteres---5-pares"
+    },
+    "FW-2025": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2025 LEG RAISE Paralela",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2025-leg-raise-paralela"
+    },
+    "FW-2027": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2027 ABDOMINAL EXTENSION Paralela com abdominal",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2027-abdominal-extension-paralela-com-abdominal"
+    },
+    "FW-2028": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2028 ADJUSTABLE BENCH Banco ajustável pino",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2028-adjustable-bench-banco-ajustavel-pino"
+    },
+    "FW-2029": {
+      "catalogGroup": "BENCHES & RACKS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FW-2029 GLUTE HAM RAISE Desenvolvimento glúteo",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fw-2029-glute-ham-raise-desenvolvimento-gluteo"
+    },
+    "FM-1024D": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FM-1024D 45° DEGREE LEG PRESS Leg press linear 45°",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1024d-45deg-degree-leg-press-leg-press-linear-45deg"
+    },
+    "LD-1001": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1001 CHEST PRESS",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1001-chest-press"
+    },
+    "LD-1002": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1002 HORIZONTAL BENCH PRESS Supino horizontal",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1002-horizontal-bench-press-supino-horizontal"
+    },
+    "LD-1003": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1003 SHOULDER PRESS Desenvolvimento de ombro",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1003-shoulder-press-desenvolvimento-de-ombro"
+    },
+    "LD-1004": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1004 LATERAL RAISE/DELTOID Elevação lateral/posterior deltoide",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1004-lateral-raise-deltoid-elevacao-lateral-posterior-deltoide"
+    },
+    "LD-1005": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1005 SEATED BICEPS CURL Bíceps scott",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1005-seated-biceps-curl-biceps-scott"
+    },
+    "LD-1006": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1006 HIGH ROW Puxada alta pronada",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1006-high-row-puxada-alta-pronada"
+    },
+    "LD-1007": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1007 BENCH SMITH MACHINE Supino guiado reto/declinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1007-bench-smith-machine-supino-guiado-reto-declinado"
+    },
+    "LD-1008": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1008 BENCH SMITH MACHINE Supino guiado inclinado/ desenvolvimento",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1008-bench-smith-machine-supino-guiado-inclinado-desenvolvimento"
+    },
+    "LD-1009": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1009 ROWING Remada reta",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1009-rowing-remada-reta"
+    },
+    "LD-1010": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1010 WIDE CHEST PRESS",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1010-wide-chest-press"
+    },
+    "LD-1011": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1011 LEVEL ROW Remada curvada supinada",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1011-level-row-remada-curvada-supinada"
+    },
+    "LD-1012": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1012 FRONT LAT PULLDOWN Puxada alta supinada",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1012-front-lat-pulldown-puxada-alta-supinada"
+    },
+    "LD-1013": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1013 PECTORAL MACHINE Crucifixo inclinado",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1013-pectoral-machine-crucifixo-inclinado"
+    },
+    "LD-1014": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1014 LOW ROW Remada curvada neutra",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1014-low-row-remada-curvada-neutra"
+    },
+    "LD-1015": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1015 INCLINE CHEST PRESS",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1015-incline-chest-press"
+    },
+    "LD-1016": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1016 TRÍCEPS EXTENSION",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1016-triceps-extension"
+    },
+    "LD-1018": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-1018 LAT PULLDOWN PUXADA ALTA",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-1018-lat-pulldown-puxada-alta"
+    },
+    "LD-2001": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-2001 SEATED LEG EXTENSION Cadeira extensora unilateral",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2001-seated-leg-extension-cadeira-extensora-unilateral"
+    },
+    "LD-2002": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-2002 KNEELING LEG CURL Flexora ajoelhada unilateral",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2002-kneeling-leg-curl-flexora-ajoelhada-unilateral"
+    },
+    "LD-2003": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-2003 BOTH WAY SQUAT Super agachamento",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2003-both-way-squat-super-agachamento"
+    },
+    "LD-2004": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-2004 BELT SQUAT Agachamento sumô com cinto",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2004-belt-squat-agachamento-sumo-com-cinto"
+    },
+    "LD-2005": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-2005 BUTTOCKS BRIDGE Elevação pélvica",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2005-buttocks-bridge-elevacao-pelvica"
+    },
+    "LD-2006": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-2006 PENDULUM SQUAT Agachamento no pêndulo",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2006-pendulum-squat-agachamento-no-pendulo"
+    },
+    "LD-2007": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-2007 GLUTE MACHINE Glúteo 4 apoios",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2007-glute-machine-gluteo-4-apoios"
+    },
+    "LD-2008": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-2008 GLUTE MACHINE Extensão de glúteo",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2008-glute-machine-extensao-de-gluteo"
+    },
+    "LD-2009": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-2009 HIP ABDUCTOR Cadeira abdutora sentada/em pé",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2009-hip-abductor-cadeira-abdutora-sentada-em-pe"
+    },
+    "LD-2010": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-2010 HIP ADDUCTOR",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2010-hip-adductor"
+    },
+    "LD-2011": {
+      "catalogGroup": "PLATE LOADED",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE LD-2011 LEG PRESS",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-ld-2011-leg-press"
+    },
+    "FM-1001": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FM-1001 DUAL ADJUSTABLE PULLEY Crossover angular",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1001-dual-adjustable-pulley-crossover-angular"
+    },
+    "FM-1002": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FM-1002 DUAL ADJUSTABLE PULLEY Crossover angular",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1002-dual-adjustable-pulley-crossover-angular"
+    },
+    "FM-1005": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FM-1005 MULTI JUNGLE 4 STACK Multi estações 4",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1005-multi-jungle-4-stack-multi-estacoes-4"
+    },
+    "FM-1006": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FM-1006 MULTI JUNGLE 5 STACK Multi estações 5",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1006-multi-jungle-5-stack-multi-estacoes-5"
+    },
+    "FM-1007": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FM-1007 MULTI JUNGLE 8 STACK Multi estações 8",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1007-multi-jungle-8-stack-multi-estacoes-8"
+    },
+    "FM-1008": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FM-1008 CABLE CROSSOVER Crossover",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1008-cable-crossover-crossover"
+    },
+    "FM-1009": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Infinite"
+      ],
+      "name": "INFINITE FM-1009 SMITH MACHINE COUNTER BALANCE Máquina smith",
+      "productUrl": "https://www.bucklerfit.com.br/product/infinite-fm-1009-smith-machine-counter-balance-maquina-smith"
+    },
+    "FM-2001": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FM-2001 DUAL ADJUSTABLE PULLEY Crossover angular",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fm-2001-dual-adjustable-pulley-crossover-angular"
+    },
+    "FM-2003A": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FM-2003A CABLE CROSSOVER Crossover",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fm-2003a-cable-crossover-crossover"
+    },
+    "FM-2004": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FM-2004 MULTI JUNGLE 4 STACK Multi estações 4",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fm-2004-multi-jungle-4-stack-multi-estacoes-4"
+    },
+    "FM-2005": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FM-2005 MULTI JUNGLE 5 STACK Multi estações 5",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fm-2005-multi-jungle-5-stack-multi-estacoes-5"
+    },
+    "FM-2006": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FM-2006 MULTI JUNGLE 8 STACK Multi estações 8",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fm-2006-multi-jungle-8-stack-multi-estacoes-8"
+    },
+    "FM-2007": {
+      "catalogGroup": "CABLE CROSS",
+      "series": [
+        "Prime"
+      ],
+      "name": "PRIME FM-2007 SMITH MACHINE Máquina smith",
+      "productUrl": "https://www.bucklerfit.com.br/product/prime-fm-2007-smith-machine-maquina-smith"
+    }
+  },
+  "summary": {
+    "totalListings": 445,
+    "uniqueSkus": 122,
+    "byCatalogGroup": {
+      "PIN LOADED": 34,
+      "CARDIO": 2,
+      "BENCHES & RACKS": 44,
+      "PLATE LOADED": 29,
+      "CABLE CROSS": 13
+    }
+  }
+}

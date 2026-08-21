@@ -1,0 +1,115 @@
+{
+  "sequence": [
+    "Strength-Glute-Leader",
+    "Strength-M7-Pro-Series",
+    "Strength-M3-Series",
+    "Strength-M2-Series",
+    "Strength-FM-Series",
+    "Strength-FW-Series",
+    "Strength-PF-series",
+    "Plate-Loaded-Real-Series",
+    "Plate-Loaded-LD-Series",
+    "Cardio-Treadmills-Elliptical-Bike"
+  ],
+  "completed": [
+    "Strength-Glute-Leader",
+    "Strength-M7-Pro-Series",
+    "Strength-FM-Series",
+    "Strength-FW-Series",
+    "Strength-PF-series",
+    "Plate-Loaded-Real-Series"
+  ],
+  "elapsedSec": 299.2,
+  "groups": [
+    {
+      "slugHint": "Strength-Glute-Leader",
+      "line": "GL",
+      "outputFile": "Strength_Glute_Leader_logistics.json",
+      "expectedProducts": 8,
+      "scrapedProducts": 8,
+      "validationOk": true,
+      "failures": 0
+    },
+    {
+      "slugHint": "Strength-M7-Pro-Series",
+      "line": "M7PRO",
+      "outputFile": "Strength_M7_Pro_Series_logistics.json",
+      "expectedProducts": 17,
+      "scrapedProducts": 17,
+      "validationOk": true,
+      "failures": 0
+    },
+    {
+      "slugHint": "Strength-M3-Series",
+      "line": "M3",
+      "outputFile": "Strength_M3_Series_logistics.json",
+      "expectedProducts": 24,
+      "scrapedProducts": 24,
+      "validationOk": false,
+      "failures": 2
+    },
+    {
+      "slugHint": "Strength-M2-Series",
+      "line": "M2",
+      "outputFile": "Strength_M2_Series_logistics.json",
+      "expectedProducts": 28,
+      "scrapedProducts": 28,
+      "validationOk": false,
+      "failures": 2
+    },
+    {
+      "slugHint": "Strength-FM-Series",
+      "line": "FM",
+      "outputFile": "Strength_FM_Series_logistics.json",
+      "expectedProducts": 10,
+      "scrapedProducts": 10,
+      "validationOk": true,
+      "failures": 0
+    },
+    {
+      "slugHint": "Strength-FW-Series",
+      "line": "FW",
+      "outputFile": "Strength_FW_Series_logistics.json",
+      "expectedProducts": 4,
+      "scrapedProducts": 4,
+      "validationOk": true,
+      "failures": 0
+    },
+    {
+      "slugHint": "Strength-PF-series",
+      "line": "PF",
+      "outputFile": "Strength_PF_series_logistics.json",
+      "expectedProducts": 12,
+      "scrapedProducts": 12,
+      "validationOk": true,
+      "failures": 0
+    },
+    {
+      "slugHint": "Plate-Loaded-Real-Series",
+      "line": "RS",
+      "outputFile": "Plate_Loaded_Real_Series_logistics.json",
+      "expectedProducts": 12,
+      "scrapedProducts": 12,
+      "validationOk": true,
+      "failures": 0
+    },
+    {
+      "slugHint": "Plate-Loaded-LD-Series",
+      "line": "LD",
+      "outputFile": "Plate_Loaded_LD_Series_logistics.json",
+      "expectedProducts": 15,
+      "scrapedProducts": 15,
+      "validationOk": false,
+      "failures": 3
+    },
+    {
+      "slugHint": "Cardio-Treadmills-Elliptical-Bike",
+      "line": "CARDIO",
+      "outputFile": "Cardio_Treadmills_Elliptical_Bike_logistics.json",
+      "expectedProducts": 9,
+      "scrapedProducts": 9,
+      "validationOk": false,
+      "failures": 1
+    }
+  ]
+}

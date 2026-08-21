@@ -1,0 +1,78 @@
+{
+  "generatedAt": "2026-08-21T18:51:08.125480Z",
+  "factoryId": "tianzhan",
+  "factoryLegalName": "Shandong Tianzhan Fitness Equipment Co., Ltd.",
+  "groupId": "gm-series",
+  "groupLabel": "GM Series (Pin Loaded Machine)",
+  "catalogGroup": "PIN LOADED",
+  "baseUrl": "https://dezhoutianzhan.en.made-in-china.com",
+  "expectedProducts": 29,
+  "scrapedProducts": 3,
+  "smoke": true,
+  "smokeLimit": 3,
+  "failures": [],
+  "rows": [
+    {
+      "Item": "GM-5021",
+      "Produto": "Factory Wholesale Commercial Gym Back Training Pin Loaded Low Row",
+      "Qtd. Caixas Total": 1,
+      "Tipo Caixa": "A",
+      "COMPRIMENTO": "1980",
+      "LARGURA": "850",
+      "ALTURA": "420",
+      "Qtd. Tipos de Medida": 1,
+      "Qtd. Caixas por Medida": 1,
+      "Peso Bruto Total (kg)": 280.0,
+      "Peso Médio por Caixa (kg)": 280.0,
+      "Peso Estimado do Grupo (kg)": 280.0,
+      "URL_Origem": "https://dezhoutianzhan.en.made-in-china.com/product/oPlrFGhThacN/China-Factory-Wholesale-Commercial-Gym-Back-Training-Pin-Loaded-Low-Row.html",
+      "MIC_Hash": "oPlrFGhThacN"
+    },
+    {
+      "Item": "GM-5022",
+      "Produto": "Factory Wholesale Commercial Gym Hip Training Pin Loaded Glute Machine",
+      "Qtd. Caixas Total": 1,
+      "Tipo Caixa": "A",
+      "COMPRIMENTO": "1980",
+      "LARGURA": "850",
+      "ALTURA": "420",
+      "Qtd. Tipos de Medida": 1,
+      "Qtd. Caixas por Medida": 1,
+      "Peso Bruto Total (kg)": 280.0,
+      "Peso Médio por Caixa (kg)": 280.0,
+      "Peso Estimado do Grupo (kg)": 280.0,
+      "URL_Origem": "https://dezhoutianzhan.en.made-in-china.com/product/hLIrwPkjEtVX/China-Factory-Wholesale-Commercial-Gym-Hip-Training-Pin-Loaded-Glute-Machine.html",
+      "MIC_Hash": "hLIrwPkjEtVX"
+    },
+    {
+      "Item": "GM-5022-1",
+      "Produto": "Factory Wholesale Commercial Gym Hip Training Pin Loaded Glute Machine",
+      "Qtd. Caixas Total": 1,
+      "Tipo Caixa": "A",
+      "COMPRIMENTO": "1980",
+      "LARGURA": "850",
+      "ALTURA": "420",
+      "Qtd. Tipos de Medida": 1,
+      "Qtd. Caixas por Medida": 1,
+      "Peso Bruto Total (kg)": 280.0,
+      "Peso Médio por Caixa (kg)": 280.0,
+      "Peso Estimado do Grupo (kg)": 280.0,
+      "URL_Origem": "https://dezhoutianzhan.en.made-in-china.com/product/QgLpUIwbhYkF/China-Factory-Wholesale-Commercial-Gym-Hip-Training-Pin-Loaded-Glute-Machine.html",
+      "MIC_Hash": "QgLpUIwbhYkF"
+    }
+  ],
+  "validation": {
+    "ok": true,
+    "stats": {
+      "rows": 3,
+      "withDimensions": 3,
+      "withWeight": 3,
+      "withModelNo": 3,
+      "withUrl": 3,
+      "failures": 0,
+      "pctDimensions": 100.0,
+      "pctWeight": 100.0
+    },
+    "issues": []
+  }
+}

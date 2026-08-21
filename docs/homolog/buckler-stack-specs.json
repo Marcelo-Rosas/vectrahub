@@ -1,0 +1,707 @@
+{
+  "generatedAt": "2026-08-21T17:10:20.452Z",
+  "companySlug": "buckler",
+  "count": 70,
+  "specs": [
+    {
+      "sku": "FM-1001",
+      "plates": 26,
+      "stackSides": 2,
+      "stackKgOem": 218,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 277.5,
+      "oemRaw": null
+    },
+    {
+      "sku": "FM-1002",
+      "plates": 32,
+      "stackSides": 2,
+      "stackKgOem": 239,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 280.5,
+      "oemRaw": "526 lbs/239 kg"
+    },
+    {
+      "sku": "FM-1004",
+      "plates": 61,
+      "stackSides": 4,
+      "stackKgOem": 0,
+      "stackKgSource": "infer-on-rebuild",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 551,
+      "oemRaw": null
+    },
+    {
+      "sku": "FM-1005",
+      "plates": 59,
+      "stackSides": 4,
+      "stackKgOem": 416,
+      "stackKgSource": "realleader-catalog-curated",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 270,
+      "oemRaw": "918 lbs/416 kg"
+    },
+    {
+      "sku": "FM-1006",
+      "plates": 73,
+      "stackSides": 5,
+      "stackKgOem": 515,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 380.5,
+      "oemRaw": "1136 lbs/515 kg"
+    },
+    {
+      "sku": "FM-1007",
+      "plates": 118,
+      "stackSides": 8,
+      "stackKgOem": 833,
+      "stackKgSource": "realleader-catalog-curated",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 494,
+      "oemRaw": "1835 lbs/833 kg"
+    },
+    {
+      "sku": "FM-1008",
+      "plates": 26,
+      "stackSides": 2,
+      "stackKgOem": 198,
+      "stackKgSource": "realleader-catalog-curated",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 237.5,
+      "oemRaw": "437 lbs/198 kg"
+    },
+    {
+      "sku": "FM-2001",
+      "plates": 26,
+      "stackSides": 2,
+      "stackKgOem": 198,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 242.5,
+      "oemRaw": "437 lbs/198 kg"
+    },
+    {
+      "sku": "FM-2003",
+      "plates": 26,
+      "stackSides": 2,
+      "stackKgOem": 198,
+      "stackKgSource": "realleader-catalog-curated",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 217.5,
+      "oemRaw": "437 lbs/198 kg"
+    },
+    {
+      "sku": "FM-2003A",
+      "plates": 26,
+      "stackSides": 2,
+      "stackKgOem": 198,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 222.5,
+      "oemRaw": "437 lbs/198 kg"
+    },
+    {
+      "sku": "FM-2004",
+      "plates": 59,
+      "stackSides": 4,
+      "stackKgOem": 416.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 270,
+      "oemRaw": "9185x/416.25kg"
+    },
+    {
+      "sku": "FM-2005",
+      "plates": 73,
+      "stackSides": 5,
+      "stackKgOem": 515.25,
+      "stackKgSource": "realleader-catalog-curated",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 380.5,
+      "oemRaw": "11368x/515.25kg"
+    },
+    {
+      "sku": "FM-2006",
+      "plates": 118,
+      "stackSides": 8,
+      "stackKgOem": 833,
+      "stackKgSource": "realleader-catalog-curated",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 494,
+      "oemRaw": "1835 lbs/833 kg"
+    },
+    {
+      "sku": "M2-1001",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 200.25,
+      "oemRaw": "2638x/119.25kg"
+    },
+    {
+      "sku": "M2-1002",
+      "plates": 10,
+      "stackSides": 1,
+      "stackKgOem": 79,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 191.25,
+      "oemRaw": "174 lbs/79 kg"
+    },
+    {
+      "sku": "M2-1003",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 99,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 196.25,
+      "oemRaw": "218 lbs/99 kg"
+    },
+    {
+      "sku": "M2-1004",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 99,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 196.25,
+      "oemRaw": "218 lbs/99 kg"
+    },
+    {
+      "sku": "M2-1005",
+      "plates": 18,
+      "stackSides": 1,
+      "stackKgOem": 133,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 206.25,
+      "oemRaw": "293 lbs/133 kg"
+    },
+    {
+      "sku": "M2-1006",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 216.25,
+      "oemRaw": "2600x/119.25kg"
+    },
+    {
+      "sku": "M2-1007",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 99,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 201.25,
+      "oemRaw": "218 lbs/99 kg"
+    },
+    {
+      "sku": "M2-1008",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 99,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 186.25,
+      "oemRaw": "218 lbs/99 kg"
+    },
+    {
+      "sku": "M2-1009",
+      "plates": 18,
+      "stackSides": 1,
+      "stackKgOem": 230,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 321.25,
+      "oemRaw": null
+    },
+    {
+      "sku": "M2-1010A",
+      "plates": 10,
+      "stackSides": 1,
+      "stackKgOem": 79,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 194.25,
+      "oemRaw": "174 lbs/79 kg"
+    },
+    {
+      "sku": "M2-1010B",
+      "plates": 10,
+      "stackSides": 1,
+      "stackKgOem": 79,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 194.25,
+      "oemRaw": "174 lbs/79 kg"
+    },
+    {
+      "sku": "M2-1011A",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 81,
+      "stackKgSource": "realleader-oem-spec-sheet",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 195.25,
+      "oemRaw": "180lbs / 81kg"
+    },
+    {
+      "sku": "M2-1011B",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 81,
+      "stackKgSource": "realleader-oem-spec-sheet",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 195.25,
+      "oemRaw": "180lbs / 81kg"
+    },
+    {
+      "sku": "M2-1012",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 187.25,
+      "oemRaw": "2636w/119.25kg"
+    },
+    {
+      "sku": "M2-1013",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 134,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 205.25,
+      "oemRaw": null
+    },
+    {
+      "sku": "M2-1013A",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 181.25,
+      "oemRaw": "2636w/119.25kg"
+    },
+    {
+      "sku": "M2-1014",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 201.25,
+      "oemRaw": "2636x/119.25kg"
+    },
+    {
+      "sku": "M2-1015",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 206.25,
+      "oemRaw": "2636x/119.25kg"
+    },
+    {
+      "sku": "M2-1016",
+      "plates": 18,
+      "stackSides": 1,
+      "stackKgOem": 133,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 212.25,
+      "oemRaw": "293 lbs/133 kg"
+    },
+    {
+      "sku": "M2-1017",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 99,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 216.25,
+      "oemRaw": "218 lbs/99 kg"
+    },
+    {
+      "sku": "M2-1018",
+      "plates": 18,
+      "stackSides": 1,
+      "stackKgOem": 133,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 171.25,
+      "oemRaw": "293 lbs/133 kg"
+    },
+    {
+      "sku": "M2-1019",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 123.25,
+      "oemRaw": "2636x/119.25kg"
+    },
+    {
+      "sku": "M2-1020",
+      "plates": 15,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 258,
+      "oemRaw": "2626w/119.25kg"
+    },
+    {
+      "sku": "M2-1021",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 186.25,
+      "oemRaw": "2636x/119.25kg"
+    },
+    {
+      "sku": "M2-1022",
+      "plates": 10,
+      "stackSides": 1,
+      "stackKgOem": 78.75,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 199.25,
+      "oemRaw": "1740x/78.75kg"
+    },
+    {
+      "sku": "M2-1023",
+      "plates": 18,
+      "stackSides": 1,
+      "stackKgOem": 132.75,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 226,
+      "oemRaw": "2636w/132.75kg"
+    },
+    {
+      "sku": "M7PRO-1001",
+      "plates": 18,
+      "stackSides": 1,
+      "stackKgOem": 133,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 208.25,
+      "oemRaw": "293 lbs/133 kg"
+    },
+    {
+      "sku": "M7PRO-1002",
+      "plates": 10,
+      "stackSides": 1,
+      "stackKgOem": 79,
+      "stackKgSource": "realleader-catalog-curated",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 214.25,
+      "oemRaw": "174 lbs/79 kg"
+    },
+    {
+      "sku": "M7PRO-1003",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 99,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 196.25,
+      "oemRaw": "218 lbs/99 kg"
+    },
+    {
+      "sku": "M7PRO-1004",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 99,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 226.25,
+      "oemRaw": "218 lbs/99 kg"
+    },
+    {
+      "sku": "M7PRO-1005",
+      "plates": 10,
+      "stackSides": 1,
+      "stackKgOem": 79,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 211.25,
+      "oemRaw": "174 lbs/79 kg"
+    },
+    {
+      "sku": "M7PRO-1006",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-catalog-curated",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 229.25,
+      "oemRaw": "2835cc/119.25kg"
+    },
+    {
+      "sku": "M7PRO-1007",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 203.25,
+      "oemRaw": "2635cc/119.25kg"
+    },
+    {
+      "sku": "M7PRO-1008",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-catalog-curated",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 216.25,
+      "oemRaw": "2636cc/119.25kg"
+    },
+    {
+      "sku": "M7PRO-1009",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 226.25,
+      "oemRaw": "2836s/119.25kg"
+    },
+    {
+      "sku": "M7PRO-1010",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 251.25,
+      "oemRaw": "2836s/119.25kg"
+    },
+    {
+      "sku": "M7PRO-1011",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 99,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 216.25,
+      "oemRaw": "218 lbs/99 kg"
+    },
+    {
+      "sku": "M7PRO-1012",
+      "plates": 18,
+      "stackSides": 1,
+      "stackKgOem": 133,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 226.25,
+      "oemRaw": "293 lbs/133 kg"
+    },
+    {
+      "sku": "M7PRO-2001",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 99,
+      "stackKgSource": "realleader-catalog-curated",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 214.25,
+      "oemRaw": "218 lbs/99 kg"
+    },
+    {
+      "sku": "M7PRO-2002",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 99,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 214.25,
+      "oemRaw": "218 lbs/99 kg"
+    },
+    {
+      "sku": "M7PRO-2003",
+      "plates": 18,
+      "stackSides": 1,
+      "stackKgOem": 133,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 233.25,
+      "oemRaw": "235 lbs/133 kg"
+    },
+    {
+      "sku": "M7PRO-2004",
+      "plates": 17,
+      "stackSides": 1,
+      "stackKgOem": 133,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 223,
+      "oemRaw": "293 lbs/133 kg"
+    },
+    {
+      "sku": "M7PRO-2005",
+      "plates": 18,
+      "stackSides": 1,
+      "stackKgOem": 133,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 352.25,
+      "oemRaw": "293 lbs/133 kg"
+    },
+    {
+      "sku": "M7PRO-2006",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 204.25,
+      "oemRaw": "263lbs/119.25kg"
+    },
+    {
+      "sku": "M7PRO-2007",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 246.25,
+      "oemRaw": "263lbs/119.25kg"
+    },
+    {
+      "sku": "M7PRO-2008",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 217.25,
+      "oemRaw": "263lbs/119.25kg"
+    },
+    {
+      "sku": "M7PRO-2009",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 199.25,
+      "oemRaw": "263lbs/119.25kg"
+    },
+    {
+      "sku": "PF-1001",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 120,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 176.25,
+      "oemRaw": null
+    },
+    {
+      "sku": "PF-1002",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 153,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 204.25,
+      "oemRaw": null
+    },
+    {
+      "sku": "PF-1003",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 192,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 183.25,
+      "oemRaw": null
+    },
+    {
+      "sku": "PF-1004",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 120,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 151.25,
+      "oemRaw": null
+    },
+    {
+      "sku": "PF-1005",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 99,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 196.25,
+      "oemRaw": "218 lbs/99 kg"
+    },
+    {
+      "sku": "PF-1006",
+      "plates": 13,
+      "stackSides": 1,
+      "stackKgOem": 99,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 187.25,
+      "oemRaw": "218 lbs/99 kg"
+    },
+    {
+      "sku": "PF-1007",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 211.25,
+      "oemRaw": "2600x/119.25kg"
+    },
+    {
+      "sku": "PF-1008",
+      "plates": 15,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 254,
+      "oemRaw": "2630x/119.25kg"
+    },
+    {
+      "sku": "PF-1009",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 241.25,
+      "oemRaw": "2630x/119.25kg"
+    },
+    {
+      "sku": "PF-1010",
+      "plates": 16,
+      "stackSides": 1,
+      "stackKgOem": 119.25,
+      "stackKgSource": "realleader-mic-product-specs",
+      "platesSource": "interfit-464-483-base",
+      "kitGrossKg": 171.25,
+      "oemRaw": "2630x/119.25kg"
+    }
+  ]
+}

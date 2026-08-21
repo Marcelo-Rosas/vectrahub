@@ -1,0 +1,230 @@
+{
+  "factory": "Shandong Realleader Fitness Co., Ltd.",
+  "group": "Strength-Glute Leader",
+  "productListApi": {
+    "rawListings": 86,
+    "uniqueMicHash": 86,
+    "uniqueCatalogSku": 8,
+    "withoutCatalogSku": 40,
+    "skuHashCounts": {
+      "GL-1001": 1,
+      "GL-1002": 1,
+      "GL-1003": 1,
+      "GL-1004": 1,
+      "GL-1005": 10,
+      "GL-1006": 11,
+      "GL-1007": 11,
+      "GL-1009": 10
+    },
+    "skuDupes": {
+      "GL-1005": [
+        "rtaYvGkAmSRT",
+        "MTKUJxurueYH",
+        "jftrAvSPCBUF",
+        "fTBrlIPWvopU",
+        "ETarRGSMFXYn",
+        "OavpSyPXMoRb",
+        "rAvRmsLHJeYc",
+        "XGvUlrgKgqpY",
+        "mfTRtABCISYl",
+        "ItXpSygUZqRB"
+      ],
+      "GL-1006": [
+        "MfXpQmRlToUT",
+        "eAKrvEgUgqpB",
+        "XtSpvDLOLorB",
+        "faSRHDgTIqpz",
+        "ifGrtBXdhSpH",
+        "AtSUQjPOhMre",
+        "uaXpmDzPveRq",
+        "nTvUERHDRqrI",
+        "ifKrSYLuhMpN",
+        "vASUQCuVXepb",
+        "iTXYxoDVaqrI"
+      ],
+      "GL-1007": [
+        "OfTpDvkEsSrQ",
+        "eGXrExDMsbUH",
+        "QASRmCLuOMrv",
+        "aTGrYVvPuBpU",
+        "NATYfwXOESpV",
+        "gtvYQRLTIeUK",
+        "HaTURPXruSYp",
+        "lfXUQEgFaopS",
+        "kfaUpgKHqXRr",
+        "ZTBrmsDPbMRH",
+        "maKpSCLOroUZ"
+      ],
+      "GL-1009": [
+        "OTGpSukHgXrY",
+        "TfBpKmzrJeYZ",
+        "eTaURGBARSYp",
+        "BGApUaKuVSYR",
+        "PGKUXbgDneYO",
+        "kfvUQiLrOepK",
+        "iaKUSngEaopd",
+        "UaXpxqIKYMRW",
+        "gTBrQDioJMpk",
+        "KtSRQbPTYqpv"
+      ]
+    },
+    "catalogSkus": [
+      "GL-1001",
+      "GL-1002",
+      "GL-1003",
+      "GL-1004",
+      "GL-1005",
+      "GL-1006",
+      "GL-1007",
+      "GL-1009"
+    ],
+    "noSkuSamples": [
+      "kAXYbHPOXepU",
+      "RtArQfKVjSpE",
+      "SGvUeEpMborB",
+      "AaKrbIPDOqRg",
+      "dATpmOXxsKrQ",
+      "iGtreSqTHXpK",
+      "MGKpdxYuJbUR",
+      "xAKYgiuVVbRr",
+      "cAXrMbLKEoUS",
+      "HfSpByRAYorU",
+      "waTYJkvKnBpO",
+      "YtXRnrPvuepA",
+      "zfvUOogTCMrs",
+      "uAtRfdBPqvpJ",
+      "VtTpfwKkJBUJ"
+    ]
+  },
+  "userProductListUrl": {
+    "rawListings": 48,
+    "uniqueMicHash": 48,
+    "uniqueCatalogSku": 17,
+    "withoutCatalogSku": 1,
+    "skuHashCounts": {
+      "LD-1001": 11,
+      "LD-1002": 12,
+      "M2-1009": 5,
+      "M2-1010A": 5,
+      "M2-1018": 2,
+      "M2-1023": 1,
+      "M3-1018": 1,
+      "M7PRO-1003": 1,
+      "M7PRO-1010": 1,
+      "M7PRO-1011": 1,
+      "M7PRO-1012": 1,
+      "M7PRO-2002": 1,
+      "M7PRO-2003": 1,
+      "M7PRO-2004": 1,
+      "M7PRO-2006": 1,
+      "M7PRO-2007": 1,
+      "M7PRO-2009": 1
+    },
+    "skuDupes": {
+      "M2-1018": [
+        "wOotJsvufADc",
+        "sdvTHhfrnAIN"
+      ],
+      "LD-1001": [
+        "AZKfJztyHGIF",
+        "aZvfJtAHsGiF",
+        "XwSTlFayStiC",
+        "SOBtIWaHAAlN",
+        "nZXGQKayXfDO",
+        "NZbTxIvMAADh",
+        "QOSfnAtlvTiZ",
+        "sOoGEYXdETlV",
+        "dOBGJwTAnfHC",
+        "VdxfqekAJurp",
+        "KdxacRpragUN"
+      ],
+      "LD-1002": [
+        "qFefEoSyfaIV",
+        "IZSADvtUCTly",
+        "XOBAnGaEOfDC",
+        "qwbfQnXlgTHh",
+        "idSfHuAynals",
+        "VZeAQbKHCtDc",
+        "WOoaxpSUYAih",
+        "iFqaJCvuCAIW",
+        "DZbAQqSoZTlh",
+        "uwBAIPTVbaHy",
+        "QFETMmkVuzpr",
+        "gOTGNcWVhzUu"
+      ],
+      "M2-1010A": [
+        "bZetOGhjEADU",
+        "odMGckWVAflI",
+        "eOoGVAkKZtID",
+        "hwMGkAcKCfiH",
+        "MZbTptoYXaIw"
+      ],
+      "M2-1009": [
+        "GZqtdwcbffiU",
+        "AFqGYLMzhfid",
+        "EwqfpkMGHtIO",
+        "OFeaRwbELfly",
+        "QFMaZBVonTIU"
+      ]
+    },
+    "catalogSkus": [
+      "LD-1001",
+      "LD-1002",
+      "M2-1009",
+      "M2-1010A",
+      "M2-1018",
+      "M2-1023",
+      "M3-1018",
+      "M7PRO-1003",
+      "M7PRO-1010",
+      "M7PRO-1011",
+      "M7PRO-1012",
+      "M7PRO-2002",
+      "M7PRO-2003",
+      "M7PRO-2004",
+      "M7PRO-2006",
+      "M7PRO-2007",
+      "M7PRO-2009"
+    ],
+    "noSkuSamples": [
+      "Video \n                                                     Quick View"
+    ]
+  },
+  "realleaderMicCatalogGlSkus": [
+    "GL-1001",
+    "GL-1002",
+    "GL-1003",
+    "GL-1004",
+    "GL-1005",
+    "GL-1006",
+    "GL-1007",
+    "GL-1009"
+  ],
+  "bucklerCanonicalGlSkus": [
+    "GL-1001",
+    "GL-1002",
+    "GL-1003",
+    "GL-1004",
+    "GL-1005",
+    "GL-1006",
+    "GL-1007",
+    "GL-1009"
+  ],
+  "verdict": {
+    "micClaimedTotal": 86,
+    "liveProductListUniqueHash": 86,
+    "liveProductListUniqueGlSku": 8,
+    "duplicateNature": "86 MIC pages are unique hashes (not repeated links); each GL-xxxx SKU has ~10 SEO listing variants on MIC",
+    "seoPagesPerSku": {
+      "GL-1001": 1,
+      "GL-1002": 1,
+      "GL-1003": 1,
+      "GL-1004": 1,
+      "GL-1005": 10,
+      "GL-1006": 11,
+      "GL-1007": 11,
+      "GL-1009": 10
+    },
+    "recommendScrape": "productList API + dedupeByCatalogSku → 8 rows"
+  }
+}

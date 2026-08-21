@@ -169,9 +169,9 @@ export const REALLEADER_MIC_PRODUCT_GROUP_HINTS: Array<{
   {
     slugHint: 'Strength-Glute-Leader',
     line: 'GL',
-    category: 'accessories',
+    category: 'pin_loaded',
     catalogo: null,
-    defaultChip: 'ACESSORIOS',
+    defaultChip: 'PIN LOADED',
   },
   {
     slugHint: 'Cardio-Treadmills-Elliptical-Bike',
@@ -217,6 +217,7 @@ export function realleaderLinePrefix(sku: string): string {
 }
 
 export function realleaderLineFromSku(sku: string): RealleaderOemLine {
+  const u = normalizeRealleaderSku(sku);
   const prefix = realleaderLinePrefix(sku);
   if (prefix === 'M7PRO' || prefix === 'M3' || prefix === 'M2') return prefix;
   if (prefix === 'LD' || prefix === 'PF' || prefix === 'FM' || prefix === 'FW' || prefix === 'GL') {
@@ -231,7 +232,8 @@ export function realleaderLineFromSku(sku: string): RealleaderOemLine {
   if (['RCT', 'RE', 'RSB', 'CE800+', 'CR800+', 'CU800+', 'SBC900', 'S'].includes(prefix)) {
     return 'CARDIO';
   }
-  if (/^OK|^NRD-|^NCT\d|^B11|^R11|^E\d|^6841|^5556|^S300/i.test(sku)) return 'ACCESSORIES';
+  if (/^5556|^6841|^B11|^R11|^E\d{2}V/i.test(u)) return 'CARDIO';
+  if (/^OK|^NRD-|^NCT\d|^S300/i.test(u)) return 'ACCESSORIES';
   return 'OTHER';
 }
 
@@ -252,6 +254,7 @@ export function realleaderCategoryFromLine(line: RealleaderOemLine): RealleaderO
     case 'RS':
       return 'plate_loaded';
     case 'GL':
+      return 'pin_loaded';
     case 'ACCESSORIES':
       return 'accessories';
     case 'CARDIO':
@@ -281,11 +284,15 @@ export function bucklerChipFromRealleaderSku(sku: string, name = ''): BucklerFei
   if (line === 'FW') return 'BENCHES & RACKS';
   if (line === 'FM') return bucklerChipForFmSku(u, n);
   if (line === 'RS') return 'PLATE LOADED';
-  if (line === 'GL' || line === 'ACCESSORIES') return 'ACESSORIOS';
+  if (line === 'GL') return 'PIN LOADED';
   if (line === 'CARDIO') return 'CARDIO';
+  if (line === 'ACCESSORIES') {
+    if (/TREAD|BIKE|ELLIPT|CARDIO|RUNNER|RECUMB|STAIR|SPIN|ROWER/i.test(n)) return 'CARDIO';
+    return 'ACESSORIOS';
+  }
 
   if (/ANILHA|HALTER|BARRA|URETANO|ACESS/i.test(n)) return 'ACESSORIOS';
-  if (/TREAD|BIKE|ELLIPT|CARDIO|RUNNER|RECUMB|STAIR/i.test(n)) return 'CARDIO';
+  if (/TREAD|BIKE|ELLIPT|CARDIO|RUNNER|RECUMB|STAIR|SPIN|ROWER/i.test(n)) return 'CARDIO';
   return 'OUTROS';
 }
 

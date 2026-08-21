@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   isBucklerExcludedOrderSku,
+  isBucklerMicCatalogGhostSku,
   normalizeBucklerCatalogItemSku,
   resolveBucklerCatalogSku,
 } from '@/lib/buckler-catalog-sku';
@@ -37,5 +38,15 @@ describe('buckler-catalog-sku', () => {
   it('S300 excluído de proposta Buckler', () => {
     expect(isBucklerExcludedOrderSku('S300')).toBe(true);
     expect(isBucklerExcludedOrderSku('FM-2003')).toBe(false);
+  });
+
+  it('M3 linha descontinuada — excluída de proposta e lookup catálogo', () => {
+    expect(isBucklerExcludedOrderSku('M3-1001')).toBe(true);
+    expect(resolveBucklerCatalogSku('M3-1006', new Set(['M3-1006']))).toBeNull();
+  });
+
+  it('fantasmas MIC M2-1011/M2-101A não entram lookup', () => {
+    expect(isBucklerMicCatalogGhostSku('M2-1011')).toBe(true);
+    expect(resolveBucklerCatalogSku('M2-1011', new Set(['M2-1011A']))).toBeNull();
   });
 });

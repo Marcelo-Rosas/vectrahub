@@ -8,8 +8,24 @@ const BUCKLER_SKU_WITH_SUFFIX_RE = /^(FM|LD|FW|M2|PF|GL)-(\d{4})([A-D])$/i;
 /** Proposta Buckler — SKUs fora do catálogo feira (cardio ERP legado, etc.). */
 export const BUCKLER_EXCLUDED_ORDER_SKUS = new Set(['S300']);
 
+/** Linhas OEM fora do portfólio Buckler (site sem M3 — ago/2026). */
+export const BUCKLER_DISCONTINUED_LINE_PREFIXES = ['M3'] as const;
+
+export const BUCKLER_MIC_CATALOG_GHOST_SKUS = new Set(['M2-1011', 'M2-101A']);
+
+export function isBucklerMicCatalogGhostSku(rawSku: string): boolean {
+  return BUCKLER_MIC_CATALOG_GHOST_SKUS.has(rawSku.trim().toUpperCase());
+}
+
+export function isBucklerDiscontinuedLineSku(rawSku: string): boolean {
+  const sku = rawSku.trim().toUpperCase();
+  return BUCKLER_DISCONTINUED_LINE_PREFIXES.some((prefix) => sku.startsWith(`${prefix}-`));
+}
+
 export function isBucklerExcludedOrderSku(rawSku: string): boolean {
-  return BUCKLER_EXCLUDED_ORDER_SKUS.has(rawSku.trim().toUpperCase());
+  const sku = rawSku.trim().toUpperCase();
+  if (BUCKLER_EXCLUDED_ORDER_SKUS.has(sku)) return true;
+  return isBucklerDiscontinuedLineSku(sku);
 }
 
 export function normalizeBucklerCatalogItemSku(item: string, boxTypes: string[]): string {
@@ -29,6 +45,7 @@ export function normalizeBucklerCatalogItemSku(item: string, boxTypes: string[])
 
 export function resolveBucklerCatalogSku(rawSku: string, catalogSkus: Set<string>): string | null {
   const sku = rawSku.trim().toUpperCase();
+  if (isBucklerDiscontinuedLineSku(sku)) return null;
   if (catalogSkus.has(sku)) return sku;
 
   const m = sku.match(BUCKLER_SKU_WITH_SUFFIX_RE);

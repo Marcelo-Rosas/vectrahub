@@ -272,7 +272,7 @@ export function validateCatalogWeights(
   return out.sort((a, b) => a.sku.localeCompare(b.sku));
 }
 
-/** Linhas comerciais Buckler (prefixo SKU). */
+/** Linhas comerciais Buckler (prefixo SKU). M3 fora — descontinuada (ver buckler-catalog-sku). */
 export const BUCKLER_PRODUCT_LINES = ['FM', 'PF', 'LD', 'FW', 'M2', 'GL'] as const;
 export type BucklerProductLine = (typeof BUCKLER_PRODUCT_LINES)[number];
 

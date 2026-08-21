@@ -1,0 +1,103 @@
+{
+  "generatedAt": "2026-08-21T19:32:23.575869+00:00",
+  "patchGw": true,
+  "fetchGwGaps": true,
+  "files": [
+    {
+      "file": "Cardio_Treadmills_Elliptical_Bike_logistics.json",
+      "pinLoad": false,
+      "rows": 9,
+      "patches": 1,
+      "kitIssues": 2,
+      "validationOk": true,
+      "patchSkus": [
+        "RS-800"
+      ]
+    },
+    {
+      "file": "Plate_Loaded_LD_Series_logistics.json",
+      "pinLoad": false,
+      "rows": 15,
+      "patches": 3,
+      "kitIssues": 4,
+      "validationOk": true,
+      "patchSkus": [
+        "LD-1005",
+        "LD-2002",
+        "LD-2001"
+      ]
+    },
+    {
+      "file": "Plate_Loaded_Real_Series_logistics.json",
+      "pinLoad": false,
+      "rows": 12,
+      "patches": 0,
+      "kitIssues": 3,
+      "validationOk": true,
+      "patchSkus": []
+    },
+    {
+      "file": "Strength_FM_Series_logistics.json",
+      "pinLoad": false,
+      "rows": 10,
+      "patches": 0,
+      "kitIssues": 5,
+      "validationOk": true,
+      "patchSkus": []
+    },
+    {
+      "file": "Strength_FW_Series_logistics.json",
+      "pinLoad": false,
+      "rows": 4,
+      "patches": 0,
+      "kitIssues": 3,
+      "validationOk": true,
+      "patchSkus": []
+    },
+    {
+      "file": "Strength_Glute_Leader_logistics.json",
+      "pinLoad": true,
+      "rows": 8,
+      "patches": 0,
+      "kitIssues": 0,
+      "validationOk": true,
+      "patchSkus": []
+    },
+    {
+      "file": "Strength_M2_Series_logistics.json",
+      "pinLoad": true,
+      "rows": 28,
+      "patches": 0,
+      "kitIssues": 28,
+      "validationOk": false,
+      "patchSkus": []
+    },
+    {
+      "file": "Strength_M3_Series_logistics.json",
+      "pinLoad": true,
+      "rows": 24,
+      "patches": 0,
+      "kitIssues": 2,
+      "validationOk": false,
+      "patchSkus": []
+    },
+    {
+      "file": "Strength_M7_Pro_Series_logistics.json",
+      "pinLoad": true,
+      "rows": 17,
+      "patches": 0,
+      "kitIssues": 16,
+      "validationOk": true,
+      "patchSkus": []
+    },
+    {
+      "file": "Strength_PF_series_logistics.json",
+      "pinLoad": false,
+      "rows": 12,
+      "patches": 0,
+      "kitIssues": 0,
+      "validationOk": true,
+      "patchSkus": []
+    }
+  ]
+}

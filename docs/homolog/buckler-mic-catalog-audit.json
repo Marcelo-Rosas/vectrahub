@@ -1,0 +1,34 @@
+{
+  "generatedAt": "2026-08-21T16:49:08.691Z",
+  "removedRows": [
+    "GL-1001",
+    "GL-1002",
+    "GL-1003",
+    "GL-1004",
+    "GL-1005",
+    "GL-1006",
+    "GL-1007",
+    "GL-1009",
+    "LD:2010"
+  ],
+  "insertedRows": [
+    "GL-1001",
+    "GL-1002",
+    "GL-1003",
+    "GL-1004",
+    "GL-1005",
+    "GL-1006",
+    "GL-1007",
+    "GL-1009"
+  ],
+  "groupCounts": {
+    "CARDIO": 28,
+    "CABLE CROSS": 15,
+    "PLATE LOADED": 92,
+    "BENCHES & RACKS": 42,
+    "PIN LOADED": 57,
+    "ACESSORIOS": 122
+  },
+  "issues": [],
+  "ldMicApplied": 0
+}
