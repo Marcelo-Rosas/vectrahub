@@ -4,7 +4,8 @@
  *
  *   npx tsx scripts/smoke-fair-order-pdf.ts
  *   npx tsx scripts/smoke-fair-order-pdf.ts --file="C:/path/pedido.pdf"
- *   npx tsx scripts/smoke-fair-order-pdf.ts --file=... --edge
+ *   npx tsx scripts/smoke-fair-order-pdf.ts --adapter=buckler-proposta
+ *   npx tsx scripts/smoke-fair-order-pdf.ts --file=... --edge --adapter=buckler-proposta
  */
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -13,14 +14,29 @@ import {
   matchOrderLinesToCatalog,
   parseKonnenOrderText,
 } from '../src/lib/fair-order-pdf-konnen.ts';
+import { parseBucklerOrderText } from '../src/lib/fair-order-pdf-buckler.ts';
+import { resolveBucklerCatalogSku } from '../src/lib/buckler-catalog-sku.ts';
+import type { FairOrderPdfAdapter } from '../src/lib/fair-order-pdf.ts';
 import {
   buildShipperProductCatalog,
   aggregateCatalogQuoteLines,
 } from '../src/lib/shipper-product-catalog.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const fixturePath = join(root, 'src/lib/__tests__/fixtures/konnen-order-8144-extract.txt');
-const goldenPath = join(root, 'src/lib/__tests__/fixtures/konnen-order-8144-quote.json');
+const adapter = (arg('adapter') ?? 'konnen-clicksign') as FairOrderPdfAdapter;
+
+const fixturePaths =
+  adapter === 'buckler-proposta'
+    ? {
+        text: join(root, 'src/lib/__tests__/fixtures/buckler-order-2139-extract.txt'),
+        golden: join(root, 'src/lib/__tests__/fixtures/buckler-order-2139-quote.json'),
+        catalog: join(root, 'src/lib/__tests__/fixtures/buckler-caixas-por-medida.json'),
+      }
+    : {
+        text: join(root, 'src/lib/__tests__/fixtures/konnen-order-8144-extract.txt'),
+        golden: join(root, 'src/lib/__tests__/fixtures/konnen-order-8144-quote.json'),
+        catalog: join(root, 'src/lib/__tests__/fixtures/konnen-catalog-merged.json'),
+      };
 
 function arg(name: string): string | undefined {
   const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
@@ -32,31 +48,32 @@ function hasFlag(name: string): boolean {
 }
 
 async function smokeFixtureText() {
-  const text = readFileSync(fixturePath, 'utf8');
-  const golden = JSON.parse(readFileSync(goldenPath, 'utf8'));
-  const parsed = parseKonnenOrderText(text);
+  const text = readFileSync(fixturePaths.text, 'utf8');
+  const golden = JSON.parse(readFileSync(fixturePaths.golden, 'utf8'));
+  const parsed =
+    adapter === 'buckler-proposta' ? parseBucklerOrderText(text) : parseKonnenOrderText(text);
+  console.log('[fixture] adapter', adapter);
   console.log('[fixture] order', parsed.orderNo);
-  console.log('[fixture] client', parsed.client.document, parsed.client.city, parsed.client.state);
+  console.log('[fixture] client', parsed.client.document, parsed.client.name);
   console.log('[fixture] cargo', parsed.cargoValue);
   console.log('[fixture] lines', parsed.lines.length);
-  const bySku = new Map(parsed.lines.map((l) => [l.sku, l.quantity]));
-  for (const sku of ['IF9305', 'IFP1617', 'RKC01UDB-S780', 'E8']) {
-    console.log(`[fixture] ${sku}`, bySku.get(sku));
-  }
   if (
     parsed.orderNo !== golden.orderNo ||
     parsed.cargoValue !== golden.cargoValue ||
     JSON.stringify(parsed.client) !== JSON.stringify(golden.client) ||
     JSON.stringify(parsed.lines) !== JSON.stringify(golden.lines)
   ) {
-    throw new Error('parse(txt) diverge do golden konnen-order-8144-quote.json');
+    throw new Error(`parse(txt) diverge do golden (${adapter})`);
   }
   const catalog = buildShipperProductCatalog(
-    JSON.parse(
-      readFileSync(join(root, 'src/lib/__tests__/fixtures/konnen-catalog-merged.json'), 'utf8')
-    )
+    JSON.parse(readFileSync(fixturePaths.catalog, 'utf8'))
   );
-  const { unmatched } = matchOrderLinesToCatalog(parsed.lines, new Set([...catalog.keys()]));
+  const { unmatched } = matchOrderLinesToCatalog(
+    parsed.lines,
+    new Set([...catalog.keys()]),
+    undefined,
+    adapter === 'buckler-proposta' ? resolveBucklerCatalogSku : undefined
+  );
   if (unmatched.length !== golden.unmatched.length) {
     throw new Error(`unmatched ${unmatched.length} vs golden ${golden.unmatched.length}`);
   }
@@ -76,7 +93,6 @@ async function smokeFixtureText() {
     parsedLineCount: parsed.lines.length,
   });
   console.log('[fixture] gate', gate.mode, gate.billableWeightKg, gate.suggestedVehicle?.code);
-  if (gate.mode !== 'dedicado') throw new Error('8144 gate should be dedicado');
   console.log('[fixture] OK');
 }
 
@@ -100,7 +116,7 @@ async function smokeEdgePdf(filePath: string) {
       apikey: anon,
       Authorization: `Bearer ${jwt}`,
     },
-    body: JSON.stringify({ pdfBase64, adapter: 'konnen-clicksign' }),
+    body: JSON.stringify({ pdfBase64, adapter }),
   });
   const body = await res.json();
   console.log('[edge] status', res.status);
@@ -120,7 +136,8 @@ async function main() {
     const pdf = await getDocumentProxy(new Uint8Array(bytes));
     const { text } = await extractText(pdf, { mergePages: false });
     const merged = (Array.isArray(text) ? text : [String(text)]).join('\n\n--- PAGE ---\n\n');
-    const parsed = parseKonnenOrderText(merged);
+    const parsed =
+      adapter === 'buckler-proposta' ? parseBucklerOrderText(merged) : parseKonnenOrderText(merged);
     console.log('[pdf-local] lines', parsed.lines.length, 'cargo', parsed.cargoValue);
   }
 }

@@ -14,8 +14,12 @@ import {
   type KonnenParseResult,
   type MatchOrderLinesResult,
 } from '@/lib/fair-order-pdf-konnen';
+import { parseBucklerOrderText, type BucklerParseResult } from '@/lib/fair-order-pdf-buckler';
+import { resolveBucklerCatalogSku } from '@/lib/buckler-catalog-sku';
 
 import type { FairFreightGateResult } from '@/lib/fair-freight-gate';
+
+export type FairOrderPdfAdapter = 'konnen-clicksign' | 'buckler-proposta';
 
 export type FairOrderPdfLine = {
   sku: string;
@@ -38,7 +42,7 @@ export type FairOrderPdfParseResponse = {
   meta: {
     orderNo: string;
     pageCount: number;
-    adapter: 'konnen-clicksign';
+    adapter: FairOrderPdfAdapter;
     gatePreview?: FairFreightGateResult;
   };
 };
@@ -50,6 +54,10 @@ export type ApplyParseToQuoteResult = {
   unmatched: FairOrderPdfUnmatched[];
   meta: FairOrderPdfParseResponse['meta'];
 };
+
+export function fairOrderPdfAdapterForTenant(slug: string): FairOrderPdfAdapter {
+  return slug === 'buckler' ? 'buckler-proposta' : 'konnen-clicksign';
+}
 
 export function konnenClientToFairDraft(parsed: KonnenParseResult['client']): FairClientDraft {
   const kind = detectFairDocKind(parsed.document) ?? 'cnpj';
@@ -66,14 +74,35 @@ export function konnenClientToFairDraft(parsed: KonnenParseResult['client']): Fa
   };
 }
 
+export function bucklerClientToFairDraft(parsed: BucklerParseResult['client']): FairClientDraft {
+  const kind = detectFairDocKind(parsed.document) ?? 'cnpj';
+  return {
+    ...EMPTY_FAIR_CLIENT,
+    kind,
+    document: parsed.document ? formatFairDocument(kind, parsed.document) : '',
+    name: parsed.name,
+    zipCode: formatFairCep(parsed.zipCode),
+    address: parsed.address,
+    email: parsed.email,
+    city: parsed.city,
+    state: parsed.state,
+  };
+}
+
 /** Espelho client-side do match Edge (Vitest / preview). */
 export function matchParsedLines(
   parsed: KonnenLineDraft[],
   catalogSkus: Iterable<string>,
-  nameBySku?: Map<string, string>
+  nameBySku?: Map<string, string>,
+  adapter: FairOrderPdfAdapter = 'konnen-clicksign'
 ): MatchOrderLinesResult {
   const set = new Set([...catalogSkus].map((s) => s.trim().toUpperCase()));
-  return matchOrderLinesToCatalog(parsed, set, nameBySku);
+  return matchOrderLinesToCatalog(
+    parsed,
+    set,
+    nameBySku,
+    adapter === 'buckler-proposta' ? resolveBucklerCatalogSku : undefined
+  );
 }
 
 export function applyParseToQuote(response: FairOrderPdfParseResponse): ApplyParseToQuoteResult {
@@ -90,7 +119,12 @@ export function applyParseToQuote(response: FairOrderPdfParseResponse): ApplyPar
   };
 }
 
-export { parseKonnenOrderText, type KonnenParseResult };
+export {
+  parseKonnenOrderText,
+  parseBucklerOrderText,
+  type KonnenParseResult,
+  type BucklerParseResult,
+};
 
 const MAX_PDF_BYTES = 10 * 1024 * 1024;
 
@@ -112,7 +146,10 @@ function readFileAsBase64(file: File): Promise<string> {
 }
 
 /** Envia PDF para Edge feira-parse-order-pdf e retorna cotação parcial. */
-export async function parseFairOrderPdf(file: File): Promise<FairOrderPdfParseResponse> {
+export async function parseFairOrderPdf(
+  file: File,
+  adapter: FairOrderPdfAdapter = 'konnen-clicksign'
+): Promise<FairOrderPdfParseResponse> {
   if (file.type && file.type !== 'application/pdf') {
     throw new Error('Selecione um arquivo PDF');
   }
@@ -121,7 +158,7 @@ export async function parseFairOrderPdf(file: File): Promise<FairOrderPdfParseRe
   }
   const pdfBase64 = await readFileAsBase64(file);
   return invokeEdgeFunction<FairOrderPdfParseResponse>('feira-parse-order-pdf', {
-    body: { pdfBase64, adapter: 'konnen-clicksign' },
+    body: { pdfBase64, adapter },
     requireAuth: true,
   });
 }

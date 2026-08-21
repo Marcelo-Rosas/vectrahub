@@ -1,6 +1,8 @@
 import { extractText, getDocumentProxy } from 'unpdf';
+import { resolveBucklerCatalogSku } from '../_shared/buckler-catalog-sku.ts';
 import { fairFreightGate } from '../_shared/fair-freight-gate.ts';
 import { feiraFrom } from '../_shared/feira-client.ts';
+import { parseBucklerOrderText } from '../_shared/fair-order-pdf-buckler.ts';
 import {
   matchOrderLinesToCatalog,
   parseKonnenOrderText,
@@ -9,9 +11,11 @@ import { corsPreflight, jsonWithCors, resolveSupabaseContext } from '../_shared/
 
 const MAX_PDF_BYTES = 10 * 1024 * 1024;
 
+type FairOrderPdfAdapter = 'konnen-clicksign' | 'buckler-proposta';
+
 type Body = {
   pdfBase64?: string;
-  adapter?: 'konnen-clicksign';
+  adapter?: FairOrderPdfAdapter;
 };
 
 function decodeBase64Pdf(value: string): Uint8Array {
@@ -106,6 +110,16 @@ Deno.serve(async (req) => {
     return jsonWithCors(req, { error: 'Domínio não habilitado para feira' }, 403);
   }
 
+  const { data: company, error: companyErr } = await feiraFrom(supabase, 'companies')
+    .select('slug')
+    .eq('id', link.company_id)
+    .maybeSingle();
+
+  if (companyErr) return jsonWithCors(req, { error: companyErr.message }, 400);
+
+  const adapter: FairOrderPdfAdapter =
+    body.adapter ?? (company?.slug === 'buckler' ? 'buckler-proposta' : 'konnen-clicksign');
+
   let pageCount = 0;
   let text = '';
   try {
@@ -121,10 +135,17 @@ Deno.serve(async (req) => {
     return jsonWithCors(req, { error: 'PDF sem texto extraível (OCR não suportado na v1)' }, 422);
   }
 
-  const parsed = parseKonnenOrderText(text);
-  if (!parsed.client.document || parsed.client.document.length < 11) {
+  const parsed =
+    adapter === 'buckler-proposta' ? parseBucklerOrderText(text) : parseKonnenOrderText(text);
+
+  if (adapter === 'buckler-proposta') {
+    if (!parsed.client.name.trim()) {
+      return jsonWithCors(req, { error: 'Cliente não identificado no PDF Buckler' }, 422);
+    }
+  } else if (!parsed.client.document || parsed.client.document.length < 11) {
     return jsonWithCors(req, { error: 'Cliente não identificado no PDF Konnen' }, 422);
   }
+
   if (parsed.lines.length === 0) {
     return jsonWithCors(req, { error: 'Nenhuma linha de equipamento encontrada no PDF' }, 422);
   }
@@ -152,7 +173,12 @@ Deno.serve(async (req) => {
     });
   }
 
-  const matched = matchOrderLinesToCatalog(parsed.lines, catalogSkus, nameBySku);
+  const matched = matchOrderLinesToCatalog(
+    parsed.lines,
+    catalogSkus,
+    nameBySku,
+    adapter === 'buckler-proposta' ? resolveBucklerCatalogSku : undefined
+  );
 
   let weightKg = 0;
   let volumeM3 = 0;
@@ -192,7 +218,7 @@ Deno.serve(async (req) => {
     meta: {
       orderNo: parsed.orderNo,
       pageCount,
-      adapter: 'konnen-clicksign' as const,
+      adapter,
       gatePreview,
     },
   });

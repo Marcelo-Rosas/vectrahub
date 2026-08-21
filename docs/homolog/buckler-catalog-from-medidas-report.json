@@ -1,0 +1,39 @@
+{
+  "sourceDir": "C:/Users/marce/Downloads/Medidas Buckler",
+  "planilhasPdf": 80,
+  "planilhasXlsx": 5,
+  "volumetrias": 10,
+  "equipmentSkus": 227,
+  "accessorySkus": 122,
+  "legacyGlRows": 8,
+  "mergedSkus": 357,
+  "mergedRows": 856,
+  "withWeightStacks": 71,
+  "withExplicitStackBoxes": 71,
+  "withInferredStackBoxes": 0,
+  "jungle2139": {
+    "matched": 34,
+    "total": 36,
+    "missing": [
+      "FW-1011",
+      "S300"
+    ]
+  },
+  "parseErrors": [
+    "equip:Planilha Dimensões  - ASSOCIACAO RESERVA DOS YPES III 3852.pdf:CR800+ Bicicleta Horizontal LED 1 0 1 15885 X 560 X 780mm 83",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:FM-1002 DUAL ADJUSTABLE PULLEY 32 2 A:2400*1120*300 B:2400*1",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:LD-2006 Pendulum Squat 2 A:2000*1050*320 B:1750*1040*450 263",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:LD-2007 Glute Machine 2 A:1450*1000*650 B:1780*650*380 186 1",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:LD-1009 Level Row 2 A:1400*1350*740 B:1350*1400*500 239 2,3",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:LD-2004 belt squat 2 A:1740*1180*400 B:1450*1000*650 280 1,8",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:LD-1004 lateral raise/rear deltoid 2 A:1700*720*620 B:900*90",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:LD-2011 Multi Leg Press 2 A:1800*1500*1100 B:1900*1000*800 6",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:M2-1011B TRICEPS EXTENSION 16 3 A:1300*600*300 B:1550*760*30",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:LD-2007 Glute Machine 2 A:1450*1000*650 B:1780*650*380 186 1",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:LD-2011 Multi Leg Press 2 A:1800*1500*1100 B:1900*1000*800 6",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:LD-2006 Pendulum Squat 2 A:2000*1050*320 B:1750*1040*450 263",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:LD-1009 Level Row 2 A:1400*1350*740 B:1350*1400*500 239 2,3",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:M2-1018 SEATED LOW ROW 18 2 A:1500*600*300 B:2040*760*520 17",
+    "equip:Planilha Dimensões - BF PIRACICABA TRAINNING 474 E 475.pdf:LD-1004 lateral raise/rear deltoid 2 A:1700*720*620 B:900*90"
+  ]
+}

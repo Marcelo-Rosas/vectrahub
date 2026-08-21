@@ -1,0 +1,206 @@
+{
+  "client": {
+    "document": "",
+    "name": "JUNGLE ACADEMIA",
+    "zipCode": "",
+    "city": "",
+    "state": "",
+    "address": "",
+    "email": "fernandolagoalima@hotmail.com"
+  },
+  "cargoValue": 1286868.61,
+  "lines": [
+    {
+      "sku": "FM-1024D",
+      "quantity": 1
+    },
+    {
+      "sku": "FM-1024E",
+      "quantity": 1
+    },
+    {
+      "sku": "FM-1024F",
+      "quantity": 1
+    },
+    {
+      "sku": "FM-2001",
+      "quantity": 1
+    },
+    {
+      "sku": "FM-2003A",
+      "quantity": 1
+    },
+    {
+      "sku": "FM-2007",
+      "quantity": 1
+    },
+    {
+      "sku": "FW-1001",
+      "quantity": 1
+    },
+    {
+      "sku": "FW-1002",
+      "quantity": 1
+    },
+    {
+      "sku": "FW-1004",
+      "quantity": 1
+    },
+    {
+      "sku": "FW-1008",
+      "quantity": 1
+    },
+    {
+      "sku": "FW-1011",
+      "quantity": 1
+    },
+    {
+      "sku": "FW-1013",
+      "quantity": 1
+    },
+    {
+      "sku": "FW-1017",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-1001",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-1002",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-1004",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-1005",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-1006",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-1009",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-1010",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-1011",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-1013",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-1014",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-1016",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-1018",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-2002",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-2004",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-2005",
+      "quantity": 1
+    },
+    {
+      "sku": "LD-2006",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1002",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1003",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1004",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1006",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1007",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1008",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1009",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1010A",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1011A",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1013A",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1017",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1018",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1019",
+      "quantity": 1
+    },
+    {
+      "sku": "M2-1023",
+      "quantity": 1
+    },
+    {
+      "sku": "RS-1036",
+      "quantity": 1
+    },
+    {
+      "sku": "RS-1047",
+      "quantity": 1
+    },
+    {
+      "sku": "RS-800",
+      "quantity": 1
+    }
+  ],
+  "orderNo": "2139",
+  "unmatched": [
+    {
+      "rawSku": "FW-1011",
+      "quantity": 1,
+      "hint": "SKU não encontrado em feira.products"
+    }
+  ]
+}

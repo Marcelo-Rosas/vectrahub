@@ -15,6 +15,8 @@ Fonte: `feira.companies` (não hardcode de app).
 | clientes | `feira.clients` (`company_id` + CNPJ). **Nunca** `public.clients` |
 | contratos Hub | Fora do MVP feira. Multi-pagador (`quote_contracts`) só após promote `public.quotes` |
 
-**Catálogo:** `feira.products` + `feira.product_boxes` (`company_id` + `sku` também nas caixas). Fixture `buckler-caixas-por-medida.json` = **27 SKUs** (FM 2, PF 2, LD 4, FW 1, M2 10, GL 8). Import `--shipper=BUCKLER --company=buckler`. UI lê linhas de SKU do catálogo do tenant, não chips fixos Buckler.
+**Catálogo:** `feira.products` + `feira.product_boxes` (`company_id` + `sku` também nas caixas). Fixture `buckler-caixas-por-medida.json` — import `--shipper=BUCKLER --company=buckler`. UI lê linhas de SKU do catálogo do tenant, não chips fixos Buckler.
 
-**Incompleto:** packing M7 PRO / SKUs fora dessa planilha — só entra com nova planilha no import. GL-1001…1009 (sem 1008) está no fixture.
+**Fonte medidas (2026-08):** pasta `Medidas Buckler` — **80 PDF** + **5 XLSX** planilhas + 10 volumetrias → `scripts/build-buckler-catalog-from-medidas.ts`. Catálogo: **340 SKUs**, **905 linhas caixa**. XLSX traz **36 SKUs** ausentes nos PDF (incl. `RS-1036` Forearm Tension — BLUE FIT 560 et al.). Import: `npx tsx scripts/import-shipper-product-catalog.ts --shipper=BUCKLER --company=buckler`.
+
+**Cobertura Jungle 2139:** **45/46** no catálogo — pendente `FW-1011` (alias provável `FW-2012`). **`S300` fora de escopo** (`BUCKLER_EXCLUDED_ORDER_SKUS`).

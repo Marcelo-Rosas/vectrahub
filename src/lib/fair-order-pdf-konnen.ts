@@ -278,29 +278,28 @@ export type MatchOrderLinesResult = {
 export function matchOrderLinesToCatalog(
   parsed: KonnenLineDraft[],
   catalogSkus: Set<string>,
-  nameBySku?: Map<string, string>
+  nameBySku?: Map<string, string>,
+  resolveSku?: (rawSku: string, catalogSkus: Set<string>) => string | null
 ): MatchOrderLinesResult {
   const lines: MatchOrderLinesResult['lines'] = [];
   const unmatched: MatchOrderLinesResult['unmatched'] = [];
 
   for (const row of parsed) {
     const sku = row.sku.trim().toUpperCase();
-    if (catalogSkus.has(sku)) {
-      lines.push({
-        sku,
-        quantity: row.quantity,
-        name: nameBySku?.get(sku),
-        stackWeightKg: row.stackWeightKg,
-      });
-      continue;
-    }
+    const resolved =
+      (catalogSkus.has(sku) ? sku : null) ??
+      (() => {
+        const alt = sku.replace(/\s+/g, '');
+        return alt !== sku && catalogSkus.has(alt) ? alt : null;
+      })() ??
+      resolveSku?.(sku, catalogSkus) ??
+      null;
 
-    const alt = sku.replace(/\s+/g, '');
-    if (alt !== sku && catalogSkus.has(alt)) {
+    if (resolved) {
       lines.push({
-        sku: alt,
+        sku: resolved,
         quantity: row.quantity,
-        name: nameBySku?.get(alt),
+        name: nameBySku?.get(resolved),
         stackWeightKg: row.stackWeightKg,
       });
       continue;

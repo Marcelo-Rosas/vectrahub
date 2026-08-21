@@ -62,7 +62,11 @@ import { fairTenantOriginLocked } from '@/lib/fair-tenant';
 import { useFairResolvedTenant } from '@/hooks/useFairCompanies';
 import { useFairSaveQuote } from '@/hooks/useFairSaveQuote';
 import type { FairSavedQuote } from '@/lib/fair-quote-store';
-import { parseFairOrderPdf, type FairOrderPdfUnmatched } from '@/lib/fair-order-pdf';
+import {
+  parseFairOrderPdf,
+  fairOrderPdfAdapterForTenant,
+  type FairOrderPdfUnmatched,
+} from '@/lib/fair-order-pdf';
 import { fairFreightGate, type FairFreightManualMode } from '@/lib/fair-freight-gate';
 import { pickFairPriceTableId } from '@/lib/fair-price-tables';
 import { FairFreightProfileCard } from '@/components/fair/FairFreightProfileCard';
@@ -274,7 +278,8 @@ export function FairQuoteCalculator() {
     setOrderPdfBusy(true);
     setOrderUnmatched([]);
     try {
-      const parsed = await parseFairOrderPdf(file);
+      const adapter = tenant ? fairOrderPdfAdapterForTenant(tenant.slug) : 'konnen-clicksign';
+      const parsed = await parseFairOrderPdf(file, adapter);
       setClient(parsed.client);
       if (parsed.cargoValue > 0) setCargoValue(parsed.cargoValue);
       setLines(
