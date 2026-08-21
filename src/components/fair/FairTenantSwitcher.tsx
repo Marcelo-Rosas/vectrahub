@@ -23,12 +23,14 @@ export function FairTenantSwitcher({
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger
-        className={className ?? 'h-10 min-h-10 max-w-[220px] touch-manipulation text-sm md:h-9'}
+        className={
+          className ?? 'h-10 min-h-10 max-w-[min(100%,280px)] touch-manipulation text-sm md:h-9'
+        }
         aria-label="Embarcador feira"
       >
         <SelectValue placeholder="Embarcador" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="z-50 max-h-[min(70vh,320px)]">
         {tenants.map((t) => (
           <SelectItem key={t.id} value={t.slug} className="min-h-10">
             {t.name}

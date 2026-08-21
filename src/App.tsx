@@ -3,6 +3,7 @@ import { Suspense, lazy } from 'react';
 import { RouteErrorBoundary } from '@/components/ErrorBoundary';
 import { SuspenseFallback } from '@/components/SuspenseFallback';
 import { lazyWithRetry } from '@/lib/lazy-with-retry';
+import { FairTenantProvider } from '@/contexts/FairTenantContext';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
@@ -72,7 +73,9 @@ const App = () => (
                 path="/feira"
                 element={
                   <ProtectedRoute>
-                    <Outlet />
+                    <FairTenantProvider>
+                      <Outlet />
+                    </FairTenantProvider>
                   </ProtectedRoute>
                 }
               >

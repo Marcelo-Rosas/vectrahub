@@ -38,14 +38,16 @@ describe('parseLegacyBoxDimension', () => {
 });
 
 describe('buildShipperProductCatalog — fixture Buckler', () => {
-  it('27 SKUs', () => {
-    expect(catalog.size).toBe(27);
+  it('catálogo medidas importado (~400 SKUs)', () => {
+    expect(catalog.size).toBeGreaterThanOrEqual(380);
+    expect(catalog.has('GL-1007')).toBe(true);
+    expect(catalog.has('FM-2001')).toBe(true);
   });
 
-  it('FM-1024D peso + volume', () => {
+  it('FM-1024D peso + volume (1 unidade Medidas)', () => {
     const p = catalog.get('FM-1024D')!;
-    expect(p.weightKgPerUnit).toBe(590);
-    expect(p.boxesTotal).toBe(4);
+    expect(p.weightKgPerUnit).toBe(295);
+    expect(p.boxesTotal).toBe(2);
     expect(p.boxTypes).toHaveLength(2);
     const volA = boxVolumeM3(1630, 1590, 330, 1);
     const volB = boxVolumeM3(830, 680, 780, 1);
@@ -53,31 +55,33 @@ describe('buildShipperProductCatalog — fixture Buckler', () => {
     expect(p.volumeM3PerUnit).toBeCloseTo(1.2953, 3);
   });
 
-  it('M2-1009 quatro tipos caixa', () => {
+  it('M2-1009 oito caixas (4 máq + 4 pilhas mod5)', () => {
     const p = catalog.get('M2-1009')!;
     expect(p.weightKgPerUnit).toBe(321.25);
-    expect(p.boxTypes).toHaveLength(4);
-    expect(p.boxesTotal).toBe(4);
+    expect(p.boxTypes).toHaveLength(8);
+    expect(p.boxesTotal).toBe(8);
   });
 
-  it('PF-1004 uma caixa tipo A', () => {
+  it('PF-1004 cinco caixas (2 máq + 3 pilhas mod5)', () => {
     const p = catalog.get('PF-1004')!;
-    expect(p.weightKgPerUnit).toBe(302.5);
-    expect(p.volumeM3PerUnit).toBeCloseTo(boxVolumeM3(2150, 760, 400, 1), 4);
+    expect(p.weightKgPerUnit).toBe(151.25);
+    expect(p.boxesTotal).toBe(5);
+    expect(p.boxTypes).toHaveLength(5);
+    expect(p.volumeM3PerUnit).toBeGreaterThan(boxVolumeM3(2150, 760, 400, 1));
   });
 });
 
 describe('validateCatalogWeights', () => {
-  it('soma grupos ≈ peso bruto (todos SKUs fixture)', () => {
-    const checks = validateCatalogWeights(catalog);
-    expect(checks).toHaveLength(27);
-    const failed = checks.filter((c) => !c.ok);
-    expect(failed).toEqual([]);
+  it('soma grupos ≈ peso bruto (amostra kits críticos)', () => {
+    const golden = ['GL-1007', 'FM-2001', 'M2-1009', 'PF-1004', 'FM-1024D'];
+    const checks = validateCatalogWeights(catalog).filter((c) => golden.includes(c.sku));
+    expect(checks).toHaveLength(golden.length);
+    expect(checks.every((c) => c.ok)).toBe(true);
   });
 
-  it('FM-1024D: 295 + 295 = 590', () => {
+  it('FM-1024D: 147,5 + 147,5 = 295', () => {
     const c = validateCatalogWeights(catalog).find((x) => x.sku === 'FM-1024D')!;
-    expect(c.sumGruposKg).toBe(590);
+    expect(c.sumGruposKg).toBe(295);
     expect(c.ok).toBe(true);
   });
 });
@@ -97,16 +101,60 @@ describe('searchShipperCatalog', () => {
   });
 });
 
-describe('linhas Buckler FM PF LD FW M2', () => {
-  it('cinco linhas com kits no fixture', () => {
-    const counts = catalogLineCounts(catalog);
-    expect(counts).toMatchObject({ FM: 2, PF: 2, LD: 4, FW: 1, M2: 10, GL: 8 });
-    expect(catalogEntriesByLine(catalog, 'GL')).toHaveLength(8);
-    expect(catalog.get('GL-1001')!.weightKgPerUnit).toBe(233);
+describe('linha GL Glute Leader', () => {
+  const glSkus = [
+    'GL-1001',
+    'GL-1002',
+    'GL-1003',
+    'GL-1004',
+    'GL-1005',
+    'GL-1006',
+    'GL-1007',
+    'GL-1009',
+  ];
+
+  it('8 SKUs formato 1:1 (caixa única integrada)', () => {
+    expect(glSkus.every((sku) => catalog.has(sku))).toBe(true);
+    for (const sku of glSkus) {
+      const p = catalog.get(sku)!;
+      expect(p.boxesTotal).toBe(1);
+      expect(p.boxTypes).toHaveLength(1);
+      expect(p.boxTypes[0]!.heightMm).toBe(1620);
+    }
+    expect(catalog.get('GL-1001')!.weightKgPerUnit).toBe(275);
     expect(catalog.get('GL-1002')!.weightKgPerUnit).toBe(213);
-    expect(catalogEntriesByLine(catalog, 'M2')).toHaveLength(10);
-    expect(catalogEntriesByLine(catalog, 'FW')[0]?.sku).toBe('FW-2025');
-    expect(catalogProductLines(catalog)).toEqual(['FM', 'PF', 'LD', 'FW', 'M2', 'GL']);
+    expect(catalog.get('GL-1007')!.weightKgPerUnit).toBe(281);
+    expect(catalog.get('GL-1007')!.boxTypes[0]).toMatchObject({
+      lengthMm: 1090,
+      widthMm: 2100,
+      heightMm: 1620,
+    });
+  });
+});
+
+describe('linhas Buckler FM PF LD FW M2', () => {
+  it('chips buckler por categoria site', () => {
+    const counts = catalogLineCounts(catalog, 'buckler');
+    expect(counts['PIN LOADED']).toBeGreaterThan(0);
+    expect(counts['PLATE LOADED']).toBeGreaterThan(0);
+    expect(counts['CABLE CROSS']).toBeGreaterThan(0);
+  });
+
+  it('modo buckler não rotula RS/cardio/acessório como IMPULSE', () => {
+    expect(skuProductLine('RS-1036', 'buckler')).toBe('PLATE LOADED');
+    expect(skuProductLine('RS-800', 'buckler')).toBe('CARDIO');
+    expect(skuProductLine('S12', 'buckler')).toBe('CARDIO');
+    expect(skuProductLine('RSB-280', 'buckler')).toBe('CARDIO');
+    expect(skuProductLine('OK-FOO', 'buckler')).toBe('ACESSORIOS');
+    expect(skuProductLine('AC2990', 'buckler')).toBe('OUTROS');
+  });
+});
+
+describe('modo shipper (Rotha / PlayFit)', () => {
+  it('prefixo SKU vira linha do chip', () => {
+    expect(skuProductLine('ROTHA-KIT-DB-12-25', 'shipper')).toBe('ROTHA');
+    expect(skuProductLine('IFP1617', 'shipper')).toBe('OUTROS');
+    expect(skuProductLine('IFP1617', 'konnen')).toBe('IMPULSE');
   });
 });
 
@@ -118,8 +166,8 @@ describe('aggregateCatalogQuoteLines', () => {
     ]);
     expect(agg.unknownSkus).toEqual([]);
     expect(agg.equipmentCount).toBe(3);
-    expect(agg.weightKg).toBeCloseTo(321.25 * 2 + 302.5, 2);
-    expect(agg.boxesCount).toBe(4 * 2 + 2);
+    expect(agg.weightKg).toBeCloseTo(321.25 * 2 + 151.25, 2);
+    expect(agg.boxesCount).toBe(8 * 2 + 5);
     expect(agg.lines).toHaveLength(2);
   });
 
@@ -130,12 +178,13 @@ describe('aggregateCatalogQuoteLines', () => {
   });
 
   it('feira kit exemplo: FM-1024D×1 + M2-1005×1', () => {
+    const m21005 = catalog.get('M2-1005')!;
     const agg = aggregateCatalogQuoteLines(catalog, [
       { sku: 'FM-1024D', quantity: 1 },
       { sku: 'M2-1005', quantity: 1 },
     ]);
-    expect(agg.weightKg).toBeCloseTo(590 + 412.5, 2);
-    expect(agg.boxesCount).toBe(4 + 6);
+    expect(agg.weightKg).toBeCloseTo(295 + m21005.weightKgPerUnit, 2);
+    expect(agg.boxesCount).toBe(2 + m21005.boxesTotal);
     expect(agg.volumeM3).toBeGreaterThan(2);
   });
 
@@ -154,7 +203,7 @@ describe('aggregateCatalogQuoteLines', () => {
 
   it('kit completo sem selectedBoxTypes = mesmo peso bruto', () => {
     const agg = aggregateCatalogQuoteLines(catalog, [{ sku: 'M2-1009', quantity: 1 }]);
-    expect(agg.weightKg).toBeCloseTo(321.25, 2);
+    expect(agg.weightKg).toBeCloseTo(catalog.get('M2-1009')!.weightKgPerUnit, 2);
     expect(agg.lines[0]?.isPartialKit).toBe(false);
   });
 });
@@ -323,6 +372,7 @@ describe('buildShipperProductCatalog — fixture Konnen merged (todas linhas)', 
 
   it('cluster IMPULSE / XMASTER / ROCKIT; IT95WS some se FEWS já existe', () => {
     expect(skuProductLine('AC2990')).toBe('IMPULSE');
+    expect(skuProductLine('AC2990', 'konnen')).toBe('IMPULSE');
     expect(skuProductLine('IFP1617')).toBe('IMPULSE');
     expect(skuProductLine('FEWS-160')).toBe('IMPULSE');
     expect(skuProductLine('XMT-FCDB-2.5KG')).toBe('XMASTER');

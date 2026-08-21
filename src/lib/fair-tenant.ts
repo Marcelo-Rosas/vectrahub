@@ -1,5 +1,8 @@
 /** Tenant feira — metadado `feira.companies`. Sem seed de embarcador no client. */
 
+import playfitLogoPng from '@/assets/brand/playfit-logo.png';
+import rothaLogoPng from '@/assets/brand/rotha-logo.png';
+
 export type FairCompanyRow = {
   id: string;
   slug: string;
@@ -29,7 +32,10 @@ export type FairTenant = {
 };
 
 export function logoSrcForSlug(slug: string): string {
-  return `/brand/${slug.trim().toLowerCase()}-logo.svg`;
+  const s = slug.trim().toLowerCase();
+  if (s === 'rotha') return rothaLogoPng;
+  if (s === 'playfit') return playfitLogoPng;
+  return `/brand/${s}-logo.svg`;
 }
 
 export function companyRowToTenant(row: FairCompanyRow): FairTenant {

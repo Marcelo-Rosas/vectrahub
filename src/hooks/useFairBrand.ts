@@ -27,13 +27,13 @@ export function useFairBrand(tenant: FairTenant | null) {
   const staticPalette = useMemo(() => (tenant ? resolveFairPalette(tenant.slug) : null), [tenant]);
 
   const q = useQuery({
-    queryKey: ['feira-brand', tenant?.slug],
+    queryKey: ['feira-brand', tenant?.slug, 'v3'],
     enabled: !!tenant?.slug,
     staleTime: 24 * 60 * 60 * 1000,
     retry: 1,
     queryFn: async (): Promise<FairBrandResolved> => {
       const data = await invokeEdgeFunction<FairBrandResolved>('feira-resolve-brand', {
-        body: { slug: tenant!.slug },
+        body: { slug: tenant!.slug, forceRefresh: true },
       });
       return data;
     },
@@ -50,6 +50,8 @@ export function useFairBrand(tenant: FairTenant | null) {
   return {
     palette,
     logoUrl,
+    qualityScore: q.data?.qualityScore ?? null,
+    accentHex: q.data?.tokens?.accent ?? staticPalette?.tokens.accent ?? null,
     brand: q.data ?? null,
     isLoading: q.isLoading,
     isLive: q.data?.source === 'brandfetch' && !!q.data.logoUrl,

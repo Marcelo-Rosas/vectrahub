@@ -16,7 +16,7 @@ import { Link } from 'react-router-dom';
 export default function FairSimpleQuotePage() {
   const { signOut, user } = useAuth();
   const { tenant, companies, isLoading, canSwitchTenant, setTenantSlug } = useFairResolvedTenant();
-  const { palette, logoUrl } = useFairBrand(tenant);
+  const { palette, logoUrl, qualityScore, accentHex } = useFairBrand(tenant);
   const showPainel = isFairStaffTester(user?.email);
   useFairDocumentTheme(palette);
 
@@ -47,9 +47,11 @@ export default function FairSimpleQuotePage() {
                 <FairTenantLogo
                   tenant={tenant}
                   logoUrl={logoUrl}
+                  qualityScore={qualityScore}
+                  accentHex={accentHex}
                   size="lg"
                   className="md:px-2.5 md:py-1.5"
-                  imgClassName="md:h-7 md:max-w-[168px]"
+                  imgClassName="md:h-12 md:max-w-[280px]"
                 />
               ) : (
                 <span className="text-sm">Feira</span>
@@ -95,9 +97,11 @@ export default function FairSimpleQuotePage() {
             <FairTenantLogo
               tenant={tenant}
               logoUrl={logoUrl}
+              qualityScore={qualityScore}
+              accentHex={accentHex}
               size="md"
               className="w-fit"
-              imgClassName="md:h-6 md:max-w-[140px]"
+              imgClassName="md:h-10 md:max-w-[240px]"
             />
           ) : null}
         </div>

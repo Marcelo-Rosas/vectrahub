@@ -31,10 +31,13 @@ import { useCalculateFreight, type CalculateFreightResponse } from '@/hooks/useC
 import {
   aggregateCatalogQuoteLines,
   aggregateLineFromProduct,
+  catalogAllEntries,
   catalogEntriesByLine,
   catalogLineCounts,
+  catalogLineModeForTenantSlug,
   catalogLineLabel,
   catalogProductLines,
+  FAIR_SMALL_CATALOG_SKUS,
   fullKitBoxTypes,
   resolveSelectedBoxTypes,
   searchShipperCatalog,
@@ -125,15 +128,43 @@ export function FairQuoteCalculator() {
 
   const [setupOpen, setSetupOpen] = useState(true);
 
-  const lineCounts = useMemo(() => catalogLineCounts(catalog), [catalog]);
-  const productLines = useMemo(() => catalogProductLines(catalog), [catalog]);
+  const catalogLineMode = catalogLineModeForTenantSlug(tenant?.slug);
+
+  const lineCounts = useMemo(
+    () => catalogLineCounts(catalog, catalogLineMode),
+    [catalog, catalogLineMode]
+  );
+  const productLines = useMemo(
+    () => catalogProductLines(catalog, 16, catalogLineMode),
+    [catalog, catalogLineMode]
+  );
 
   const skuHits = useMemo(() => {
     const q = skuQuery.trim();
     if (q.length >= 2) return searchShipperCatalog(catalog, q, 20);
-    if (selectedLine) return catalogEntriesByLine(catalog, selectedLine);
+    if (selectedLine) return catalogEntriesByLine(catalog, selectedLine, catalogLineMode);
+    if (catalog.size > 0 && catalog.size <= FAIR_SMALL_CATALOG_SKUS) {
+      return catalogAllEntries(catalog);
+    }
     return [];
-  }, [catalog, skuQuery, selectedLine]);
+  }, [catalog, skuQuery, selectedLine, catalogLineMode]);
+
+  const kitCount = useMemo(
+    () => [...catalog.values()].filter((e) => e.productKind === 'kit').length,
+    [catalog]
+  );
+
+  const compactCatalog =
+    catalog.size > 0 && catalog.size <= FAIR_SMALL_CATALOG_SKUS && catalogLineMode !== 'rotha';
+
+  useEffect(() => {
+    setSelectedLine(null);
+    setSkuQuery('');
+    setLines([]);
+    setOrderUnmatched([]);
+    setResult(null);
+    setSavedQuote(null);
+  }, [tenant?.id]);
 
   const aggregate = useMemo(
     () =>
@@ -668,9 +699,15 @@ export function FairQuoteCalculator() {
             Equipamentos
           </CardTitle>
           <CardDescription className="text-xs md:text-[11px]">
-            {productLines.length > 0
-              ? `${productLines.length} linhas · toque a linha, depois o kit`
-              : 'Catálogo vazio neste embarcador'}
+            {catalog.size === 0
+              ? 'Catálogo vazio neste embarcador'
+              : compactCatalog
+                ? `${catalog.size} kits no catálogo`
+                : catalogLineMode === 'rotha'
+                  ? `${catalog.size} itens · ${kitCount} kits · ${productLines.length} grupos`
+                  : catalogLineMode === 'buckler'
+                    ? `${catalog.size} SKUs · ${productLines.length} categorias · toque ou busque`
+                    : `${catalog.size} SKUs · ${productLines.length} linhas · toque a linha ou busque`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 pb-3 md:pb-3">
@@ -703,7 +740,11 @@ export function FairQuoteCalculator() {
               Enviar pedido PDF
             </Button>
             <p className="min-w-0 flex-1 text-[11px] leading-snug text-muted-foreground md:max-w-md">
-              Orçamento Konnen (Clicksign) preenche cliente, carga e equipamentos.
+              {tenant?.slug === 'buckler'
+                ? 'Proposta Comercial Buckler preenche cliente, carga e equipamentos.'
+                : tenant?.slug === 'konnen'
+                  ? 'Orçamento Konnen (Clicksign) preenche cliente, carga e equipamentos.'
+                  : 'PDF do pedido preenche cliente, carga e equipamentos.'}
             </p>
           </div>
 
@@ -778,28 +819,29 @@ export function FairQuoteCalculator() {
             </Button>
           </div>
 
-          {(skuQuery.trim().length >= 2 || selectedLine) && skuHits.length > 0 && (
-            <div className="max-h-[min(40vh,16rem)] overflow-y-auto overscroll-contain rounded-xl border divide-y">
-              {skuHits.map((h) => (
-                <button
-                  key={h.sku}
-                  type="button"
-                  className="flex min-h-[3.5rem] w-full flex-col justify-center px-4 py-3 text-left touch-manipulation active:bg-[var(--fair-accent-soft)]"
-                  onClick={() => openKitPicker(h)}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className={cn('font-mono text-base font-semibold', FAIR_UI.ink)}>
-                      {h.sku}
-                    </span>
-                    <Badge variant="outline" className="font-mono text-[10px]">
-                      {h.boxTypes.length} vol
-                    </Badge>
-                  </div>
-                  <span className="line-clamp-1 text-sm text-muted-foreground">{h.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
+          {(skuQuery.trim().length >= 2 || selectedLine || compactCatalog) &&
+            skuHits.length > 0 && (
+              <div className="max-h-[min(40vh,16rem)] overflow-y-auto overscroll-contain rounded-xl border divide-y">
+                {skuHits.map((h) => (
+                  <button
+                    key={h.sku}
+                    type="button"
+                    className="flex min-h-[3.5rem] w-full flex-col justify-center px-4 py-3 text-left touch-manipulation active:bg-[var(--fair-accent-soft)]"
+                    onClick={() => openKitPicker(h)}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={cn('font-mono text-base font-semibold', FAIR_UI.ink)}>
+                        {h.sku}
+                      </span>
+                      <Badge variant="outline" className="font-mono text-[10px]">
+                        {h.boxTypes.length} vol
+                      </Badge>
+                    </div>
+                    <span className="line-clamp-1 text-sm text-muted-foreground">{h.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
           {lines.length === 0 ? (
             <div className="rounded-xl border border-dashed px-4 py-8 text-center">

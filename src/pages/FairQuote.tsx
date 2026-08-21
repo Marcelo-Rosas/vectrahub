@@ -1,5 +1,4 @@
 import { FairQuoteCalculator } from '@/components/fair/FairQuoteCalculator';
-import { PlayFitFairQuoteCalculator } from '@/components/fair/PlayFitFairQuoteCalculator';
 import { FairTenantLogo } from '@/components/fair/FairTenantLogo';
 import { FairTenantSwitcher } from '@/components/fair/FairTenantSwitcher';
 import { Button } from '@/components/ui/button';
@@ -10,13 +9,13 @@ import { isFairStaffTester } from '@/lib/fair-dashboard-access';
 import { useFairDocumentTheme } from '@/hooks/useFairDocumentTheme';
 import { fairPaletteStyle } from '@/lib/fair-brand-palettes';
 import { LayoutDashboard, LogOut, Zap } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 
 /** Shell mobile-first — feira / celular vendedor. */
 export default function FairQuotePage() {
   const { signOut, user } = useAuth();
   const { tenant, companies, isLoading, canSwitchTenant, setTenantSlug } = useFairResolvedTenant();
-  const { palette, logoUrl } = useFairBrand(tenant);
+  const { palette, logoUrl, qualityScore, accentHex } = useFairBrand(tenant);
   const showPainel = isFairStaffTester(user?.email);
   useFairDocumentTheme(palette);
 
@@ -47,9 +46,11 @@ export default function FairQuotePage() {
                 <FairTenantLogo
                   tenant={tenant}
                   logoUrl={logoUrl}
+                  qualityScore={qualityScore}
+                  accentHex={accentHex}
                   size="lg"
                   className="md:px-2.5 md:py-1.5"
-                  imgClassName="md:h-7 md:max-w-[168px]"
+                  imgClassName="md:h-12 md:max-w-[280px]"
                 />
               ) : (
                 <span className="text-sm">Feira</span>
@@ -95,9 +96,11 @@ export default function FairQuotePage() {
             <FairTenantLogo
               tenant={tenant}
               logoUrl={logoUrl}
+              qualityScore={qualityScore}
+              accentHex={accentHex}
               size="md"
               className="w-fit"
-              imgClassName="md:h-6 md:max-w-[140px]"
+              imgClassName="md:h-10 md:max-w-[240px]"
             />
           ) : null}
         </div>
@@ -111,7 +114,7 @@ export default function FairQuotePage() {
             Domínio não habilitado em feira.companies.
           </p>
         ) : tenant.slug === 'playfit' ? (
-          <PlayFitFairQuoteCalculator key={tenant.slug} tenant={tenant} />
+          <Navigate to="/feira/simples" replace />
         ) : (
           <FairQuoteCalculator key={tenant.slug} />
         )}

@@ -1,9 +1,11 @@
 # Tenant Feira — Rotha Fitness
 
-Fonte: `feira.products` + planilha **Produtos (10).xlsx** homolog + [rothafitness.com](https://rothafitness.com/).
+Fonte: catálogo canônico PDF **CATALOGO ROTHA** Scribd `830294749` (`C:\Users\marce\Downloads\830294749-CATALOGO-ROTHA.pdf`) + medidas C×L×A catálogo 2025–2026 (suportes numerados) + caixa similar Konnen. Site [rothafitness.com](https://rothafitness.com/).
+
+**SKU = código comercial do PDF.** `R####` da NF é alias (`nf_skus`), **não** SKU.
 
 | Campo | Valor |
-|-------|-------|
+|---|---|
 | slug | `rotha` |
 | name | Rotha Fitness |
 | CNPJ | 43.466.166/0001-00 |
@@ -13,35 +15,45 @@ Fonte: `feira.products` + planilha **Produtos (10).xlsx** homolog + [rothafitnes
 | brand API | Edge `feira-resolve-brand` + cache `feira.company_brands` |
 | event_flag | `ROTHA` |
 
-## Catálogo (kits logísticos)
+## Catálogo canônico
 
-Cada SKU = **1 kit completo** (pares agregados). UI usa `FairQuoteCalculator` padrão (não PlayFit).
+Código em `src/lib/rotha-catalog.ts` → `ROTHA_CANONICAL_CATALOG`. Build: `npx tsx scripts/build-rotha-feira-catalog.ts`. Import: `npx tsx scripts/import-rotha-feira-catalog.ts` (desativa SKU antigo, incl. `R####`).
 
-| SKU | Composição (pares) | Peso kit (kg) | m³ kit |
-|-----|-------------------|---------------|--------|
-| `ROTHA-KIT-HALTER-1-10` | 1–10 kg (passo 1 kg) | 110 | 0,200 |
-| `ROTHA-KIT-DB-12-25` | 12,5–25 kg (passo 2,5 kg) | 225 | 0,220 |
-| `ROTHA-KIT-DB-12-35` | 12,5–35 kg | 475 | 0,460 |
-| `ROTHA-KIT-DB-12-40` | 12,5–40 kg | 630 | 0,520 |
-| `ROTHA-KIT-DB-42-50` | 42,5–50 kg | 370 | 0,160 |
+| Prefixo | Produto | Peso | Medida |
+|---|---|---|---|
+| `DBSIX{kg}` | Dumbbell Six 12–120 kg | nominal 1 pç | caixa Konnen UDB (12–36); >36 caixa vizinha |
+| `ANVAN{kg}` | Anilha Black 1 / 2,5 / 5 / 10 / 15 / 20 / 30 | nominal | caixa Konnen UWP |
+| `BMSIX{kg}` | Barra montada Six 10–65 passo 5 | nominal | caixa Konnen BBS (10–30); >30 vizinha |
+| `HALSEX{n}` / `HALTSEX{n}` | Halter sextavado 1–10 kg | nominal | 220×90×90 mm |
+| `KETTEX{kg}` | Kettlebell 4–32 kg | nominal | kettle Konnen escalado |
+| `OLBACR-*` / `STBACROMR-*` | Barras por comprimento | estimado comprimento | seção 90 mm |
+| `PUX-*` | Puxadores | 4 kg / corda 2,5 kg | 400×250×120 (corda 600×150×150) |
+| `SUPDUMBLACK-{pares}` | Rack Black 2 níveis | 13 pares = 95 kg Konnen; resto proporção | C×L×A 2025 (L 0,75 A 0,72) |
+| `SUPDUMBLACK-3N-{pares}` | Rack Black 3 níveis | estimado | C×L×A 2025 (L 0,75 A 0,84) |
+| `SUPTORHAL-PRE-10` | Curvado 10 pares | 70 kg | 1350×530×530 |
+| `SUPBARRA-BLACK` | Barras montadas | 50,3 kg | 1525×845×170 |
+| `LAND001` `CANMODBARRA002-*` `SUPKET-*` | demais suportes | estimado | `homolog_pending` |
 
-**Pendente homolog:** kits 52–60 e 62–70 kg (sem linha na planilha AB6051 >50 kg).
+## Alias NF (não SKU)
 
-## Fórmulas
+| Comercial | NF |
+|---|---|
+| `ANVAN2.5` / `5` / `10` / `20` | `R6002` / `R6005` / `R6010` / `R6020` |
+| `PUX-W` `PUX-RETO` `PUX-V` `PUX-CORDA` `PUX-ALCA` | `R1610` `R1604` `R1609` `R1601` `R1607` |
+| `SUPDUMBLACK-13` | `R3074.1` |
+| `SUPTORHAL-PRE-10` | `R1531.1` |
+| `SUPBARRA-BLACK` | `R1511.1` |
 
-```
-Peso kit = Σ (peso par × 2) para cada peso no intervalo
-Cubagem kit = Σ m³ unitário por par (coluna M³ da planilha)
-```
+Kits NF `R4070` `R1282` `R3501` `R3506` `R1751` **não** viram SKU (catálogo vende peça / sem código no kit anatômico).
 
 ## Rotas UI
 
 | Rota | UI |
-|------|-----|
+|---|---|
 | `/feira` | `FairQuoteCalculator` + catálogo DB |
-| `/feira/simples` | Frete manual (sem catálogo Rotha dedicado) |
+| `/feira/simples` | Frete manual |
 
 ## Homolog
 
-- PDF catálogo 2025–2026 é imagem — extrair dimensões caixa quando OCR disponível
-- Validar pesos/cubagem com comercial Rotha antes feira
+- PDF 36p tem código; PDF 2025 tem C×L×A dos racks numerados, **sem** `CÓD. DO PRODUTO`
+- Validar peso estimado (`homolog_pending: true`) com tabela de preço Rotha
