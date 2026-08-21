@@ -73,7 +73,7 @@ function parseDimsToken(token: string): { l: number; w: number; h: number } | nu
   const t = token.trim();
   const isCm = /cm/i.test(t);
   const isMm = /mm/i.test(t);
-  const nums = [...t.replace(/[^\d.,xX×*:\-]/g, ' ').matchAll(/(\d+(?:[.,]\d+)?)/g)].map((m) =>
+  const nums = [...t.replace(/[^\d.,xX×*:-]/g, ' ').matchAll(/(\d+(?:[.,]\d+)?)/g)].map((m) =>
     Number(m[1].replace(',', '.'))
   );
   if (nums.length < 3) return null;

@@ -183,7 +183,7 @@ const HEADER_LINE_RE =
   /^(Código|Nome|Imagem|Prazo|entrega|Valor Unit|QTD|Desconto|Subtotal|DADOS DO CLIENTE|ORÇAMENTO|DATA DE FECHAMENTO|Razão Social|Nome Fantasia|CNPJ|Endereço|Bairro|Telefone|E-mail|Telefone)/i;
 
 function extractSkuFromProductBlock(block: string): string | null {
-  let chunk = block
+  const chunk = block
     .replace(/FOR FITNESS[\s\S]*/gi, '')
     .replace(/Consultor:[\s\S]*/gi, '')
     .replace(/Clicksign[\s\S]*/gi, '')
