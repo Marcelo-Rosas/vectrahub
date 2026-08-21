@@ -2,6 +2,7 @@
 
 import playfitLogoPng from '@/assets/brand/playfit-logo.png';
 import rothaLogoPng from '@/assets/brand/rotha-logo.png';
+import { resolveFairPalette } from '@/lib/fair-brand-palettes';
 
 export type FairCompanyRow = {
   id: string;
@@ -95,6 +96,49 @@ export function signupDomainHint(tenants: readonly FairTenant[]): string {
   const domains = [...new Set(tenants.flatMap((t) => t.emailDomains.map((d) => `@${d}`)))];
   if (domains.length === 0) return 'do domínio cadastrado no embarcador';
   return domains.join(' ou ');
+}
+
+/** Domínios extras cadastro (alias DNS — além de fair-brand-palettes.domain). */
+const FAIR_SIGNUP_EXTRA_DOMAINS: Partial<Record<string, readonly string[]>> = {
+  playfit: ['playfitpiso.com.br'],
+};
+
+/** Domínios cadastro feira por slug (paleta estática — funciona sem login). */
+export function fairSignupDomainsForSlug(slug: string | null | undefined): readonly string[] {
+  const key = (slug ?? '').trim().toLowerCase();
+  if (!key) return [];
+  const palette = resolveFairPalette(key);
+  if (palette.slug !== key) return [];
+  const extras = FAIR_SIGNUP_EXTRA_DOMAINS[key] ?? [];
+  return [...new Set([palette.domain, ...extras])];
+}
+
+export function fairSignupDomainHint(slug: string | null | undefined): string | null {
+  const domains = fairSignupDomainsForSlug(slug);
+  if (domains.length === 0) return null;
+  return domains.map((d) => `@${d}`).join(' ou ');
+}
+
+export function isFairSignupEmailForSlug(
+  email: string | null | undefined,
+  slug: string | null | undefined
+): boolean {
+  const domains = fairSignupDomainsForSlug(slug);
+  if (domains.length === 0) return true;
+  const stub: FairTenant = {
+    id: slug ?? '',
+    slug: slug ?? '',
+    name: '',
+    originCity: '',
+    originUf: '',
+    originLabel: '',
+    originCep: '',
+    eventFlag: '',
+    emailDomains: domains,
+    tollFallbackPercent: 12,
+    logoSrc: '',
+  };
+  return matchTenantByEmail(email, [stub]) != null;
 }
 
 export const FAIR_STAFF_TENANT_SLUG_KEY = 'feira-staff-tenant-slug';

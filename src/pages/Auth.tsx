@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from 'lucide-react';
-import { isFairTenantEmail } from '@/lib/fair-tenant';
+import {
+  isFairTenantEmail,
+  fairSignupDomainHint,
+  isFairSignupEmailForSlug,
+} from '@/lib/fair-tenant';
 import { useFairCompanies } from '@/hooks/useFairCompanies';
 import { BrandLogo } from '@/components/BrandLogo';
 import { FairEventFooter } from '@/components/fair/FairEventFooter';
@@ -36,8 +40,14 @@ function isFairAuthFlow(location: { pathname: string; search: string; state: unk
   if (from.startsWith('/feira')) return true;
   const params = new URLSearchParams(location.search);
   if (params.get('feira') === '1') return true;
+  if (params.get('tenant')?.trim()) return true;
   if (typeof window !== 'undefined' && window.location.hostname.includes('feira')) return true;
   return false;
+}
+
+function fairSignupTenantSlug(search: string): string | null {
+  const slug = new URLSearchParams(search).get('tenant')?.trim().toLowerCase();
+  return slug || null;
 }
 
 export default function Auth() {
@@ -45,6 +55,8 @@ export default function Auth() {
   const location = useLocation();
   const { user, loading, signIn, signUp, resetPassword } = useAuth();
   const fairFlow = isFairAuthFlow(location);
+  const signupTenantSlug = fairSignupTenantSlug(location.search);
+  const signupDomainLabel = fairSignupDomainHint(signupTenantSlug);
 
   const [mode, setMode] = useState<'login' | 'signup'>(fairFlow ? 'signup' : 'login');
   const [showPassword, setShowPassword] = useState(false);
@@ -98,6 +110,17 @@ export default function Auth() {
         if (err.path[0] === 'fullName') errors.fullName = err.message;
       });
       setLoginErrors(errors);
+      return;
+    }
+
+    if (
+      mode === 'signup' &&
+      signupTenantSlug &&
+      !isFairSignupEmailForSlug(loginEmail, signupTenantSlug)
+    ) {
+      const hint = signupDomainLabel ?? 'corporativo do embarcador';
+      setLoginErrors({ email: `Use e-mail ${hint}` });
+      toast.error(`Cadastro só com e-mail ${hint}`);
       return;
     }
 
@@ -281,6 +304,12 @@ export default function Auth() {
             )}
             {fairFlow && <div className="mb-6" />}
 
+            {fairFlow && mode === 'signup' && signupDomainLabel && (
+              <p className="mb-4 text-sm text-muted-foreground">
+                Cadastro com e-mail corporativo {signupDomainLabel}.
+              </p>
+            )}
+
             {(fairFlow || mode === 'signup') && (
               <div className="mb-6 grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
                 <Button
@@ -332,7 +361,13 @@ export default function Auth() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder={mode === 'signup' ? 'nome@empresa.com.br' : 'E-mail'}
+                    placeholder={
+                      mode === 'signup' && signupDomainLabel
+                        ? `nome${signupDomainLabel.split(' ou ')[0]}`
+                        : mode === 'signup'
+                          ? 'nome@empresa.com.br'
+                          : 'E-mail'
+                    }
                     className={`pl-10 ${loginErrors.email ? 'border-destructive' : ''}`}
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
@@ -413,10 +448,14 @@ export default function Auth() {
             ) : (
               <p className="text-center text-sm text-muted-foreground mt-6">
                 {mode === 'signup' ? (
-                  <>
-                    Cadastro com e-mail corporativo do embarcador. Domínio vem de feira.companies —
-                    sem travar um tenant na tela.
-                  </>
+                  signupDomainLabel ? (
+                    <>Cadastro feira — domínio {signupDomainLabel}.</>
+                  ) : (
+                    <>
+                      Cadastro com e-mail corporativo do embarcador. Domínio vem de feira.companies
+                      — sem travar um tenant na tela.
+                    </>
+                  )
                 ) : (
                   <>
                     Acesso Hub: colaboradores Vectra Cargo.

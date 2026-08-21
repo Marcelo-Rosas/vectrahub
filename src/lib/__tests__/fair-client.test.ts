@@ -20,6 +20,9 @@ import {
   resolveFairTenant,
   resolveFairTenantBySlug,
   type FairCompanyRow,
+  fairSignupDomainHint,
+  isFairSignupEmailForSlug,
+  fairSignupDomainsForSlug,
   signupDomainHint,
 } from '@/lib/fair-tenant';
 
@@ -118,6 +121,20 @@ describe('staff Vectra — troca de tenant', () => {
     expect(resolveFairTenant('anderson.moraes@bucklerfit.com', TENANTS, 'konnen')?.slug).toBe(
       'buckler'
     );
+  });
+});
+
+describe('fairSignupDomainsForSlug', () => {
+  it('PlayFit cadastro usa playfitpisos.com.br e alias playfitpiso.com.br', () => {
+    expect(fairSignupDomainsForSlug('playfit')).toEqual([
+      'playfitpisos.com.br',
+      'playfitpiso.com.br',
+    ]);
+    expect(fairSignupDomainHint('playfit')).toBe('@playfitpisos.com.br ou @playfitpiso.com.br');
+    expect(isFairSignupEmailForSlug('usuario@playfitpiso.com.br', 'playfit')).toBe(true);
+    expect(isFairSignupEmailForSlug('vendas@playfitpisos.com.br', 'playfit')).toBe(true);
+    expect(isFairSignupEmailForSlug('vendas@playfitpisos.com', 'playfit')).toBe(true);
+    expect(isFairSignupEmailForSlug('vendas@gmail.com', 'playfit')).toBe(false);
   });
 });
 

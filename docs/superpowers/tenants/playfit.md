@@ -6,6 +6,8 @@ Fonte: `feira.products` + `feira.product_boxes` + `src/lib/playfit-stack.ts`.
 |-------|-------|
 | slug | `playfit` |
 | site | [playfitpisos.com.br](https://playfitpisos.com.br/) |
+| email_domains | `playfitpisos.com.br`, alias `playfitpiso.com.br` |
+| cadastro | `/auth?feira=1&tenant=playfit` — ex. `usuario@playfitpiso.com.br` ou `@playfitpisos.com.br` |
 
 ## Catálogo DB (`/feira` e `/feira/simples`)
 
