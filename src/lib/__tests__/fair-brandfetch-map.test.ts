@@ -86,8 +86,9 @@ describe('fair-brandfetch-map', () => {
     ).toBeNull();
   });
 
-  it('Rotha recebe tokens da API; Konnen permanece manual; quality < 0.3 bloqueia', () => {
-    expect(shouldApplyApiTokens('rotha', 0.35)).toBe(true);
+  it('Rotha e PlayFit permanecem manuais; quality < 0.3 bloqueia', () => {
+    expect(shouldApplyApiTokens('rotha', 0.35)).toBe(false);
+    expect(shouldApplyApiTokens('playfit', 0.9)).toBe(false);
     expect(shouldApplyApiTokens('konnen', 0.9)).toBe(false);
     expect(isUsableBrandQuality(0.29)).toBe(false);
     expect(isUsableBrandQuality(0.3)).toBe(true);

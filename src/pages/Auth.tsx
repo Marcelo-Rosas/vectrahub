@@ -5,7 +5,8 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from 'lucide-react';
 import {
   isFairTenantEmail,
   fairSignupDomainHint,
-  isFairSignupEmailForSlug,
+  fairSignupEmailPlaceholder,
+  isFairSignupEmail,
 } from '@/lib/fair-tenant';
 import { useFairCompanies } from '@/hooks/useFairCompanies';
 import { BrandLogo } from '@/components/BrandLogo';
@@ -113,14 +114,12 @@ export default function Auth() {
       return;
     }
 
-    if (
-      mode === 'signup' &&
-      signupTenantSlug &&
-      !isFairSignupEmailForSlug(loginEmail, signupTenantSlug)
-    ) {
-      const hint = signupDomainLabel ?? 'corporativo do embarcador';
-      setLoginErrors({ email: `Use e-mail ${hint}` });
-      toast.error(`Cadastro só com e-mail ${hint}`);
+    if (mode === 'signup' && fairFlow && !isFairSignupEmail(loginEmail, signupTenantSlug)) {
+      const hint = signupTenantSlug
+        ? (fairSignupDomainHint(signupTenantSlug) ?? 'corporativo do embarcador')
+        : 'corporativo de um embarcador feira cadastrado';
+      setLoginErrors({ email: `Domínio não habilitado. Use ${hint}` });
+      toast.error(`Cadastro: domínio ${hint}. Nome antes do @ é livre.`);
       return;
     }
 
@@ -304,9 +303,20 @@ export default function Auth() {
             )}
             {fairFlow && <div className="mb-6" />}
 
-            {fairFlow && mode === 'signup' && signupDomainLabel && (
+            {fairFlow && mode === 'signup' && (
               <p className="mb-4 text-sm text-muted-foreground">
-                Cadastro com e-mail corporativo {signupDomainLabel}.
+                {signupDomainLabel ? (
+                  <>
+                    Nome antes do <span className="font-medium">@</span> é livre (cada vendedor
+                    escolhe). Domínio obrigatório: {signupDomainLabel}. Senha mínima 6 caracteres —
+                    cada um define a sua.
+                  </>
+                ) : (
+                  <>
+                    Nome antes do <span className="font-medium">@</span> é livre. Gate só no domínio
+                    corporativo do embarcador. Senha mínima 6 caracteres por vendedor.
+                  </>
+                )}
               </p>
             )}
 
@@ -362,10 +372,10 @@ export default function Auth() {
                     id="email"
                     type="email"
                     placeholder={
-                      mode === 'signup' && signupDomainLabel
-                        ? `nome${signupDomainLabel.split(' ou ')[0]}`
+                      mode === 'signup' && fairFlow
+                        ? fairSignupEmailPlaceholder(signupTenantSlug)
                         : mode === 'signup'
-                          ? 'nome@empresa.com.br'
+                          ? 'seu.nome@empresa.com.br'
                           : 'E-mail'
                     }
                     className={`pl-10 ${loginErrors.email ? 'border-destructive' : ''}`}
@@ -449,12 +459,9 @@ export default function Auth() {
               <p className="text-center text-sm text-muted-foreground mt-6">
                 {mode === 'signup' ? (
                   signupDomainLabel ? (
-                    <>Cadastro feira — domínio {signupDomainLabel}.</>
+                    <>Cadastro feira — {signupDomainLabel}. Nome antes do @ livre.</>
                   ) : (
-                    <>
-                      Cadastro com e-mail corporativo do embarcador. Domínio vem de feira.companies
-                      — sem travar um tenant na tela.
-                    </>
+                    <>Cadastro feira — domínio corporativo do embarcador. Nome antes do @ livre.</>
                   )
                 ) : (
                   <>

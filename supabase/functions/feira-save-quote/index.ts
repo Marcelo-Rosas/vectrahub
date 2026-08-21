@@ -115,6 +115,7 @@ Deno.serve(async (req) => {
 
   let company: {
     id: string;
+    slug: string;
     origin_label: string;
     event_flag: string;
     toll_fallback_percent: number | string;
@@ -127,7 +128,7 @@ Deno.serve(async (req) => {
       return jsonWithCors(req, { error: 'company_slug obrigatório para staff Vectra' }, 400);
     }
     const { data: staffCompany, error: staffCompanyErr } = await feiraFrom(supabase, 'companies')
-      .select('id, origin_label, event_flag, toll_fallback_percent, active')
+      .select('id, slug, origin_label, event_flag, toll_fallback_percent, active')
       .eq('slug', slug)
       .eq('active', true)
       .maybeSingle();
@@ -146,7 +147,7 @@ Deno.serve(async (req) => {
     }
 
     const { data: linkedCompany, error: companyErr } = await feiraFrom(supabase, 'companies')
-      .select('id, origin_label, event_flag, toll_fallback_percent, active')
+      .select('id, slug, origin_label, event_flag, toll_fallback_percent, active')
       .eq('id', link.company_id)
       .maybeSingle();
 
@@ -160,12 +161,18 @@ Deno.serve(async (req) => {
   if (!company?.active) return jsonWithCors(req, { error: 'Tenant feira inativo' }, 403);
 
   const fallbackPct = num(company.toll_fallback_percent, 12);
-  const toll = computeFairToll({
+  const percentToll = computeFairToll({
     freightWeight: hubFreight,
     tableTollPercent: null,
     fallbackPercent: fallbackPct,
   });
-  const totalExibido = displayedTotal(hubTotal, hubToll, toll.pedagio);
+  const isDedicado = body.gate?.modality === 'lotacao';
+  const toll = isDedicado
+    ? { pedagio: round2(hubToll), tollPercent: 0, method: 'hub_included' as const }
+    : percentToll;
+  const totalExibido = isDedicado
+    ? round2(hubTotal)
+    : displayedTotal(hubTotal, hubToll, percentToll.pedagio);
 
   const skus = [...new Set(lines.map((l) => (l.sku ?? '').trim().toUpperCase()).filter(Boolean))];
   const { data: products } = await feiraFrom(supabase, 'products')
@@ -310,11 +317,22 @@ Deno.serve(async (req) => {
     const { data: codes } = await feiraFrom(supabase, 'quotes')
       .select('quote_code')
       .eq('company_id', company.id);
-    quoteCode = nextFairQuoteCode((codes ?? []).map((r: { quote_code: string }) => r.quote_code));
-    const { data: insertedQ, error: qInsErr } = await feiraFrom(supabase, 'quotes')
-      .insert({ ...quotePayload, quote_code: quoteCode })
-      .select('id')
-      .single();
+    const known = (codes ?? []).map((r: { quote_code: string }) => r.quote_code);
+    quoteCode = nextFairQuoteCode(known, company.slug);
+    let insertedQ: { id: string } | null = null;
+    let qInsErr: { message: string; code?: string } | null = null;
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const res = await feiraFrom(supabase, 'quotes')
+        .insert({ ...quotePayload, quote_code: quoteCode })
+        .select('id')
+        .single();
+      insertedQ = res.data;
+      qInsErr = res.error;
+      if (!qInsErr) break;
+      if (res.error?.code !== '23505') break;
+      known.push(quoteCode);
+      quoteCode = nextFairQuoteCode(known, company.slug);
+    }
     if (qInsErr) return jsonWithCors(req, { error: qInsErr.message }, 400);
     quoteId = insertedQ?.id ?? null;
   }

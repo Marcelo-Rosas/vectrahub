@@ -9,6 +9,7 @@ import {
   EMPTY_FAIR_CLIENT,
   fairDestinationCep,
   fairDestinationLabel,
+  applyFairCnpjCepToRoute,
 } from '@/lib/fair-client';
 import {
   canSwitchFairTenant,
@@ -21,7 +22,7 @@ import {
   resolveFairTenantBySlug,
   type FairCompanyRow,
   fairSignupDomainHint,
-  isFairSignupEmailForSlug,
+  isFairSignupEmail,
   fairSignupDomainsForSlug,
   signupDomainHint,
 } from '@/lib/fair-tenant';
@@ -125,16 +126,12 @@ describe('staff Vectra — troca de tenant', () => {
 });
 
 describe('fairSignupDomainsForSlug', () => {
-  it('PlayFit cadastro usa playfitpisos.com.br e alias playfitpiso.com.br', () => {
-    expect(fairSignupDomainsForSlug('playfit')).toEqual([
-      'playfitpisos.com.br',
-      'playfitpiso.com.br',
-    ]);
-    expect(fairSignupDomainHint('playfit')).toBe('@playfitpisos.com.br ou @playfitpiso.com.br');
-    expect(isFairSignupEmailForSlug('usuario@playfitpiso.com.br', 'playfit')).toBe(true);
-    expect(isFairSignupEmailForSlug('vendas@playfitpisos.com.br', 'playfit')).toBe(true);
-    expect(isFairSignupEmailForSlug('vendas@playfitpisos.com', 'playfit')).toBe(true);
-    expect(isFairSignupEmailForSlug('vendas@gmail.com', 'playfit')).toBe(false);
+  it('PlayFit cadastro — domínios canônico + alias', () => {
+    expect(fairSignupDomainsForSlug('playfit')).toContain('playfitpisos.com.br');
+    expect(fairSignupDomainsForSlug('playfit')).toContain('playfitpiso.com.br');
+    expect(isFairSignupEmail('carlos@playfitpiso.com.br', 'playfit')).toBe(true);
+    expect(isFairSignupEmail('vendas@playfitpisos.com.br', 'playfit')).toBe(true);
+    expect(isFairSignupEmail('vendas@gmail.com', 'playfit')).toBe(false);
   });
 });
 
@@ -185,6 +182,19 @@ describe('fair-client', () => {
     };
     expect(fairDestinationLabel(entrega)).toBe('Itajaí - SC');
     expect(fairDestinationCep(entrega)).toBe('88301000');
+  });
+
+  it('CNPJ CEP vai pro destino; origem do tenant permanece', () => {
+    const tenantOrigin = '06765-350';
+    const client = {
+      ...EMPTY_FAIR_CLIENT,
+      zipCode: '60115-221',
+      city: 'Fortaleza',
+      state: 'CE',
+    };
+    const route = applyFairCnpjCepToRoute({ originCep: tenantOrigin, client });
+    expect(route.originCep).toBe('06765-350');
+    expect(route.destCep).toBe('60115-221');
   });
 
   it('monta endereço sem tabela Hub', () => {

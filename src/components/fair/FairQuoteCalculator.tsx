@@ -51,13 +51,14 @@ import { FairClientFields } from '@/components/fair/FairClientFields';
 import {
   EMPTY_FAIR_CLIENT,
   digitsOnly,
+  formatFairCep,
   fairDestinationCep,
   fairDestinationLabel,
   fairDestinationUf,
   isFairClientReady,
   type FairClientDraft,
 } from '@/lib/fair-client';
-import { fetchFairRouteKm } from '@/lib/fair-route-km';
+import { fetchFairRouteKm, resolveFairHubToll } from '@/lib/fair-route-km';
 import { fairQuotePricing } from '@/lib/fair-pricing';
 import { downloadFairQuotePdf } from '@/lib/fair-quote-pdf';
 import { FAIR_UI } from '@/lib/fair-brand-palettes';
@@ -204,8 +205,9 @@ export function FairQuoteCalculator() {
       hubTotalCliente: result.totals?.total_cliente ?? 0,
       hubToll: result.components?.toll ?? 0,
       fallbackPercent: tenant?.tollFallbackPercent ?? 0,
+      applyPercentToll: gate.hubModality === 'fracionado',
     });
-  }, [result, tenant?.tollFallbackPercent]);
+  }, [result, tenant?.tollFallbackPercent, gate.hubModality]);
 
   const invalidateQuote = () => {
     setResult(null);
@@ -229,9 +231,9 @@ export function FairQuoteCalculator() {
       originUf,
       destinationUf: destUf || tenant.originUf,
     })
-      .then((km) => {
+      .then((route) => {
         if (cancelled) return;
-        setKmDistance(String(km));
+        setKmDistance(String(route.km));
         setResult(null);
         setSavedQuote(null);
       })
@@ -369,18 +371,35 @@ export function FairQuoteCalculator() {
       toast.error('Informe CNPJ/CEP para puxar a cidade de destino');
       return;
     }
+    if (!tenant) {
+      toast.error('Tenant feira indisponível');
+      return;
+    }
 
     try {
+      const displayedKm = parseFloat(kmDistance.replace(',', '.')) || 0;
+      const route = await resolveFairHubToll({
+        originCep: tenant.originCep,
+        destinationCep: destCep,
+        originUf: tenant.originUf,
+        destinationUf: destUf || tenant.originUf,
+        dedicado: gate.mode === 'dedicado',
+        axesCount: gate.suggestedVehicle?.axesCount,
+        kmFallback: displayedKm,
+      });
+      if (route.km !== displayedKm) setKmDistance(String(route.km));
+
       const response = await calculateFreight.mutateAsync({
         origin,
         destination,
         weight_kg: aggregate.weightKg,
         volume_m3: aggregate.volumeM3,
         cargo_value: cargoValue || 0,
-        km_distance: parseFloat(kmDistance.replace(',', '.')) || 0,
+        km_distance: route.km,
         price_table_id: priceTableId || undefined,
         vehicle_type_code: gate.suggestedVehicle?.code,
         vehicle_axes_count: gate.suggestedVehicle?.axesCount,
+        toll_value: gate.mode === 'dedicado' ? route.tollValue : 0,
       });
       setSavedQuote(null);
       setResult(response);
@@ -629,22 +648,29 @@ export function FairQuoteCalculator() {
               </div>
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label>Origem (travada)</Label>
-                  <Input className={inputMobile} value={origin} readOnly disabled />
-                </div>
-                <div className="space-y-2">
-                  <Label>Destino</Label>
+                  <Label>CEP origem</Label>
                   <Input
                     className={inputMobile}
-                    value={destination}
+                    value={formatFairCep(tenant.originCep)}
                     readOnly
                     disabled
-                    placeholder="Cidade do CNPJ/CEP"
+                  />
+                  <p className="text-xs text-muted-foreground">{origin}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>CEP destino</Label>
+                  <Input
+                    className={inputMobile}
+                    value={formatFairCep(destCep)}
+                    readOnly
+                    disabled
+                    placeholder="Do CNPJ/CEP"
                   />
                   <p className="text-xs text-muted-foreground">
-                    {client.deliveryDifferent
-                      ? 'Cidade da entrega (CEP diferente do cadastro)'
-                      : 'Puxado do CNPJ ou do CEP. Marque entrega diferente se não for o cadastro.'}
+                    {destination ||
+                      (client.deliveryDifferent
+                        ? 'Cidade da entrega (CEP diferente do cadastro)'
+                        : 'Puxado do CNPJ ou do CEP. Marque entrega diferente se não for o cadastro.')}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">

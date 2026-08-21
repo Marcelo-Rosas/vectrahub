@@ -145,6 +145,9 @@ describe('linhas Buckler FM PF LD FW M2', () => {
     expect(skuProductLine('RS-800', 'buckler')).toBe('CARDIO');
     expect(skuProductLine('S12', 'buckler')).toBe('CARDIO');
     expect(skuProductLine('RSB-280', 'buckler')).toBe('CARDIO');
+    expect(skuProductLine('5556EA', 'buckler')).toBe('CARDIO');
+    expect(skuProductLine('GL-1007', 'buckler')).toBe('PIN LOADED');
+    expect(skuProductLine('LD-2010', 'buckler')).toBe('PLATE LOADED');
     expect(skuProductLine('OK-FOO', 'buckler')).toBe('ACESSORIOS');
     expect(skuProductLine('AC2990', 'buckler')).toBe('OUTROS');
   });

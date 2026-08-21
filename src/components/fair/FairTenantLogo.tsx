@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Building2 } from 'lucide-react';
 import { resolveFairPalette } from '@/lib/fair-brand-palettes';
+import { FAIR_LOCKUP_BOX, FAIR_LOCKUP_IMG, pickFairLockupSrc } from '@/lib/fair-lockup';
 import type { FairTenant } from '@/lib/fair-tenant';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +17,7 @@ function initialsFromDomainOrName(domain: string, name: string): string {
 export function FairTenantLogo({
   tenant,
   logoUrl,
+  qualityScore,
   accentHex,
   className,
   imgClassName,
@@ -30,20 +32,17 @@ export function FairTenantLogo({
   size?: 'sm' | 'md' | 'lg' | 'auth';
 }) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
-  const img =
-    size === 'auth'
-      ? 'h-12 w-auto max-w-[260px] sm:h-14 sm:max-w-[320px]'
-      : size === 'lg'
-        ? 'h-10 w-auto max-w-[240px] sm:h-12 sm:max-w-[280px]'
-        : size === 'md'
-          ? 'h-9 w-auto max-w-[200px] sm:h-10 sm:max-w-[240px]'
-          : 'h-8 w-auto max-w-[180px] sm:h-9 sm:max-w-[200px]';
-  const pad = size === 'auth' ? 'px-3 py-2' : size === 'lg' ? 'px-2.5 py-1.5' : 'px-2 py-1';
   const palette = resolveFairPalette(tenant.slug);
   const local = tenant.logoSrc?.trim() ?? '';
-  const api = tenant.slug === 'rotha' || tenant.slug === 'playfit' ? '' : (logoUrl?.trim() ?? '');
-  const src = api && failedSrc !== api ? api : local && failedSrc !== local ? local : null;
+  const picked = pickFairLockupSrc({
+    slug: tenant.slug,
+    localSrc: local,
+    apiSrc: logoUrl,
+    qualityScore,
+  });
+  const src = picked && failedSrc !== picked ? picked : local && failedSrc !== local ? local : null;
   const accent = accentHex || palette.tokens.accent;
+  const isAuth = size === 'auth';
 
   useEffect(() => {
     setFailedSrc(null);
@@ -51,7 +50,10 @@ export function FairTenantLogo({
 
   return (
     <div
-      className={cn('flex items-center justify-center rounded-lg', pad, className)}
+      className={cn(
+        isAuth ? 'flex items-center justify-center rounded-lg px-3 py-2' : FAIR_LOCKUP_BOX,
+        className
+      )}
       style={{
         backgroundColor: palette.tokens.logoBg,
         boxShadow: `inset 0 0 0 1px ${accent}33`,
@@ -62,7 +64,12 @@ export function FairTenantLogo({
           key={src}
           src={src}
           alt={tenant.name}
-          className={cn(img, 'object-contain', imgClassName)}
+          className={cn(
+            isAuth
+              ? 'h-12 w-auto max-w-[260px] object-contain sm:h-14 sm:max-w-[320px]'
+              : FAIR_LOCKUP_IMG,
+            imgClassName
+          )}
           referrerPolicy="no-referrer"
           onError={() => setFailedSrc(src)}
         />

@@ -1,17 +1,4 @@
-/** PostgREST schema `feira`. */
-
-// deno-lint-ignore no-explicit-any
-export function feiraFrom(supabase: { schema: (name: string) => any }, table: string): any {
-  return supabase.schema('feira').from(table);
-}
-
-export function digitsOnly(value: string): string {
-  return value.replace(/\D/g, '');
-}
-
-export function isUuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-}
+/** Código COT feira — prefixo por slug pra unique global `quotes_quote_code_key`. */
 
 export function fairQuoteCodeSlug(slug: string): string {
   const key = slug
@@ -37,10 +24,4 @@ export function nextFairQuoteCode(existingCodes: string[], slug: string, now = n
     if (Number.isFinite(n) && n > max) max = n;
   }
   return `${prefix}${String(max + 1).padStart(4, '0')}`;
-}
-
-export function mapQuoteStatus(status: string | null | undefined): 'open' | 'won' | 'lost' {
-  if (status === 'won' || status === 'approved') return 'won';
-  if (status === 'lost' || status === 'rejected') return 'lost';
-  return 'open';
 }

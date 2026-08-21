@@ -55,7 +55,14 @@ export function surfaceIsDarkFromHex(hex: string): boolean {
 }
 
 /** Slugs com paleta manual validada — API só entrega logo, não tokens. */
-export const FAIR_MANUAL_TOKEN_SLUGS = new Set(['buckler', 'konnen', 'boost', 'reebok', 'playfit']);
+export const FAIR_MANUAL_TOKEN_SLUGS = new Set([
+  'buckler',
+  'konnen',
+  'boost',
+  'reebok',
+  'playfit',
+  'rotha',
+]);
 
 const HEX_RE = /^#[0-9A-Fa-f]{6}$/;
 

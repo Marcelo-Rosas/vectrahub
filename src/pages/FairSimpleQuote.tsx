@@ -50,8 +50,6 @@ export default function FairSimpleQuotePage() {
                   qualityScore={qualityScore}
                   accentHex={accentHex}
                   size="lg"
-                  className="md:px-2.5 md:py-1.5"
-                  imgClassName="md:h-12 md:max-w-[280px]"
                 />
               ) : (
                 <span className="text-sm">Feira</span>
@@ -100,8 +98,6 @@ export default function FairSimpleQuotePage() {
               qualityScore={qualityScore}
               accentHex={accentHex}
               size="md"
-              className="w-fit"
-              imgClassName="md:h-10 md:max-w-[240px]"
             />
           ) : null}
         </div>

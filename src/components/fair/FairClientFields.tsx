@@ -70,6 +70,19 @@ export function FairClientFields({ value, onChange }: Props) {
         state: result.state ?? draft.state,
       });
       toast.success('Cliente preenchido pelo CNPJ');
+      if (digitsOnly(result.zip_code ?? '').length === 8) {
+        void handleCepLookup({
+          ...draft,
+          kind: 'cnpj',
+          document: formatFairDocument('cnpj', result.cnpj || draft.document),
+          name: (result.name ?? result.trade_name ?? draft.name).trim(),
+          zipCode: formatFairCep(result.zip_code ?? draft.zipCode),
+          address: address || draft.address,
+          email: (result.email ?? draft.email).trim(),
+          city: result.city ?? draft.city,
+          state: result.state ?? draft.state,
+        });
+      }
     } catch (e) {
       lastCnpj.current = '';
       toast.error(e instanceof CnpjLookupError ? e.message : 'Falha ao consultar CNPJ');

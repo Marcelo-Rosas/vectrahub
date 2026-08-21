@@ -33,12 +33,7 @@ additional_redirect_urls = [
   "https://vectrahub.pages.dev/**",
   "https://*.vectrahub.pages.dev",
   "https://*.vectrahub.pages.dev/**",
-  # Legado Vectra Cargo (login compartilhado)
-  "https://app.vectracargo.com.br",
-  "https://app.vectracargo.com.br/**",
-  "https://*.app.vectracargo.com.br",
-  "https://*.app.vectracargo.com.br/**",
-  # Feira IHRSA (Pages vectra-feira)
+  # Feira IHRSA (Pages vectra-feira) — mesmo Supabase Hub; NÃO incluir app.vectracargo.com.br (Cargo)
   "https://app.feira.vectracargo.com.br",
   "https://app.feira.vectracargo.com.br/**",
   "https://app.feira.vectracargo.com.br/auth",

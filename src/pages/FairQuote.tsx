@@ -1,4 +1,5 @@
 import { FairQuoteCalculator } from '@/components/fair/FairQuoteCalculator';
+import { PlayFitFairQuoteCalculator } from '@/components/fair/PlayFitFairQuoteCalculator';
 import { FairTenantLogo } from '@/components/fair/FairTenantLogo';
 import { FairTenantSwitcher } from '@/components/fair/FairTenantSwitcher';
 import { Button } from '@/components/ui/button';
@@ -8,8 +9,9 @@ import { useFairBrand } from '@/hooks/useFairBrand';
 import { isFairStaffTester } from '@/lib/fair-dashboard-access';
 import { useFairDocumentTheme } from '@/hooks/useFairDocumentTheme';
 import { fairPaletteStyle } from '@/lib/fair-brand-palettes';
+import { fairIndexCalculator } from '@/lib/fair-feira-routes';
 import { LayoutDashboard, LogOut, Zap } from 'lucide-react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 /** Shell mobile-first — feira / celular vendedor. */
 export default function FairQuotePage() {
@@ -49,8 +51,6 @@ export default function FairQuotePage() {
                   qualityScore={qualityScore}
                   accentHex={accentHex}
                   size="lg"
-                  className="md:px-2.5 md:py-1.5"
-                  imgClassName="md:h-12 md:max-w-[280px]"
                 />
               ) : (
                 <span className="text-sm">Feira</span>
@@ -99,8 +99,6 @@ export default function FairQuotePage() {
               qualityScore={qualityScore}
               accentHex={accentHex}
               size="md"
-              className="w-fit"
-              imgClassName="md:h-10 md:max-w-[240px]"
             />
           ) : null}
         </div>
@@ -113,8 +111,8 @@ export default function FairQuotePage() {
           <p className="p-6 text-sm text-muted-foreground">
             Domínio não habilitado em feira.companies.
           </p>
-        ) : tenant.slug === 'playfit' ? (
-          <Navigate to="/feira/simples" replace />
+        ) : fairIndexCalculator(tenant.slug) === 'playfit-catalog' ? (
+          <PlayFitFairQuoteCalculator key={tenant.slug} tenant={tenant} />
         ) : (
           <FairQuoteCalculator key={tenant.slug} />
         )}

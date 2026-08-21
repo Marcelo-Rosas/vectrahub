@@ -1,10 +1,15 @@
-import { brandCacheFresh, fetchBrandfetchDomain } from '../_shared/brandfetch-client.ts';
+import {
+  brandCacheFresh,
+  brandNegativeFresh,
+  fetchBrandfetchDomain,
+} from '../_shared/brandfetch-client.ts';
 import {
   FAIR_STATIC_BRAND_DOMAINS,
   mapBrandfetchToFairTokens,
   pickBrandfetchLogoUrl,
   shouldApplyApiTokens,
   staticTokenFallback,
+  surfaceIsDarkFromHex,
   type FairBrandTokens,
 } from '../_shared/fair-brandfetch-map.ts';
 import { feiraFrom } from '../_shared/feira-client.ts';
@@ -39,11 +44,13 @@ type BrandCacheRow = {
 };
 
 function resolveBrandDomain(company: CompanyRow): string {
+  const mapped = FAIR_STATIC_BRAND_DOMAINS[company.slug];
+  if (mapped) return mapped;
   const fromCol = company.brand_domain?.trim().toLowerCase();
   if (fromCol) return fromCol;
   const fromEmail = company.email_domains?.[0]?.trim().toLowerCase();
   if (fromEmail) return fromEmail;
-  return FAIR_STATIC_BRAND_DOMAINS[company.slug] ?? company.slug;
+  return company.slug;
 }
 
 function isVectraStaff(email: string): boolean {
@@ -152,8 +159,15 @@ Deno.serve(async (req) => {
   if (cacheErr) return jsonWithCors(req, { error: cacheErr.message }, 400);
 
   const cacheRow = cached as BrandCacheRow | null;
-  if (cacheRow && !forceRefresh && brandCacheFresh(cacheRow.fetched_at)) {
-    return jsonWithCors(req, cacheToResponse(cacheRow, slug));
+  if (cacheRow && !forceRefresh) {
+    const notFoundCache =
+      cacheRow.error_last === 'Not Found' || cacheRow.error_last === 'Domínio inválido';
+    const negativeHit =
+      notFoundCache && brandNegativeFresh(cacheRow.fetched_at, cacheRow.error_last);
+    const positiveHit = !cacheRow.error_last && brandCacheFresh(cacheRow.fetched_at);
+    if (negativeHit || positiveHit) {
+      return jsonWithCors(req, cacheToResponse(cacheRow, slug));
+    }
   }
 
   const apiKey = Deno.env.get('BRANDFETCH_API_KEY')?.trim();
@@ -174,9 +188,35 @@ Deno.serve(async (req) => {
     });
   }
 
-  const { payload, error: bfError } = await fetchBrandfetchDomain(brandDomain, apiKey);
+  const result = await fetchBrandfetchDomain(brandDomain, apiKey);
+  const brandCols =
+    'company_id, brand_domain, logo_url, logo_symbol_url, colors_json, tokens_json, quality_score, brand_name, fetched_at, source, tokens_from_api, error_last';
 
-  if (!payload) {
+  if (result.code === 'not_found' || result.code === 'invalid_domain') {
+    const { data: savedNeg } = await feiraFrom(supabase, 'company_brands')
+      .upsert(
+        {
+          company_id: companyRow.id,
+          brand_domain: brandDomain,
+          logo_url: null,
+          logo_symbol_url: null,
+          colors_json: [],
+          tokens_json: fallbacks,
+          quality_score: null,
+          brand_name: companyRow.name,
+          fetched_at: new Date().toISOString(),
+          source: 'static',
+          tokens_from_api: false,
+          error_last: result.error,
+        },
+        { onConflict: 'company_id' }
+      )
+      .select(brandCols)
+      .single();
+    if (savedNeg) return jsonWithCors(req, cacheToResponse(savedNeg as BrandCacheRow, slug));
+  }
+
+  if (!result.payload) {
     if (cacheRow) return jsonWithCors(req, cacheToResponse(cacheRow, slug));
     return jsonWithCors(req, {
       slug,
@@ -190,27 +230,33 @@ Deno.serve(async (req) => {
       tokensFromApi: false,
       fetchedAt: null,
       cached: false,
-      error: bfError,
+      error: result.error,
     });
   }
 
-  const logoUrl = pickBrandfetchLogoUrl(payload.logos, 'logo');
-  const logoSymbolUrl = pickBrandfetchLogoUrl(payload.logos, 'symbol');
-  const qualityScore = typeof payload.qualityScore === 'number' ? payload.qualityScore : null;
+  const qualityScore =
+    typeof result.payload.qualityScore === 'number' ? result.payload.qualityScore : null;
+  const surfaceIsDark = surfaceIsDarkFromHex(fallbacks.logoBg);
+  // qualityScore só trava tokens — logo do parceiro sempre que a API devolver asset.
+  const logoUrl = pickBrandfetchLogoUrl(result.payload.logos, { prefer: 'logo', surfaceIsDark });
+  const logoSymbolUrl = pickBrandfetchLogoUrl(result.payload.logos, {
+    prefer: 'symbol',
+    surfaceIsDark,
+  });
   const tokensFromApi = shouldApplyApiTokens(slug, qualityScore);
-  const tokens = tokensFromApi ? mapBrandfetchToFairTokens(payload, fallbacks) : fallbacks;
+  const tokens = tokensFromApi ? mapBrandfetchToFairTokens(result.payload, fallbacks) : fallbacks;
 
   const upsertPayload = {
     company_id: companyRow.id,
     brand_domain: brandDomain,
     logo_url: logoUrl,
     logo_symbol_url: logoSymbolUrl,
-    colors_json: payload.colors ?? [],
+    colors_json: result.payload.colors ?? [],
     tokens_json: tokens,
     quality_score: qualityScore,
-    brand_name: payload.name ?? companyRow.name,
+    brand_name: result.payload.name ?? companyRow.name,
     fetched_at: new Date().toISOString(),
-    source: 'brandfetch',
+    source: logoUrl ? 'brandfetch' : 'static',
     tokens_from_api: tokensFromApi,
     error_last: null,
   };
@@ -230,7 +276,7 @@ Deno.serve(async (req) => {
       logoSymbolUrl,
       tokens,
       qualityScore,
-      brandName: payload.name ?? companyRow.name,
+      brandName: result.payload.name ?? companyRow.name,
       source: 'brandfetch',
       tokensFromApi,
       fetchedAt: new Date().toISOString(),

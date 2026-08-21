@@ -221,7 +221,7 @@ export const PLAYFIT_FAIR_PALETTE: FairBrandPalette = {
   name: 'PlayFit Pisos',
   domain: 'playfitpisos.com.br',
   site: 'https://playfitpisos.com.br/',
-  notes: 'Logo oficial PNG (fundo preto). Lima #9EFF00 + preto.',
+  notes: 'Logo wordmark SVG `/brand/playfit-logo.svg` (pílula preta). Lima #9EFF00 + preto.',
   brandfetch: { accent: '#40916C', dark: '#1B4332', light: '#D8F3DC', quality: 0.35 },
   tokens: {
     headerBg: '#FFFFFF',

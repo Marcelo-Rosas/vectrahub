@@ -35,9 +35,10 @@ import {
   digitsOnly,
   formatFairCep,
   isFairClientReady,
+  applyFairCnpjCepToRoute,
   type FairClientDraft,
 } from '@/lib/fair-client';
-import { fetchFairRouteKm } from '@/lib/fair-route-km';
+import { fetchFairRouteKm, resolveFairHubToll } from '@/lib/fair-route-km';
 import { fairQuotePricing } from '@/lib/fair-pricing';
 import { downloadFairQuotePdf } from '@/lib/fair-quote-pdf';
 import type { FairSavedQuote } from '@/lib/fair-quote-store';
@@ -137,6 +138,7 @@ export function PlayFitSimpleFreightCalculator({ tenant }: Props) {
       hubTotalCliente: result.totals?.total_cliente ?? 0,
       hubToll: result.components?.toll ?? 0,
       fallbackPercent: tenant.tollFallbackPercent,
+      applyPercentToll: gate.hubModality === 'fracionado',
     });
     const mult = gate.trip.freightMultiplier;
     if (mult <= 1) return base;
@@ -186,7 +188,7 @@ export function PlayFitSimpleFreightCalculator({ tenant }: Props) {
           setDestLabel(cityUfLabel(destCepData.localidade, destCepData.uf));
         }
 
-        const km = await fetchFairRouteKm({
+        const { km } = await fetchFairRouteKm({
           originCep: digitsOnly(originCep),
           destinationCep: destDigits,
           originUf,
@@ -231,16 +233,29 @@ export function PlayFitSimpleFreightCalculator({ tenant }: Props) {
 
     try {
       const slice = playfitFreightCalcSlice(gate);
+      const displayedKm = parseFloat(kmDistance.replace(',', '.')) || 0;
+      const route = await resolveFairHubToll({
+        originCep,
+        destinationCep: destCep,
+        originUf,
+        destinationUf: destUf || originUf,
+        dedicado: gate.mode === 'dedicado',
+        axesCount: gate.suggestedVehicle?.axesCount,
+        kmFallback: displayedKm,
+      });
+      if (route.km !== displayedKm) setKmDistance(String(route.km));
+
       const response = await calculateFreight.mutateAsync({
         origin: originLabel,
         destination: destLabel || 'Destino',
         weight_kg: slice.weightKg,
         volume_m3: slice.volumeM3,
         cargo_value: cargoValue || 0,
-        km_distance: parseFloat(kmDistance.replace(',', '.')) || 0,
+        km_distance: route.km,
         price_table_id: priceTableId || undefined,
         vehicle_type_code: gate.suggestedVehicle?.code,
         vehicle_axes_count: gate.suggestedVehicle?.axesCount,
+        toll_value: gate.mode === 'dedicado' ? route.tollValue : 0,
       });
       setResult(response);
       requestAnimationFrame(() => {
@@ -408,7 +423,9 @@ export function PlayFitSimpleFreightCalculator({ tenant }: Props) {
                   ))}
                 </SelectContent>
               </Select>
-              <FieldDescription>{originLabel}</FieldDescription>
+              <FieldDescription>
+                {formatFairCep(originCep)} · {originLabel}
+              </FieldDescription>
             </Field>
 
             <Field>
@@ -537,7 +554,20 @@ export function PlayFitSimpleFreightCalculator({ tenant }: Props) {
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-3">
-          <FairClientFields value={client} onChange={setClient} />
+          <FairClientFields
+            value={client}
+            onChange={(next) => {
+              setClient(next);
+              const { destCep: fromCnpj } = applyFairCnpjCepToRoute({
+                originCep,
+                client: next,
+              });
+              if (digitsOnly(fromCnpj).length === 8) {
+                setDestCep(fromCnpj);
+                invalidateQuote();
+              }
+            }}
+          />
         </CollapsibleContent>
       </Collapsible>
 

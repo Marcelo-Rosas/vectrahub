@@ -7,6 +7,8 @@ import {
   type FairBrandPalette,
   type FairBrandTokens,
 } from '@/lib/fair-brand-palettes';
+import { shouldApplyApiTokens } from '@/lib/fair-brandfetch-map';
+import { fairHeaderLogoUrl } from '@/lib/fair-lockup';
 import type { FairTenant } from '@/lib/fair-tenant';
 
 export type FairBrandResolved = {
@@ -27,7 +29,7 @@ export function useFairBrand(tenant: FairTenant | null) {
   const staticPalette = useMemo(() => (tenant ? resolveFairPalette(tenant.slug) : null), [tenant]);
 
   const q = useQuery({
-    queryKey: ['feira-brand', tenant?.slug, 'v3'],
+    queryKey: ['feira-brand', tenant?.slug, 'v4'],
     enabled: !!tenant?.slug,
     staleTime: 24 * 60 * 60 * 1000,
     retry: 1,
@@ -41,11 +43,13 @@ export function useFairBrand(tenant: FairTenant | null) {
 
   const palette: FairBrandPalette | null = useMemo(() => {
     if (!staticPalette) return null;
-    if (q.data?.tokens) return mergeFairBrandPalette(staticPalette, q.data.tokens);
+    if (tenant && q.data?.tokens && shouldApplyApiTokens(tenant.slug, q.data.qualityScore)) {
+      return mergeFairBrandPalette(staticPalette, q.data.tokens);
+    }
     return staticPalette;
-  }, [staticPalette, q.data?.tokens]);
+  }, [staticPalette, q.data?.tokens, q.data?.qualityScore, tenant]);
 
-  const logoUrl = q.data?.logoUrl ?? null;
+  const logoUrl = tenant ? fairHeaderLogoUrl(tenant.slug, q.data?.logoUrl) : null;
 
   return {
     palette,

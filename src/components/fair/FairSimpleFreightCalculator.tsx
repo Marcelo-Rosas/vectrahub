@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Calculator, MapPin } from 'lucide-react';
+import { Calculator, FileDown, MapPin, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
@@ -15,19 +15,32 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 import { usePriceTables } from '@/hooks/usePriceTables';
 import { useCalculateFreight, type CalculateFreightResponse } from '@/hooks/useCalculateFreight';
 import { fetchCepData } from '@/hooks/useCepLookup';
+import { useFairSaveQuote } from '@/hooks/useFairSaveQuote';
 import { formatCurrency } from '@/lib/formatters';
-import { digitsOnly, formatFairCep } from '@/lib/fair-client';
-import { fetchFairRouteKm } from '@/lib/fair-route-km';
+import {
+  EMPTY_FAIR_CLIENT,
+  applyFairCnpjCepToRoute,
+  digitsOnly,
+  formatFairCep,
+  isFairClientReady,
+  type FairClientDraft,
+} from '@/lib/fair-client';
+import { fetchFairRouteKm, resolveFairHubToll } from '@/lib/fair-route-km';
 import { fairQuotePricing } from '@/lib/fair-pricing';
+import { downloadFairQuotePdf } from '@/lib/fair-quote-pdf';
+import type { FairSavedQuote } from '@/lib/fair-quote-store';
 import { FAIR_UI } from '@/lib/fair-brand-palettes';
 import { useFairResolvedTenant } from '@/hooks/useFairCompanies';
 import { fairFreightGate, type FairFreightManualMode } from '@/lib/fair-freight-gate';
 import { pickFairPriceTableId } from '@/lib/fair-price-tables';
 import { FairFreightProfileCard } from '@/components/fair/FairFreightProfileCard';
+import { FairClientFields } from '@/components/fair/FairClientFields';
 import { cn } from '@/lib/utils';
 
 const inputMobile = 'h-12 text-base touch-manipulation md:h-10 md:text-sm';
@@ -40,9 +53,11 @@ function cityUfLabel(city: string, uf: string): string {
 }
 
 export function FairSimpleFreightCalculator() {
+  const { user } = useAuth();
   const { tenant } = useFairResolvedTenant();
   const { data: priceTables } = usePriceTables();
   const calculateFreight = useCalculateFreight();
+  const { save: saveFairQuote } = useFairSaveQuote();
   const resultCardRef = useRef<HTMLDivElement>(null);
 
   const [originCep, setOriginCep] = useState('');
@@ -57,6 +72,11 @@ export function FairSimpleFreightCalculator() {
   const [kmLoading, setKmLoading] = useState(false);
   const [manualFreightMode, setManualFreightMode] = useState<FairFreightManualMode>('auto');
   const [result, setResult] = useState<CalculateFreightResponse | null>(null);
+  const [client, setClient] = useState<FairClientDraft>(EMPTY_FAIR_CLIENT);
+  const [clientOpen, setClientOpen] = useState(false);
+  const [savedQuote, setSavedQuote] = useState<FairSavedQuote | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   useEffect(() => {
     if (!tenant?.originCep) return;
@@ -92,10 +112,14 @@ export function FairSimpleFreightCalculator() {
       hubTotalCliente: result.totals?.total_cliente ?? 0,
       hubToll: result.components?.toll ?? 0,
       fallbackPercent: tenant?.tollFallbackPercent ?? 0,
+      applyPercentToll: gate.hubModality === 'fracionado',
     });
-  }, [result, tenant?.tollFallbackPercent]);
+  }, [result, tenant?.tollFallbackPercent, gate.hubModality]);
 
-  const invalidateQuote = () => setResult(null);
+  const invalidateQuote = () => {
+    setResult(null);
+    setSavedQuote(null);
+  };
 
   const isCalculating = calculateFreight.isPending;
   const ctaDisabled = isCalculating || kmLoading;
@@ -137,7 +161,7 @@ export function FairSimpleFreightCalculator() {
           setDestLabel(cityUfLabel(destCepData.localidade, destCepData.uf));
         }
 
-        const km = await fetchFairRouteKm({
+        const { km } = await fetchFairRouteKm({
           originCep: originDigits,
           destinationCep: destDigits,
           originUf: resolvedOriginUf,
@@ -181,16 +205,29 @@ export function FairSimpleFreightCalculator() {
     }
 
     try {
+      const displayedKm = parseFloat(kmDistance.replace(',', '.')) || 0;
+      const route = await resolveFairHubToll({
+        originCep,
+        destinationCep: destCep,
+        originUf: originUf || tenant?.originUf || '',
+        destinationUf: destUf || tenant?.originUf || '',
+        dedicado: gate.mode === 'dedicado',
+        axesCount: gate.suggestedVehicle?.axesCount,
+        kmFallback: displayedKm,
+      });
+      if (route.km !== displayedKm) setKmDistance(String(route.km));
+
       const response = await calculateFreight.mutateAsync({
         origin: originLabel || tenant?.originLabel || 'Origem',
         destination: destLabel || 'Destino',
         weight_kg: weightKg,
         volume_m3: 0,
         cargo_value: cargoValue || 0,
-        km_distance: parseFloat(kmDistance.replace(',', '.')) || 0,
+        km_distance: route.km,
         price_table_id: priceTableId || undefined,
         vehicle_type_code: gate.suggestedVehicle?.code,
         vehicle_axes_count: gate.suggestedVehicle?.axesCount,
+        toll_value: gate.mode === 'dedicado' ? route.tollValue : 0,
       });
       setResult(response);
       requestAnimationFrame(() => {
@@ -198,6 +235,97 @@ export function FairSimpleFreightCalculator() {
       });
     } catch {
       toast.error('Erro ao calcular frete');
+    }
+  };
+
+  const persistTenantOrigin = () => {
+    if (!tenant?.originCep) return;
+    setOriginCep(formatFairCep(tenant.originCep));
+    setOriginUf(tenant.originUf);
+    setOriginLabel(tenant.originLabel || cityUfLabel(tenant.originCity, tenant.originUf));
+  };
+
+  const handleClientChange = (next: FairClientDraft) => {
+    setClient(next);
+    persistTenantOrigin();
+    const { destCep: fromCnpj } = applyFairCnpjCepToRoute({
+      originCep: tenant?.originCep ?? originCep,
+      client: next,
+    });
+    if (digitsOnly(fromCnpj).length === 8) {
+      setDestCep(fromCnpj);
+      invalidateQuote();
+    }
+  };
+
+  const handleSave = async () => {
+    if (!result || !pricing || !tenant) {
+      toast.error('Calcule o frete antes de salvar');
+      return;
+    }
+    if (!isFairClientReady(client)) {
+      toast.error('Informe CNPJ/CPF e nome do cliente');
+      setClientOpen(true);
+      return;
+    }
+    persistTenantOrigin();
+    setSaving(true);
+    try {
+      const quote = await saveFairQuote({
+        id: savedQuote?.id,
+        code: savedQuote?.code,
+        createdAt: savedQuote?.createdAt,
+        tenantSlug: tenant.slug,
+        eventFlag: tenant.eventFlag,
+        sellerEmail: user?.email ?? null,
+        client,
+        origin: originLabel || tenant.originLabel,
+        destination: destLabel || client.city,
+        km: parseFloat(kmDistance.replace(',', '.')) || 0,
+        cargoValue,
+        lines: [{ sku: 'FRETE-RAPIDO', quantity: 1 }],
+        weightKg,
+        volumeM3: 0,
+        boxesCount: 1,
+        freightWeight: pricing.freightWeight,
+        hubTotalCliente: pricing.hubTotalCliente,
+        pedagioEstimado: pricing.pedagioEstimado,
+        totalExibido: pricing.totalExibido,
+        kmBandLabel: result.meta?.km_band_label ?? null,
+        hubToll: result.components?.toll ?? 0,
+        freightModality: gate.hubModality,
+        freightTypeLabel: gate.freightTypeLabel,
+        vehicleTypeCode: gate.suggestedVehicle?.code ?? null,
+        billableWeightKg: gate.billableWeightKg,
+        gateAlerts: gate.alerts,
+        coverageIncomplete: gate.coverageIncomplete,
+        gateModeSource: gate.modeSource,
+        suggestedVehicleLabel: gate.suggestedVehicle
+          ? `${gate.suggestedVehicle.name} · ${gate.suggestedVehicle.axesCount} eixos`
+          : null,
+      });
+      setSavedQuote(quote);
+      toast.success(`Cotação ${quote.code} salva`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Falha ao salvar');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePdf = async () => {
+    if (!savedQuote || !tenant) {
+      toast.error('Salve a cotação antes do PDF');
+      return;
+    }
+    setPdfBusy(true);
+    try {
+      await downloadFairQuotePdf(savedQuote, tenant);
+      toast.success('PDF gerado');
+    } catch {
+      toast.error('Falha ao gerar PDF');
+    } finally {
+      setPdfBusy(false);
     }
   };
 
@@ -250,6 +378,7 @@ export function FairSimpleFreightCalculator() {
                   inputMode="numeric"
                   placeholder="00000-000"
                   value={originCep}
+                  readOnly
                   onChange={(e) => {
                     setOriginCep(formatFairCep(e.target.value));
                     invalidateQuote();
@@ -352,6 +481,17 @@ export function FairSimpleFreightCalculator() {
         />
       ) : null}
 
+      <Collapsible open={clientOpen} onOpenChange={setClientOpen}>
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" className="w-full touch-manipulation">
+            Cliente (CNPJ) {isFairClientReady(client) ? '✓' : ''}
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-3">
+          <FairClientFields value={client} onChange={handleClientChange} />
+        </CollapsibleContent>
+      </Collapsible>
+
       {result && pricing ? (
         <Card
           ref={resultCardRef}
@@ -371,6 +511,32 @@ export function FairSimpleFreightCalculator() {
               {formatCurrency(pricing.totalExibido)}
             </p>
             <p className="text-xs text-muted-foreground">Pedágio incluso no valor</p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
+                disabled={saving}
+                onClick={() => void handleSave()}
+                className="touch-manipulation"
+              >
+                {saving ? <Spinner data-icon="inline-start" /> : <Save data-icon="inline-start" />}
+                Salvar
+              </Button>
+              {savedQuote ? (
+                <Button
+                  variant="outline"
+                  disabled={pdfBusy}
+                  onClick={() => void handlePdf()}
+                  className="touch-manipulation"
+                >
+                  {pdfBusy ? (
+                    <Spinner data-icon="inline-start" />
+                  ) : (
+                    <FileDown data-icon="inline-start" />
+                  )}
+                  PDF
+                </Button>
+              ) : null}
+            </div>
           </CardContent>
           {result.meta?.km_band_label ? (
             <CardFooter className="border-t pt-4">

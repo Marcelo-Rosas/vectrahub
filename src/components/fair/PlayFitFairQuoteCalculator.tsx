@@ -35,7 +35,7 @@ import {
   isFairClientReady,
   type FairClientDraft,
 } from '@/lib/fair-client';
-import { fetchFairRouteKm } from '@/lib/fair-route-km';
+import { fetchFairRouteKm, resolveFairHubToll } from '@/lib/fair-route-km';
 import { fairQuotePricing } from '@/lib/fair-pricing';
 import { downloadFairQuotePdf } from '@/lib/fair-quote-pdf';
 import type { FairSavedQuote } from '@/lib/fair-quote-store';
@@ -148,6 +148,7 @@ export function PlayFitFairQuoteCalculator({ tenant }: Props) {
       hubTotalCliente: result.totals?.total_cliente ?? 0,
       hubToll: result.components?.toll ?? 0,
       fallbackPercent: tenant.tollFallbackPercent,
+      applyPercentToll: gate.hubModality === 'fracionado',
     });
     const mult = gate.trip.freightMultiplier;
     if (mult <= 1) return base;
@@ -173,9 +174,9 @@ export function PlayFitFairQuoteCalculator({ tenant }: Props) {
       originUf,
       destinationUf: destUf || originUf,
     })
-      .then((km) => {
+      .then((route) => {
         if (cancelled) return;
-        setKmDistance(String(km));
+        setKmDistance(String(route.km));
         invalidateQuote();
       })
       .catch((e) => {
@@ -208,16 +209,29 @@ export function PlayFitFairQuoteCalculator({ tenant }: Props) {
 
     try {
       const slice = playfitFreightCalcSlice(gate);
+      const displayedKm = parseFloat(kmDistance.replace(',', '.')) || 0;
+      const route = await resolveFairHubToll({
+        originCep: digitsOnly(branch?.originCep ?? tenant.originCep),
+        destinationCep: destCep,
+        originUf,
+        destinationUf: destUf || originUf,
+        dedicado: gate.mode === 'dedicado',
+        axesCount: gate.suggestedVehicle?.axesCount,
+        kmFallback: displayedKm,
+      });
+      if (route.km !== displayedKm) setKmDistance(String(route.km));
+
       const response = await calculateFreight.mutateAsync({
         origin: originLabel,
         destination: destination || 'Destino',
         weight_kg: slice.weightKg,
         volume_m3: slice.volumeM3,
         cargo_value: cargoValue || 0,
-        km_distance: parseFloat(kmDistance.replace(',', '.')) || 0,
+        km_distance: route.km,
         price_table_id: priceTableId || undefined,
         vehicle_type_code: gate.suggestedVehicle?.code,
         vehicle_axes_count: gate.suggestedVehicle?.axesCount,
+        toll_value: gate.mode === 'dedicado' ? route.tollValue : 0,
       });
       setResult(response);
       requestAnimationFrame(() => {

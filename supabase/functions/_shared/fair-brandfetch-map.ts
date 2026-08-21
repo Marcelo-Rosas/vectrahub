@@ -23,6 +23,8 @@ export type FairBrandTokens = {
   focus: FairBrandHex;
 };
 
+export type BrandfetchLogoBackground = 'transparent' | 'white' | 'black' | string;
+
 export type BrandfetchColor = {
   hex?: string;
   type?: 'accent' | 'dark' | 'light' | 'brand';
@@ -31,9 +33,10 @@ export type BrandfetchColor = {
 
 export type BrandfetchLogoFormat = {
   src?: string;
-  format?: string;
+  format?: 'svg' | 'png' | 'jpeg' | 'webp' | string;
   width?: number;
   height?: number;
+  background?: BrandfetchLogoBackground;
 };
 
 export type BrandfetchLogo = {
@@ -43,14 +46,58 @@ export type BrandfetchLogo = {
 };
 
 export type BrandfetchBrandPayload = {
-  name?: string;
+  name?: string | null;
   domain?: string;
   logos?: BrandfetchLogo[];
   colors?: BrandfetchColor[];
-  qualityScore?: number;
+  qualityScore?: number | null;
 };
 
-export const FAIR_MANUAL_TOKEN_SLUGS = new Set(['buckler', 'konnen', 'boost', 'reebok', 'playfit']);
+/** Abaixo disso: domínio genérico / marca fraca — não usar PNG da API. */
+export const BRAND_QUALITY_MIN = 0.3;
+
+export function isUsableBrandQuality(score: number | null | undefined): boolean {
+  return typeof score === 'number' && score >= BRAND_QUALITY_MIN;
+}
+
+export function pickPrimaryHex(colors: BrandfetchColor[] | undefined): string | null {
+  const list = colors ?? [];
+  const byType =
+    list.find((c) => c.type === 'accent' && c.hex) ??
+    list.find((c) => c.type === 'brand' && c.hex) ??
+    list.find((c) => c.hex);
+  const hex = byType?.hex?.trim();
+  return hex ? (hex.startsWith('#') ? hex : `#${hex}`) : null;
+}
+
+export function relativeLuminanceHex(hex: string): number {
+  const n = hex.replace('#', '');
+  const full =
+    n.length === 3
+      ? n
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : n;
+  const r = parseInt(full.slice(0, 2), 16) / 255;
+  const g = parseInt(full.slice(2, 4), 16) / 255;
+  const b = parseInt(full.slice(4, 6), 16) / 255;
+  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+export function surfaceIsDarkFromHex(hex: string): boolean {
+  return relativeLuminanceHex(hex) <= 0.4;
+}
+
+export const FAIR_MANUAL_TOKEN_SLUGS = new Set([
+  'buckler',
+  'konnen',
+  'boost',
+  'reebok',
+  'playfit',
+  'rotha',
+]);
 
 export const FAIR_STATIC_BRAND_DOMAINS: Record<string, string> = {
   buckler: 'bucklerfit.com.br',
@@ -58,7 +105,7 @@ export const FAIR_STATIC_BRAND_DOMAINS: Record<string, string> = {
   boost: 'boostequipment.com.br',
   reebok: 'reebokfitness.info',
   playfit: 'playfitpisos.com.br',
-  rotha: 'rothafitness.com',
+  rotha: 'rothafitness.com.br',
 };
 
 const HEX_RE = /^#[0-9A-Fa-f]{6}$/;
@@ -79,29 +126,89 @@ export function pickBrandfetchColor(
   return normalizeHex(hit?.hex, fallback);
 }
 
+function assetPath(src: string | undefined): string {
+  return (src ?? '').split('?')[0]?.toLowerCase() ?? '';
+}
+
+function isBrandfetchAssetHost(src: string | undefined): boolean {
+  try {
+    const host = new URL(src ?? '').hostname.toLowerCase();
+    return host === 'cdn.brandfetch.io' || host === 'asset.brandfetch.io';
+  } catch {
+    return false;
+  }
+}
+
+function isSvgAsset(f: BrandfetchLogoFormat): boolean {
+  const fmt = (f.format ?? '').toLowerCase();
+  if (fmt === 'svg') return true;
+  return assetPath(f.src).endsWith('.svg');
+}
+
+/** PNG/WebP/JPEG do parceiro. CDN Brandfetch sem extensão conta como raster. */
+function isRasterAsset(f: BrandfetchLogoFormat): boolean {
+  if (!f.src?.trim() || isSvgAsset(f)) return false;
+  const fmt = (f.format ?? '').toLowerCase();
+  if (fmt === 'png' || fmt === 'jpeg' || fmt === 'jpg' || fmt === 'webp') return true;
+  const path = assetPath(f.src);
+  if (
+    path.endsWith('.png') ||
+    path.endsWith('.jpg') ||
+    path.endsWith('.jpeg') ||
+    path.endsWith('.webp')
+  ) {
+    return true;
+  }
+  return isBrandfetchAssetHost(f.src);
+}
+
+function formatRank(f: BrandfetchLogoFormat): number {
+  const fmt = (f.format ?? '').toLowerCase();
+  const path = assetPath(f.src);
+  const isPng = fmt === 'png' || path.endsWith('.png');
+  const isWebp = fmt === 'webp' || path.endsWith('.webp');
+  const isJpeg = fmt === 'jpeg' || fmt === 'jpg' || path.endsWith('.jpg') || path.endsWith('.jpeg');
+  const bg = (f.background ?? '').toLowerCase();
+  return (
+    (bg === 'transparent' ? 50 : bg === 'white' || bg === 'black' ? -20 : 0) +
+    (isPng ? 40 : isWebp ? 20 : isJpeg ? 15 : 0) +
+    (f.width ?? 0) / 1000
+  );
+}
+
+function isHeaderWordmark(entry: BrandfetchLogo, prefer: 'logo' | 'symbol'): boolean {
+  if (prefer === 'symbol') return entry.type === 'symbol' || entry.type === 'icon';
+  if (entry.type === 'icon' || entry.type === 'symbol') return false;
+  const dims = (entry.formats ?? []).find((f) => (f.width ?? 0) > 0 && (f.height ?? 0) > 0);
+  if (!dims?.width || !dims.height) return entry.type === 'logo' || !entry.type;
+  return dims.width / dims.height >= 1.5;
+}
+
 export function pickBrandfetchLogoUrl(
   logos: BrandfetchLogo[] | undefined,
-  prefer: 'logo' | 'symbol' = 'logo'
+  opts: { prefer: 'logo' | 'symbol'; surfaceIsDark: boolean }
 ): string | null {
-  const list = logos ?? [];
-  const rank = (entry: BrandfetchLogo): number => {
-    let score = 0;
-    if (entry.type === prefer) score += 40;
-    else if (entry.type === 'logo') score += 30;
-    else if (entry.type === 'symbol') score += 20;
-    else if (entry.type === 'icon') score += 10;
-    if (entry.theme === 'dark') score += 5;
-    return score;
-  };
-  const sorted = [...list].sort((a, b) => rank(b) - rank(a));
-  for (const logo of sorted) {
-    const formats = [...(logo.formats ?? [])].sort((a, b) => {
-      const score = (f: BrandfetchLogoFormat) =>
-        (f.format === 'svg' ? 30 : f.format === 'webp' ? 20 : f.format === 'png' ? 10 : 0) +
-        (f.width ?? 0) / 1000;
-      return score(b) - score(a);
+  const wantTheme = opts.surfaceIsDark ? 'dark' : 'light';
+  const ranked = [...(logos ?? [])]
+    .filter((l) => isHeaderWordmark(l, opts.prefer))
+    .sort((a, b) => {
+      const themeScore = (l: BrandfetchLogo) => (l.theme === wantTheme ? 20 : l.theme ? 0 : 8);
+      const typeScore = (l: BrandfetchLogo) =>
+        l.type === opts.prefer ? 40 : l.type === 'logo' ? 30 : l.type === 'symbol' ? 20 : 10;
+      return typeScore(b) + themeScore(b) - (typeScore(a) + themeScore(a));
     });
-    const src = formats.find((f) => f.src?.trim())?.src?.trim();
+  for (const logo of ranked) {
+    const raster = [...(logo.formats ?? [])]
+      .filter(isRasterAsset)
+      .sort((a, b) => formatRank(b) - formatRank(a));
+    const png = raster.find((f) => f.src?.trim())?.src?.trim();
+    if (png) return png;
+  }
+  for (const logo of ranked) {
+    const anyFmt = [...(logo.formats ?? [])]
+      .filter((f) => f.src?.trim())
+      .sort((a, b) => formatRank(b) - formatRank(a));
+    const src = anyFmt.find((f) => f.src?.trim())?.src?.trim();
     if (src) return src;
   }
   return null;
@@ -167,8 +274,7 @@ export function shouldApplyApiTokens(
   qualityScore: number | null | undefined
 ): boolean {
   if (FAIR_MANUAL_TOKEN_SLUGS.has(slug.trim().toLowerCase())) return false;
-  const q = typeof qualityScore === 'number' ? qualityScore : 0;
-  return q >= 0.25;
+  return isUsableBrandQuality(qualityScore);
 }
 
 export const FAIR_STATIC_TOKEN_FALLBACKS: Record<string, FairBrandTokens> = {
