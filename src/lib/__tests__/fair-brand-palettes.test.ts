@@ -26,11 +26,11 @@ describe('fair-brand-palettes', () => {
     ]);
   });
 
-  it('Konnen CTA amarelo do site + texto preto', () => {
+  it('Konnen CTA fundo preto + texto amarelo', () => {
     expect(KONNEN_FAIR_PALETTE.tokens.accent).toBe('#FFD600');
-    expect(KONNEN_FAIR_PALETTE.tokens.ctaBg).toBe('#FFD600');
-    expect(KONNEN_FAIR_PALETTE.tokens.ctaFg).toBe('#000000');
-    expect(contrastText(KONNEN_FAIR_PALETTE.tokens.ctaBg)).toBe('#000000');
+    expect(KONNEN_FAIR_PALETTE.tokens.ctaBg).toBe('#000000');
+    expect(KONNEN_FAIR_PALETTE.tokens.ctaFg).toBe('#FFD600');
+    expect(contrastText(KONNEN_FAIR_PALETTE.tokens.ctaBg)).toBe('#FFFFFF');
   });
 
   it('Reebok header/logo pretos — pêssego Brand API só no chip', () => {
@@ -57,8 +57,8 @@ describe('fair-brand-palettes', () => {
     expect(resolveFairPalette('konnen').name).toBe('Konnen Fitness');
     expect(resolveFairPalette('nope').slug).toBe('buckler');
     const vars = fairPaletteCssVars(KONNEN_FAIR_PALETTE);
-    expect(vars['--fair-cta-bg']).toBe('#FFD600');
-    expect(vars['--fair-cta-fg']).toBe('#000000');
+    expect(vars['--fair-cta-bg']).toBe('#000000');
+    expect(vars['--fair-cta-fg']).toBe('#FFD600');
   });
 
   it('luminância amarelo Konnen alta', () => {

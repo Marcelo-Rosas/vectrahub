@@ -127,7 +127,7 @@ export const KONNEN_FAIR_PALETTE: FairBrandPalette = {
   domain: 'konnenfitness.com.br',
   site: 'https://www.konnenfitness.com.br/',
   notes:
-    'Pedir orçamento no site = fundo #FFD600 texto #000. Hover amarelo #CCAB00. Não usar verde Brand API antigo.',
+    'CTA /feira = fundo #000 texto #FFD600 (invertido vs site “pedir orçamento”). Accent amarelo nos chips off.',
   brandfetch: { accent: '#FFD500', dark: '#000000', light: '#FBFBFC', quality: 0.46 },
   tokens: {
     headerBg: '#FFFFFF',
@@ -142,9 +142,9 @@ export const KONNEN_FAIR_PALETTE: FairBrandPalette = {
     border: '#FFD600',
     accent: '#FFD600',
     accentSoft: '#FFF4C2',
-    accentHover: '#CCAB00',
-    ctaBg: '#FFD600',
-    ctaFg: '#000000',
+    accentHover: '#1A1A1A',
+    ctaBg: '#000000',
+    ctaFg: '#FFD600',
     price: '#000000',
     pillFg: '#000000',
     focus: '#FFD600',
