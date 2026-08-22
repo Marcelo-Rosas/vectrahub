@@ -38,10 +38,10 @@ describe('pickFairLockupSrc', () => {
     expect(
       pickFairLockupSrc({
         slug: 'konnen',
-        localSrc: '/brand/konnen-logo.svg',
+        localSrc: '/brand/konnen-logo.png',
         apiSrc: 'https://cdn.brandfetch.io/konnen.png',
       })
-    ).toBe('/brand/konnen-logo.svg');
+    ).toBe('/brand/konnen-logo.png');
   });
 
   it('Rotha não recebe URL Brandfetch no header — PNG preto não entra', () => {
@@ -52,8 +52,8 @@ describe('pickFairLockupSrc', () => {
     );
   });
 
-  it('Konnen aponta SVG wordmark (sem letterbox preto do PNG)', () => {
-    expect(logoSrcForSlug('konnen')).toBe('/brand/konnen-logo.svg');
+  it('Konnen aponta PNG no banner preto (não SVG)', () => {
+    expect(logoSrcForSlug('konnen')).toBe('/brand/konnen-logo.png');
     expect(logoSrcForSlug('buckler')).toBe('/brand/buckler-logo.svg');
     expect(logoSrcForSlug('rotha')).toBe('/brand/rotha-logo.svg');
   });

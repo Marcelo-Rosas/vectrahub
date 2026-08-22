@@ -30,7 +30,7 @@ export type FairTenant = {
 
 export function logoSrcForSlug(slug: string): string {
   const key = slug.trim().toLowerCase();
-  if (key === 'konnen') return '/brand/konnen-logo.svg';
+  if (key === 'konnen') return '/brand/konnen-logo.png';
   return `/brand/${key}-logo.svg`;
 }
 
