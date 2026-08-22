@@ -693,14 +693,11 @@ export function FairQuoteCalculator() {
                     value={formatFairCep(destCep)}
                     readOnly
                     disabled
-                    placeholder="Do CNPJ/CEP"
+                    placeholder="DO CNPJ/CEP"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {destination ||
-                      (client.deliveryDifferent
-                        ? 'Cidade da entrega (CEP diferente do cadastro)'
-                        : 'Puxado do CNPJ ou do CEP. Marque entrega diferente se não for o cadastro.')}
-                  </p>
+                  {destination ? (
+                    <p className="text-xs font-medium uppercase text-foreground">{destination}</p>
+                  ) : null}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
