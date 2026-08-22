@@ -262,12 +262,16 @@ export function FairClientFields({ value, onChange }: Props) {
 
       <label
         className={cn(
-          'flex min-h-11 items-start gap-3 rounded-xl border px-3 py-3 touch-manipulation',
-          value.deliveryDifferent ? cn(FAIR_UI.cta, 'border-transparent') : 'bg-background'
+          'flex min-h-11 items-start gap-3 rounded-xl border border-transparent px-3 py-3 touch-manipulation',
+          FAIR_UI.cta,
+          'hover:opacity-100'
         )}
       >
         <Checkbox
-          className={cn('mt-0.5 h-5 w-5', FAIR_UI.check)}
+          className={cn(
+            'mt-0.5 h-5 w-5 border-[color:var(--fair-cta-fg)] data-[state=unchecked]:bg-transparent',
+            'data-[state=checked]:bg-[color:var(--fair-cta-fg)] data-[state=checked]:text-[color:var(--fair-cta-bg)] data-[state=checked]:border-[color:var(--fair-cta-fg)]'
+          )}
           checked={value.deliveryDifferent}
           onCheckedChange={(checked) =>
             onChange({
@@ -276,7 +280,7 @@ export function FairClientFields({ value, onChange }: Props) {
             })
           }
         />
-        <span className="text-sm leading-snug">
+        <span className="text-sm font-semibold leading-snug text-[color:var(--fair-cta-fg)]">
           Entrega em cidade diferente do cadastro (Receita/CEP)
         </span>
       </label>
