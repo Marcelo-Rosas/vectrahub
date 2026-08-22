@@ -44,6 +44,18 @@ import {
   type CatalogQuoteLine,
   type ShipperProductCatalogEntry,
 } from '@/lib/shipper-product-catalog';
+import {
+  catalogEntriesByFunctionalGroup,
+  catalogFunctionalGroupCounts,
+  filterCatalogByFunctionalGroup,
+} from '@/lib/konnen-catalog-functional';
+import {
+  getAllFunctionalGroups,
+  getFunctionalGroupChipLabel,
+  getFunctionalGroupLabel,
+  resolveKonnenFunctionalGroup,
+  type KonnenFunctionalGroup,
+} from '@/lib/konnen-functional-group';
 import { formatCurrency } from '@/lib/formatters';
 import { KitVolumePicker, type KitPickerResult } from '@/components/fair/KitVolumePicker';
 import { FairQtyStepper } from '@/components/fair/FairQtyStepper';
@@ -110,6 +122,8 @@ export function FairQuoteCalculator() {
   const [cargoValue, setCargoValue] = useState(0);
   const [skuQuery, setSkuQuery] = useState('');
   const [selectedLine, setSelectedLine] = useState<string | null>(null);
+  const [selectedFunctionalGroup, setSelectedFunctionalGroup] =
+    useState<KonnenFunctionalGroup | null>(null);
   const [lines, setLines] = useState<LineDraft[]>([]);
   const [result, setResult] = useState<CalculateFreightResponse | null>(null);
   const [savedQuote, setSavedQuote] = useState<FairSavedQuote | null>(null);
@@ -130,6 +144,7 @@ export function FairQuoteCalculator() {
   const [setupOpen, setSetupOpen] = useState(true);
 
   const catalogLineMode = catalogLineModeForTenantSlug(tenant?.slug);
+  const konnenFunctionalBeta = catalogLineMode === 'konnen';
 
   const lineCounts = useMemo(
     () => catalogLineCounts(catalog, catalogLineMode),
@@ -139,16 +154,33 @@ export function FairQuoteCalculator() {
     () => catalogProductLines(catalog, 16, catalogLineMode),
     [catalog, catalogLineMode]
   );
+  const functionalGroupCounts = useMemo(
+    () => (konnenFunctionalBeta ? catalogFunctionalGroupCounts(catalog) : null),
+    [catalog, konnenFunctionalBeta]
+  );
 
   const skuHits = useMemo(() => {
     const q = skuQuery.trim();
-    if (q.length >= 2) return searchShipperCatalog(catalog, q, 20);
-    if (selectedLine) return catalogEntriesByLine(catalog, selectedLine, catalogLineMode);
-    if (catalog.size > 0 && catalog.size <= FAIR_SMALL_CATALOG_SKUS) {
-      return catalogAllEntries(catalog);
+    let hits: ShipperProductCatalogEntry[] = [];
+    if (q.length >= 2) hits = searchShipperCatalog(catalog, q, 20);
+    else if (selectedLine) hits = catalogEntriesByLine(catalog, selectedLine, catalogLineMode);
+    else if (selectedFunctionalGroup && konnenFunctionalBeta) {
+      hits = catalogEntriesByFunctionalGroup(catalog, selectedFunctionalGroup);
+    } else if (catalog.size > 0 && catalog.size <= FAIR_SMALL_CATALOG_SKUS) {
+      hits = catalogAllEntries(catalog);
     }
-    return [];
-  }, [catalog, skuQuery, selectedLine, catalogLineMode]);
+    if (konnenFunctionalBeta && selectedFunctionalGroup && (q.length >= 2 || selectedLine)) {
+      hits = filterCatalogByFunctionalGroup(hits, selectedFunctionalGroup);
+    }
+    return hits;
+  }, [
+    catalog,
+    skuQuery,
+    selectedLine,
+    selectedFunctionalGroup,
+    catalogLineMode,
+    konnenFunctionalBeta,
+  ]);
 
   const kitCount = useMemo(
     () => [...catalog.values()].filter((e) => e.productKind === 'kit').length,
@@ -160,6 +192,7 @@ export function FairQuoteCalculator() {
 
   useEffect(() => {
     setSelectedLine(null);
+    setSelectedFunctionalGroup(null);
     setSkuQuery('');
     setLines([]);
     setOrderUnmatched([]);
@@ -817,6 +850,42 @@ export function FairQuoteCalculator() {
               );
             })}
           </div>
+          {konnenFunctionalBeta && functionalGroupCounts && (
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                Tipo de equipamento
+              </p>
+              <div className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {getAllFunctionalGroups().map((group) => {
+                  const n = functionalGroupCounts[group] ?? 0;
+                  if (n === 0) return null;
+                  const on = selectedFunctionalGroup === group;
+                  return (
+                    <Button
+                      key={group}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      title={getFunctionalGroupLabel(group)}
+                      className={cn(
+                        'h-9 min-w-fit shrink-0 touch-manipulation px-2.5 font-mono text-[11px] md:h-7 md:text-[10px]',
+                        on
+                          ? 'border-foreground bg-foreground text-background hover:bg-foreground/90 hover:text-background'
+                          : 'border-dashed text-muted-foreground'
+                      )}
+                      onClick={() => {
+                        setSelectedFunctionalGroup((prev) => (prev === group ? null : group));
+                        setSkuQuery('');
+                      }}
+                    >
+                      {getFunctionalGroupChipLabel(group)}
+                      <span className="ml-1 text-[9px] opacity-80">{n}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <div className="flex gap-2">
             <div className="relative min-w-0 flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
@@ -845,27 +914,47 @@ export function FairQuoteCalculator() {
             </Button>
           </div>
 
-          {(skuQuery.trim().length >= 2 || selectedLine || compactCatalog) &&
+          {(skuQuery.trim().length >= 2 ||
+            selectedLine ||
+            selectedFunctionalGroup ||
+            compactCatalog) &&
             skuHits.length > 0 && (
               <div className="max-h-[min(40vh,16rem)] overflow-y-auto overscroll-contain rounded-xl border divide-y">
-                {skuHits.map((h) => (
-                  <button
-                    key={h.sku}
-                    type="button"
-                    className="flex min-h-[3.5rem] w-full flex-col justify-center px-4 py-3 text-left touch-manipulation active:bg-[var(--fair-accent-soft)]"
-                    onClick={() => openKitPicker(h)}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={cn('font-mono text-base font-semibold', FAIR_UI.ink)}>
-                        {h.sku}
-                      </span>
-                      <Badge variant="outline" className="font-mono text-[10px]">
-                        {h.boxTypes.length} vol
-                      </Badge>
-                    </div>
-                    <span className="line-clamp-1 text-sm text-muted-foreground">{h.name}</span>
-                  </button>
-                ))}
+                {skuHits.map((h) => {
+                  const fg =
+                    konnenFunctionalBeta && h.functionalGroup
+                      ? resolveKonnenFunctionalGroup(h)
+                      : null;
+                  return (
+                    <button
+                      key={h.sku}
+                      type="button"
+                      className="flex min-h-[3.5rem] w-full flex-col justify-center px-4 py-3 text-left touch-manipulation active:bg-[var(--fair-accent-soft)]"
+                      onClick={() => openKitPicker(h)}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={cn('font-mono text-base font-semibold', FAIR_UI.ink)}>
+                          {h.sku}
+                        </span>
+                        <div className="flex shrink-0 items-center gap-1">
+                          {fg && (
+                            <Badge
+                              variant="outline"
+                              className="border-dashed font-mono text-[9px] text-muted-foreground"
+                              title={getFunctionalGroupLabel(fg)}
+                            >
+                              {getFunctionalGroupChipLabel(fg)}
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className="font-mono text-[10px]">
+                            {h.boxTypes.length} vol
+                          </Badge>
+                        </div>
+                      </div>
+                      <span className="line-clamp-1 text-sm text-muted-foreground">{h.name}</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
 

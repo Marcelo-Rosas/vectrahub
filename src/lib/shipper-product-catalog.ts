@@ -43,6 +43,8 @@ export type ShipperProductCatalogEntry = {
   boxTypes: ShipperProductBoxType[];
   /** Chip feira Rotha/outros — ex. KITS, ANILHA. */
   catalogGroup?: string;
+  /** Grupo funcional Konnen (docs/audit) — UI beta; chips comerciais intactos. */
+  functionalGroup?: string;
   productKind?: 'kit' | 'individual';
 };
 

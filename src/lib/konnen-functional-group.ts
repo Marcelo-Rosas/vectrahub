@@ -129,3 +129,28 @@ export function getFunctionalGroupLabel(group: KonnenFunctionalGroup): string {
 export function getAllFunctionalGroups(): KonnenFunctionalGroup[] {
   return ['PIN LOADED', 'PLATE LOADED', 'CABLE CROSS', 'BENCHES & RACKS', 'ACESSORIOS', 'CARDIO'];
 }
+
+/** Chip curto UI beta (fila secundária — não substitui IMPULSE/XMASTER/ROCKIT). */
+export function getFunctionalGroupChipLabel(group: KonnenFunctionalGroup): string {
+  const labels: Record<KonnenFunctionalGroup, string> = {
+    'PIN LOADED': 'PIN',
+    'PLATE LOADED': 'PLATE',
+    'CABLE CROSS': 'CROSS',
+    'BENCHES & RACKS': 'BANCOS',
+    ACESSORIOS: 'ACESS.',
+    CARDIO: 'CARDIO',
+  };
+  return labels[group];
+}
+
+export function resolveKonnenFunctionalGroup(entry: {
+  sku: string;
+  name?: string;
+  functionalGroup?: string;
+}): KonnenFunctionalGroup {
+  const raw = entry.functionalGroup?.trim().toUpperCase();
+  if (raw && (getAllFunctionalGroups() as string[]).includes(raw)) {
+    return raw as KonnenFunctionalGroup;
+  }
+  return konnenFunctionalGroup(entry.sku, entry.name ?? '');
+}

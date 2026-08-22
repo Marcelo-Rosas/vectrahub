@@ -7,6 +7,7 @@ import {
   type ShipperProductCatalog,
   type ShipperProductCatalogEntry,
 } from '@/lib/shipper-product-catalog';
+import { enrichKonnenCatalogFunctionalGroups } from '@/lib/konnen-catalog-functional';
 
 type ProductRow = {
   sku: string;
@@ -92,7 +93,13 @@ export function useFairProductCatalog() {
     staleTime: 1000 * 60 * 10,
   });
 
-  const catalog = useMemo(() => query.data ?? new Map(), [query.data]);
+  const catalog = useMemo(() => {
+    const base = query.data ?? new Map<string, ShipperProductCatalogEntry>();
+    if (tenant?.slug === 'konnen' && base.size > 0) {
+      return enrichKonnenCatalogFunctionalGroups(base);
+    }
+    return base;
+  }, [query.data, tenant?.slug]);
 
   return {
     catalog,
