@@ -202,16 +202,13 @@ export function FairClientFields({ value, onChange }: Props) {
             <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
           )}
         </div>
-        {value.kind === 'cnpj' && (
-          <p className="text-xs text-muted-foreground">Consulta Receita ao sair do campo</p>
-        )}
       </div>
 
       <div className="space-y-2">
         <Label>Nome</Label>
         <Input
           className={inputMobile}
-          placeholder={value.kind === 'cnpj' ? 'Razão social (API)' : 'Nome completo'}
+          placeholder={value.kind === 'cnpj' ? 'Razão social' : 'Nome completo'}
           value={value.name}
           onChange={(e) => patch({ name: e.target.value })}
           readOnly={value.kind === 'cnpj' && cnpjLoading}
@@ -263,9 +260,14 @@ export function FairClientFields({ value, onChange }: Props) {
         />
       </div>
 
-      <label className="flex min-h-11 items-start gap-3 rounded-xl border px-3 py-3 touch-manipulation">
+      <label
+        className={cn(
+          'flex min-h-11 items-start gap-3 rounded-xl border px-3 py-3 touch-manipulation',
+          value.deliveryDifferent ? cn(FAIR_UI.cta, 'border-transparent') : 'bg-background'
+        )}
+      >
         <Checkbox
-          className="mt-0.5 h-5 w-5"
+          className={cn('mt-0.5 h-5 w-5', FAIR_UI.check)}
           checked={value.deliveryDifferent}
           onCheckedChange={(checked) =>
             onChange({

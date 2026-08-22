@@ -341,6 +341,8 @@ export const FAIR_UI = {
   check: 'fair-check',
   stats: 'fair-stats',
   resultCard: 'fair-result-card',
+  /** Badge caixa pilha (P–Z) — contraste com máquina outline. */
+  stackBadge: 'fair-stack-badge',
 } as const;
 
 type ThemeStyleTarget = {

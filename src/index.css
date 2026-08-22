@@ -214,6 +214,11 @@
     color: var(--fair-pill-fg, #0b1d3a);
     border-color: var(--fair-border, #cdc2b1);
   }
+  .fair-stack-badge {
+    border-color: rgb(217 119 6 / 0.45);
+    background-color: rgb(255 251 235);
+    color: rgb(120 53 15);
+  }
   .fair-soft-panel {
     background-color: var(--fair-accent-soft, #fff4c2);
     border-color: var(--fair-border, #cdc2b1);

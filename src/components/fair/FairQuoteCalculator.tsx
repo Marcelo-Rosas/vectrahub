@@ -833,11 +833,11 @@ export function FairQuoteCalculator() {
                 <Button
                   key={line}
                   type="button"
-                  variant={on ? 'default' : 'outline'}
+                  variant="outline"
                   size="sm"
                   className={cn(
                     'h-11 min-w-fit shrink-0 touch-manipulation px-3 font-mono text-sm md:h-8 md:px-2.5 md:text-xs',
-                    on && FAIR_UI.cta
+                    on ? cn(FAIR_UI.cta, 'border-transparent hover:opacity-90') : FAIR_UI.toggleOff
                   )}
                   onClick={() => {
                     setSelectedLine((prev) => (prev === line ? null : line));
