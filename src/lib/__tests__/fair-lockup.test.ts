@@ -8,23 +8,23 @@ import {
 import { logoSrcForSlug } from '@/lib/fair-tenant';
 
 describe('pickFairLockupSrc', () => {
-  it('Rotha e PlayFit usam SVG local — ignora Brandfetch preto', () => {
+  it('Rotha e PlayFit preferem local — ignora Brandfetch', () => {
     expect(
       pickFairLockupSrc({
         slug: 'rotha',
-        localSrc: '/brand/rotha-logo.svg',
+        localSrc: '/brand/rotha-logo.png',
         apiSrc: 'https://asset.brandfetch.io/rotha-black.png',
         qualityScore: 0.9,
       })
-    ).toBe('/brand/rotha-logo.svg');
+    ).toBe('/brand/rotha-logo.png');
     expect(
       pickFairLockupSrc({
         slug: 'playfit',
-        localSrc: '/brand/playfit-logo.svg',
+        localSrc: '/brand/playfit-logo.png',
         apiSrc: 'https://asset.brandfetch.io/playfit.png',
         qualityScore: 0.9,
       })
-    ).toBe('/brand/playfit-logo.svg');
+    ).toBe('/brand/playfit-logo.png');
   });
 
   it('Buckler e Konnen também preferem local (mesmo box CSS)', () => {
@@ -44,18 +44,20 @@ describe('pickFairLockupSrc', () => {
     ).toBe('/brand/konnen-logo.png');
   });
 
-  it('Rotha não recebe URL Brandfetch no header — PNG preto não entra', () => {
+  it('Rotha/PlayFit/Konnen não recebem URL Brandfetch no header', () => {
     expect(fairHeaderLogoUrl('rotha', 'https://asset.brandfetch.io/rotha-black.png')).toBeNull();
     expect(fairHeaderLogoUrl('playfit', 'https://cdn.brandfetch.io/x.png')).toBeNull();
+    expect(fairHeaderLogoUrl('konnen', 'https://cdn.brandfetch.io/k.png')).toBeNull();
     expect(fairHeaderLogoUrl('boost', 'https://cdn.brandfetch.io/boost.png')).toBe(
       'https://cdn.brandfetch.io/boost.png'
     );
   });
 
-  it('Konnen aponta PNG no banner preto (não SVG)', () => {
+  it('Konnen/Rotha/PlayFit apontam PNG no banner preto; Buckler SVG', () => {
     expect(logoSrcForSlug('konnen')).toBe('/brand/konnen-logo.png');
+    expect(logoSrcForSlug('rotha')).toBe('/brand/rotha-logo.png');
+    expect(logoSrcForSlug('playfit')).toBe('/brand/playfit-logo.png');
     expect(logoSrcForSlug('buckler')).toBe('/brand/buckler-logo.svg');
-    expect(logoSrcForSlug('rotha')).toBe('/brand/rotha-logo.svg');
   });
 
   it('box e img iguais para todos os tenants', () => {

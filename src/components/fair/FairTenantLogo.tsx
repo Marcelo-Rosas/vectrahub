@@ -5,6 +5,15 @@ import { FAIR_LOCKUP_BOX, FAIR_LOCKUP_IMG, pickFairLockupSrc } from '@/lib/fair-
 import type { FairTenant } from '@/lib/fair-tenant';
 import { cn } from '@/lib/utils';
 
+/** Tenants com lockup PNG no banner preto (não SVG). */
+const PNG_BLACK_BANNER_SLUGS = new Set(['konnen', 'rotha', 'playfit']);
+
+const FALLBACK_WORDMARK: Record<string, string> = {
+  konnen: 'konnen',
+  rotha: 'ROTHA',
+  playfit: 'PLAYFIT',
+};
+
 function initialsFromDomainOrName(domain: string, name: string): string {
   const host = domain.replace(/^www\./, '').split('.')[0] ?? '';
   if (host.length >= 2) return host.slice(0, 2).toUpperCase();
@@ -13,7 +22,7 @@ function initialsFromDomainOrName(domain: string, name: string): string {
   return (name.slice(0, 2) || '?').toUpperCase();
 }
 
-/** Header /feira — PNG/SVG Brandfetch; senão /brand/{slug}-logo.svg; senão iniciais. */
+/** Header /feira — PNG/SVG Brandfetch; senão /brand/{slug}-logo.*; senão iniciais. */
 export function FairTenantLogo({
   tenant,
   logoUrl,
@@ -33,6 +42,7 @@ export function FairTenantLogo({
 }) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const palette = resolveFairPalette(tenant.slug);
+  const slug = tenant.slug.trim().toLowerCase();
   const local = tenant.logoSrc?.trim() ?? '';
   const picked = pickFairLockupSrc({
     slug: tenant.slug,
@@ -43,7 +53,7 @@ export function FairTenantLogo({
   const src = picked && failedSrc !== picked ? picked : local && failedSrc !== local ? local : null;
   const accent = accentHex || palette.tokens.accent;
   const isAuth = size === 'auth';
-  const isKonnenBanner = tenant.slug.trim().toLowerCase() === 'konnen';
+  const isPngBlackBanner = PNG_BLACK_BANNER_SLUGS.has(slug);
 
   useEffect(() => {
     setFailedSrc(null);
@@ -53,12 +63,12 @@ export function FairTenantLogo({
     <div
       className={cn(
         isAuth ? 'flex items-center justify-center rounded-lg px-3 py-2' : FAIR_LOCKUP_BOX,
-        isKonnenBanner && !isAuth && 'w-[15rem] bg-black px-3',
+        isPngBlackBanner && !isAuth && 'w-[15rem] bg-black px-3',
         className
       )}
       style={{
-        backgroundColor: isKonnenBanner ? '#000000' : palette.tokens.logoBg,
-        boxShadow: isKonnenBanner ? undefined : `inset 0 0 0 1px ${accent}33`,
+        backgroundColor: isPngBlackBanner ? '#000000' : palette.tokens.logoBg,
+        boxShadow: isPngBlackBanner ? undefined : `inset 0 0 0 1px ${accent}33`,
       }}
     >
       {src ? (
@@ -70,18 +80,18 @@ export function FairTenantLogo({
             isAuth
               ? 'h-12 w-auto max-w-[260px] object-contain sm:h-14 sm:max-w-[320px]'
               : FAIR_LOCKUP_IMG,
-            isKonnenBanner && !isAuth && 'h-9 max-w-[14rem]',
+            isPngBlackBanner && !isAuth && 'h-9 max-w-[14rem]',
             imgClassName
           )}
           referrerPolicy="no-referrer"
           onError={() => setFailedSrc(src)}
         />
-      ) : isKonnenBanner ? (
+      ) : isPngBlackBanner ? (
         <span
           className="font-black tracking-tight"
-          style={{ color: '#FFD600', fontSize: isAuth ? 22 : 18 }}
+          style={{ color: palette.tokens.logoFg, fontSize: isAuth ? 22 : 18 }}
         >
-          konnen
+          {FALLBACK_WORDMARK[slug] ?? slug}
         </span>
       ) : (
         <span
