@@ -4,12 +4,7 @@
  */
 
 export type KonnenFunctionalGroup =
-  | 'PIN LOADED'
-  | 'PLATE LOADED'
-  | 'CABLE CROSS'
-  | 'BENCHES & RACKS'
-  | 'ACESSORIOS'
-  | 'CARDIO';
+  'PIN LOADED' | 'PLATE LOADED' | 'CABLE CROSS' | 'BENCHES & RACKS' | 'ACESSORIOS' | 'CARDIO';
 
 /** @deprecated OUTROS removido — mantido só se algum consumidor legado comparar string. */
 export type KonnenFunctionalGroupLegacy = KonnenFunctionalGroup | 'OUTROS';
@@ -130,17 +125,9 @@ export function getAllFunctionalGroups(): KonnenFunctionalGroup[] {
   return ['PIN LOADED', 'PLATE LOADED', 'CABLE CROSS', 'BENCHES & RACKS', 'ACESSORIOS', 'CARDIO'];
 }
 
-/** Chip curto UI beta (fila secundária — não substitui IMPULSE/XMASTER/ROCKIT). */
+/** Chip UI = mesmo rótulo Buckler (PIN LOADED, PLATE LOADED, …). */
 export function getFunctionalGroupChipLabel(group: KonnenFunctionalGroup): string {
-  const labels: Record<KonnenFunctionalGroup, string> = {
-    'PIN LOADED': 'PIN',
-    'PLATE LOADED': 'PLATE',
-    'CABLE CROSS': 'CROSS',
-    'BENCHES & RACKS': 'BANCOS',
-    ACESSORIOS: 'ACESS.',
-    CARDIO: 'CARDIO',
-  };
-  return labels[group];
+  return group;
 }
 
 export function resolveKonnenFunctionalGroup(entry: {

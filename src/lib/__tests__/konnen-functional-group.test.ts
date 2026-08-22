@@ -66,4 +66,13 @@ describe('konnenFunctionalGroup', () => {
     expect(g).not.toBe('OUTROS' as never);
     expect(getAllFunctionalGroups()).not.toContain('OUTROS' as never);
   });
+
+  it('chip labels = rótulos Buckler (não abreviação PIN/PLATE)', () => {
+    expect(getFunctionalGroupChipLabel('PIN LOADED')).toBe('PIN LOADED');
+    expect(getFunctionalGroupChipLabel('PLATE LOADED')).toBe('PLATE LOADED');
+    expect(getFunctionalGroupChipLabel('CABLE CROSS')).toBe('CABLE CROSS');
+    expect(getFunctionalGroupChipLabel('BENCHES & RACKS')).toBe('BENCHES & RACKS');
+    expect(getFunctionalGroupChipLabel('ACESSORIOS')).toBe('ACESSORIOS');
+    expect(getFunctionalGroupChipLabel('CARDIO')).toBe('CARDIO');
+  });
 });

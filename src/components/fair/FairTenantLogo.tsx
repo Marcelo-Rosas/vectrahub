@@ -43,6 +43,7 @@ export function FairTenantLogo({
   const src = picked && failedSrc !== picked ? picked : local && failedSrc !== local ? local : null;
   const accent = accentHex || palette.tokens.accent;
   const isAuth = size === 'auth';
+  const isKonnenBanner = tenant.slug.trim().toLowerCase() === 'konnen';
 
   useEffect(() => {
     setFailedSrc(null);
@@ -52,11 +53,12 @@ export function FairTenantLogo({
     <div
       className={cn(
         isAuth ? 'flex items-center justify-center rounded-lg px-3 py-2' : FAIR_LOCKUP_BOX,
+        isKonnenBanner && !isAuth && 'bg-black px-3',
         className
       )}
       style={{
-        backgroundColor: palette.tokens.logoBg,
-        boxShadow: `inset 0 0 0 1px ${accent}33`,
+        backgroundColor: isKonnenBanner ? '#000000' : palette.tokens.logoBg,
+        boxShadow: isKonnenBanner ? undefined : `inset 0 0 0 1px ${accent}33`,
       }}
     >
       {src ? (

@@ -163,13 +163,14 @@ export function FairQuoteCalculator() {
     const q = skuQuery.trim();
     let hits: ShipperProductCatalogEntry[] = [];
     if (q.length >= 2) hits = searchShipperCatalog(catalog, q, 20);
-    else if (selectedLine) hits = catalogEntriesByLine(catalog, selectedLine, catalogLineMode);
-    else if (selectedFunctionalGroup && konnenFunctionalBeta) {
+    else if (konnenFunctionalBeta && selectedFunctionalGroup) {
       hits = catalogEntriesByFunctionalGroup(catalog, selectedFunctionalGroup);
+    } else if (!konnenFunctionalBeta && selectedLine) {
+      hits = catalogEntriesByLine(catalog, selectedLine, catalogLineMode);
     } else if (catalog.size > 0 && catalog.size <= FAIR_SMALL_CATALOG_SKUS) {
       hits = catalogAllEntries(catalog);
     }
-    if (konnenFunctionalBeta && selectedFunctionalGroup && (q.length >= 2 || selectedLine)) {
+    if (konnenFunctionalBeta && selectedFunctionalGroup && q.length >= 2) {
       hits = filterCatalogByFunctionalGroup(hits, selectedFunctionalGroup);
     }
     return hits;
@@ -783,35 +784,10 @@ export function FairQuoteCalculator() {
             </Alert>
           )}
 
-          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {productLines.map((line) => {
-              const n = lineCounts[line] ?? 0;
-              const on = selectedLine === line;
-              return (
-                <Button
-                  key={line}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className={cn(
-                    'h-11 min-w-fit shrink-0 touch-manipulation px-3 font-mono text-sm uppercase md:h-8 md:px-2.5 md:text-xs',
-                    on ? cn(FAIR_UI.cta, 'border-transparent hover:opacity-90') : FAIR_UI.toggleOff
-                  )}
-                  onClick={() => {
-                    setSelectedLine((prev) => (prev === line ? null : line));
-                    setSkuQuery('');
-                  }}
-                >
-                  {catalogLineLabel(line)}
-                  <span className="ml-1 text-[10px] opacity-80">{n}</span>
-                </Button>
-              );
-            })}
-          </div>
-          {konnenFunctionalBeta && functionalGroupCounts && (
+          {konnenFunctionalBeta ? (
             <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {getAllFunctionalGroups().map((group) => {
-                const n = functionalGroupCounts[group] ?? 0;
+                const n = functionalGroupCounts?.[group] ?? 0;
                 if (n === 0) return null;
                 const on = selectedFunctionalGroup === group;
                 return (
@@ -829,10 +805,39 @@ export function FairQuoteCalculator() {
                     )}
                     onClick={() => {
                       setSelectedFunctionalGroup((prev) => (prev === group ? null : group));
+                      setSelectedLine(null);
                       setSkuQuery('');
                     }}
                   >
                     {getFunctionalGroupChipLabel(group)}
+                    <span className="ml-1 text-[10px] opacity-80">{n}</span>
+                  </Button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {productLines.map((line) => {
+                const n = lineCounts[line] ?? 0;
+                const on = selectedLine === line;
+                return (
+                  <Button
+                    key={line}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      'h-11 min-w-fit shrink-0 touch-manipulation px-3 font-mono text-sm uppercase md:h-8 md:px-2.5 md:text-xs',
+                      on
+                        ? cn(FAIR_UI.cta, 'border-transparent hover:opacity-90')
+                        : FAIR_UI.toggleOff
+                    )}
+                    onClick={() => {
+                      setSelectedLine((prev) => (prev === line ? null : line));
+                      setSkuQuery('');
+                    }}
+                  >
+                    {catalogLineLabel(line)}
                     <span className="ml-1 text-[10px] opacity-80">{n}</span>
                   </Button>
                 );
