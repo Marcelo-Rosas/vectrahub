@@ -208,7 +208,7 @@ export function FairClientFields({ value, onChange }: Props) {
         <Label>Nome</Label>
         <Input
           className={inputMobile}
-          placeholder={value.kind === 'cnpj' ? 'Razão social' : 'Nome completo'}
+          placeholder={value.kind === 'cnpj' ? 'RAZÃO SOCIAL' : 'NOME COMPLETO'}
           value={value.name}
           onChange={(e) => patch({ name: e.target.value })}
           readOnly={value.kind === 'cnpj' && cnpjLoading}
@@ -241,7 +241,7 @@ export function FairClientFields({ value, onChange }: Props) {
         <Label>Endereço</Label>
         <Input
           className={inputMobile}
-          placeholder="Rua, número, bairro, cidade"
+          placeholder="RUA, NÚMERO, BAIRRO, CIDADE"
           value={value.address}
           onChange={(e) => patch({ address: e.target.value })}
         />
@@ -254,7 +254,7 @@ export function FairClientFields({ value, onChange }: Props) {
           type="email"
           inputMode="email"
           autoComplete="email"
-          placeholder="contato@empresa.com"
+          placeholder="CONTATO@EMPRESA.COM"
           value={value.email}
           onChange={(e) => patch({ email: e.target.value })}
         />
@@ -312,7 +312,7 @@ export function FairClientFields({ value, onChange }: Props) {
             <Label>Cidade da entrega</Label>
             <Input
               className={inputMobile}
-              placeholder="Cidade"
+              placeholder="CIDADE"
               value={value.deliveryCity}
               onChange={(e) => patch({ deliveryCity: e.target.value })}
             />

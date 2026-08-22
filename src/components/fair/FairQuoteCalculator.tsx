@@ -86,6 +86,7 @@ import {
 import { fairFreightGate, type FairFreightManualMode } from '@/lib/fair-freight-gate';
 import { pickFairPriceTableId } from '@/lib/fair-price-tables';
 import { FairFreightProfileCard } from '@/components/fair/FairFreightProfileCard';
+import { formatFairProductName } from '@/lib/fair-display';
 import { cn } from '@/lib/utils';
 
 type LineDraft = CatalogQuoteLine & { key: string };
@@ -181,11 +182,6 @@ export function FairQuoteCalculator() {
     catalogLineMode,
     konnenFunctionalBeta,
   ]);
-
-  const kitCount = useMemo(
-    () => [...catalog.values()].filter((e) => e.productKind === 'kit').length,
-    [catalog]
-  );
 
   const compactCatalog =
     catalog.size > 0 && catalog.size <= FAIR_SMALL_CATALOG_SKUS && catalogLineMode !== 'rotha';
@@ -752,42 +748,28 @@ export function FairQuoteCalculator() {
       </Collapsible>
 
       <Card className="overflow-hidden border-[color:var(--fair-border)]/40 shadow-sm">
-        <CardHeader className="space-y-0.5 pb-2 pt-3 md:py-3">
-          <CardTitle className="flex items-center gap-2 text-base md:text-sm">
-            <Package className={cn('h-4 w-4 md:h-3.5 md:w-3.5', FAIR_UI.accent)} />
-            Equipamentos
-          </CardTitle>
-          <CardDescription className="text-xs md:text-[11px]">
-            {catalog.size === 0
-              ? 'Catálogo vazio neste embarcador'
-              : compactCatalog
-                ? `${catalog.size} kits no catálogo`
-                : catalogLineMode === 'rotha'
-                  ? `${catalog.size} itens · ${kitCount} kits · ${productLines.length} grupos`
-                  : catalogLineMode === 'buckler'
-                    ? `${catalog.size} SKUs · ${productLines.length} categorias · toque ou busque`
-                    : `${catalog.size} SKUs · ${productLines.length} linhas · toque a linha ou busque`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3 pb-3 md:pb-3">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 md:gap-2">
-            <input
-              id="fair-order-pdf-input"
-              type="file"
-              accept=".pdf,application/pdf"
-              className="sr-only"
-              disabled={orderPdfBusy}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                e.target.value = '';
-                if (file) void handleOrderPdfUpload(file);
-              }}
-            />
+        <input
+          id="fair-order-pdf-input"
+          type="file"
+          accept=".pdf,application/pdf"
+          className="sr-only"
+          disabled={orderPdfBusy}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = '';
+            if (file) void handleOrderPdfUpload(file);
+          }}
+        />
+        <CardHeader className="space-y-0 pb-2 pt-3 md:py-3">
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="flex min-w-0 items-center gap-2 text-base md:text-sm">
+              <Package className={cn('h-4 w-4 shrink-0 md:h-3.5 md:w-3.5', FAIR_UI.accent)} />
+              Equipamentos
+            </CardTitle>
             <Button
               type="button"
-              variant="outline"
               size="sm"
-              className="h-10 shrink-0 touch-manipulation md:h-8"
+              className={cn('h-10 shrink-0 touch-manipulation uppercase md:h-8', FAIR_UI.cta)}
               disabled={orderPdfBusy}
               onClick={() => document.getElementById('fair-order-pdf-input')?.click()}
             >
@@ -798,15 +780,9 @@ export function FairQuoteCalculator() {
               )}
               Enviar pedido PDF
             </Button>
-            <p className="min-w-0 flex-1 text-[11px] leading-snug text-muted-foreground md:max-w-md">
-              {tenant?.slug === 'buckler'
-                ? 'Proposta Comercial Buckler preenche cliente, carga e equipamentos.'
-                : tenant?.slug === 'konnen'
-                  ? 'Orçamento Konnen (Clicksign) preenche cliente, carga e equipamentos.'
-                  : 'PDF do pedido preenche cliente, carga e equipamentos.'}
-            </p>
           </div>
-
+        </CardHeader>
+        <CardContent className="space-y-3 pb-3 md:pb-3">
           {orderUnmatched.length > 0 && (
             <Alert variant="destructive" className="border-amber-300 bg-amber-50 text-amber-950">
               <AlertDescription className="space-y-2 text-sm">
@@ -836,7 +812,7 @@ export function FairQuoteCalculator() {
                   variant="outline"
                   size="sm"
                   className={cn(
-                    'h-11 min-w-fit shrink-0 touch-manipulation px-3 font-mono text-sm md:h-8 md:px-2.5 md:text-xs',
+                    'h-11 min-w-fit shrink-0 touch-manipulation px-3 font-mono text-sm uppercase md:h-8 md:px-2.5 md:text-xs',
                     on ? cn(FAIR_UI.cta, 'border-transparent hover:opacity-90') : FAIR_UI.toggleOff
                   )}
                   onClick={() => {
@@ -851,47 +827,45 @@ export function FairQuoteCalculator() {
             })}
           </div>
           {konnenFunctionalBeta && functionalGroupCounts && (
-            <div className="space-y-1.5">
-              <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                Tipo de equipamento
-              </p>
-              <div className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {getAllFunctionalGroups().map((group) => {
-                  const n = functionalGroupCounts[group] ?? 0;
-                  if (n === 0) return null;
-                  const on = selectedFunctionalGroup === group;
-                  return (
-                    <Button
-                      key={group}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      title={getFunctionalGroupLabel(group)}
-                      className={cn(
-                        'h-9 min-w-fit shrink-0 touch-manipulation px-2.5 font-mono text-[11px] md:h-7 md:text-[10px]',
-                        on
-                          ? 'border-foreground bg-foreground text-background hover:bg-foreground/90 hover:text-background'
-                          : 'border-dashed text-muted-foreground'
-                      )}
-                      onClick={() => {
-                        setSelectedFunctionalGroup((prev) => (prev === group ? null : group));
-                        setSkuQuery('');
-                      }}
-                    >
-                      {getFunctionalGroupChipLabel(group)}
-                      <span className="ml-1 text-[9px] opacity-80">{n}</span>
-                    </Button>
-                  );
-                })}
-              </div>
+            <div className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {getAllFunctionalGroups().map((group) => {
+                const n = functionalGroupCounts[group] ?? 0;
+                if (n === 0) return null;
+                const on = selectedFunctionalGroup === group;
+                return (
+                  <Button
+                    key={group}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    title={getFunctionalGroupLabel(group)}
+                    className={cn(
+                      'h-9 min-w-fit shrink-0 touch-manipulation px-2.5 font-mono text-[11px] uppercase md:h-7 md:text-[10px]',
+                      on
+                        ? 'border-foreground bg-foreground text-background hover:bg-foreground/90 hover:text-background'
+                        : 'border-dashed text-muted-foreground'
+                    )}
+                    onClick={() => {
+                      setSelectedFunctionalGroup((prev) => (prev === group ? null : group));
+                      setSkuQuery('');
+                    }}
+                  >
+                    {getFunctionalGroupChipLabel(group)}
+                    <span className="ml-1 text-[9px] opacity-80">{n}</span>
+                  </Button>
+                );
+              })}
             </div>
           )}
           <div className="flex gap-2">
             <div className="relative min-w-0 flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
-                className={cn(inputMobile, 'pl-10 font-mono')}
-                placeholder="SKU ou nome"
+                className={cn(
+                  inputMobile,
+                  'pl-10 font-mono uppercase placeholder:normal-case placeholder:uppercase'
+                )}
+                placeholder="SKU OU NOME"
                 value={skuQuery}
                 autoComplete="off"
                 autoCorrect="off"
@@ -951,7 +925,9 @@ export function FairQuoteCalculator() {
                           </Badge>
                         </div>
                       </div>
-                      <span className="line-clamp-1 text-sm text-muted-foreground">{h.name}</span>
+                      <span className="line-clamp-1 text-sm text-muted-foreground">
+                        {formatFairProductName(h.name)}
+                      </span>
                     </button>
                   );
                 })}
@@ -959,12 +935,8 @@ export function FairQuoteCalculator() {
             )}
 
           {lines.length === 0 ? (
-            <div className="rounded-xl border border-dashed px-4 py-8 text-center">
-              <Package className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">Nenhum item ainda</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Toque uma linha de SKU ou busque pelo código
-              </p>
+            <div className="rounded-xl border border-dashed px-4 py-6 text-center">
+              <Package className="mx-auto h-8 w-8 text-muted-foreground/40" />
             </div>
           ) : (
             <ul className="space-y-2.5">
