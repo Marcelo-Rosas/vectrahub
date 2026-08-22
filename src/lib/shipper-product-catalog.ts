@@ -383,7 +383,8 @@ export function defaultStackLbsForEquipment(sku: string): string | null {
   return EQUIPMENT_WS_RULES.some((r) => r.test(sku)) ? '295' : null;
 }
 
-function wsSkuForEquipment(sku: string, stackLbs: string): string | null {
+/** Equipamento pin-load → SKU weight stack (ex. FE9701 + 295 → FEWS-295). */
+export function weightStackSkuForEquipment(sku: string, stackLbs: string): string | null {
   const rule = EQUIPMENT_WS_RULES.find((r) => r.test(sku));
   return rule ? `${rule.wsPrefix}-${stackLbs}` : null;
 }
@@ -396,7 +397,7 @@ export function composeEquipmentWithWeightStack(
 ): ShipperProductCatalogEntry | null {
   const equip = catalog.get(sku);
   if (!equip) return null;
-  const wsSku = wsSkuForEquipment(sku, stackLbs);
+  const wsSku = weightStackSkuForEquipment(sku, stackLbs);
   if (!wsSku) return equip;
   const ws = catalog.get(wsSku);
   if (!ws) return equip;

@@ -112,6 +112,29 @@ export const KONNEN_SITE_LINES: KonnenSiteLineConfig[] = [
     group: 'cardio',
     profile: 'full',
   },
+  // Acessórios / Rockit / OKPRO — XMASTER (XMT*) não listado no WooCommerce
+  {
+    id: 'rockit',
+    label: 'Rockit',
+    categoryUrl: `${BASE}/rockit/`,
+    group: 'acessorios',
+    profile: 'full',
+  },
+  {
+    id: 'acessorios',
+    label: 'Acessórios (todas)',
+    categoryUrl: `${BASE}/acessorios/`,
+    group: 'acessorios',
+    profile: 'full',
+  },
+  {
+    id: 'acessorios-okpro',
+    label: 'Acessórios OKPRO',
+    categoryUrl: `${BASE}/acessorios/okpro/`,
+    group: 'acessorios',
+    profile: 'full',
+  },
+  // acessorios/rockit/ omitido — coberto por id `rockit` (categoria raiz /rockit/)
 ];
 
 export type KonnenSiteProductSpec = {
@@ -159,6 +182,7 @@ export type KonnenSiteAuditReport = {
   gapsForSemanticSearch: {
     bancos: KonnenSiteProductSpec[];
     cardio: KonnenSiteProductSpec[];
+    acessorios: KonnenSiteProductSpec[];
   };
 };
 
@@ -244,6 +268,30 @@ export function extractSkuFromKonnenHtml(html: string): string {
   for (const re of patterns) {
     const m = html.match(re);
     if (m?.[1]) return m[1].trim().toUpperCase();
+  }
+
+  // Fallbacks: ignore <img src> (filenames like RKC01UWP-YW-sem-peso-360x360.jpg)
+  const textOnly = html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<img\b[^>]*>/gi, ' ')
+    .replace(/\bsrc=["'][^"']+["']/gi, ' ')
+    .replace(/url\([^)]+\)/gi, ' ');
+
+  const fallbacks = [
+    /\b(RKC[A-Z0-9]+(?:-[A-Z0-9]+)*)\b/i,
+    /\b(XMT-[A-Z0-9.-]{2,28})\b/i,
+    /\b(XMR[A-Z0-9]+(?:-[A-Z0-9]+)*)\b/i,
+    /\b(OK\d{3,5}[A-Z0-9-]*)\b/i,
+  ];
+  for (const re of fallbacks) {
+    const m = textOnly.match(re);
+    const sku = m?.[1]?.trim().toUpperCase();
+    if (!sku) continue;
+    if (/-\d+X\d+$/i.test(sku)) continue;
+    if (/SEM-PESO/i.test(sku)) continue;
+    if (sku.endsWith('-')) continue;
+    return sku;
   }
   return '';
 }
@@ -395,6 +443,7 @@ export async function crawlKonnenCategoryLine(
     (p) => p <= maxPages
   );
   let pagesFetched = 1;
+  let maxKnown = Math.max(1, ...pageNumbers);
 
   for (const page of pageNumbers) {
     if (page <= 1) continue;
@@ -402,6 +451,24 @@ export async function crawlKonnenCategoryLine(
     const html = await fetchKonnenHtml(url, delayMs);
     pagesFetched++;
     for (const u of extractProductUrlsFromCategoryHtml(html, origin)) productUrls.add(u);
+    // WooCommerce may only link nearby pages — expand from each page's pager
+    for (const p of extractCategoryPageNumbers(html, line.categoryUrl)) {
+      if (p <= maxPages) maxKnown = Math.max(maxKnown, p);
+    }
+  }
+
+  // Walk past first-page pager window until empty / 404
+  for (let page = maxKnown + 1; page <= maxPages; page++) {
+    const url = categoryUrlForPage(line.categoryUrl, page);
+    try {
+      const html = await fetchKonnenHtml(url, delayMs);
+      pagesFetched++;
+      const before = productUrls.size;
+      for (const u of extractProductUrlsFromCategoryHtml(html, origin)) productUrls.add(u);
+      if (productUrls.size === before) break;
+    } catch {
+      break;
+    }
   }
 
   return { productUrls: [...productUrls].sort(), pagesFetched };
@@ -530,6 +597,7 @@ function finalizeAuditReport(
   const bateriasProducts = products.filter((p) => p.group === 'baterias' && p.stackLbs);
   const gapsBancos = products.filter((p) => p.group === 'bancos' && !p.inCatalog && p.sku);
   const gapsCardio = products.filter((p) => p.group === 'cardio' && !p.inCatalog && p.sku);
+  const gapsAcessorios = products.filter((p) => p.group === 'acessorios' && !p.inCatalog && p.sku);
 
   return {
     ...meta,
@@ -539,6 +607,7 @@ function finalizeAuditReport(
     gapsForSemanticSearch: {
       bancos: gapsBancos,
       cardio: gapsCardio,
+      acessorios: gapsAcessorios,
     },
   };
 }
@@ -573,10 +642,15 @@ export function linesForPhase(phase: string): KonnenSiteLineConfig[] {
       return KONNEN_SITE_LINES.filter((l) => l.group === 'bancos' || l.group === 'cardio');
     case 'cardio':
       return KONNEN_SITE_LINES.filter((l) => l.group === 'cardio');
+    case 'acessorios':
+    case 'rockit':
+      return KONNEN_SITE_LINES.filter((l) => l.group === 'acessorios');
     case 'all':
       return KONNEN_SITE_LINES;
     default:
-      throw new Error(`Fase desconhecida: ${phase}. Use baterias|articulados|bancos|cardio|all`);
+      throw new Error(
+        `Fase desconhecida: ${phase}. Use baterias|articulados|bancos|cardio|acessorios|rockit|all`
+      );
   }
 }
 

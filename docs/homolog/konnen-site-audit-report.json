@@ -1,5 +1,5 @@
 {
-  "scrapedAt": "2026-08-19T19:25:14.503Z",
+  "scrapedAt": "2026-08-22T18:52:41.046Z",
   "catalogFixture": "C:\\Users\\marce\\vectra-hub\\src\\lib\\__tests__\\fixtures\\konnen-catalog-merged.json",
   "catalogSkuCount": 472,
   "lines": [
@@ -286,6 +286,102 @@
         "U7",
         "XSC500",
         "XSC750"
+      ]
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "categoryUrl": "https://www.konnenfitness.com.br/categoria-produto/rockit/",
+      "pagesFetched": 4,
+      "productsOnSite": 44,
+      "matchedCatalog": 25,
+      "missingFromCatalog": 19,
+      "catalogOnlySkus": [],
+      "siteOnlySkus": [
+        "RKC01BAR-HEX",
+        "RKC01BAR-HMC",
+        "RKC01BAR-RTC",
+        "RKC01BBS-010",
+        "RKC01UDB-S110-1-10KG",
+        "RKC01UDB-S160",
+        "RKC01UDB-S420",
+        "RKC01UDB-S460",
+        "RKC01UDB-S560",
+        "RKC01UDB-S780",
+        "RKC03STPRGL",
+        "RKC06CBL-BSET",
+        "RKC06CURBAR",
+        "RKC06FRTLAT28",
+        "RKC06RVV-TRP",
+        "RKC06STD-ROW",
+        "RKC06STR-BAR",
+        "RKC06TRI-CUR",
+        "RKC06TRI-ROP"
+      ]
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "categoryUrl": "https://www.konnenfitness.com.br/categoria-produto/acessorios/",
+      "pagesFetched": 4,
+      "productsOnSite": 39,
+      "matchedCatalog": 10,
+      "missingFromCatalog": 29,
+      "catalogOnlySkus": [],
+      "siteOnlySkus": [
+        "OK0011B-1",
+        "OK191545MM",
+        "OK192519MM",
+        "OK192529MM",
+        "OK192532MM",
+        "OK2008B10",
+        "OK2008B2",
+        "OK2008B20",
+        "OK2008B25",
+        "OK2008B5",
+        "OK50031",
+        "OK500322",
+        "OK50042",
+        "OK5005",
+        "OK5006",
+        "OK5022C",
+        "OK6005",
+        "OK6008",
+        "OK6014",
+        "OK6015",
+        "OK6016",
+        "OK6023",
+        "OK6024",
+        "OK6032",
+        "OK6082",
+        "RKC01UDB-S110-1-10KG",
+        "RKC06CURBAR",
+        "RKC06FRTLAT28",
+        "barra-de-levantamento-de-peso"
+      ]
+    },
+    {
+      "lineId": "acessorios-okpro",
+      "lineLabel": "Acessórios OKPRO",
+      "group": "acessorios",
+      "profile": "full",
+      "categoryUrl": "https://www.konnenfitness.com.br/categoria-produto/acessorios/okpro/",
+      "pagesFetched": 1,
+      "productsOnSite": 6,
+      "matchedCatalog": 0,
+      "missingFromCatalog": 6,
+      "catalogOnlySkus": [],
+      "siteOnlySkus": [
+        "OK0011B-1",
+        "OK1012A1",
+        "OK1012A2",
+        "OK192545",
+        "OK500322",
+        "OK6023"
       ]
     }
   ],
@@ -6136,6 +6232,1718 @@
         "specs_missing"
       ],
       "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/curl-bar/",
+      "slug": "curl-bar",
+      "name": "CURL BAR",
+      "sku": "RKC06CURBAR",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra Curva",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/dumbbell-rack-for-10-pair/",
+      "slug": "dumbbell-rack-for-10-pair",
+      "name": "DUMBBELL RACK FOR 10 PAIR",
+      "sku": "RKC02DBR-010",
+      "weightKg": 87,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        2630,
+        780,
+        880
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack para dumbbells – 10 pares Medida: 2630 x 780 x 880 mm Peso: 87 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/dumbbell-rack-for-15-pair/",
+      "slug": "dumbbell-rack-for-15-pair",
+      "name": "DUMBBELL RACK FOR 15 PAIR",
+      "sku": "RKC02DBR-015",
+      "weightKg": 123,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        2600,
+        960,
+        940
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack para dumbbells – 15 pares Medida: 2600 x 960 x 940 mm Peso: 123 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/dumbbell-rack-for-5-pair/",
+      "slug": "dumbbell-rack-for-5-pair",
+      "name": "DUMBBELL RACK FOR 5 PAIR",
+      "sku": "RKC02DBR-005",
+      "weightKg": 64,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        1460,
+        780,
+        880
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack para dumbbells – 5 pares Medida: 1460 x 780 x 880 mm Peso: 64 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/dumbbell-rack-para-10-pares/",
+      "slug": "dumbbell-rack-para-10-pares",
+      "name": "Dumbbell Rack para 10 Pares",
+      "sku": "RKC02DBR-010",
+      "weightKg": 87,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        2630,
+        780,
+        880
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack para dumbbells – 10 pares Medida: 2630 x 780 x 880 mm Peso: 87 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/front-lat-bar-28/",
+      "slug": "front-lat-bar-28",
+      "name": "FRONT LAT BAR 28",
+      "sku": "RKC06FRTLAT28",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/hammer-curl-bar/",
+      "slug": "hammer-curl-bar",
+      "name": "HAMMER CURL BAR",
+      "sku": "RKC01BAR-HMC",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra Romana",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/hex-trap-bar/",
+      "slug": "hex-trap-bar",
+      "name": "HEX TRAP BAR",
+      "sku": "RKC01BAR-HEX",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Agachamento Terra – 1.80m",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/olympic-bar-1-20m/",
+      "slug": "olympic-bar-1-20m",
+      "name": "Olympic Bar 1.20m",
+      "sku": "RKC01BAR-120",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra olímpica reta – 1,20m",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/olympic-bar-2-20m-spring-steel/",
+      "slug": "olympic-bar-2-20m-spring-steel",
+      "name": "OLYMPIC BAR 2.20M SPRING STEEL",
+      "sku": "RKC01BAR-M220PF",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra Olímpica de 2,20m",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/olympic-bar-curl-1-20m/",
+      "slug": "olympic-bar-curl-1-20m",
+      "name": "OLYMPIC BAR CURL 1.20M",
+      "sku": "RKC01BAR-120C",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra olímpica W – 1,20m",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/premium-neoprene-cable-attachment-set-of-8/",
+      "slug": "premium-neoprene-cable-attachment-set-of-8",
+      "name": "PREMIUM NEOPRENE CABLE ATTACHMENT SET OF 8",
+      "sku": "RKC06CBL-BSET",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Puxadores Premium – 8 puxadores",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/revolving-tricep-and-curl-bar/",
+      "slug": "revolving-tricep-and-curl-bar",
+      "name": "Revolving Tricep and Curl Bar",
+      "sku": "RKC06RVV-TRP",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-dumbbell-rack-para-10-pares-copia/",
+      "slug": "rockit-dumbbell-rack-para-10-pares-copia",
+      "name": "Dumbbell Rack para 15 Pares",
+      "sku": "RKC02DBR-015",
+      "weightKg": 123,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        2600,
+        960,
+        940
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack para dumbbells – 15 pares Medida: 2600 x 960 x 940 mm Peso: 123 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-dumbbell-rack-para-5-pares/",
+      "slug": "rockit-dumbbell-rack-para-5-pares",
+      "name": "Dumbbell Rack para 5 Pares",
+      "sku": "RKC02DBR-005",
+      "weightKg": 64,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        1460,
+        780,
+        880
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack para dumbbells – 5 pares Medida: 1460 x 780 x 880 mm Peso: 64 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-estante-para-barra-montada-para-10-barras/",
+      "slug": "rockit-estante-para-barra-montada-para-10-barras",
+      "name": "Estante para Barra Montada para 10 Barras",
+      "sku": "RKC02BBR-010",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-torre-para-halteres-de-1-a-10kg/",
+      "slug": "rockit-torre-para-halteres-de-1-a-10kg",
+      "name": "Torre para Halteres de 1 a 10kg",
+      "sku": "RKC02VDR-010X",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-urethane-barbell-curt-10kg/",
+      "slug": "rockit-urethane-barbell-curt-10kg",
+      "name": "Urethane Barbell Curt 10kg",
+      "sku": "RKC01BBC-010",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-urethane-barbell-curt-15kg/",
+      "slug": "rockit-urethane-barbell-curt-15kg",
+      "name": "Urethane Barbell Curt 15kg",
+      "sku": "RKC01BBC-015",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-urethane-barbell-curt-20kg/",
+      "slug": "rockit-urethane-barbell-curt-20kg",
+      "name": "Urethane Barbell Curt 20kg",
+      "sku": "RKC01BBC-020",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-urethane-barbell-curt-30kg/",
+      "slug": "rockit-urethane-barbell-curt-30kg",
+      "name": "Urethane Barbell Curt 30kg",
+      "sku": "RKC01BBC-030",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-urethane-barbell-straight-15kg/",
+      "slug": "rockit-urethane-barbell-straight-15kg",
+      "name": "Urethane Barbell Straight 15kg",
+      "sku": "RKC01BBS-015",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-urethane-barbell-straight-20kg/",
+      "slug": "rockit-urethane-barbell-straight-20kg",
+      "name": "Urethane Barbell Straight 20kg",
+      "sku": "RKC01BBS-020",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-urethane-barbell-straight-25kg/",
+      "slug": "rockit-urethane-barbell-straight-25kg",
+      "name": "Urethane Barbell Straight 25kg",
+      "sku": "RKC01BBS-025",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-urethane-barbell-straight-30kg/",
+      "slug": "rockit-urethane-barbell-straight-30kg",
+      "name": "Urethane Barbell Straight 30kg",
+      "sku": "RKC01BBS-030",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rotating-curl-bar/",
+      "slug": "rotating-curl-bar",
+      "name": "ROTATING CURL BAR",
+      "sku": "RKC01BAR-RTC",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra Rolamentada",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/seated-row-double-grip-cable/",
+      "slug": "seated-row-double-grip-cable",
+      "name": "SEATED ROW DOUBLE GRIP CABLE",
+      "sku": "RKC06STD-ROW",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Puxador triangulo – pegada dupla",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/step-aerobico/",
+      "slug": "step-aerobico",
+      "name": "STEP AERÓBICO",
+      "sku": "RKC03STPRGL",
+      "weightKg": 10,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Medida: 110 x 41 cm Altura (ajustável): 10/15/21 cm Peso: 10 kg Recurso Deck antiderrapante Pés de borracha antiderrapantes PVC e plástico ABS de alta densidade 1 degrau com 4 degraus",
+      "parseErrors": [],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/straight-bar/",
+      "slug": "straight-bar",
+      "name": "Straight Bar",
+      "sku": "RKC06STR-BAR",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra reta – TRICEPS",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/triceps-curl-bar/",
+      "slug": "triceps-curl-bar",
+      "name": "Triceps Curl Bar",
+      "sku": "RKC06TRI-CUR",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/triceps-rope/",
+      "slug": "triceps-rope",
+      "name": "TRICEPS ROPE",
+      "sku": "RKC06TRI-ROP",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Corda Tríceps para puxada",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-barbell-curt-25kg/",
+      "slug": "urethane-barbell-curt-25kg",
+      "name": "Urethane Barbell Curt 25kg",
+      "sku": "RKC01BBC-020",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-barbell-straight-10kg/",
+      "slug": "urethane-barbell-straight-10kg",
+      "name": "Urethane Barbell Straight 10kg",
+      "sku": "RKC01BBS-010",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-dumbbell-kit-12-20-kg/",
+      "slug": "urethane-dumbbell-kit-12-20-kg",
+      "name": "URETHANE DUMBBELL KIT 12-20 kg",
+      "sku": "RKC01UDB-S160",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Dumbbell de Uretano de 12-20 kg",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-dumbbell-kit-12-30-kg/",
+      "slug": "urethane-dumbbell-kit-12-30-kg",
+      "name": "URETHANE DUMBBELL KIT 12-30 kg",
+      "sku": "RKC01UDB-S420",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Dumbbel de Uretano de 12-30 kg – 10 pares",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-dumbbell-kit-12-40-kg/",
+      "slug": "urethane-dumbbell-kit-12-40-kg",
+      "name": "URETHANE DUMBBELL KIT 12-40 kg",
+      "sku": "RKC01UDB-S780",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Dumbbell de Uretano de 12-40 kg – 15 pares",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-dumbbell-kit-42-50-kg/",
+      "slug": "urethane-dumbbell-kit-42-50-kg",
+      "name": "URETHANE DUMBBELL KIT 42-50 kg",
+      "sku": "RKC01UDB-S460",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Dumbbell de Uretano de 42-50 kg – 5 pares",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-dumbbell-kit-52-60-kg/",
+      "slug": "urethane-dumbbell-kit-52-60-kg",
+      "name": "URETHANE DUMBBELL KIT 52-60 kg",
+      "sku": "RKC01UDB-S560",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Dumbbell de Uretano de 52-60 kg – 5 pares",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-plate-10-kg/",
+      "slug": "urethane-plate-10-kg",
+      "name": "URETHANE PLATE 10 kg",
+      "sku": "RKC01UWP-010",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Anilha de Uretano 10 kg",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-plate-20-kg/",
+      "slug": "urethane-plate-20-kg",
+      "name": "URETHANE PLATE 20 kg",
+      "sku": "RKC01UWP-020",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Anilha de Uretano – 20 kg",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-plate-25-kg-2/",
+      "slug": "urethane-plate-25-kg-2",
+      "name": "URETHANE PLATE 25 kg",
+      "sku": "RKC01UWP-025",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Anilha de Uretano- 25 kg",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-plate-5-kg/",
+      "slug": "urethane-plate-5-kg",
+      "name": "URETHANE PLATE 5 kg",
+      "sku": "RKC01UWP-005",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Anilha de Uretano – 5 kg",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-studio-round-dumbbell-set-1-10kg/",
+      "slug": "urethane-studio-round-dumbbell-set-1-10kg",
+      "name": "URETHANE STUDIO ROUND DUMBBELL SET 1-10KG",
+      "sku": "RKC01UDB-S110-1-10KG",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Haltere de uretano – 1-10 kg",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "rockit",
+      "lineLabel": "Rockit",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/vertical-dumbbell-rack-for-studio-weight/",
+      "slug": "vertical-dumbbell-rack-for-studio-weight",
+      "name": "VERTICAL DUMBBELL RACK FOR STUDIO WEIGHT",
+      "sku": "RKC02VDR-010X",
+      "weightKg": 58,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        610,
+        650,
+        1450
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack Vertical para haltere para 10 pares Medida: 610 x 650 x1450 mm Peso: 58 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/2-tiers-dummbbell-rack-5-pairs/",
+      "slug": "2-tiers-dummbbell-rack-5-pairs",
+      "name": "2-Tiers Dummbbell Rack 5 PAIRS",
+      "sku": "OK0011B-1",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/anilhas-emborrachadas-10-kg/",
+      "slug": "anilhas-emborrachadas-10-kg",
+      "name": "Anilhas Emborrachadas 10 kg",
+      "sku": "OK2008B10",
+      "weightKg": 10,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Peso: 10 kg",
+      "parseErrors": [],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/anilhas-emborrachadas-2-5kg/",
+      "slug": "anilhas-emborrachadas-2-5kg",
+      "name": "Anilhas Emborrachadas 2.5kg",
+      "sku": "OK2008B2",
+      "weightKg": 2.5,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Peso: 2.5kg",
+      "parseErrors": [],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/anilhas-emborrachadas-20-kg/",
+      "slug": "anilhas-emborrachadas-20-kg",
+      "name": "Anilhas Emborrachadas 20 kg",
+      "sku": "OK2008B20",
+      "weightKg": 20,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Peso: 20 kg",
+      "parseErrors": [],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/anilhas-emborrachadas-25-kg/",
+      "slug": "anilhas-emborrachadas-25-kg",
+      "name": "Anilhas Emborrachadas 25 kg",
+      "sku": "OK2008B25",
+      "weightKg": 25,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Peso: 25 kg",
+      "parseErrors": [],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/anilhas-emborrachadas-5-kg/",
+      "slug": "anilhas-emborrachadas-5-kg",
+      "name": "Anilhas Emborrachadas 5 kg",
+      "sku": "OK2008B5",
+      "weightKg": 5,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Peso: 5 kg",
+      "parseErrors": [],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-curva-para-triceps-2/",
+      "slug": "barra-curva-para-triceps-2",
+      "name": "Barra Curva para triceps",
+      "sku": "OK6082",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição MEDIDA: 2160 X 780 X 212(MM) PESO ( ESTRUTURA ): 27KG",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-curva-para-triceps/",
+      "slug": "barra-curva-para-triceps",
+      "name": "Barra Curva para triceps",
+      "sku": "OK6014",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 3000G",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-curva/",
+      "slug": "barra-curva",
+      "name": "Barra Curva",
+      "sku": "OK6032",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 2200G",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-de-levantamento-de-peso/",
+      "slug": "barra-de-levantamento-de-peso",
+      "name": "Barra de Levantamento de Peso",
+      "sku": "",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "sku_missing",
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-em-v/",
+      "slug": "barra-em-v",
+      "name": "Barra em V",
+      "sku": "OK6005",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 1850G",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-front-lat/",
+      "slug": "barra-front-lat",
+      "name": "Barra Front Lat",
+      "sku": "OK6024",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 4500G",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-giratoria-curva/",
+      "slug": "barra-giratoria-curva",
+      "name": "Barra Giratória Curva",
+      "sku": "OK6015",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 4500G",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-martelo/",
+      "slug": "barra-martelo",
+      "name": "Barra Martelo",
+      "sku": "OK5006",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO (ESTRUTURA ): 11.5KG",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-olimpica-reta/",
+      "slug": "barra-olimpica-reta",
+      "name": "Barra Olímpica Reta",
+      "sku": "OK50031",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição MEDIDA: 220(MM) PESO ( ESTRUTURA ): 20KG",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-reta/",
+      "slug": "barra-reta",
+      "name": "Barra Reta",
+      "sku": "OK6016",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 2200G",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-rolamentada/",
+      "slug": "barra-rolamentada",
+      "name": "Barra Rolamentada",
+      "sku": "OK5022C",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 14.8KG",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-w-2/",
+      "slug": "barra-w-2",
+      "name": "Barra W",
+      "sku": "OK5005",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 9.5KG",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/barra-w/",
+      "slug": "barra-w",
+      "name": "Barra W",
+      "sku": "OK50042",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra Olímpica W",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/corda-triceps/",
+      "slug": "corda-triceps",
+      "name": "Corda Tríceps",
+      "sku": "OK6008",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 800G",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/curl-bar/",
+      "slug": "curl-bar",
+      "name": "CURL BAR",
+      "sku": "RKC06CURBAR",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra Curva",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/dumbbell-rack-for-10-pair/",
+      "slug": "dumbbell-rack-for-10-pair",
+      "name": "DUMBBELL RACK FOR 10 PAIR",
+      "sku": "RKC02DBR-010",
+      "weightKg": 87,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        2630,
+        780,
+        880
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack para dumbbells – 10 pares Medida: 2630 x 780 x 880 mm Peso: 87 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/dumbbell-rack-for-15-pair/",
+      "slug": "dumbbell-rack-for-15-pair",
+      "name": "DUMBBELL RACK FOR 15 PAIR",
+      "sku": "RKC02DBR-015",
+      "weightKg": 123,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        2600,
+        960,
+        940
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack para dumbbells – 15 pares Medida: 2600 x 960 x 940 mm Peso: 123 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/dumbbell-rack-for-5-pair/",
+      "slug": "dumbbell-rack-for-5-pair",
+      "name": "DUMBBELL RACK FOR 5 PAIR",
+      "sku": "RKC02DBR-005",
+      "weightKg": 64,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        1460,
+        780,
+        880
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack para dumbbells – 5 pares Medida: 1460 x 780 x 880 mm Peso: 64 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/dumbbell-rack-para-10-pares/",
+      "slug": "dumbbell-rack-para-10-pares",
+      "name": "Dumbbell Rack para 10 Pares",
+      "sku": "RKC02DBR-010",
+      "weightKg": 87,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        2630,
+        780,
+        880
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack para dumbbells – 10 pares Medida: 2630 x 780 x 880 mm Peso: 87 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/elastico-19mm/",
+      "slug": "elastico-19mm",
+      "name": "Elástico 19mm",
+      "sku": "OK192519MM",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição 19mm",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/elastico-29mm/",
+      "slug": "elastico-29mm",
+      "name": "Elástico 29mm",
+      "sku": "OK192529MM",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição 29mm",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/elastico-32mm/",
+      "slug": "elastico-32mm",
+      "name": "Elástico 32mm",
+      "sku": "OK192532MM",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição 32mm",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/elastico-45mm/",
+      "slug": "elastico-45mm",
+      "name": "Elástico 45mm",
+      "sku": "OK191545MM",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição 45mm",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/encore-cable-crossover-traditional/",
+      "slug": "encore-cable-crossover-traditional",
+      "name": "CABLE CROSSOVER ATTACHMENT",
+      "sku": "IT9527OPT",
+      "weightKg": 27.5,
+      "stackWeightKg": 91,
+      "stackLbs": "200",
+      "dimensionsMm": [
+        2824,
+        222,
+        483
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Medida: 2824 x 222 x 483 mm Peso: 27,5Kg Carga de peso: 91 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/front-lat-bar-28/",
+      "slug": "front-lat-bar-28",
+      "name": "FRONT LAT BAR 28",
+      "sku": "RKC06FRTLAT28",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/if-cable-crossover-attachment/",
+      "slug": "if-cable-crossover-attachment",
+      "name": "CABLE CROSSOVER ATTACHMENT",
+      "sku": "IF9327OPT",
+      "weightKg": 21.5,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        2505,
+        441,
+        198
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Medida: 2505 x 441 x 198 mm Peso: 21,5 Kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/okpro-curl-bar/",
+      "slug": "okpro-curl-bar",
+      "name": "Curl bar",
+      "sku": "OK6023",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-dumbbell-rack-para-10-pares-copia/",
+      "slug": "rockit-dumbbell-rack-para-10-pares-copia",
+      "name": "Dumbbell Rack para 15 Pares",
+      "sku": "RKC02DBR-015",
+      "weightKg": 123,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        2600,
+        960,
+        940
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack para dumbbells – 15 pares Medida: 2600 x 960 x 940 mm Peso: 123 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-dumbbell-rack-para-5-pares/",
+      "slug": "rockit-dumbbell-rack-para-5-pares",
+      "name": "Dumbbell Rack para 5 Pares",
+      "sku": "RKC02DBR-005",
+      "weightKg": 64,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        1460,
+        780,
+        880
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack para dumbbells – 5 pares Medida: 1460 x 780 x 880 mm Peso: 64 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-estante-para-barra-montada-para-10-barras/",
+      "slug": "rockit-estante-para-barra-montada-para-10-barras",
+      "name": "Estante para Barra Montada para 10 Barras",
+      "sku": "RKC02BBR-010",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": true
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-weightlifting-bar/",
+      "slug": "rockit-weightlifting-bar",
+      "name": "Weightlifting bar",
+      "sku": "OK500322",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/urethane-studio-round-dumbbell-set-1-10kg/",
+      "slug": "urethane-studio-round-dumbbell-set-1-10kg",
+      "name": "URETHANE STUDIO ROUND DUMBBELL SET 1-10KG",
+      "sku": "RKC01UDB-S110-1-10KG",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Haltere de uretano – 1-10 kg",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios",
+      "lineLabel": "Acessórios (todas)",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/vertical-dumbbell-rack-for-studio-weight/",
+      "slug": "vertical-dumbbell-rack-for-studio-weight",
+      "name": "VERTICAL DUMBBELL RACK FOR STUDIO WEIGHT",
+      "sku": "RKC02VDR-010X",
+      "weightKg": 58,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": [
+        610,
+        650,
+        1450
+      ],
+      "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Rack Vertical para haltere para 10 pares Medida: 610 x 650 x1450 mm Peso: 58 kg",
+      "parseErrors": [],
+      "inCatalog": true
+    },
+    {
+      "lineId": "acessorios-okpro",
+      "lineLabel": "Acessórios OKPRO",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/2-tiers-dummbbell-rack-5-pairs/",
+      "slug": "2-tiers-dummbbell-rack-5-pairs",
+      "name": "2-Tiers Dummbbell Rack 5 PAIRS",
+      "sku": "OK0011B-1",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios-okpro",
+      "lineLabel": "Acessórios OKPRO",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/okpro-curl-bar/",
+      "slug": "okpro-curl-bar",
+      "name": "Curl bar",
+      "sku": "OK6023",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios-okpro",
+      "lineLabel": "Acessórios OKPRO",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/okpro-latex-resistance-band-45-mm/",
+      "slug": "okpro-latex-resistance-band-45-mm",
+      "name": "Latex resistance band 45 mm",
+      "sku": "OK192545",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios-okpro",
+      "lineLabel": "Acessórios OKPRO",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/okpro-rubber-round-dumbbell-12-5-to-22-5/",
+      "slug": "okpro-rubber-round-dumbbell-12-5-to-22-5",
+      "name": "Rubber Round Dumbbell 12.5 to 22.5",
+      "sku": "OK1012A1",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios-okpro",
+      "lineLabel": "Acessórios OKPRO",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/okpro-rubber-round-dumbbell-37-5-to-47-5-kg/",
+      "slug": "okpro-rubber-round-dumbbell-37-5-to-47-5-kg",
+      "name": "Rubber Round Dumbbell 37.5 to 47.5 Kg",
+      "sku": "OK1012A2",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
+    },
+    {
+      "lineId": "acessorios-okpro",
+      "lineLabel": "Acessórios OKPRO",
+      "group": "acessorios",
+      "profile": "full",
+      "url": "https://www.konnenfitness.com.br/produto/rockit-weightlifting-bar/",
+      "slug": "rockit-weightlifting-bar",
+      "name": "Weightlifting bar",
+      "sku": "OK500322",
+      "weightKg": null,
+      "stackWeightKg": null,
+      "stackLbs": null,
+      "dimensionsMm": null,
+      "descriptionText": "",
+      "parseErrors": [
+        "specs_missing"
+      ],
+      "inCatalog": false
     }
   ],
   "stackBySku": {
@@ -7148,6 +8956,1003 @@
         "slug": "cardio-stair-climber",
         "name": "Stair Climber",
         "sku": "XSC500",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      }
+    ],
+    "acessorios": [
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/curl-bar/",
+        "slug": "curl-bar",
+        "name": "CURL BAR",
+        "sku": "RKC06CURBAR",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra Curva",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/front-lat-bar-28/",
+        "slug": "front-lat-bar-28",
+        "name": "FRONT LAT BAR 28",
+        "sku": "RKC06FRTLAT28",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/hammer-curl-bar/",
+        "slug": "hammer-curl-bar",
+        "name": "HAMMER CURL BAR",
+        "sku": "RKC01BAR-HMC",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra Romana",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/hex-trap-bar/",
+        "slug": "hex-trap-bar",
+        "name": "HEX TRAP BAR",
+        "sku": "RKC01BAR-HEX",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Agachamento Terra – 1.80m",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/premium-neoprene-cable-attachment-set-of-8/",
+        "slug": "premium-neoprene-cable-attachment-set-of-8",
+        "name": "PREMIUM NEOPRENE CABLE ATTACHMENT SET OF 8",
+        "sku": "RKC06CBL-BSET",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Puxadores Premium – 8 puxadores",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/revolving-tricep-and-curl-bar/",
+        "slug": "revolving-tricep-and-curl-bar",
+        "name": "Revolving Tricep and Curl Bar",
+        "sku": "RKC06RVV-TRP",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/rotating-curl-bar/",
+        "slug": "rotating-curl-bar",
+        "name": "ROTATING CURL BAR",
+        "sku": "RKC01BAR-RTC",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra Rolamentada",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/seated-row-double-grip-cable/",
+        "slug": "seated-row-double-grip-cable",
+        "name": "SEATED ROW DOUBLE GRIP CABLE",
+        "sku": "RKC06STD-ROW",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Puxador triangulo – pegada dupla",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/step-aerobico/",
+        "slug": "step-aerobico",
+        "name": "STEP AERÓBICO",
+        "sku": "RKC03STPRGL",
+        "weightKg": 10,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Medida: 110 x 41 cm Altura (ajustável): 10/15/21 cm Peso: 10 kg Recurso Deck antiderrapante Pés de borracha antiderrapantes PVC e plástico ABS de alta densidade 1 degrau com 4 degraus",
+        "parseErrors": [],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/straight-bar/",
+        "slug": "straight-bar",
+        "name": "Straight Bar",
+        "sku": "RKC06STR-BAR",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra reta – TRICEPS",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/triceps-curl-bar/",
+        "slug": "triceps-curl-bar",
+        "name": "Triceps Curl Bar",
+        "sku": "RKC06TRI-CUR",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/triceps-rope/",
+        "slug": "triceps-rope",
+        "name": "TRICEPS ROPE",
+        "sku": "RKC06TRI-ROP",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Corda Tríceps para puxada",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/urethane-barbell-straight-10kg/",
+        "slug": "urethane-barbell-straight-10kg",
+        "name": "Urethane Barbell Straight 10kg",
+        "sku": "RKC01BBS-010",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/urethane-dumbbell-kit-12-20-kg/",
+        "slug": "urethane-dumbbell-kit-12-20-kg",
+        "name": "URETHANE DUMBBELL KIT 12-20 kg",
+        "sku": "RKC01UDB-S160",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Dumbbell de Uretano de 12-20 kg",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/urethane-dumbbell-kit-12-30-kg/",
+        "slug": "urethane-dumbbell-kit-12-30-kg",
+        "name": "URETHANE DUMBBELL KIT 12-30 kg",
+        "sku": "RKC01UDB-S420",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Dumbbel de Uretano de 12-30 kg – 10 pares",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/urethane-dumbbell-kit-12-40-kg/",
+        "slug": "urethane-dumbbell-kit-12-40-kg",
+        "name": "URETHANE DUMBBELL KIT 12-40 kg",
+        "sku": "RKC01UDB-S780",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Dumbbell de Uretano de 12-40 kg – 15 pares",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/urethane-dumbbell-kit-42-50-kg/",
+        "slug": "urethane-dumbbell-kit-42-50-kg",
+        "name": "URETHANE DUMBBELL KIT 42-50 kg",
+        "sku": "RKC01UDB-S460",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Dumbbell de Uretano de 42-50 kg – 5 pares",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/urethane-dumbbell-kit-52-60-kg/",
+        "slug": "urethane-dumbbell-kit-52-60-kg",
+        "name": "URETHANE DUMBBELL KIT 52-60 kg",
+        "sku": "RKC01UDB-S560",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Dumbbell de Uretano de 52-60 kg – 5 pares",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "rockit",
+        "lineLabel": "Rockit",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/urethane-studio-round-dumbbell-set-1-10kg/",
+        "slug": "urethane-studio-round-dumbbell-set-1-10kg",
+        "name": "URETHANE STUDIO ROUND DUMBBELL SET 1-10KG",
+        "sku": "RKC01UDB-S110-1-10KG",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Haltere de uretano – 1-10 kg",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/2-tiers-dummbbell-rack-5-pairs/",
+        "slug": "2-tiers-dummbbell-rack-5-pairs",
+        "name": "2-Tiers Dummbbell Rack 5 PAIRS",
+        "sku": "OK0011B-1",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/anilhas-emborrachadas-10-kg/",
+        "slug": "anilhas-emborrachadas-10-kg",
+        "name": "Anilhas Emborrachadas 10 kg",
+        "sku": "OK2008B10",
+        "weightKg": 10,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Peso: 10 kg",
+        "parseErrors": [],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/anilhas-emborrachadas-2-5kg/",
+        "slug": "anilhas-emborrachadas-2-5kg",
+        "name": "Anilhas Emborrachadas 2.5kg",
+        "sku": "OK2008B2",
+        "weightKg": 2.5,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Peso: 2.5kg",
+        "parseErrors": [],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/anilhas-emborrachadas-20-kg/",
+        "slug": "anilhas-emborrachadas-20-kg",
+        "name": "Anilhas Emborrachadas 20 kg",
+        "sku": "OK2008B20",
+        "weightKg": 20,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Peso: 20 kg",
+        "parseErrors": [],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/anilhas-emborrachadas-25-kg/",
+        "slug": "anilhas-emborrachadas-25-kg",
+        "name": "Anilhas Emborrachadas 25 kg",
+        "sku": "OK2008B25",
+        "weightKg": 25,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Peso: 25 kg",
+        "parseErrors": [],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/anilhas-emborrachadas-5-kg/",
+        "slug": "anilhas-emborrachadas-5-kg",
+        "name": "Anilhas Emborrachadas 5 kg",
+        "sku": "OK2008B5",
+        "weightKg": 5,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Peso: 5 kg",
+        "parseErrors": [],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/barra-curva-para-triceps-2/",
+        "slug": "barra-curva-para-triceps-2",
+        "name": "Barra Curva para triceps",
+        "sku": "OK6082",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição MEDIDA: 2160 X 780 X 212(MM) PESO ( ESTRUTURA ): 27KG",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/barra-curva-para-triceps/",
+        "slug": "barra-curva-para-triceps",
+        "name": "Barra Curva para triceps",
+        "sku": "OK6014",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 3000G",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/barra-curva/",
+        "slug": "barra-curva",
+        "name": "Barra Curva",
+        "sku": "OK6032",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 2200G",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/barra-em-v/",
+        "slug": "barra-em-v",
+        "name": "Barra em V",
+        "sku": "OK6005",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 1850G",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/barra-front-lat/",
+        "slug": "barra-front-lat",
+        "name": "Barra Front Lat",
+        "sku": "OK6024",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 4500G",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/barra-giratoria-curva/",
+        "slug": "barra-giratoria-curva",
+        "name": "Barra Giratória Curva",
+        "sku": "OK6015",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 4500G",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/barra-martelo/",
+        "slug": "barra-martelo",
+        "name": "Barra Martelo",
+        "sku": "OK5006",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO (ESTRUTURA ): 11.5KG",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/barra-olimpica-reta/",
+        "slug": "barra-olimpica-reta",
+        "name": "Barra Olímpica Reta",
+        "sku": "OK50031",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição MEDIDA: 220(MM) PESO ( ESTRUTURA ): 20KG",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/barra-reta/",
+        "slug": "barra-reta",
+        "name": "Barra Reta",
+        "sku": "OK6016",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 2200G",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/barra-rolamentada/",
+        "slug": "barra-rolamentada",
+        "name": "Barra Rolamentada",
+        "sku": "OK5022C",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 14.8KG",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/barra-w-2/",
+        "slug": "barra-w-2",
+        "name": "Barra W",
+        "sku": "OK5005",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 9.5KG",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/barra-w/",
+        "slug": "barra-w",
+        "name": "Barra W",
+        "sku": "OK50042",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra Olímpica W",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/corda-triceps/",
+        "slug": "corda-triceps",
+        "name": "Corda Tríceps",
+        "sku": "OK6008",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição PESO ( ESTRUTURA ): 800G",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/curl-bar/",
+        "slug": "curl-bar",
+        "name": "CURL BAR",
+        "sku": "RKC06CURBAR",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Barra Curva",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/elastico-19mm/",
+        "slug": "elastico-19mm",
+        "name": "Elástico 19mm",
+        "sku": "OK192519MM",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição 19mm",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/elastico-29mm/",
+        "slug": "elastico-29mm",
+        "name": "Elástico 29mm",
+        "sku": "OK192529MM",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição 29mm",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/elastico-32mm/",
+        "slug": "elastico-32mm",
+        "name": "Elástico 32mm",
+        "sku": "OK192532MM",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição 32mm",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/elastico-45mm/",
+        "slug": "elastico-45mm",
+        "name": "Elástico 45mm",
+        "sku": "OK191545MM",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição 45mm",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/front-lat-bar-28/",
+        "slug": "front-lat-bar-28",
+        "name": "FRONT LAT BAR 28",
+        "sku": "RKC06FRTLAT28",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/okpro-curl-bar/",
+        "slug": "okpro-curl-bar",
+        "name": "Curl bar",
+        "sku": "OK6023",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/rockit-weightlifting-bar/",
+        "slug": "rockit-weightlifting-bar",
+        "name": "Weightlifting bar",
+        "sku": "OK500322",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios",
+        "lineLabel": "Acessórios (todas)",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/urethane-studio-round-dumbbell-set-1-10kg/",
+        "slug": "urethane-studio-round-dumbbell-set-1-10kg",
+        "name": "URETHANE STUDIO ROUND DUMBBELL SET 1-10KG",
+        "sku": "RKC01UDB-S110-1-10KG",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\"> Descrição Kit Haltere de uretano – 1-10 kg",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios-okpro",
+        "lineLabel": "Acessórios OKPRO",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/2-tiers-dummbbell-rack-5-pairs/",
+        "slug": "2-tiers-dummbbell-rack-5-pairs",
+        "name": "2-Tiers Dummbbell Rack 5 PAIRS",
+        "sku": "OK0011B-1",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios-okpro",
+        "lineLabel": "Acessórios OKPRO",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/okpro-curl-bar/",
+        "slug": "okpro-curl-bar",
+        "name": "Curl bar",
+        "sku": "OK6023",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios-okpro",
+        "lineLabel": "Acessórios OKPRO",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/okpro-latex-resistance-band-45-mm/",
+        "slug": "okpro-latex-resistance-band-45-mm",
+        "name": "Latex resistance band 45 mm",
+        "sku": "OK192545",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios-okpro",
+        "lineLabel": "Acessórios OKPRO",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/okpro-rubber-round-dumbbell-12-5-to-22-5/",
+        "slug": "okpro-rubber-round-dumbbell-12-5-to-22-5",
+        "name": "Rubber Round Dumbbell 12.5 to 22.5",
+        "sku": "OK1012A1",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios-okpro",
+        "lineLabel": "Acessórios OKPRO",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/okpro-rubber-round-dumbbell-37-5-to-47-5-kg/",
+        "slug": "okpro-rubber-round-dumbbell-37-5-to-47-5-kg",
+        "name": "Rubber Round Dumbbell 37.5 to 47.5 Kg",
+        "sku": "OK1012A2",
+        "weightKg": null,
+        "stackWeightKg": null,
+        "stackLbs": null,
+        "dimensionsMm": null,
+        "descriptionText": "",
+        "parseErrors": [
+          "specs_missing"
+        ],
+        "inCatalog": false
+      },
+      {
+        "lineId": "acessorios-okpro",
+        "lineLabel": "Acessórios OKPRO",
+        "group": "acessorios",
+        "profile": "full",
+        "url": "https://www.konnenfitness.com.br/produto/rockit-weightlifting-bar/",
+        "slug": "rockit-weightlifting-bar",
+        "name": "Weightlifting bar",
+        "sku": "OK500322",
         "weightKg": null,
         "stackWeightKg": null,
         "stackLbs": null,

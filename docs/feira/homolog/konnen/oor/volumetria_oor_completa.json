@@ -1,0 +1,523 @@
+{
+  "metadata": {
+    "fonte": "OOR Konnen x Impulse 2024-09-29",
+    "data_processamento": "2026-08-22",
+    "total_skus": 47,
+    "total_sets": 68,
+    "total_conformes": 10,
+    "total_incompletos": 37,
+    "volume_total_m3": 44.137
+  },
+  "volumetria": {
+    "ECE5": {
+      "produto": "ELLIPTICAL",
+      "quantidade_set": 1,
+      "medidas_mm": "[cardio]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "ECR7": {
+      "produto": "RECUMBENT BIKE",
+      "quantidade_set": 1,
+      "medidas_mm": "[cardio]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "ECU7": {
+      "produto": "UPRIGHT BIKE",
+      "quantidade_set": 1,
+      "medidas_mm": "[cardio]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "FE9701": {
+      "produto": "SUPINO VERTICAL",
+      "quantidade_set": 1,
+      "medidas_mm": "1230 x 1570 x 1490",
+      "volume_bruto_m3": 2.877,
+      "volume_unitario_m3": 3.165,
+      "volume_total_m3": 3.165,
+      "margem_embalagem_pct": 10,
+      "status": "conforme"
+    },
+    "FE9702": {
+      "produto": "PUXADA ALTA",
+      "quantidade_set": 1,
+      "medidas_mm": "1304 x 1226 x 2109",
+      "volume_bruto_m3": 3.372,
+      "volume_unitario_m3": 3.709,
+      "volume_total_m3": 3.709,
+      "margem_embalagem_pct": 10,
+      "status": "conforme"
+    },
+    "FE9703": {
+      "produto": "BÍCEPS UNILATERAL",
+      "quantidade_set": 1,
+      "medidas_mm": "1149 x 1567 x 1490",
+      "volume_bruto_m3": 2.683,
+      "volume_unitario_m3": 2.951,
+      "volume_total_m3": 2.951,
+      "margem_embalagem_pct": 10,
+      "status": "conforme"
+    },
+    "FE9705": {
+      "produto": "CADEIRA EXTENSORA",
+      "quantidade_set": 2,
+      "medidas_mm": "1264 x 1239 x 1489",
+      "volume_bruto_m3": 2.332,
+      "volume_unitario_m3": 2.565,
+      "volume_total_m3": 5.13,
+      "margem_embalagem_pct": 10,
+      "status": "conforme"
+    },
+    "FE9706": {
+      "produto": "CADEIRA FLEXORA",
+      "quantidade_set": 1,
+      "medidas_mm": "1240 x 1541 x 1489",
+      "volume_bruto_m3": 2.845,
+      "volume_unitario_m3": 3.13,
+      "volume_total_m3": 3.13,
+      "margem_embalagem_pct": 10,
+      "status": "conforme"
+    },
+    "FE9708": {
+      "produto": "ABDUTORA / ADUTORA",
+      "quantidade_set": 3,
+      "medidas_mm": "1776 x 1546 x 1488",
+      "volume_bruto_m3": 4.086,
+      "volume_unitario_m3": 4.495,
+      "volume_total_m3": 13.485,
+      "margem_embalagem_pct": 10,
+      "status": "conforme"
+    },
+    "FE9710": {
+      "produto": "LEG PRESS",
+      "quantidade_set": 1,
+      "medidas_mm": "[coletar]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "FE9712": {
+      "produto": "DESENVOLVIMENTO",
+      "quantidade_set": 1,
+      "medidas_mm": "[coletar]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "FE9714": {
+      "produto": "ABDOMINAL",
+      "quantidade_set": 1,
+      "medidas_mm": "1383 x 1202 x 1491",
+      "volume_bruto_m3": 2.479,
+      "volume_unitario_m3": 2.727,
+      "volume_total_m3": 2.727,
+      "margem_embalagem_pct": 10,
+      "status": "conforme"
+    },
+    "FE9716": {
+      "produto": "PANTURRILHA EM PÉ",
+      "quantidade_set": 1,
+      "medidas_mm": "[coletar]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "FE9719": {
+      "produto": "REMADA SENTADA",
+      "quantidade_set": 1,
+      "medidas_mm": "1996 x 1127 x 1492",
+      "volume_bruto_m3": 3.356,
+      "volume_unitario_m3": 3.692,
+      "volume_total_m3": 3.692,
+      "margem_embalagem_pct": 10,
+      "status": "conforme"
+    },
+    "FE9720": {
+      "produto": "GRAVITON",
+      "quantidade_set": 1,
+      "medidas_mm": "[coletar]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "FE9721": {
+      "produto": "MESA FLEXORA",
+      "quantidade_set": 1,
+      "medidas_mm": "[coletar]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "FE9723": {
+      "produto": "EXTENSÃO DE TRÍCEPS",
+      "quantidade_set": 1,
+      "medidas_mm": "1149 x 1580 x 1490",
+      "volume_bruto_m3": 2.705,
+      "volume_unitario_m3": 2.976,
+      "volume_total_m3": 2.976,
+      "margem_embalagem_pct": 10,
+      "status": "conforme"
+    },
+    "FE9724": {
+      "produto": "ELEVAÇÃO LATERAL",
+      "quantidade_set": 1,
+      "medidas_mm": "[coletar]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "FE9726": {
+      "produto": "GLÚTEO",
+      "quantidade_set": 1,
+      "medidas_mm": "1307 x 1483 x 1488",
+      "volume_bruto_m3": 2.884,
+      "volume_unitario_m3": 3.172,
+      "volume_total_m3": 3.172,
+      "margem_embalagem_pct": 10,
+      "status": "conforme"
+    },
+    "FE9732": {
+      "produto": "BACK EXTENSION",
+      "quantidade_set": 1,
+      "medidas_mm": "[coletar]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "HB005": {
+      "produto": "AIR BIKE",
+      "quantidade_set": 2,
+      "medidas_mm": "[cardio]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "HSR005": {
+      "produto": "ROWING MACHINE",
+      "quantidade_set": 2,
+      "medidas_mm": "[cardio]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IFLPHS": {
+      "produto": "LEG PRESS / HACK SQUAT",
+      "quantidade_set": 3,
+      "medidas_mm": "[coletar]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9501": {
+      "produto": "CHEST PRESS",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9502": {
+      "produto": "LAT PULLDOWN",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9503": {
+      "produto": "ARM CURL",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9504": {
+      "produto": "PECTORAL",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9505": {
+      "produto": "LEG EXTENSION",
+      "quantidade_set": 3,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9506": {
+      "produto": "SEATED LEG CURL",
+      "quantidade_set": 2,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9508": {
+      "produto": "ABDUCTOR/ADDUCTOR",
+      "quantidade_set": 3,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9509": {
+      "produto": "TOTAL HIP",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9510": {
+      "produto": "LEG PRESS",
+      "quantidade_set": 2,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9512": {
+      "produto": "SHOULDER PRESS",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9514": {
+      "produto": "ABDOMINAL",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9515": {
+      "produto": "REVERSE FLY",
+      "quantidade_set": 2,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9516": {
+      "produto": "STANDING CALF RAISE",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9517": {
+      "produto": "SEATED DIP",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9519": {
+      "produto": "VERTICAL ROW",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9520": {
+      "produto": "CHIN/DIP COMBO",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9521": {
+      "produto": "V BENCH LEG CURL",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9522": {
+      "produto": "LAT PULLDOWN WITH ROW",
+      "quantidade_set": 2,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9524": {
+      "produto": "LATERAL RAISE",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9525": {
+      "produto": "HI-LO PULLEY",
+      "quantidade_set": 3,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9526": {
+      "produto": "GLUTE",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "IT9532": {
+      "produto": "BACK EXTENSION",
+      "quantidade_set": 1,
+      "medidas_mm": "[impulse]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "PS300": {
+      "produto": "COMMERCIAL CYCLE",
+      "quantidade_set": 3,
+      "medidas_mm": "[cardio]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    },
+    "PS450": {
+      "produto": "COMMERCIAL CYCLE PRO",
+      "quantidade_set": 3,
+      "medidas_mm": "[cardio]",
+      "volume_bruto_m3": null,
+      "volume_unitario_m3": null,
+      "volume_total_m3": null,
+      "margem_embalagem_pct": 10,
+      "status": "incompleto"
+    }
+  },
+  "warnings": [
+    "Medidas indisponíveis: ECE5",
+    "Medidas indisponíveis: ECR7",
+    "Medidas indisponíveis: ECU7",
+    "Medidas indisponíveis: FE9710",
+    "Medidas indisponíveis: FE9712",
+    "Medidas indisponíveis: FE9716",
+    "Medidas indisponíveis: FE9720",
+    "Medidas indisponíveis: FE9721",
+    "Medidas indisponíveis: FE9724",
+    "Medidas indisponíveis: FE9732",
+    "Medidas indisponíveis: HB005",
+    "Medidas indisponíveis: HSR005",
+    "Medidas indisponíveis: IFLPHS",
+    "Medidas indisponíveis: IT9501",
+    "Medidas indisponíveis: IT9502",
+    "Medidas indisponíveis: IT9503",
+    "Medidas indisponíveis: IT9504",
+    "Medidas indisponíveis: IT9505",
+    "Medidas indisponíveis: IT9506",
+    "Medidas indisponíveis: IT9508",
+    "Medidas indisponíveis: IT9509",
+    "Medidas indisponíveis: IT9510",
+    "Medidas indisponíveis: IT9512",
+    "Medidas indisponíveis: IT9514",
+    "Medidas indisponíveis: IT9515",
+    "Medidas indisponíveis: IT9516",
+    "Medidas indisponíveis: IT9517",
+    "Medidas indisponíveis: IT9519",
+    "Medidas indisponíveis: IT9520",
+    "Medidas indisponíveis: IT9521",
+    "Medidas indisponíveis: IT9522",
+    "Medidas indisponíveis: IT9524",
+    "Medidas indisponíveis: IT9525",
+    "Medidas indisponíveis: IT9526",
+    "Medidas indisponíveis: IT9532",
+    "Medidas indisponíveis: PS300",
+    "Medidas indisponíveis: PS450"
+  ],
+  "erros": []
+}

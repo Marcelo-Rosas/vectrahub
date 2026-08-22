@@ -53,9 +53,10 @@ const GROUP_LABELS: Record<string, string> = {
   articulados: 'Articulados',
   bancos: 'Bancos e Racks',
   cardio: 'Cardio',
+  acessorios: 'Acessórios / Rockit',
 };
 
-const groups = ['baterias', 'articulados', 'bancos', 'cardio'];
+const groups = ['baterias', 'articulados', 'bancos', 'cardio', 'acessorios'];
 
 const board = {
   scrapedAt: audit.scrapedAt,
@@ -113,7 +114,7 @@ for (const group of groups) {
 writeFileSync(boardPath, `${JSON.stringify(board, null, 2)}\n`, 'utf-8');
 console.log('wrote', boardPath);
 
-const cats = ['baterias', 'articulados', 'bancos', 'cardio'] as const;
+const cats = ['baterias', 'articulados', 'bancos', 'cardio', 'acessorios'] as const;
 type BoardCategory = {
   label: string;
   summary: Record<string, number>;
@@ -177,7 +178,7 @@ const canvas = `import {
   useHostTheme,
 } from "cursor/canvas";
 
-type CatId = "baterias" | "articulados" | "bancos" | "cardio";
+type CatId = "baterias" | "articulados" | "bancos" | "cardio" | "acessorios";
 
 const SCRAPED_AT = ${JSON.stringify(board.scrapedAt)};
 const CATALOG_SKUS = ${board.catalogSkuCount};
@@ -229,6 +230,7 @@ const CAT_LABELS: Record<CatId, string> = {
   articulados: "Articulados",
   bancos: "Bancos e Racks",
   cardio: "Cardio",
+  acessorios: "Acessórios / Rockit",
 };
 
 function fmt(n: number | null | undefined, suffix = ""): string {

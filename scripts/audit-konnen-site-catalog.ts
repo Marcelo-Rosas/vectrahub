@@ -3,8 +3,9 @@
  *
  *   npx tsx scripts/audit-konnen-site-catalog.ts --phase=all
  *   npx tsx scripts/audit-konnen-site-catalog.ts --phase=baterias
+ *   npx tsx scripts/audit-konnen-site-catalog.ts --phase=acessorios
  *   npx tsx scripts/audit-konnen-site-catalog.ts --phase=cardio --dry-run
- *   npx tsx scripts/audit-konnen-site-catalog.ts --line=exoform,cardio
+ *   npx tsx scripts/audit-konnen-site-catalog.ts --line=rockit,acessorios
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
@@ -69,6 +70,13 @@ function writeAuditOutputs(report: KonnenSiteAuditReport, outDir: string) {
     'utf-8'
   );
 
+  const gapsAcessoriosPath = join(outDir, 'konnen-site-gaps-acessorios.json');
+  writeFileSync(
+    gapsAcessoriosPath,
+    `${JSON.stringify(report.gapsForSemanticSearch.acessorios ?? [], null, 2)}\n`,
+    'utf-8'
+  );
+
   const gapsArticulados = report.products.filter(
     (p) => p.group === 'articulados' && !p.inCatalog && p.sku
   );
@@ -85,11 +93,13 @@ function writeAuditOutputs(report: KonnenSiteAuditReport, outDir: string) {
   console.log('\nstack map:', Object.keys(report.stackBySku).length, 'SKUs');
   console.log('gaps bancos (semântica):', report.gapsForSemanticSearch.bancos.length);
   console.log('gaps cardio (packing):', report.gapsForSemanticSearch.cardio.length);
+  console.log('gaps acessórios:', (report.gapsForSemanticSearch.acessorios ?? []).length);
   console.log('gaps articulados:', gapsArticulados.length);
   console.log('\nwrote', reportPath);
   console.log('wrote', stackPath);
   console.log('wrote', gapsBancosPath);
   console.log('wrote', gapsCardioPath);
+  console.log('wrote', gapsAcessoriosPath);
   console.log('wrote', gapsArticuladosPath);
 }
 

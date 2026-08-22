@@ -41,6 +41,16 @@ describe('konnen-site-scraper', () => {
     expect(extractSkuFromKonnenHtml('<p>COD. LCS201</p>')).toBe('LCS201');
   });
 
+  it('extrai RKC / OK fallback sem COD', () => {
+    expect(extractSkuFromKonnenHtml('<span>RKC06CURBAR</span>')).toBe('RKC06CURBAR');
+    expect(extractSkuFromKonnenHtml('<p>OK0011B-1</p>')).toBe('OK0011B-1');
+  });
+
+  it('ignora SKU embutido em nome de imagem', () => {
+    const html = `<img src="https://cdn.example/RKC01UWP-YW-sem-peso-360x360.jpg"><h1>Anilha</h1>`;
+    expect(extractSkuFromKonnenHtml(html)).toBe('');
+  });
+
   it('extrai URLs de categoria', () => {
     const html = `<a href="https://www.konnenfitness.com.br/produto/exoform-abdominal/">x</a>`;
     expect(extractProductUrlsFromCategoryHtml(html, 'https://www.konnenfitness.com.br')).toEqual([

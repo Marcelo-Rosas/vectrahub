@@ -1,0 +1,1082 @@
+{
+  "generatedAt": "2026-08-22T18:52:47.618Z",
+  "confirmedCount": 0,
+  "unconfirmedCount": 0,
+  "siteOnlyNotInCatalogCount": 153,
+  "prefixHistogramUnconfirmed": {},
+  "unconfirmed": [],
+  "confirmed": [],
+  "siteOnlyNotInCatalog": [
+    {
+      "sku": "AM8001",
+      "name": "Supino Vertical",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "AM8004",
+      "name": "Remada Vertical",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "AM8006",
+      "name": "Bíceps Scott",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "AM8007",
+      "name": "Tríceps Paralela",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "AM8008",
+      "name": "Graviton",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "AM8009",
+      "name": "Lombar",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "AM8010",
+      "name": "Abdominal",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "AM8013",
+      "name": "Cadeira Flexora",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "AM8014",
+      "name": "LEG EXTENSION",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "AM8015",
+      "name": "Leg Press Horizontal",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "AM8017",
+      "name": "Panturrilha Sentada",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "AM8018",
+      "name": "Adutora",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "AM8019",
+      "name": "Abdutora",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-torq",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "BBV8",
+      "name": "ELEVAÇÃO PÉLVICA",
+      "siteGroup": "baterias",
+      "siteLineId": "booty-builder",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "E12",
+      "name": "ESTEIRA E12",
+      "siteGroup": "cardio",
+      "siteLineId": "cardio",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "E12T",
+      "name": "ESTEIRA E12T",
+      "siteGroup": "cardio",
+      "siteLineId": "cardio",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "E8",
+      "name": "ESTEIRA E8",
+      "siteGroup": "cardio",
+      "siteLineId": "cardio",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "E8T",
+      "name": "ESTEIRA E8T",
+      "siteGroup": "cardio",
+      "siteLineId": "cardio",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ECP401",
+      "name": "AB",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-ecp",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ECP604",
+      "name": "PRONE LEG CURL",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-ecp",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ECP630",
+      "name": "KNEEL GLUTE EXTENSION",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-ecp",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "HB007",
+      "name": "AIR BIKE",
+      "siteGroup": "cardio",
+      "siteLineId": "cardio",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "HR007",
+      "name": "Arc Runner",
+      "siteGroup": "cardio",
+      "siteLineId": "cardio",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "HSP-PRO",
+      "name": "AIR RESISTENCE DUAL ARM",
+      "siteGroup": "cardio",
+      "siteLineId": "cardio",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "IF9337",
+      "name": "FOREARM TRAINING",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-if",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "IFP1614",
+      "name": "Pelvic elevation",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-ifp",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8101",
+      "name": "OLYMPIC SHOULDER BENCH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8201",
+      "name": "3-WAY OLYMPIC BENCH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8202",
+      "name": "OLYMPIC FLAT BENCH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8203",
+      "name": "OLYMPIC INCLINE BENCH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8204",
+      "name": "OLYMPIC INCLINE BENCH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8301",
+      "name": "SEAL ROW BENCH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8401",
+      "name": "ADJUSTABLE AB BENCH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8402",
+      "name": "BACK EXTENSION BENCH",
+      "siteGroup": "articulados",
+      "siteLineId": "articulados",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8404",
+      "name": "ROMAN BENCH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8406",
+      "name": "GLUTE & HAM BENCH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8501",
+      "name": "SEATED ARM CURL BENC",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8601",
+      "name": "Squat rack",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8701",
+      "name": "KNEE RAISE",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8721",
+      "name": "VERTICAL SMITH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8801",
+      "name": "FLAT BENCH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "ITF8802",
+      "name": "FI-BENCH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "K-RUN",
+      "name": "ESTEIRA K-RUN",
+      "siteGroup": "cardio",
+      "siteLineId": "cardio",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "LCS101",
+      "name": "SHOULDER PRESS",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-lcs",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "LCS201",
+      "name": "CHEST PRESS",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-lcs",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "LCS402",
+      "name": "45 DEGREE GLUTE EXTENSION",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-lcs",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "LCS601",
+      "name": "LEG PRESS / SQUAT",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-lcs",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "LCS608",
+      "name": "3D ABDUCTOR",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-lcs",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "LCS630",
+      "name": "KNEEL GLUTE EXTENSION",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-lcs",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "LCS705",
+      "name": "SEATED LEG EXTENSION& PRONE LEG CURL",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-lcs",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK0011B-1",
+      "name": "2-Tiers Dummbbell Rack 5 PAIRS",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios-okpro",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK1012A1",
+      "name": "Rubber Round Dumbbell 12.5 to 22.5",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios-okpro",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK1012A2",
+      "name": "Rubber Round Dumbbell 37.5 to 47.5 Kg",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios-okpro",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK191545MM",
+      "name": "Elástico 45mm",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK192519MM",
+      "name": "Elástico 19mm",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK192529MM",
+      "name": "Elástico 29mm",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK192532MM",
+      "name": "Elástico 32mm",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK192545",
+      "name": "Latex resistance band 45 mm",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios-okpro",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK2008B10",
+      "name": "Anilhas Emborrachadas 10 kg",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK2008B2",
+      "name": "Anilhas Emborrachadas 2.5kg",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK2008B20",
+      "name": "Anilhas Emborrachadas 20 kg",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK2008B25",
+      "name": "Anilhas Emborrachadas 25 kg",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK2008B5",
+      "name": "Anilhas Emborrachadas 5 kg",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK50031",
+      "name": "Barra Olímpica Reta",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK500322",
+      "name": "Weightlifting bar",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios-okpro",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK50042",
+      "name": "Barra W",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK5005",
+      "name": "Barra W",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK5006",
+      "name": "Barra Martelo",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK5022C",
+      "name": "Barra Rolamentada",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK6005",
+      "name": "Barra em V",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK6008",
+      "name": "Corda Tríceps",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK6014",
+      "name": "Barra Curva para triceps",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK6015",
+      "name": "Barra Giratória Curva",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK6016",
+      "name": "Barra Reta",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK6023",
+      "name": "Curl bar",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios-okpro",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK6024",
+      "name": "Barra Front Lat",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK6032",
+      "name": "Barra Curva",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "OK6082",
+      "name": "Barra Curva para triceps",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "R7",
+      "name": "BICICLETA ERGOMÉTRICA R7",
+      "siteGroup": "cardio",
+      "siteLineId": "cardio",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC01BAR-HEX",
+      "name": "HEX TRAP BAR",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC01BAR-HMC",
+      "name": "HAMMER CURL BAR",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC01BAR-RTC",
+      "name": "ROTATING CURL BAR",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC01BBS-010",
+      "name": "Urethane Barbell Straight 10kg",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC01UDB-S160",
+      "name": "URETHANE DUMBBELL KIT 12-20 kg",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC01UDB-S420",
+      "name": "URETHANE DUMBBELL KIT 12-30 kg",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC01UDB-S460",
+      "name": "URETHANE DUMBBELL KIT 42-50 kg",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC01UDB-S560",
+      "name": "URETHANE DUMBBELL KIT 52-60 kg",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC01UDB-S780",
+      "name": "URETHANE DUMBBELL KIT 12-40 kg",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC03STPRGL",
+      "name": "STEP AERÓBICO",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC06CBL-BSET",
+      "name": "PREMIUM NEOPRENE CABLE ATTACHMENT SET OF 8",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC06CURBAR",
+      "name": "CURL BAR",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC06FRTLAT28",
+      "name": "FRONT LAT BAR 28",
+      "siteGroup": "acessorios",
+      "siteLineId": "acessorios",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC06RVV-TRP",
+      "name": "Revolving Tricep and Curl Bar",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC06STD-ROW",
+      "name": "SEATED ROW DOUBLE GRIP CABLE",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC06STR-BAR",
+      "name": "Straight Bar",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC06TRI-CUR",
+      "name": "Triceps Curl Bar",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "RKC06TRI-ROP",
+      "name": "TRICEPS ROPE",
+      "siteGroup": "acessorios",
+      "siteLineId": "rockit",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7001B",
+      "name": "CHEST PRESS",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7002B",
+      "name": "PULLDOWN",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7003B",
+      "name": "SHOULDER PRESS",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7004B",
+      "name": "LOW ROW",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7005B",
+      "name": "INCLINE PRESS",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7006B",
+      "name": "LEG PRESS",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7007B",
+      "name": "ROW",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7008B",
+      "name": "REAR KICK",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7017B",
+      "name": "SEATED CALF RAISE",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7018B",
+      "name": "ARM CURL",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7019B",
+      "name": "INCLINE ROW",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7020B",
+      "name": "REVERSE LEG PRESS",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7021B",
+      "name": "HACK SQUAT",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7022B",
+      "name": "UTILITY BENCH",
+      "siteGroup": "bancos",
+      "siteLineId": "bancos-e-racks",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7023B",
+      "name": "BICEP CURL",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7024B",
+      "name": "TRICEP DIP",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7025B",
+      "name": "LEG EXTENSION",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7026B",
+      "name": "STANDING LEG CURL",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7032B",
+      "name": "STANDING CALF RAISE",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7034B",
+      "name": "SQUAT/ STANDING CALF RAISE",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7036B",
+      "name": "AB Crunch",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7038B",
+      "name": "GLUTE TRAINER",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7040B",
+      "name": "SQUAT LUNGE",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7046B",
+      "name": "LATERAL SUPER CHEST PRESS",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7051",
+      "name": "ASSISTED NORDIC HAM",
+      "siteGroup": "articulados",
+      "siteLineId": "articulados",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7051B",
+      "name": "ASSISTED NORDIC HAM",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7055B",
+      "name": "BELT SQUAT",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "SL7057B",
+      "name": "PENDULUM SQUAT",
+      "siteGroup": "articulados",
+      "siteLineId": "linha-sl",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "U7",
+      "name": "BICICLETA ERGOMÉTRICA U7",
+      "siteGroup": "cardio",
+      "siteLineId": "cardio",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9501",
+      "name": "CHEST PRESS",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9502",
+      "name": "LAT PULLDOWN",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9503",
+      "name": "ARM CURL",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9504",
+      "name": "PECTORAL",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9505",
+      "name": "LEG EXTENSION",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9506",
+      "name": "SEATED LEG CURL",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9508",
+      "name": "ABDUCTOR / ADDUCTOR",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9510",
+      "name": "LEG PRESS",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9512",
+      "name": "SHOULDER PRESS",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9514",
+      "name": "ABDOMINAL",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9515",
+      "name": "PEC FLY / REAR DELT",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9516",
+      "name": "CALF RAISE",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9517",
+      "name": "SEATED DIP",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9518",
+      "name": "TORSO ROTATION",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9519",
+      "name": "VERTICAL ROW",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9520",
+      "name": "WEIGHT ASSISTED CHIN/DIP COMBO",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9521",
+      "name": "PRONE LEG CURL",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9522",
+      "name": "LAT PULLDOWN/VERTICAL ROW",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9524",
+      "name": "LATERAL RAISE",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9528",
+      "name": "LEG EXTENSION/LEG CURL",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9529",
+      "name": "MULTI PRESS",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9533",
+      "name": "ARM CURL/TRICEPS EXTENSION",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9534",
+      "name": "ABDOMINAL/BACK EXTENSION",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9538",
+      "name": "HIP THRUST",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "VX9539",
+      "name": "HORIZONTAL ADJUSTABLE LEG PRESS",
+      "siteGroup": "baterias",
+      "siteLineId": "linha-new-encore",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "XSC500",
+      "name": "Stair Climber",
+      "siteGroup": "cardio",
+      "siteLineId": "cardio",
+      "inCatalogReport": false
+    },
+    {
+      "sku": "XSC750",
+      "name": "SIMULADOR DE ESCADA COM TELA",
+      "siteGroup": "cardio",
+      "siteLineId": "cardio",
+      "inCatalogReport": false
+    }
+  ]
+}
