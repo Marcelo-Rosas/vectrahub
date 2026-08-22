@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -86,7 +86,6 @@ import {
 import { fairFreightGate, type FairFreightManualMode } from '@/lib/fair-freight-gate';
 import { pickFairPriceTableId } from '@/lib/fair-price-tables';
 import { FairFreightProfileCard } from '@/components/fair/FairFreightProfileCard';
-import { formatFairProductName } from '@/lib/fair-display';
 import { cn } from '@/lib/utils';
 
 type LineDraft = CatalogQuoteLine & { key: string };
@@ -109,7 +108,7 @@ export function FairQuoteCalculator() {
   const { user } = useAuth();
   const { tenant, isLoading: tenantLoading } = useFairResolvedTenant();
   const origin = tenant ? fairTenantOriginLocked(tenant) : '';
-  const { catalog, isFromDb } = useFairProductCatalog();
+  const { catalog } = useFairProductCatalog();
   const { data: priceTables } = usePriceTables();
   const calculateFreight = useCalculateFreight();
   const { save: saveFairQuote } = useFairSaveQuote();
@@ -631,18 +630,6 @@ export function FairQuoteCalculator() {
     >
       <div className="space-y-1 px-0.5 md:hidden">
         <h1 className={cn('text-xl font-semibold tracking-tight', FAIR_UI.ink)}>Cotação Feira</h1>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          Busque SKU → escolha volumes → calcule
-          {isFromDb ? (
-            <Badge variant="secondary" className="ml-2 align-middle text-[10px]">
-              catálogo DB
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="ml-2 align-middle text-[10px]">
-              sem SKU em feira.products
-            </Badge>
-          )}
-        </p>
       </div>
 
       {/* Cliente + rota primeiro; equipamentos depois */}
@@ -922,9 +909,6 @@ export function FairQuoteCalculator() {
                           </Badge>
                         </div>
                       </div>
-                      <span className="line-clamp-1 text-sm text-muted-foreground">
-                        {formatFairProductName(h.name)}
-                      </span>
                     </button>
                   );
                 })}
@@ -963,9 +947,6 @@ export function FairQuoteCalculator() {
                               {volumeLabel(p, line.selectedBoxTypes)}
                             </Badge>
                           )}
-                        </div>
-                        <div className="mt-0.5 truncate text-sm text-muted-foreground">
-                          {p?.name}
                         </div>
                         {resolved && (
                           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground sm:text-sm">
@@ -1067,7 +1048,6 @@ export function FairQuoteCalculator() {
         >
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Frete estimado</CardTitle>
-            <CardDescription>Válido 48h — confirmação comercial</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className={cn('text-3xl font-bold tracking-tight sm:text-4xl', FAIR_UI.price)}>
