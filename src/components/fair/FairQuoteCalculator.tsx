@@ -695,9 +695,7 @@ export function FairQuoteCalculator() {
                         value={kmLoading ? '' : kmDistance}
                         readOnly
                         disabled
-                        placeholder={
-                          kmLoading ? 'Calculando…' : destCep.length === 8 ? '—' : 'CEP primeiro'
-                        }
+                        placeholder={kmLoading ? 'Calculando…' : '—'}
                       />
                       {kmLoading && (
                         <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
@@ -811,7 +809,7 @@ export function FairQuoteCalculator() {
             })}
           </div>
           {konnenFunctionalBeta && functionalGroupCounts && (
-            <div className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {getAllFunctionalGroups().map((group) => {
                 const n = functionalGroupCounts[group] ?? 0;
                 if (n === 0) return null;
@@ -824,10 +822,10 @@ export function FairQuoteCalculator() {
                     size="sm"
                     title={getFunctionalGroupLabel(group)}
                     className={cn(
-                      'h-9 min-w-fit shrink-0 touch-manipulation px-2.5 font-mono text-[11px] uppercase md:h-7 md:text-[10px]',
+                      'h-11 min-w-fit shrink-0 touch-manipulation px-3 font-mono text-sm uppercase md:h-8 md:px-2.5 md:text-xs',
                       on
-                        ? 'border-foreground bg-foreground text-background hover:bg-foreground/90 hover:text-background'
-                        : 'border-dashed text-muted-foreground'
+                        ? cn(FAIR_UI.cta, 'border-transparent hover:opacity-90')
+                        : FAIR_UI.toggleOff
                     )}
                     onClick={() => {
                       setSelectedFunctionalGroup((prev) => (prev === group ? null : group));
@@ -835,7 +833,7 @@ export function FairQuoteCalculator() {
                     }}
                   >
                     {getFunctionalGroupChipLabel(group)}
-                    <span className="ml-1 text-[9px] opacity-80">{n}</span>
+                    <span className="ml-1 text-[10px] opacity-80">{n}</span>
                   </Button>
                 );
               })}
@@ -879,10 +877,6 @@ export function FairQuoteCalculator() {
             skuHits.length > 0 && (
               <div className="max-h-[min(40vh,16rem)] overflow-y-auto overscroll-contain rounded-xl border divide-y">
                 {skuHits.map((h) => {
-                  const fg =
-                    konnenFunctionalBeta && h.functionalGroup
-                      ? resolveKonnenFunctionalGroup(h)
-                      : null;
                   return (
                     <button
                       key={h.sku}
@@ -894,20 +888,9 @@ export function FairQuoteCalculator() {
                         <span className={cn('font-mono text-base font-semibold', FAIR_UI.ink)}>
                           {h.sku}
                         </span>
-                        <div className="flex shrink-0 items-center gap-1">
-                          {fg && (
-                            <Badge
-                              variant="outline"
-                              className="border-dashed font-mono text-[9px] text-muted-foreground"
-                              title={getFunctionalGroupLabel(fg)}
-                            >
-                              {getFunctionalGroupChipLabel(fg)}
-                            </Badge>
-                          )}
-                          <Badge variant="outline" className="font-mono text-[10px]">
-                            {h.boxTypes.length} vol
-                          </Badge>
-                        </div>
+                        <Badge variant="outline" className="font-mono text-[10px]">
+                          {h.boxTypes.length} vol
+                        </Badge>
                       </div>
                     </button>
                   );
