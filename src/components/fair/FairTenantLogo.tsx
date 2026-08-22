@@ -47,13 +47,13 @@ export function FairTenantLogo({
 
   useEffect(() => {
     setFailedSrc(null);
-  }, [logoUrl, tenant.id]);
+  }, [logoUrl, tenant.id, local]);
 
   return (
     <div
       className={cn(
         isAuth ? 'flex items-center justify-center rounded-lg px-3 py-2' : FAIR_LOCKUP_BOX,
-        isKonnenBanner && !isAuth && 'bg-black px-3',
+        isKonnenBanner && !isAuth && 'w-[15rem] bg-black px-3',
         className
       )}
       style={{
@@ -70,11 +70,19 @@ export function FairTenantLogo({
             isAuth
               ? 'h-12 w-auto max-w-[260px] object-contain sm:h-14 sm:max-w-[320px]'
               : FAIR_LOCKUP_IMG,
+            isKonnenBanner && !isAuth && 'h-9 max-w-[14rem]',
             imgClassName
           )}
           referrerPolicy="no-referrer"
           onError={() => setFailedSrc(src)}
         />
+      ) : isKonnenBanner ? (
+        <span
+          className="font-black tracking-tight"
+          style={{ color: '#FFD600', fontSize: isAuth ? 22 : 18 }}
+        >
+          konnen
+        </span>
       ) : (
         <span
           className="flex items-center gap-1.5 text-sm font-semibold tracking-wide"

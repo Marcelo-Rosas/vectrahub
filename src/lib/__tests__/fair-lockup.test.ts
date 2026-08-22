@@ -5,6 +5,7 @@ import {
   fairHeaderLogoUrl,
   pickFairLockupSrc,
 } from '@/lib/fair-lockup';
+import { logoSrcForSlug } from '@/lib/fair-tenant';
 
 describe('pickFairLockupSrc', () => {
   it('Rotha e PlayFit usam SVG local — ignora Brandfetch preto', () => {
@@ -51,10 +52,19 @@ describe('pickFairLockupSrc', () => {
     );
   });
 
+  it('Konnen aponta SVG wordmark (sem letterbox preto do PNG)', () => {
+    expect(logoSrcForSlug('konnen')).toBe('/brand/konnen-logo.svg');
+    expect(logoSrcForSlug('buckler')).toBe('/brand/buckler-logo.svg');
+    expect(logoSrcForSlug('rotha')).toBe('/brand/rotha-logo.svg');
+  });
+
   it('box e img iguais para todos os tenants', () => {
     expect(FAIR_LOCKUP_BOX).toContain('h-10');
     expect(FAIR_LOCKUP_BOX).toContain('w-[13.5rem]');
-    expect(FAIR_LOCKUP_IMG).toContain('max-h-8');
+    expect(FAIR_LOCKUP_BOX).toContain('mx-auto');
+    expect(FAIR_LOCKUP_BOX).toContain('justify-center');
+    expect(FAIR_LOCKUP_IMG).toContain('h-8');
     expect(FAIR_LOCKUP_IMG).toContain('object-contain');
+    expect(FAIR_LOCKUP_IMG).toContain('object-center');
   });
 });

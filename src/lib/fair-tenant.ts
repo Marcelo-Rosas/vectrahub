@@ -29,7 +29,9 @@ export type FairTenant = {
 };
 
 export function logoSrcForSlug(slug: string): string {
-  return `/brand/${slug.trim().toLowerCase()}-logo.svg`;
+  const key = slug.trim().toLowerCase();
+  if (key === 'konnen') return '/brand/konnen-logo.svg';
+  return `/brand/${key}-logo.svg`;
 }
 
 export function companyRowToTenant(row: FairCompanyRow): FairTenant {
