@@ -3,6 +3,7 @@ import {
   konnenFunctionalGroup,
   isKonnenWeightStackSku,
   getAllFunctionalGroups,
+  getFunctionalGroupChipLabel,
 } from '@/lib/konnen-functional-group';
 
 describe('konnenFunctionalGroup', () => {
