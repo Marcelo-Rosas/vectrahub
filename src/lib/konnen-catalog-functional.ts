@@ -7,7 +7,6 @@ import {
   resolveKonnenFunctionalGroup,
   type KonnenFunctionalGroup,
 } from './konnen-functional-group';
-import { compareSkuNatural } from './sku-sort';
 import type { ShipperProductCatalog, ShipperProductCatalogEntry } from './shipper-product-catalog';
 
 export function enrichKonnenCatalogFunctionalGroups(
@@ -48,7 +47,7 @@ export function catalogEntriesByFunctionalGroup(
     hits.push(entry);
     if (hits.length >= limit) break;
   }
-  return hits.sort((a, b) => compareSkuNatural(a.sku, b.sku));
+  return hits.sort((a, b) => a.sku.localeCompare(b.sku));
 }
 
 export function filterCatalogByFunctionalGroup(
