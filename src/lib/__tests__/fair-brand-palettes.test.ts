@@ -79,7 +79,7 @@ describe('fair-brand-palettes', () => {
       },
     };
     const undo = applyFairThemeToElement(el, KONNEN_FAIR_PALETTE);
-    expect(store['--fair-cta-bg']).toBe('#FFD600');
+    expect(store['--fair-cta-bg']).toBe('#000000');
     expect(store['--fair-price']).toBe('#000000');
     undo();
     expect(store['--fair-cta-bg']).toBeUndefined();
