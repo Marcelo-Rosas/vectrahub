@@ -5,9 +5,6 @@ import { FAIR_LOCKUP_BOX, FAIR_LOCKUP_IMG, pickFairLockupSrc } from '@/lib/fair-
 import type { FairTenant } from '@/lib/fair-tenant';
 import { cn } from '@/lib/utils';
 
-/** Tenants com lockup PNG no banner preto (não SVG). */
-const PNG_BLACK_BANNER_SLUGS = new Set(['konnen', 'rotha', 'playfit']);
-
 const FALLBACK_WORDMARK: Record<string, string> = {
   konnen: 'konnen',
   rotha: 'ROTHA',
@@ -22,7 +19,7 @@ function initialsFromDomainOrName(domain: string, name: string): string {
   return (name.slice(0, 2) || '?').toUpperCase();
 }
 
-/** Header /feira — PNG/SVG Brandfetch; senão /brand/{slug}-logo.*; senão iniciais. */
+/** Header /feira — Logo PNG padronizada. */
 export function FairTenantLogo({
   tenant,
   logoUrl,
@@ -53,7 +50,6 @@ export function FairTenantLogo({
   const src = picked && failedSrc !== picked ? picked : local && failedSrc !== local ? local : null;
   const accent = accentHex || palette.tokens.accent;
   const isAuth = size === 'auth';
-  const isPngBlackBanner = PNG_BLACK_BANNER_SLUGS.has(slug);
 
   useEffect(() => {
     setFailedSrc(null);
@@ -63,12 +59,11 @@ export function FairTenantLogo({
     <div
       className={cn(
         isAuth ? 'flex items-center justify-center rounded-lg px-3 py-2' : FAIR_LOCKUP_BOX,
-        isPngBlackBanner && !isAuth && 'w-[15rem] bg-black px-3',
         className
       )}
       style={{
-        backgroundColor: isPngBlackBanner ? '#000000' : palette.tokens.logoBg,
-        boxShadow: isPngBlackBanner ? undefined : `inset 0 0 0 1px ${accent}33`,
+        backgroundColor: palette.tokens.logoBg,
+        boxShadow: `inset 0 0 0 1px ${accent}33`,
       }}
     >
       {src ? (
@@ -80,18 +75,17 @@ export function FairTenantLogo({
             isAuth
               ? 'h-12 w-auto max-w-[260px] object-contain sm:h-14 sm:max-w-[320px]'
               : FAIR_LOCKUP_IMG,
-            isPngBlackBanner && !isAuth && 'h-9 max-w-[14rem]',
             imgClassName
           )}
           referrerPolicy="no-referrer"
           onError={() => setFailedSrc(src)}
         />
-      ) : isPngBlackBanner ? (
+      ) : FALLBACK_WORDMARK[slug] ? (
         <span
           className="font-black tracking-tight"
           style={{ color: palette.tokens.logoFg, fontSize: isAuth ? 22 : 18 }}
         >
-          {FALLBACK_WORDMARK[slug] ?? slug}
+          {FALLBACK_WORDMARK[slug]}
         </span>
       ) : (
         <span

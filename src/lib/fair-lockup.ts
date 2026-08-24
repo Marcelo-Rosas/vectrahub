@@ -1,13 +1,13 @@
-/** Lockup header /feira — SVG local nos tenants curados; box CSS único. */
+/** Lockup header /feira — Suporte unificado a PNG. */
 
 export const FAIR_LOCAL_LOCKUP_SLUGS = new Set(['buckler', 'konnen', 'playfit', 'rotha']);
 
 export const FAIR_LOCKUP_BOX =
-  'flex h-10 w-[13.5rem] items-center justify-center rounded-lg px-2 py-1';
+  'mx-auto flex h-12 md:h-14 w-auto max-w-[14rem] md:max-w-[16rem] items-center justify-center rounded-lg px-3 py-1.5';
 
-export const FAIR_LOCKUP_IMG = 'max-h-8 max-w-[12.5rem] h-auto w-auto object-contain';
+export const FAIR_LOCKUP_IMG = 'h-full w-full object-contain object-center';
 
-/** Brandfetch fora do header nos slugs com SVG curado. */
+/** Brandfetch fora do header nos slugs curados (mantido como fallback). */
 export function fairHeaderLogoUrl(
   slug: string,
   apiLogoUrl: string | null | undefined
