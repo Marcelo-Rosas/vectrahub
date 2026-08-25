@@ -85,7 +85,7 @@ async function main() {
       height_mm: b.heightMm,
       boxes_per_unit: 1,
       group_weight_kg: b.groupWeightKg,
-      volume_m3: boxVolumeM3(b.lengthMm, b.widthMm, b.heightMm, 1),
+      volume_m3: b.volumeM3 ?? boxVolumeM3(b.lengthMm, b.widthMm, b.heightMm, 1),
       box_role: 'weight_stack' as const,
     }));
 

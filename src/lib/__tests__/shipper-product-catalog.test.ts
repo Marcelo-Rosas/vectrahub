@@ -333,7 +333,7 @@ function withWeightStack(
     heightMm: b.heightMm,
     boxesPerUnit: 1,
     groupWeightKg: b.groupWeightKg,
-    volumeM3: boxVolumeM3(b.lengthMm, b.widthMm, b.heightMm, 1),
+    volumeM3: b.volumeM3 ?? boxVolumeM3(b.lengthMm, b.widthMm, b.heightMm, 1),
     boxRole: 'weight_stack' as const,
   }));
   return {

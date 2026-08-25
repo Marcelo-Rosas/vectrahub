@@ -11,6 +11,8 @@ export type WeightStackBoxComplement = {
   widthMm: number;
   heightMm: number;
   groupWeightKg: number;
+  /** CBM real da caixa (medidas_data); quando ausente, derivado das dimensões. */
+  volumeM3?: number;
 };
 
 export type WeightStackComplement = {
@@ -23,7 +25,7 @@ export type WeightStackComplement = {
 };
 
 export function weightStackBoxVolumeM3(box: WeightStackBoxComplement): number {
-  return boxVolumeM3(box.lengthMm, box.widthMm, box.heightMm, 1);
+  return box.volumeM3 ?? boxVolumeM3(box.lengthMm, box.widthMm, box.heightMm, 1);
 }
 
 export function sumWeightStackBoxesKg(boxes: WeightStackBoxComplement[]): number {
