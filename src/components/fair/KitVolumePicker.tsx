@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Layers, PackagePlus } from 'lucide-react';
+import { Box, Dumbbell, Layers, PackagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -15,7 +15,10 @@ import { FairQtyStepper } from '@/components/fair/FairQtyStepper';
 import { FAIR_UI } from '@/lib/fair-brand-palettes';
 import {
   formatBoxDimensionsCm,
+  frameBoxTypes,
   fullKitBoxTypes,
+  productHasWeightStack,
+  weightStackBoxTypes,
   type ShipperProductCatalogEntry,
 } from '@/lib/shipper-product-catalog';
 import { cn } from '@/lib/utils';
@@ -24,6 +27,7 @@ export type KitPickerResult = {
   sku: string;
   quantity: number;
   selectedBoxTypes: string[];
+  includeWeightStack?: boolean;
 };
 
 type Props = {
@@ -34,6 +38,7 @@ type Props = {
   /** Pré-seleção ao editar linha existente */
   initialBoxTypes?: string[];
   initialQuantity?: number;
+  initialIncludeWeightStack?: boolean;
 };
 
 export function KitVolumePicker({
@@ -43,10 +48,15 @@ export function KitVolumePicker({
   onConfirm,
   initialBoxTypes,
   initialQuantity = 1,
+  initialIncludeWeightStack = false,
 }: Props) {
+  const frameBoxes = useMemo(() => (product ? frameBoxTypes(product) : []), [product]);
+  const stackBoxes = useMemo(() => (product ? weightStackBoxTypes(product) : []), [product]);
   const allTypes = useMemo(() => (product ? fullKitBoxTypes(product) : []), [product]);
+  const hasStack = product ? productHasWeightStack(product) : false;
 
   const [selected, setSelected] = useState<Set<string>>(() => new Set(allTypes));
+  const [includeWeightStack, setIncludeWeightStack] = useState(initialIncludeWeightStack);
   const [quantity, setQuantity] = useState(initialQuantity);
 
   useEffect(() => {
@@ -56,9 +66,18 @@ export function KitVolumePicker({
           ? initialBoxTypes.filter((t) => allTypes.includes(t))
           : fullKitBoxTypes(product);
       setSelected(new Set(types.length > 0 ? types : allTypes));
+      setIncludeWeightStack(Boolean(initialIncludeWeightStack && hasStack));
       setQuantity(initialQuantity);
     }
-  }, [product, open, initialBoxTypes, initialQuantity, allTypes]);
+  }, [
+    product,
+    open,
+    initialBoxTypes,
+    initialQuantity,
+    initialIncludeWeightStack,
+    allTypes,
+    hasStack,
+  ]);
 
   const setTypeChecked = (boxType: string, checked: boolean) => {
     setSelected((prev) => {
@@ -79,13 +98,15 @@ export function KitVolumePicker({
 
   const preview = useMemo(() => {
     if (!product) return { weight: 0, volume: 0, boxes: 0 };
-    const boxes = product.boxTypes.filter((b) => selected.has(b.boxType));
+    const boxes = frameBoxes.filter((b) => selected.has(b.boxType));
+    const stack = includeWeightStack ? stackBoxes : [];
+    const all = [...boxes, ...stack];
     return {
-      weight: boxes.reduce((s, b) => s + b.groupWeightKg, 0) * quantity,
-      volume: boxes.reduce((s, b) => s + b.volumeM3, 0) * quantity,
-      boxes: boxes.reduce((s, b) => s + b.boxesPerUnit, 0) * quantity,
+      weight: all.reduce((s, b) => s + b.groupWeightKg, 0) * quantity,
+      volume: all.reduce((s, b) => s + b.volumeM3, 0) * quantity,
+      boxes: all.reduce((s, b) => s + b.boxesPerUnit, 0) * quantity,
     };
-  }, [product, selected, quantity]);
+  }, [product, frameBoxes, stackBoxes, selected, includeWeightStack, quantity]);
 
   const handleConfirm = () => {
     if (!product || selected.size === 0) return;
@@ -93,11 +114,12 @@ export function KitVolumePicker({
       sku: product.sku,
       quantity,
       selectedBoxTypes: allTypes.filter((t) => selected.has(t)),
+      includeWeightStack: includeWeightStack || undefined,
     });
     onOpenChange(false);
   };
 
-  const isMultiVolume = (product?.boxTypes.length ?? 0) > 1;
+  const isMultiVolume = frameBoxes.length > 1;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -127,8 +149,13 @@ export function KitVolumePicker({
                   </SheetTitle>
                   <SheetDescription className="mt-1 text-sm">
                     {isMultiVolume
-                      ? `${product.boxesTotal} volumes — toque para incluir na carga`
+                      ? `${product.boxesTotal} volumes frame — toque para incluir na carga`
                       : 'Confirme a quantidade'}
+                    {hasStack && product.weightStackSku ? (
+                      <span className="mt-1 block text-xs">
+                        Bateria avulsa: {product.weightStackSku}
+                      </span>
+                    ) : null}
                   </SheetDescription>
                 </div>
                 <Badge
@@ -157,7 +184,7 @@ export function KitVolumePicker({
             )}
 
             <ul className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5">
-              {product.boxTypes.map((box, idx) => {
+              {frameBoxes.map((box, idx) => {
                 const checked = selected.has(box.boxType);
                 return (
                   <li key={box.boxType}>
@@ -188,7 +215,7 @@ export function KitVolumePicker({
                             {box.boxType}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            vol {idx + 1}/{product.boxTypes.length}
+                            frame {idx + 1}/{frameBoxes.length}
                           </span>
                         </div>
                         <p className="mt-1.5 font-mono text-base tracking-tight">
@@ -209,6 +236,49 @@ export function KitVolumePicker({
                   </li>
                 );
               })}
+
+              {hasStack && stackBoxes.length > 0 && (
+                <li className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIncludeWeightStack((v) => !v)}
+                    className={cn(
+                      'flex w-full min-h-[3.75rem] items-center gap-3 rounded-xl border-2 p-3.5 text-left transition-colors touch-manipulation active:scale-[0.99]',
+                      includeWeightStack
+                        ? cn('border-2 shadow-sm', FAIR_UI.softPanel)
+                        : 'border-dashed border-muted-foreground/30 bg-muted/30'
+                    )}
+                  >
+                    <Checkbox
+                      checked={includeWeightStack}
+                      tabIndex={-1}
+                      aria-hidden
+                      className={cn('pointer-events-none h-5 w-5 shrink-0', FAIR_UI.check)}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <Dumbbell className={cn('h-4 w-4', FAIR_UI.accent)} />
+                        <span className="text-sm font-medium">Baterias de peso</span>
+                        <span className="text-xs text-muted-foreground">
+                          {stackBoxes.length} caixas
+                        </span>
+                      </div>
+                      {includeWeightStack && (
+                        <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                          {stackBoxes.map((b) => (
+                            <div key={b.boxType} className="flex justify-between gap-2">
+                              <span className="font-mono">{b.boxType}</span>
+                              <span>
+                                {b.groupWeightKg.toFixed(1)} kg · {b.volumeM3.toFixed(2)} m³
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                </li>
+              )}
             </ul>
 
             <div className="shrink-0 border-t bg-background px-4 pb-safe-bottom pt-3 sm:px-5">

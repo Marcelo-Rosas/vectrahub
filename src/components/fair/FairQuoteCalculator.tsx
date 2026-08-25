@@ -34,6 +34,7 @@ import {
   catalogEntriesByLine,
   catalogLineCounts,
   fullKitBoxTypes,
+  productHasWeightStack,
   resolveSelectedBoxTypes,
   searchShipperCatalog,
   type CatalogQuoteLine,
@@ -66,9 +67,10 @@ type LineDraft = CatalogQuoteLine & { key: string };
 
 const inputMobile = 'h-12 text-base touch-manipulation md:h-10 md:text-sm';
 
-function lineSignature(sku: string, boxTypes?: string[]): string {
+function lineSignature(sku: string, boxTypes?: string[], includeWeightStack?: boolean): string {
   const types = boxTypes?.slice().sort().join(',') ?? 'FULL';
-  return `${sku}::${types}`;
+  const stack = includeWeightStack ? '+BAT' : '';
+  return `${sku}::${types}${stack}`;
 }
 
 function pickDefaultLotacaoTableId(
@@ -86,11 +88,21 @@ function pickDefaultLotacaoTableId(
   return lot?.id || pool[0]?.id || '';
 }
 
-function volumeLabel(entry: ShipperProductCatalogEntry, selectedBoxTypes?: string[]): string {
+function volumeLabel(
+  entry: ShipperProductCatalogEntry,
+  selectedBoxTypes?: string[],
+  includeWeightStack?: boolean
+): string {
   const types = resolveSelectedBoxTypes(entry, { selectedBoxTypes });
   const all = fullKitBoxTypes(entry);
-  if (types.length === all.length) return `${types.length} vol · completo`;
-  return `vol ${types.join(', ')} (${types.length}/${all.length})`;
+  const frameLabel =
+    types.length === all.length
+      ? `${types.length} vol frame`
+      : `vol ${types.join(', ')} (${types.length}/${all.length})`;
+  if (includeWeightStack && productHasWeightStack(entry)) {
+    return `${frameLabel} + baterias`;
+  }
+  return frameLabel;
 }
 
 export function FairQuoteCalculator() {
@@ -124,6 +136,7 @@ export function FairQuoteCalculator() {
   const [pickerInitial, setPickerInitial] = useState<{
     boxTypes?: string[];
     quantity?: number;
+    includeWeightStack?: boolean;
   }>({});
 
   const [setupOpen, setSetupOpen] = useState(true);
@@ -141,7 +154,12 @@ export function FairQuoteCalculator() {
     () =>
       aggregateCatalogQuoteLines(
         catalog,
-        lines.map(({ sku, quantity, selectedBoxTypes }) => ({ sku, quantity, selectedBoxTypes }))
+        lines.map(({ sku, quantity, selectedBoxTypes, includeWeightStack }) => ({
+          sku,
+          quantity,
+          selectedBoxTypes,
+          includeWeightStack,
+        }))
       ),
     [catalog, lines]
   );
@@ -202,7 +220,7 @@ export function FairQuoteCalculator() {
 
   const openKitPicker = (
     entry: ShipperProductCatalogEntry,
-    initial?: { boxTypes?: string[]; quantity?: number }
+    initial?: { boxTypes?: string[]; quantity?: number; includeWeightStack?: boolean }
   ) => {
     setPickerProduct(entry);
     setPickerInitial(initial ?? {});
@@ -218,10 +236,12 @@ export function FairQuoteCalculator() {
     openKitPicker(hit);
   };
 
-  const confirmKit = ({ sku, quantity, selectedBoxTypes }: KitPickerResult) => {
-    const sig = lineSignature(sku, selectedBoxTypes);
+  const confirmKit = ({ sku, quantity, selectedBoxTypes, includeWeightStack }: KitPickerResult) => {
+    const sig = lineSignature(sku, selectedBoxTypes, includeWeightStack);
     setLines((prev) => {
-      const existing = prev.find((l) => lineSignature(l.sku, l.selectedBoxTypes) === sig);
+      const existing = prev.find(
+        (l) => lineSignature(l.sku, l.selectedBoxTypes, l.includeWeightStack) === sig
+      );
       if (existing) {
         return prev.map((l) =>
           l.key === existing.key ? { ...l, quantity: l.quantity + quantity } : l
@@ -237,6 +257,7 @@ export function FairQuoteCalculator() {
           sku,
           quantity,
           selectedBoxTypes: isFullKit ? undefined : selectedBoxTypes,
+          includeWeightStack: includeWeightStack || undefined,
         },
       ];
     });
@@ -322,10 +343,11 @@ export function FairQuoteCalculator() {
         destination,
         km: parseFloat(kmDistance.replace(',', '.')) || 0,
         cargoValue,
-        lines: lines.map(({ sku, quantity, selectedBoxTypes }) => ({
+        lines: lines.map(({ sku, quantity, selectedBoxTypes, includeWeightStack }) => ({
           sku,
           quantity,
           selectedBoxTypes,
+          includeWeightStack,
         })),
         weightKg: aggregate.weightKg,
         volumeM3: aggregate.volumeM3,
@@ -585,9 +607,16 @@ export function FairQuoteCalculator() {
               {lines.map((line) => {
                 const p = catalog.get(line.sku);
                 const resolved = p
-                  ? aggregateLineFromProduct(p, line.sku, line.quantity, line.selectedBoxTypes)
+                  ? aggregateLineFromProduct(
+                      p,
+                      line.sku,
+                      line.quantity,
+                      line.selectedBoxTypes,
+                      line.includeWeightStack
+                    )
                   : null;
-                const isPartial = Boolean(line.selectedBoxTypes?.length);
+                const isPartial =
+                  Boolean(line.selectedBoxTypes?.length) || Boolean(line.includeWeightStack);
 
                 return (
                   <li
@@ -605,7 +634,7 @@ export function FairQuoteCalculator() {
                           </span>
                           {p && (
                             <Badge variant="secondary" className="font-mono text-[10px]">
-                              {volumeLabel(p, line.selectedBoxTypes)}
+                              {volumeLabel(p, line.selectedBoxTypes, line.includeWeightStack)}
                             </Badge>
                           )}
                         </div>
@@ -642,7 +671,7 @@ export function FairQuoteCalculator() {
                       </div>
                     </div>
 
-                    {p && p.boxTypes.length > 1 && (
+                    {p && (p.boxTypes.length > 1 || productHasWeightStack(p)) && (
                       <button
                         type="button"
                         className={cn(
@@ -653,6 +682,7 @@ export function FairQuoteCalculator() {
                           openKitPicker(p, {
                             boxTypes: line.selectedBoxTypes ?? fullKitBoxTypes(p),
                             quantity: line.quantity,
+                            includeWeightStack: line.includeWeightStack,
                           })
                         }
                       >
@@ -735,6 +765,7 @@ export function FairQuoteCalculator() {
         onConfirm={confirmKit}
         initialBoxTypes={pickerInitial.boxTypes}
         initialQuantity={pickerInitial.quantity}
+        initialIncludeWeightStack={pickerInitial.includeWeightStack}
       />
 
       {/* CTA fixo — safe area iOS/Android */}

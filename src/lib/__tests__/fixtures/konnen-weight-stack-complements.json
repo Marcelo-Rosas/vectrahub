@@ -1,0 +1,39 @@
+[
+  {
+    "sku": "FE9701",
+    "weightStackSku": "FEWS-200",
+    "weightKgWithStack": 327.8,
+    "volumeM3WithStack": 0.997,
+    "boxesTotalWithStack": 7,
+    "boxes": [
+      {
+        "boxType": "BAT1",
+        "lengthMm": 305,
+        "widthMm": 150,
+        "heightMm": 130,
+        "groupWeightKg": 33.3
+      },
+      {
+        "boxType": "BAT2",
+        "lengthMm": 305,
+        "widthMm": 150,
+        "heightMm": 130,
+        "groupWeightKg": 33.3
+      },
+      {
+        "boxType": "BAT3",
+        "lengthMm": 305,
+        "widthMm": 150,
+        "heightMm": 130,
+        "groupWeightKg": 33.2
+      },
+      {
+        "boxType": "BAT4",
+        "lengthMm": 305,
+        "widthMm": 150,
+        "heightMm": 130,
+        "groupWeightKg": 33.2
+      }
+    ]
+  }
+]

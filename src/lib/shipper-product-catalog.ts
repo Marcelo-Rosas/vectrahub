@@ -21,6 +21,8 @@ export type ShipperCatalogRawRow = {
   'Dimensão da Caixa'?: string;
 };
 
+export type ProductBoxRole = 'frame' | 'weight_stack';
+
 export type ShipperProductBoxType = {
   boxType: string;
   lengthMm: number;
@@ -29,6 +31,7 @@ export type ShipperProductBoxType = {
   boxesPerUnit: number;
   groupWeightKg: number;
   volumeM3: number;
+  boxRole?: ProductBoxRole;
 };
 
 export type ShipperProductCatalogEntry = {
@@ -39,6 +42,13 @@ export type ShipperProductCatalogEntry = {
   weightKgPerUnit: number;
   volumeM3PerUnit: number;
   boxTypes: ShipperProductBoxType[];
+  /** SKU selectorized com baterias de peso opcionais. */
+  hasWeightStack?: boolean;
+  weightStackSku?: string | null;
+  weightStackBoxesCount?: number | null;
+  weightKgWithStack?: number | null;
+  volumeM3WithStack?: number | null;
+  boxesTotalWithStack?: number | null;
 };
 
 export type ShipperProductCatalog = Map<string, ShipperProductCatalogEntry>;
@@ -46,8 +56,10 @@ export type ShipperProductCatalog = Map<string, ShipperProductCatalogEntry>;
 export type CatalogQuoteLine = {
   sku: string;
   quantity: number;
-  /** Tipos caixa incluídos (ex. ['A','C']). Vazio = kit completo. */
+  /** Tipos caixa frame incluídos (ex. ['A','C']). Vazio = kit frame completo. */
   selectedBoxTypes?: string[];
+  /** Inclui baterias de peso (BAT) quando o SKU tem complemento. Default: false. */
+  includeWeightStack?: boolean;
 };
 
 export type CatalogQuoteLineResolved = CatalogQuoteLine & {
@@ -56,6 +68,7 @@ export type CatalogQuoteLineResolved = CatalogQuoteLine & {
   volumeM3: number;
   boxesCount: number;
   isPartialKit: boolean;
+  hasWeightStackIncluded: boolean;
 };
 
 /** Dimensões mm → label compacta (cm). */
@@ -64,12 +77,33 @@ export function formatBoxDimensionsCm(lengthMm: number, widthMm: number, heightM
   return `${cm(lengthMm)}×${cm(widthMm)}×${cm(heightMm)} cm`;
 }
 
-/** Todos os tipos caixa do produto (kit completo). */
-export function fullKitBoxTypes(entry: ShipperProductCatalogEntry): string[] {
-  return entry.boxTypes.map((b) => b.boxType);
+export function frameBoxTypes(entry: ShipperProductCatalogEntry): ShipperProductBoxType[] {
+  return entry.boxTypes.filter((b) => (b.boxRole ?? 'frame') === 'frame');
 }
 
-/** Tipos efetivamente selecionados na linha. */
+export function weightStackBoxTypes(entry: ShipperProductCatalogEntry): ShipperProductBoxType[] {
+  return entry.boxTypes.filter((b) => b.boxRole === 'weight_stack');
+}
+
+/** Todos os tipos caixa frame do produto (kit frame completo). */
+export function fullKitBoxTypes(entry: ShipperProductCatalogEntry): string[] {
+  return frameBoxTypes(entry).map((b) => b.boxType);
+}
+
+/** Todos os tipos caixa BAT do produto. */
+export function fullWeightStackBoxTypes(entry: ShipperProductCatalogEntry): string[] {
+  return weightStackBoxTypes(entry).map((b) => b.boxType);
+}
+
+export function productHasWeightStack(entry: ShipperProductCatalogEntry): boolean {
+  return Boolean(
+    entry.hasWeightStack &&
+    (weightStackBoxTypes(entry).length > 0 ||
+      (entry.weightKgWithStack != null && entry.weightKgWithStack > entry.weightKgPerUnit))
+  );
+}
+
+/** Tipos frame efetivamente selecionados na linha. */
 export function resolveSelectedBoxTypes(
   entry: ShipperProductCatalogEntry,
   line: Pick<CatalogQuoteLine, 'selectedBoxTypes'>
@@ -79,47 +113,103 @@ export function resolveSelectedBoxTypes(
   return picked.length > 0 ? picked : all;
 }
 
+function aggregateFrameFromBoxes(
+  product: ShipperProductCatalogEntry,
+  types: string[]
+): { weightKg: number; volumeM3: number; boxesCount: number; isPartialKit: boolean } {
+  const allTypes = fullKitBoxTypes(product);
+  const boxes = frameBoxTypes(product).filter((b) => types.includes(b.boxType));
+  const isPartialKit = types.length < allTypes.length || types.some((t, i) => t !== allTypes[i]);
+
+  if (!isPartialKit) {
+    return {
+      weightKg: product.weightKgPerUnit,
+      volumeM3: product.volumeM3PerUnit,
+      boxesCount: product.boxesTotal,
+      isPartialKit: false,
+    };
+  }
+
+  return {
+    weightKg: boxes.reduce((s, b) => s + b.groupWeightKg, 0),
+    volumeM3: boxes.reduce((s, b) => s + b.volumeM3, 0),
+    boxesCount: boxes.reduce((s, b) => s + b.boxesPerUnit, 0),
+    isPartialKit: true,
+  };
+}
+
+function aggregateWeightStack(product: ShipperProductCatalogEntry): {
+  weightKg: number;
+  volumeM3: number;
+  boxesCount: number;
+} {
+  const batBoxes = weightStackBoxTypes(product);
+  if (batBoxes.length > 0) {
+    return {
+      weightKg: batBoxes.reduce((s, b) => s + b.groupWeightKg, 0),
+      volumeM3: batBoxes.reduce((s, b) => s + b.volumeM3, 0),
+      boxesCount: batBoxes.reduce((s, b) => s + b.boxesPerUnit, 0),
+    };
+  }
+
+  const frameWeight = product.weightKgPerUnit;
+  const frameVolume = product.volumeM3PerUnit;
+  const frameBoxes = product.boxesTotal;
+  return {
+    weightKg: Math.max(0, (product.weightKgWithStack ?? frameWeight) - frameWeight),
+    volumeM3: Math.max(0, (product.volumeM3WithStack ?? frameVolume) - frameVolume),
+    boxesCount: Math.max(0, (product.boxesTotalWithStack ?? frameBoxes) - frameBoxes),
+  };
+}
+
 /** Agrega uma linha de cotação a partir do produto e volumes selecionados. */
 export function aggregateLineFromProduct(
   product: ShipperProductCatalogEntry,
   sku: string,
   quantity: number,
-  selectedBoxTypes?: string[]
+  selectedBoxTypes?: string[],
+  includeWeightStack = false
 ): Omit<CatalogQuoteLineResolved, 'sku' | 'quantity'> & {
   sku: string;
   quantity: number;
 } {
   const types = resolveSelectedBoxTypes(product, { selectedBoxTypes });
-  const boxes = product.boxTypes.filter((b) => types.includes(b.boxType));
   const allTypes = fullKitBoxTypes(product);
-  const isPartialKit = types.length < allTypes.length || types.some((t, i) => t !== allTypes[i]);
+  const frameAgg = aggregateFrameFromBoxes(product, types);
+  const withStack = includeWeightStack && productHasWeightStack(product);
+  const stackAgg = withStack
+    ? aggregateWeightStack(product)
+    : { weightKg: 0, volumeM3: 0, boxesCount: 0 };
 
-  if (!isPartialKit) {
-    return {
-      sku,
-      quantity,
-      selectedBoxTypes: undefined,
-      name: product.name,
-      weightKg: product.weightKgPerUnit * quantity,
-      volumeM3: product.volumeM3PerUnit * quantity,
-      boxesCount: product.boxesTotal * quantity,
-      isPartialKit: false,
-    };
-  }
+  const isFullFrameKit = !frameAgg.isPartialKit;
+  const useCompleteTotals =
+    withStack &&
+    isFullFrameKit &&
+    product.weightKgWithStack != null &&
+    product.volumeM3WithStack != null &&
+    product.boxesTotalWithStack != null;
 
-  const unitWeight = boxes.reduce((s, b) => s + b.groupWeightKg, 0);
-  const unitVolume = boxes.reduce((s, b) => s + b.volumeM3, 0);
-  const unitBoxes = boxes.reduce((s, b) => s + b.boxesPerUnit, 0);
+  const unitWeight = useCompleteTotals
+    ? product.weightKgWithStack!
+    : frameAgg.weightKg + stackAgg.weightKg;
+  const unitVolume = useCompleteTotals
+    ? product.volumeM3WithStack!
+    : frameAgg.volumeM3 + stackAgg.volumeM3;
+  const unitBoxes = useCompleteTotals
+    ? product.boxesTotalWithStack!
+    : frameAgg.boxesCount + stackAgg.boxesCount;
 
   return {
     sku,
     quantity,
-    selectedBoxTypes: types,
+    selectedBoxTypes: isFullFrameKit ? undefined : types,
+    includeWeightStack: withStack || undefined,
     name: product.name,
     weightKg: unitWeight * quantity,
     volumeM3: unitVolume * quantity,
     boxesCount: unitBoxes * quantity,
-    isPartialKit: true,
+    isPartialKit: frameAgg.isPartialKit || (withStack && types.length < allTypes.length),
+    hasWeightStackIncluded: withStack,
   };
 }
 
@@ -341,7 +431,13 @@ export function aggregateCatalogQuoteLines(
       continue;
     }
 
-    const resolvedLine = aggregateLineFromProduct(product, sku, quantity, line.selectedBoxTypes);
+    const resolvedLine = aggregateLineFromProduct(
+      product,
+      sku,
+      quantity,
+      line.selectedBoxTypes,
+      line.includeWeightStack
+    );
 
     resolved.push(resolvedLine);
 

@@ -4,18 +4,23 @@ import impulseIfpFixture from '@/lib/__tests__/fixtures/impulse-ifp-caixas-por-m
 import impulseCardioFixture from '@/lib/__tests__/fixtures/impulse-cardio-caixas-por-medida.json';
 import konnenFixture from '@/lib/__tests__/fixtures/konnen-caixas-por-medida.json';
 import konnenMergedFixture from '@/lib/__tests__/fixtures/konnen-catalog-merged.json';
+import weightStackFixture from '@/lib/__tests__/fixtures/konnen-weight-stack-complements.json';
 import {
   aggregateCatalogQuoteLines,
+  aggregateLineFromProduct,
   boxVolumeM3,
   buildShipperProductCatalog,
   catalogEntriesByLine,
   catalogLineCounts,
   parseBrDecimal,
   parseLegacyBoxDimension,
+  productHasWeightStack,
   searchShipperCatalog,
   type ShipperCatalogRawRow,
+  type ShipperProductCatalogEntry,
   validateCatalogWeights,
 } from '@/lib/shipper-product-catalog';
+import type { WeightStackComplement } from '@/lib/weight-stack-complements';
 
 const rows = fixture as ShipperCatalogRawRow[];
 const catalog = buildShipperProductCatalog(rows);
@@ -313,5 +318,67 @@ describe('buildShipperProductCatalog — fixture Konnen merged (todas linhas)', 
   it('soma grupos ≈ peso bruto (amostra)', () => {
     const failed = validateCatalogWeights(konnenMergedCatalog).filter((c) => !c.ok);
     expect(failed.length).toBeLessThan(20);
+  });
+});
+
+function withWeightStack(
+  catalog: ReturnType<typeof buildShipperProductCatalog>,
+  complement: WeightStackComplement
+): ShipperProductCatalogEntry {
+  const base = catalog.get(complement.sku)!;
+  const stackBoxes = complement.boxes.map((b) => ({
+    boxType: b.boxType,
+    lengthMm: b.lengthMm,
+    widthMm: b.widthMm,
+    heightMm: b.heightMm,
+    boxesPerUnit: 1,
+    groupWeightKg: b.groupWeightKg,
+    volumeM3: boxVolumeM3(b.lengthMm, b.widthMm, b.heightMm, 1),
+    boxRole: 'weight_stack' as const,
+  }));
+  return {
+    ...base,
+    hasWeightStack: true,
+    weightStackSku: complement.weightStackSku,
+    weightStackBoxesCount: complement.boxes.length,
+    weightKgWithStack: complement.weightKgWithStack,
+    volumeM3WithStack: complement.volumeM3WithStack,
+    boxesTotalWithStack: complement.boxesTotalWithStack,
+    boxTypes: [...base.boxTypes.map((b) => ({ ...b, boxRole: 'frame' as const })), ...stackBoxes],
+  };
+}
+
+describe('weight stack complements — FE9701', () => {
+  const catalog = buildShipperProductCatalog(konnenMergedFixture as ShipperCatalogRawRow[]);
+  const complement = (weightStackFixture as WeightStackComplement[])[0]!;
+  const product = withWeightStack(catalog, complement);
+
+  it('frame only permanece 194.8 kg', () => {
+    const line = aggregateLineFromProduct(product, 'FE9701', 1);
+    expect(line.weightKg).toBeCloseTo(194.8, 1);
+    expect(line.boxesCount).toBe(3);
+    expect(line.hasWeightStackIncluded).toBe(false);
+  });
+
+  it('com baterias = 327.8 kg / 7 caixas', () => {
+    const line = aggregateLineFromProduct(product, 'FE9701', 1, undefined, true);
+    expect(line.weightKg).toBeCloseTo(327.8, 1);
+    expect(line.volumeM3).toBeCloseTo(0.997, 2);
+    expect(line.boxesCount).toBe(7);
+    expect(line.hasWeightStackIncluded).toBe(true);
+    expect(productHasWeightStack(product)).toBe(true);
+  });
+
+  it('aggregateCatalogQuoteLines soma frame + stack', () => {
+    const agg = aggregateCatalogQuoteLines(catalog, []);
+    expect(agg.weightKg).toBe(0);
+
+    const enriched = new Map(catalog);
+    enriched.set('FE9701', product);
+    const withBat = aggregateCatalogQuoteLines(enriched, [
+      { sku: 'FE9701', quantity: 1, includeWeightStack: true },
+    ]);
+    expect(withBat.weightKg).toBeCloseTo(327.8, 1);
+    expect(withBat.boxesCount).toBe(7);
   });
 });
