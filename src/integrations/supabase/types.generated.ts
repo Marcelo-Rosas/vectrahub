@@ -119,37 +119,50 @@ export type Database = {
         Row: {
           box_type: string;
           boxes_per_unit: number;
+          company_id: string;
           group_weight_kg: number;
           height_mm: number;
           id: string;
           length_mm: number;
           product_id: string;
+          sku: string;
           volume_m3: number;
           width_mm: number;
         };
         Insert: {
           box_type: string;
           boxes_per_unit?: number;
+          company_id?: string;
           group_weight_kg?: number;
           height_mm: number;
           id?: string;
           length_mm: number;
           product_id: string;
+          sku?: string;
           volume_m3?: number;
           width_mm: number;
         };
         Update: {
           box_type?: string;
           boxes_per_unit?: number;
+          company_id?: string;
           group_weight_kg?: number;
           height_mm?: number;
           id?: string;
           length_mm?: number;
           product_id?: string;
+          sku?: string;
           volume_m3?: number;
           width_mm?: number;
         };
         Relationships: [
+          {
+            foreignKeyName: 'product_boxes_company_id_fkey';
+            columns: ['company_id'];
+            isOneToOne: false;
+            referencedRelation: 'companies';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'product_boxes_product_id_fkey';
             columns: ['product_id'];

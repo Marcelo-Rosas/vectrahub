@@ -7,11 +7,13 @@ import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FAIR_APP_HOME, isFairHostname } from '@/lib/fair-origins';
 import { isFairTenantEmail } from '@/lib/fair-tenant';
+import { isFairStaffTester } from '@/lib/fair-dashboard-access';
 
 interface ProtectedRouteProps {
   children: ReactNode;
   requiredRoles?: UserProfile[];
   allowedEmails?: string[];
+  allowFairStaffTester?: boolean;
   fallback?: ReactNode;
 }
 
@@ -25,6 +27,7 @@ export function ProtectedRoute({
   children,
   requiredRoles,
   allowedEmails,
+  allowFairStaffTester = false,
   fallback,
 }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
@@ -61,7 +64,8 @@ export function ProtectedRoute({
   }
 
   const roleDenied = !!requiredRoles?.length && (!perfil || !requiredRoles.includes(perfil));
-  const emailDenied = !emailAllowed(user.email, allowedEmails);
+  const staffAllowed = allowFairStaffTester && isFairStaffTester(user.email);
+  const emailDenied = !staffAllowed && !emailAllowed(user.email, allowedEmails);
 
   if (roleDenied || emailDenied) {
     if (fallback) return <>{fallback}</>;

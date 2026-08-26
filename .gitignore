@@ -82,3 +82,17 @@ scripts/SETUP_REPORT.md
 docs/ANTT/spike-dados-abertos/*.csv
 docs/ANTT/spike-dados-abertos/*.json
 !docs/ANTT/spike-dados-abertos/SPIKE-REPORT.md
+
+# --- Higiene: binarios/dumps/artefatos nunca versionados ---
+*.zip
+*.pdf
+*.xlsx
+*.pptx
+# Homologacao / scrape (dados brutos, nao-produto)
+docs/homolog/
+docs/**/homolog/
+# Saidas de runs (security-audit-passive.yml escreve aqui — nao commitar)
+audits/
+# Artefatos de planejamento de agente
+.superpowers/
+docs/superpowers/

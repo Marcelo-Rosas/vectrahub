@@ -23,11 +23,9 @@ export function resolveFairCloneOrigin(tenant: FairDashboardTenant): string {
 }
 
 export function fairHubSourceNote(fairId: string, eventFlag: string): string {
-  return [
-    `${FAIR_HUB_SOURCE_PREFIX}${fairId}`,
-    eventFlag,
-    'Pedágio estimado, sujeito a ajuste na consolidação da carga.',
-  ].join('\n');
+  return [`${FAIR_HUB_SOURCE_PREFIX}${fairId}`, eventFlag, 'Pedágio incluso no valor cotado.'].join(
+    '\n'
+  );
 }
 
 export function parseFairSourceId(notes: string | null | undefined): string | null {
@@ -37,7 +35,7 @@ export function parseFairSourceId(notes: string | null | undefined): string | nu
 }
 
 export function fairPdfDisclaimer(): string {
-  return 'Pedágio estimado, sujeito a ajuste na consolidação da carga. Validade 48h.';
+  return 'Pedágio incluso no valor cotado. Validade 48h.';
 }
 
 /** Payload `public.quotes` stage ganho — aparece no Dashboard Hub. Sem upsert em `public.clients`. */

@@ -1,0 +1,43 @@
+name: Security Audit (Passive)
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  passive-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install saas-security-audit
+        working-directory: tools/security-audit
+        run: pip install -e ".[dev]"
+
+      - name: Run passive audit (Vectra prod)
+        working-directory: tools/security-audit
+        run: |
+          saas-audit --preset vectra.prod \
+            --mode passive \
+            --output ../../audits/security \
+            --ci || true
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-audit-reports
+          path: audits/security/**/*
+          if-no-files-found: warn
+
+      - name: Run unit tests
+        working-directory: tools/security-audit
+        run: pytest -q

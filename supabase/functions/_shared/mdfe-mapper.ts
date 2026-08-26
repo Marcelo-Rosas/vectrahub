@@ -107,7 +107,9 @@ export interface BuildMdfeInput {
   serie: number;
   numero: number;
   vectra: VectraConfig;
-  retry?: number; // prior emissions → ref CFN-MDFE-…-rN (Focus dedup)
+  retry?: number; // prior emissions → ref CFN-MDFE-{H|P}-…-rN (Focus dedup)
+  /** homolog | prod — prefixo no ref evita UNIQUE global vs homolog. */
+  ambiente?: 'homolog' | 'prod';
   municipiosCarregamento: MunicipioCarregamento[]; // 1..50 (where cargo was picked up)
   /**
    * Override UFIni (SEFAZ 456). Sem override: UF majoritária das origens dos CT-es;
@@ -359,8 +361,19 @@ function uniqByCode<T extends { codigo: number }>(arr: T[]): T[] {
   return arr.filter((x) => (seen.has(x.codigo) ? false : (seen.add(x.codigo), true)));
 }
 
-export function buildMdfeRef(serie: number, numero: number, retry = 0): string {
-  return retry > 0 ? `CFN-MDFE-${serie}-${numero}-r${retry}` : `CFN-MDFE-${serie}-${numero}`;
+export function mdfeRefAmbienteTag(ambiente: 'homolog' | 'prod' | string): 'H' | 'P' {
+  return ambiente === 'prod' ? 'P' : 'H';
+}
+
+export function buildMdfeRef(
+  serie: number,
+  numero: number,
+  retry = 0,
+  ambiente: 'homolog' | 'prod' = 'homolog'
+): string {
+  const tag = mdfeRefAmbienteTag(ambiente);
+  const base = `CFN-MDFE-${tag}-${serie}-${numero}`;
+  return retry > 0 ? `${base}-r${retry}` : base;
 }
 
 /**
@@ -487,7 +500,7 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
   if (!vehicle.tipo_carroceria)
     warnings.push('vehicle.tipo_carroceria missing — required by SEFAZ (00-05)');
 
-  const ref = buildMdfeRef(serie, numero, Number(input.retry ?? 0));
+  const ref = buildMdfeRef(serie, numero, Number(input.retry ?? 0), input.ambiente ?? 'homolog');
 
   const propFields = buildProprietarioFields(input.proprietario, warnings);
   // Contratante só quando grupo prop realmente vai no payload (RNTRC 8 dígitos).
@@ -584,7 +597,7 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
         const pags = buildMdfePagamentos(input.proprietario, input.pagamento, warnings);
         return pags && pags.length > 0 ? { pagamentos: pags } : {};
       })(),
-      // CIOT (SEFAZ 304) — e-FRETE gratuito; NÃO AILOG pago
+      // CIOT (SEFAZ 304) — AILOG/WebRouter (mesma chave rota/VPO)
       ...(() => {
         const seen = new Set<string>();
         const list = (input.ciots ?? [])
@@ -606,7 +619,7 @@ export function buildMdfePayload(input: BuildMdfeInput): BuildMdfeResult {
         if (list.length === 0) {
           if (isTerceiro) {
             warnings.push(
-              'ciot ausente — TAC/terceiro: gere CIOT gratuito e-FRETE antes do MDF-e (SEFAZ 304)'
+              'ciot ausente — TAC/terceiro: gere CIOT AILOG (WebRouter) antes do MDF-e (SEFAZ 304)'
             );
           }
           return {};

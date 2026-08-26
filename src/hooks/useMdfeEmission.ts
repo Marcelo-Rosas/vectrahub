@@ -140,6 +140,11 @@ export function useEmitMdfe() {
     },
     onError: (err: Error) => {
       const msg = err.message || 'erro desconhecido';
+      void qc.invalidateQueries({ queryKey: ['mdfe_emissions'] });
+      if (/Conexão interrompida|Failed to send a request|TRANSIENT/i.test(msg)) {
+        toast.error(`${msg} Use "Consultar" ou recarregue a OS.`);
+        return;
+      }
       toast.error(
         msg.includes('seguro_incompleto') || msg.includes('nAver') || msg.includes('699')
           ? msg

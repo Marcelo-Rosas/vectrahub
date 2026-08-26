@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/sheet';
 import { FairQtyStepper } from '@/components/fair/FairQtyStepper';
 import { FAIR_UI } from '@/lib/fair-brand-palettes';
+import { formatFairProductName } from '@/lib/fair-display';
+import { isStackBoxType, PLATES_PER_STACK_BOX } from '@/lib/buckler-stack-packaging';
 import {
   formatBoxDimensionsCm,
   fullKitBoxTypes,
@@ -35,6 +37,10 @@ type Props = {
   initialBoxTypes?: string[];
   initialQuantity?: number;
 };
+
+function boxRoleLabel(boxType: string): 'Pilha' | 'Máquina' {
+  return isStackBoxType(boxType) ? 'Pilha' : 'Máquina';
+}
 
 export function KitVolumePicker({
   product,
@@ -76,6 +82,9 @@ export function KitVolumePicker({
       setSelected(new Set(allTypes));
     }
   };
+
+  const kitTotalKg = product ? product.weightKgPerUnit * quantity : 0;
+  const isFullKit = selected.size === allTypes.length && allTypes.length > 0;
 
   const preview = useMemo(() => {
     if (!product) return { weight: 0, volume: 0, boxes: 0 };
@@ -123,12 +132,14 @@ export function KitVolumePicker({
                     {product.sku}
                   </p>
                   <SheetTitle className="text-lg leading-snug sm:text-xl">
-                    {product.name}
+                    {formatFairProductName(product.name)}
                   </SheetTitle>
                   <SheetDescription className="mt-1 text-sm">
-                    {isMultiVolume
-                      ? `${product.boxesTotal} volumes — toque para incluir na carga`
-                      : 'Confirme a quantidade'}
+                    Kit completo:{' '}
+                    <span className="font-semibold tabular-nums text-foreground">
+                      {product.weightKgPerUnit.toFixed(0)} kg
+                    </span>
+                    {isMultiVolume ? ` · ${product.boxesTotal} volumes` : ''}
                   </SheetDescription>
                 </div>
                 <Badge
@@ -159,6 +170,8 @@ export function KitVolumePicker({
             <ul className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5">
               {product.boxTypes.map((box, idx) => {
                 const checked = selected.has(box.boxType);
+                const role = boxRoleLabel(box.boxType);
+                const isStack = role === 'Pilha';
                 return (
                   <li key={box.boxType}>
                     <button
@@ -178,7 +191,7 @@ export function KitVolumePicker({
                         className={cn('pointer-events-none mt-1 h-5 w-5 shrink-0', FAIR_UI.check)}
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span
                             className={cn(
                               'inline-flex h-7 w-7 items-center justify-center rounded-md font-mono text-sm font-bold',
@@ -187,6 +200,15 @@ export function KitVolumePicker({
                           >
                             {box.boxType}
                           </span>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'px-1.5 py-0 font-mono text-[10px] uppercase tracking-wide',
+                              isStack ? FAIR_UI.stackBadge : 'text-muted-foreground'
+                            )}
+                          >
+                            {role}
+                          </Badge>
                           <span className="text-xs text-muted-foreground">
                             vol {idx + 1}/{product.boxTypes.length}
                           </span>
@@ -195,7 +217,17 @@ export function KitVolumePicker({
                           {formatBoxDimensionsCm(box.lengthMm, box.widthMm, box.heightMm)}
                         </p>
                         <div className="mt-1 flex flex-wrap gap-x-3 text-xs text-muted-foreground">
-                          <span>{box.groupWeightKg.toFixed(1)} kg</span>
+                          <span>
+                            {box.groupWeightKg.toFixed(1)} kg
+                            {isStack && box.stackPlates != null && box.stackPlates > 0 && (
+                              <>
+                                {' '}
+                                · {box.stackPlates} placa
+                                {box.stackPlates > 1 ? 's' : ''}
+                                {box.stackPlates < PLATES_PER_STACK_BOX ? ' avulsas' : ''}
+                              </>
+                            )}
+                          </span>
                           <span>{box.volumeM3.toFixed(2)} m³</span>
                         </div>
                       </div>
@@ -212,6 +244,12 @@ export function KitVolumePicker({
             </ul>
 
             <div className="shrink-0 border-t bg-background px-4 pb-safe-bottom pt-3 sm:px-5">
+              {!isFullKit && allTypes.length > 1 && (
+                <p className="mb-2 text-center text-[11px] text-muted-foreground">
+                  Parcial — {preview.weight.toFixed(0)} kg de {kitTotalKg.toFixed(0)} kg (kit
+                  completo)
+                </p>
+              )}
               <div
                 className={cn(
                   'mb-3 grid grid-cols-3 gap-1 rounded-xl py-3 text-center text-xs sm:text-sm',

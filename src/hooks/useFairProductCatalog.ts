@@ -3,9 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useFairResolvedTenant } from '@/hooks/useFairCompanies';
 import {
+  pruneAliasWeightPlates,
   type ShipperProductCatalog,
   type ShipperProductCatalogEntry,
 } from '@/lib/shipper-product-catalog';
+import { enrichKonnenCatalogFunctionalGroups } from '@/lib/konnen-catalog-functional';
 
 type ProductRow = {
   sku: string;
@@ -14,6 +16,8 @@ type ProductRow = {
   box_types_count: number;
   weight_kg_per_unit: number;
   volume_m3_per_unit: number;
+  catalog_group?: string | null;
+  product_kind?: string | null;
   product_boxes?: Array<{
     box_type: string;
     length_mm: number;
@@ -36,6 +40,11 @@ function catalogFromRows(rows: ProductRow[]): ShipperProductCatalog {
       boxTypesCount: row.box_types_count,
       weightKgPerUnit: Number(row.weight_kg_per_unit),
       volumeM3PerUnit: Number(row.volume_m3_per_unit),
+      catalogGroup: row.catalog_group ?? undefined,
+      productKind:
+        row.product_kind === 'kit' || row.product_kind === 'individual'
+          ? row.product_kind
+          : undefined,
       boxTypes: boxes.map((b) => ({
         boxType: b.box_type,
         lengthMm: b.length_mm,
@@ -56,7 +65,7 @@ export function useFairProductCatalog() {
   const { tenant, isLoading: tenantLoading } = useFairResolvedTenant();
 
   const query = useQuery({
-    queryKey: ['fair_product_catalog', tenant?.id],
+    queryKey: ['fair_product_catalog', tenant?.id, tenant?.slug],
     enabled: !!tenant?.id,
     queryFn: async (): Promise<ShipperProductCatalog> => {
       // client.ts still typed to public Database — schema feira via runtime.
@@ -68,6 +77,7 @@ export function useFairProductCatalog() {
           `
             sku, name, boxes_total, box_types_count,
             weight_kg_per_unit, volume_m3_per_unit,
+            catalog_group, product_kind,
             product_boxes (
               box_type, length_mm, width_mm, height_mm,
               boxes_per_unit, group_weight_kg, volume_m3
@@ -78,12 +88,18 @@ export function useFairProductCatalog() {
         .eq('active', true)
         .order('sku');
       if (error) throw error;
-      return catalogFromRows((data ?? []) as ProductRow[]);
+      return pruneAliasWeightPlates(catalogFromRows((data ?? []) as ProductRow[]));
     },
     staleTime: 1000 * 60 * 10,
   });
 
-  const catalog = useMemo(() => query.data ?? new Map(), [query.data]);
+  const catalog = useMemo(() => {
+    const base = query.data ?? new Map<string, ShipperProductCatalogEntry>();
+    if (tenant?.slug === 'konnen' && base.size > 0) {
+      return enrichKonnenCatalogFunctionalGroups(base);
+    }
+    return base;
+  }, [query.data, tenant?.slug]);
 
   return {
     catalog,

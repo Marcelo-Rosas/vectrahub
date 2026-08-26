@@ -1,0 +1,37 @@
+[
+  {
+    "id": "realleader",
+    "legalName": "Shandong Realleader Fitness Co., Ltd.",
+    "micSlug": "realleaderfitness",
+    "baseUrl": "https://realleaderfitness.en.made-in-china.com",
+    "scraper": "typescript+python-http",
+    "scripts": [
+      "scripts/scrape-realleader-mic-catalog.ts",
+      "scripts/scrape-realleader-mic-product-specs.ts",
+      "scripts/mic-factories/realleader/scrape_strength_glute_leader_logistics.py",
+      "scripts/mic-factories/realleader/audit_strength_glute_leader_listing.py"
+    ],
+    "configDir": "scripts/mic-factories/realleader",
+    "outputDir": "docs/homolog/mic-factories/realleader",
+    "notes": "Buckler OEM — catálogo TS; GL logistics via productList HTTP + dedupe"
+  },
+  {
+    "id": "tianzhan",
+    "legalName": "Shandong Tianzhan Fitness Equipment Co., Ltd.",
+    "micSlug": "dezhoutianzhan",
+    "baseUrl": "https://dezhoutianzhan.en.made-in-china.com",
+    "scraper": "python-playwright",
+    "configDir": "scripts/mic-factories/tianzhan",
+    "outputDir": "docs/homolog/mic-factories/tianzhan"
+  },
+  {
+    "id": "brtw",
+    "legalName": "BRTW (Brightway)",
+    "micSlug": "brtw-fitness",
+    "baseUrl": "https://brtw-fitness.en.made-in-china.com",
+    "scraper": "typescript",
+    "scripts": ["scripts/scrape-ahead-mic-catalog.ts"],
+    "outputDir": "docs/homolog/Ahead",
+    "notes": "Ahead tenant — ver ahead-mic-factories.json (BRTW/MBH/DHZ)"
+  }
+]

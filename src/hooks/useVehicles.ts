@@ -16,6 +16,7 @@ export interface VehicleWithRelations extends VehicleRow {
     name: string;
     phone: string | null;
     cnh?: string | null;
+    cpf?: string | null;
     antt?: string | null;
     contract_type?: 'proprio' | 'agregado' | 'terceiro' | null;
     rntrc_registry_type?: 'TAC' | 'ETC' | null;
@@ -26,12 +27,12 @@ export interface VehicleWithRelations extends VehicleRow {
 const selectWithRelations =
   'id, plate, plate_2, brand, model, year, color, renavam, vehicle_type_id, capacity_kg, capacity_m3, qtd_pallets, driver_id, owner_id, active, created_at, updated_at, ' +
   'owner:owners(id,name,phone), ' +
-  'driver:drivers(id,name,phone,cnh,antt,contract_type,rntrc_registry_type), ' +
+  'driver:drivers(id,name,phone,cnh,cpf,antt,contract_type,rntrc_registry_type), ' +
   'vehicle_type:vehicle_types(id,code,name)';
 
 // selectBase usa apenas colunas originais — seguro mesmo antes do SQL de migration ser rodado no Supabase
 const selectBase = 'id, plate, brand, model, driver_id, active';
-const selectWithDriverOnly = `${selectBase}, driver:drivers(id,name,phone)`;
+const selectWithDriverOnly = `${selectBase}, driver:drivers(id,name,phone,cnh,cpf,antt,contract_type,rntrc_registry_type)`;
 
 export function useVehicles(driverId?: string | null) {
   return useQuery({
@@ -64,9 +65,18 @@ export function useVehicles(driverId?: string | null) {
         return (filterSupabaseRows<VehicleWithRelations>(fallbackData) || []).map((row) => ({
           ...row,
           owner: null,
-          driver:
-            (row as { driver?: { id: string; name: string; phone: string | null } | null })
-              .driver ?? null,
+          driver: row.driver
+            ? {
+                id: row.driver.id,
+                name: row.driver.name,
+                phone: row.driver.phone,
+                cnh: row.driver.cnh ?? null,
+                cpf: row.driver.cpf ?? null,
+                antt: row.driver.antt ?? null,
+                contract_type: row.driver.contract_type ?? null,
+                rntrc_registry_type: row.driver.rntrc_registry_type ?? null,
+              }
+            : null,
         }));
       }
       return filterSupabaseRows<VehicleWithRelations>(data);
@@ -88,29 +98,24 @@ export function useVehicleByPlate(plate: string | null | undefined) {
     queryKey: ['vehicles', 'byPlate', normalized],
     queryFn: async () => {
       if (normalized.length < 7) return null;
-      const query = supabase
-        .from('vehicles')
-        .select(selectWithRelations)
-        .ilike('plate', normalized)
-        .limit(1)
-        .maybeSingle();
+      const query = supabase.from('vehicles').select(selectWithRelations).eq('active', asDb(true));
 
       const { data, error } = await query;
 
+      const pick = (rows: VehicleWithRelations[] | null | undefined) =>
+        (rows || []).find((row) => normalizePlate(row.plate) === normalized) ?? null;
+
       if (error) {
-        // Fallback universal: qualquer erro tenta sem join de owner
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('vehicles')
           .select(selectWithDriverOnly)
-          .ilike('plate', normalized)
-          .limit(1)
-          .maybeSingle();
+          .eq('active', asDb(true));
         if (fallbackError) throw fallbackError;
-        const row = filterSupabaseSingle<VehicleWithRelations>(fallbackData);
+        const row = pick(filterSupabaseRows<VehicleWithRelations>(fallbackData));
         if (!row) return null;
         return { ...row, owner: null };
       }
-      return filterSupabaseSingle<VehicleWithRelations>(data);
+      return pick(filterSupabaseRows<VehicleWithRelations>(data));
     },
     enabled,
   });

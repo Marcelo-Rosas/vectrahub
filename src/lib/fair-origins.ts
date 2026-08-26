@@ -1,8 +1,6 @@
-/** Hosts of the two Pages apps. Hub TMS ≠ Feira IHRSA. */
-
-export const HUB_APP_ORIGIN = 'https://app.hub.vectracargo.com.br';
-export const FAIR_APP_ORIGIN = 'https://app.feira.vectracargo.com.br';
-export const FAIR_APP_HOME = `${FAIR_APP_ORIGIN}/feira`;
+/** Hosts das duas Apps Pages Hub. Hub TMS ≠ Feira IHRSA. Canônico: docs/TENANCY.md */
+export { FAIR_APP_HOME, FAIR_APP_ORIGIN, HUB_APP_ORIGIN } from '@/lib/tenancy';
+import { HUB_APP_ORIGIN } from '@/lib/tenancy';
 
 export function isFairHostname(
   hostname = typeof window !== 'undefined' ? window.location.hostname : ''

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Calculator,
   Check,
   ChevronDown,
   FileDown,
+  FileUp,
   Loader2,
   MapPin,
   Package,
@@ -17,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -30,15 +31,31 @@ import { useCalculateFreight, type CalculateFreightResponse } from '@/hooks/useC
 import {
   aggregateCatalogQuoteLines,
   aggregateLineFromProduct,
-  BUCKLER_PRODUCT_LINES,
+  catalogAllEntries,
   catalogEntriesByLine,
   catalogLineCounts,
+  catalogLineModeForTenantSlug,
+  catalogLineLabel,
+  catalogProductLines,
+  FAIR_SMALL_CATALOG_SKUS,
   fullKitBoxTypes,
   resolveSelectedBoxTypes,
   searchShipperCatalog,
   type CatalogQuoteLine,
   type ShipperProductCatalogEntry,
 } from '@/lib/shipper-product-catalog';
+import {
+  catalogEntriesByFunctionalGroup,
+  catalogFunctionalGroupCounts,
+  filterCatalogByFunctionalGroup,
+} from '@/lib/konnen-catalog-functional';
+import {
+  getAllFunctionalGroups,
+  getFunctionalGroupChipLabel,
+  getFunctionalGroupLabel,
+  resolveKonnenFunctionalGroup,
+  type KonnenFunctionalGroup,
+} from '@/lib/konnen-functional-group';
 import { formatCurrency } from '@/lib/formatters';
 import { KitVolumePicker, type KitPickerResult } from '@/components/fair/KitVolumePicker';
 import { FairQtyStepper } from '@/components/fair/FairQtyStepper';
@@ -46,13 +63,14 @@ import { FairClientFields } from '@/components/fair/FairClientFields';
 import {
   EMPTY_FAIR_CLIENT,
   digitsOnly,
+  formatFairCep,
   fairDestinationCep,
   fairDestinationLabel,
   fairDestinationUf,
   isFairClientReady,
   type FairClientDraft,
 } from '@/lib/fair-client';
-import { fetchFairRouteKm } from '@/lib/fair-route-km';
+import { fetchFairRouteKm, resolveFairHubToll } from '@/lib/fair-route-km';
 import { fairQuotePricing } from '@/lib/fair-pricing';
 import { downloadFairQuotePdf } from '@/lib/fair-quote-pdf';
 import { FAIR_UI } from '@/lib/fair-brand-palettes';
@@ -60,6 +78,14 @@ import { fairTenantOriginLocked } from '@/lib/fair-tenant';
 import { useFairResolvedTenant } from '@/hooks/useFairCompanies';
 import { useFairSaveQuote } from '@/hooks/useFairSaveQuote';
 import type { FairSavedQuote } from '@/lib/fair-quote-store';
+import {
+  parseFairOrderPdf,
+  fairOrderPdfAdapterForTenant,
+  type FairOrderPdfUnmatched,
+} from '@/lib/fair-order-pdf';
+import { fairFreightGate, type FairFreightManualMode } from '@/lib/fair-freight-gate';
+import { pickFairPriceTableId } from '@/lib/fair-price-tables';
+import { FairFreightProfileCard } from '@/components/fair/FairFreightProfileCard';
 import { cn } from '@/lib/utils';
 
 type LineDraft = CatalogQuoteLine & { key: string };
@@ -69,21 +95,6 @@ const inputMobile = 'h-12 text-base touch-manipulation md:h-10 md:text-sm';
 function lineSignature(sku: string, boxTypes?: string[]): string {
   const types = boxTypes?.slice().sort().join(',') ?? 'FULL';
   return `${sku}::${types}`;
-}
-
-function pickDefaultLotacaoTableId(
-  tables: {
-    id: string;
-    active: boolean | null;
-    modality: string | null;
-    methodology?: string | null;
-  }[]
-): string {
-  const pool = tables.filter(
-    (t) => t.active && t.modality === 'lotacao' && t.methodology !== 'fracionado_parceiro'
-  );
-  const lot = pool.find((t) => t.methodology === 'lotacao');
-  return lot?.id || pool[0]?.id || '';
 }
 
 function volumeLabel(entry: ShipperProductCatalogEntry, selectedBoxTypes?: string[]): string {
@@ -97,7 +108,7 @@ export function FairQuoteCalculator() {
   const { user } = useAuth();
   const { tenant, isLoading: tenantLoading } = useFairResolvedTenant();
   const origin = tenant ? fairTenantOriginLocked(tenant) : '';
-  const { catalog, isFromDb } = useFairProductCatalog();
+  const { catalog } = useFairProductCatalog();
   const { data: priceTables } = usePriceTables();
   const calculateFreight = useCalculateFreight();
   const { save: saveFairQuote } = useFairSaveQuote();
@@ -108,16 +119,20 @@ export function FairQuoteCalculator() {
   const destUf = fairDestinationUf(client);
   const [kmDistance, setKmDistance] = useState('');
   const [kmLoading, setKmLoading] = useState(false);
-  const [cargoValue, setCargoValue] = useState(500_000);
+  const [cargoValue, setCargoValue] = useState(0);
   const [skuQuery, setSkuQuery] = useState('');
-  const [selectedLine, setSelectedLine] = useState<(typeof BUCKLER_PRODUCT_LINES)[number] | null>(
-    null
-  );
+  const [selectedLine, setSelectedLine] = useState<string | null>(null);
+  const [selectedFunctionalGroup, setSelectedFunctionalGroup] =
+    useState<KonnenFunctionalGroup | null>(null);
   const [lines, setLines] = useState<LineDraft[]>([]);
   const [result, setResult] = useState<CalculateFreightResponse | null>(null);
   const [savedQuote, setSavedQuote] = useState<FairSavedQuote | null>(null);
   const [saving, setSaving] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [orderPdfBusy, setOrderPdfBusy] = useState(false);
+  const [orderUnmatched, setOrderUnmatched] = useState<FairOrderPdfUnmatched[]>([]);
+  const [manualFreightMode, setManualFreightMode] = useState<FairFreightManualMode>('auto');
+  const gateCardRef = useRef<HTMLDivElement>(null);
 
   const [pickerProduct, setPickerProduct] = useState<ShipperProductCatalogEntry | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -128,25 +143,89 @@ export function FairQuoteCalculator() {
 
   const [setupOpen, setSetupOpen] = useState(true);
 
-  const lineCounts = useMemo(() => catalogLineCounts(catalog), [catalog]);
+  const catalogLineMode = catalogLineModeForTenantSlug(tenant?.slug);
+  const konnenFunctionalBeta = catalogLineMode === 'konnen';
+
+  const lineCounts = useMemo(
+    () => catalogLineCounts(catalog, catalogLineMode),
+    [catalog, catalogLineMode]
+  );
+  const productLines = useMemo(
+    () => catalogProductLines(catalog, 16, catalogLineMode),
+    [catalog, catalogLineMode]
+  );
+  const functionalGroupCounts = useMemo(
+    () => (konnenFunctionalBeta ? catalogFunctionalGroupCounts(catalog) : null),
+    [catalog, konnenFunctionalBeta]
+  );
 
   const skuHits = useMemo(() => {
     const q = skuQuery.trim();
-    if (q.length >= 2) return searchShipperCatalog(catalog, q, 20);
-    if (selectedLine) return catalogEntriesByLine(catalog, selectedLine);
-    return [];
-  }, [catalog, skuQuery, selectedLine]);
+    let hits: ShipperProductCatalogEntry[] = [];
+    if (q.length >= 2) hits = searchShipperCatalog(catalog, q, 20);
+    else if (konnenFunctionalBeta && selectedFunctionalGroup) {
+      hits = catalogEntriesByFunctionalGroup(catalog, selectedFunctionalGroup);
+    } else if (!konnenFunctionalBeta && selectedLine) {
+      hits = catalogEntriesByLine(catalog, selectedLine, catalogLineMode);
+    } else if (catalog.size > 0 && catalog.size <= FAIR_SMALL_CATALOG_SKUS) {
+      hits = catalogAllEntries(catalog);
+    }
+    if (konnenFunctionalBeta && selectedFunctionalGroup && q.length >= 2) {
+      hits = filterCatalogByFunctionalGroup(hits, selectedFunctionalGroup);
+    }
+    return hits;
+  }, [
+    catalog,
+    skuQuery,
+    selectedLine,
+    selectedFunctionalGroup,
+    catalogLineMode,
+    konnenFunctionalBeta,
+  ]);
+
+  const compactCatalog =
+    catalog.size > 0 && catalog.size <= FAIR_SMALL_CATALOG_SKUS && catalogLineMode !== 'rotha';
+
+  useEffect(() => {
+    setSelectedLine(null);
+    setSelectedFunctionalGroup(null);
+    setSkuQuery('');
+    setLines([]);
+    setOrderUnmatched([]);
+    setResult(null);
+    setSavedQuote(null);
+  }, [tenant?.id]);
 
   const aggregate = useMemo(
     () =>
       aggregateCatalogQuoteLines(
         catalog,
-        lines.map(({ sku, quantity, selectedBoxTypes }) => ({ sku, quantity, selectedBoxTypes }))
+        lines.map(({ sku, quantity, selectedBoxTypes, stackWeightKg }) => ({
+          sku,
+          quantity,
+          selectedBoxTypes,
+          stackWeightKg,
+        }))
       ),
     [catalog, lines]
   );
 
-  const defaultTableId = useMemo(() => pickDefaultLotacaoTableId(priceTables ?? []), [priceTables]);
+  const gate = useMemo(
+    () =>
+      fairFreightGate({
+        weightKg: aggregate.weightKg,
+        volumeM3: aggregate.volumeM3,
+        unmatchedSkuCount: orderUnmatched.length,
+        parsedLineCount: lines.length + orderUnmatched.length,
+        manualMode: manualFreightMode,
+      }),
+    [aggregate.weightKg, aggregate.volumeM3, orderUnmatched.length, lines.length, manualFreightMode]
+  );
+
+  const priceTableId = useMemo(
+    () => pickFairPriceTableId(priceTables ?? [], gate.hubModality),
+    [priceTables, gate.hubModality]
+  );
 
   const pricing = useMemo(() => {
     if (!result) return null;
@@ -155,8 +234,9 @@ export function FairQuoteCalculator() {
       hubTotalCliente: result.totals?.total_cliente ?? 0,
       hubToll: result.components?.toll ?? 0,
       fallbackPercent: tenant?.tollFallbackPercent ?? 0,
+      applyPercentToll: gate.hubModality === 'fracionado',
     });
-  }, [result, tenant?.tollFallbackPercent]);
+  }, [result, tenant?.tollFallbackPercent, gate.hubModality]);
 
   const invalidateQuote = () => {
     setResult(null);
@@ -180,9 +260,9 @@ export function FairQuoteCalculator() {
       originUf,
       destinationUf: destUf || tenant.originUf,
     })
-      .then((km) => {
+      .then((route) => {
         if (cancelled) return;
-        setKmDistance(String(km));
+        setKmDistance(String(route.km));
         setResult(null);
         setSavedQuote(null);
       })
@@ -256,6 +336,48 @@ export function FairQuoteCalculator() {
     invalidateQuote();
   };
 
+  const handleOrderPdfUpload = async (file: File) => {
+    setOrderPdfBusy(true);
+    setOrderUnmatched([]);
+    try {
+      const adapter = tenant ? fairOrderPdfAdapterForTenant(tenant.slug) : 'konnen-clicksign';
+      const parsed = await parseFairOrderPdf(file, adapter);
+      setClient(parsed.client);
+      if (parsed.cargoValue > 0) setCargoValue(parsed.cargoValue);
+      setLines(
+        parsed.lines.map((line) => ({
+          key: crypto.randomUUID(),
+          sku: line.sku,
+          quantity: line.quantity,
+          stackWeightKg: line.stackWeightKg,
+        }))
+      );
+      setOrderUnmatched(parsed.unmatched);
+      setSetupOpen(true);
+      invalidateQuote();
+
+      const preview = parsed.meta.gatePreview;
+      if (preview) {
+        toast.success(
+          `Perfil: ${preview.freightTypeLabel}${preview.modeSource === 'auto' ? ' (auto)' : ''}`
+        );
+        requestAnimationFrame(() => {
+          gateCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      }
+
+      const orderLabel = parsed.meta.orderNo ? ` pedido ${parsed.meta.orderNo}` : '';
+      toast.success(
+        `PDF importado${orderLabel}: ${parsed.lines.length} SKU(s) no catálogo` +
+          (parsed.unmatched.length > 0 ? ` · ${parsed.unmatched.length} não encontrado(s)` : '')
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Falha ao ler PDF do pedido');
+    } finally {
+      setOrderPdfBusy(false);
+    }
+  };
+
   const handleCalculate = async () => {
     if (lines.length === 0) {
       toast.error('Adicione ao menos um código de produto');
@@ -278,16 +400,35 @@ export function FairQuoteCalculator() {
       toast.error('Informe CNPJ/CEP para puxar a cidade de destino');
       return;
     }
+    if (!tenant) {
+      toast.error('Tenant feira indisponível');
+      return;
+    }
 
     try {
+      const displayedKm = parseFloat(kmDistance.replace(',', '.')) || 0;
+      const route = await resolveFairHubToll({
+        originCep: tenant.originCep,
+        destinationCep: destCep,
+        originUf: tenant.originUf,
+        destinationUf: destUf || tenant.originUf,
+        dedicado: gate.mode === 'dedicado',
+        axesCount: gate.suggestedVehicle?.axesCount,
+        kmFallback: displayedKm,
+      });
+      if (route.km !== displayedKm) setKmDistance(String(route.km));
+
       const response = await calculateFreight.mutateAsync({
         origin,
         destination,
         weight_kg: aggregate.weightKg,
         volume_m3: aggregate.volumeM3,
         cargo_value: cargoValue || 0,
-        km_distance: parseFloat(kmDistance.replace(',', '.')) || 0,
-        price_table_id: defaultTableId || undefined,
+        km_distance: route.km,
+        price_table_id: priceTableId || undefined,
+        vehicle_type_code: gate.suggestedVehicle?.code,
+        vehicle_axes_count: gate.suggestedVehicle?.axesCount,
+        toll_value: gate.mode === 'dedicado' ? route.tollValue : 0,
       });
       setSavedQuote(null);
       setResult(response);
@@ -322,10 +463,11 @@ export function FairQuoteCalculator() {
         destination,
         km: parseFloat(kmDistance.replace(',', '.')) || 0,
         cargoValue,
-        lines: lines.map(({ sku, quantity, selectedBoxTypes }) => ({
+        lines: lines.map(({ sku, quantity, selectedBoxTypes, stackWeightKg }) => ({
           sku,
           quantity,
           selectedBoxTypes,
+          stackWeightKg,
         })),
         weightKg: aggregate.weightKg,
         volumeM3: aggregate.volumeM3,
@@ -336,6 +478,16 @@ export function FairQuoteCalculator() {
         totalExibido: pricing.totalExibido,
         kmBandLabel: result.meta?.km_band_label ?? null,
         hubToll: result.components?.toll ?? 0,
+        freightModality: gate.hubModality,
+        freightTypeLabel: gate.freightTypeLabel,
+        vehicleTypeCode: gate.suggestedVehicle?.code ?? null,
+        billableWeightKg: gate.billableWeightKg,
+        gateAlerts: gate.alerts,
+        coverageIncomplete: gate.coverageIncomplete,
+        gateModeSource: gate.modeSource,
+        suggestedVehicleLabel: gate.suggestedVehicle
+          ? `${gate.suggestedVehicle.name} · ${gate.suggestedVehicle.axesCount} eixos · ~${(gate.suggestedVehicle.capacityKg / 1000).toFixed(0)} t útil`
+          : null,
       });
       setSavedQuote(quote);
       toast.success(`Cotação ${quote.code} salva`);
@@ -362,32 +514,123 @@ export function FairQuoteCalculator() {
     }
   };
 
-  const footerPad = result
-    ? 'pb-[calc(9rem+env(safe-area-inset-bottom,0px))]'
-    : 'pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]';
+  const mobileFooterPad = result
+    ? 'pb-[calc(8.5rem+env(safe-area-inset-bottom,0px))] md:pb-4'
+    : 'pb-[calc(4.75rem+env(safe-area-inset-bottom,0px))] md:pb-4';
 
   if (tenantLoading || !tenant) return null;
 
+  const aggregateHint =
+    aggregate.equipmentCount > 0 && !result ? (
+      <p className="text-center text-xs text-muted-foreground md:text-left">
+        {aggregate.weightKg.toFixed(0)} kg · {aggregate.boxesCount} caixas
+        {destination ? ` · ${destination.split('-')[0]?.trim()}` : ''}
+      </p>
+    ) : null;
+
+  const footerLeading =
+    result && savedQuote ? (
+      <p className={cn('text-xs font-medium', FAIR_UI.ink)}>{savedQuote.code}</p>
+    ) : (
+      aggregateHint
+    );
+
+  const calculateButton = (
+    <Button
+      className={cn(
+        'h-12 w-full touch-manipulation text-base font-semibold active:scale-[0.99] md:h-10 md:w-auto md:min-w-[11rem] md:px-6 md:text-sm',
+        FAIR_UI.cta
+      )}
+      onClick={handleCalculate}
+      disabled={
+        calculateFreight.isPending ||
+        lines.length === 0 ||
+        kmLoading ||
+        !(parseFloat(kmDistance) > 0)
+      }
+    >
+      {calculateFreight.isPending ? (
+        <Loader2 className="h-5 w-5 animate-spin" />
+      ) : (
+        <>
+          <Calculator className="mr-2 h-4 w-4" />
+          Calcular frete
+        </>
+      )}
+    </Button>
+  );
+
+  const resultActions = result ? (
+    <div className="w-full space-y-2 md:space-y-0">
+      {savedQuote && (
+        <p className="text-center text-xs text-muted-foreground md:hidden">{savedQuote.code}</p>
+      )}
+      <div className="grid grid-cols-2 gap-2 md:flex md:items-center md:justify-end md:gap-2">
+        <Button
+          type="button"
+          variant={savedQuote ? 'outline' : 'default'}
+          className={cn(
+            'h-12 touch-manipulation text-base font-semibold md:h-10 md:min-w-[8.5rem] md:text-sm',
+            !savedQuote && FAIR_UI.cta
+          )}
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : savedQuote ? (
+            <>
+              <Check className="mr-1.5 h-4 w-4" />
+              Salvo
+            </>
+          ) : (
+            <>
+              <Save className="mr-1.5 h-4 w-4" />
+              Salvar COT
+            </>
+          )}
+        </Button>
+        <Button
+          type="button"
+          className={cn(
+            'h-12 touch-manipulation text-base font-semibold md:h-10 md:min-w-[8.5rem] md:text-sm',
+            FAIR_UI.cta
+          )}
+          onClick={() => void handlePdf()}
+          disabled={!savedQuote || pdfBusy}
+        >
+          {pdfBusy ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <>
+              <FileDown className="mr-1.5 h-4 w-4" />
+              Emitir COT
+            </>
+          )}
+        </Button>
+        <button
+          type="button"
+          className="col-span-2 flex h-9 w-full items-center justify-center gap-1.5 text-sm text-muted-foreground touch-manipulation md:col-span-1 md:h-10 md:w-auto md:px-3"
+          onClick={invalidateQuote}
+        >
+          <Calculator className="h-4 w-4" />
+          Recalcular
+        </button>
+      </div>
+    </div>
+  ) : (
+    calculateButton
+  );
+
   return (
     <div
-      className={cn('mx-auto w-full max-w-lg space-y-3 px-4 py-3 sm:space-y-4 sm:py-4', footerPad)}
+      className={cn(
+        'mx-auto w-full max-w-lg space-y-3 px-4 py-3 sm:space-y-4 sm:py-4 md:max-w-3xl md:space-y-3 md:py-3',
+        mobileFooterPad
+      )}
     >
-      <div className="space-y-1 px-0.5">
-        <h1 className={cn('text-xl font-semibold tracking-tight sm:text-2xl', FAIR_UI.ink)}>
-          Cotação Feira
-        </h1>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          Busque SKU → escolha volumes → calcule
-          {isFromDb ? (
-            <Badge variant="secondary" className="ml-2 align-middle text-[10px]">
-              catálogo DB
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="ml-2 align-middle text-[10px]">
-              sem SKU em feira.products
-            </Badge>
-          )}
-        </p>
+      <div className="space-y-1 px-0.5 md:hidden">
+        <h1 className={cn('text-xl font-semibold tracking-tight', FAIR_UI.ink)}>Cotação Feira</h1>
       </div>
 
       {/* Cliente + rota primeiro; equipamentos depois */}
@@ -396,7 +639,7 @@ export function FairQuoteCalculator() {
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="flex w-full min-h-[3.25rem] items-center justify-between px-4 py-3 text-left touch-manipulation sm:px-6"
+              className="flex w-full min-h-[3.25rem] items-center justify-between px-4 py-3 text-left touch-manipulation sm:px-6 md:min-h-10 md:py-2"
             >
               <span className="flex items-center gap-2 text-base font-semibold">
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -422,23 +665,27 @@ export function FairQuoteCalculator() {
               </div>
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label>Origem (travada)</Label>
-                  <Input className={inputMobile} value={origin} readOnly disabled />
-                </div>
-                <div className="space-y-2">
-                  <Label>Destino</Label>
+                  <Label>CEP origem</Label>
                   <Input
                     className={inputMobile}
-                    value={destination}
+                    value={formatFairCep(tenant.originCep)}
                     readOnly
                     disabled
-                    placeholder="Cidade do CNPJ/CEP"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {client.deliveryDifferent
-                      ? 'Cidade da entrega (CEP diferente do cadastro)'
-                      : 'Puxado do CNPJ ou do CEP. Marque entrega diferente se não for o cadastro.'}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{origin}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>CEP destino</Label>
+                  <Input
+                    className={inputMobile}
+                    value={formatFairCep(destCep)}
+                    readOnly
+                    disabled
+                    placeholder="DO CNPJ/CEP"
+                  />
+                  {destination ? (
+                    <p className="text-xs font-medium uppercase text-foreground">{destination}</p>
+                  ) : null}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
@@ -449,9 +696,7 @@ export function FairQuoteCalculator() {
                         value={kmLoading ? '' : kmDistance}
                         readOnly
                         disabled
-                        placeholder={
-                          kmLoading ? 'Calculando…' : destCep.length === 8 ? '—' : 'CEP primeiro'
-                        }
+                        placeholder={kmLoading ? 'Calculando…' : '—'}
                       />
                       {kmLoading && (
                         <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
@@ -486,47 +731,128 @@ export function FairQuoteCalculator() {
       </Collapsible>
 
       <Card className="overflow-hidden border-[color:var(--fair-border)]/40 shadow-sm">
-        <CardHeader className="space-y-1 pb-2 pt-4">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Package className={cn('h-5 w-5', FAIR_UI.accent)} />
-            Equipamentos
-          </CardTitle>
-          <CardDescription className="text-sm">
-            6 linhas · toque a linha, depois o kit
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3 pb-4">
-          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {BUCKLER_PRODUCT_LINES.map((line) => {
-              const n = lineCounts[line] ?? 0;
-              const on = selectedLine === line;
-              return (
-                <Button
-                  key={line}
-                  type="button"
-                  variant={on ? 'default' : 'outline'}
-                  size="sm"
-                  className={cn(
-                    'h-11 min-w-[3.5rem] shrink-0 touch-manipulation px-3 font-mono text-sm',
-                    on && FAIR_UI.cta
-                  )}
-                  onClick={() => {
-                    setSelectedLine((prev) => (prev === line ? null : line));
-                    setSkuQuery('');
-                  }}
-                >
-                  {line}
-                  <span className="ml-1 text-[10px] opacity-80">{n}</span>
-                </Button>
-              );
-            })}
+        <input
+          id="fair-order-pdf-input"
+          type="file"
+          accept=".pdf,application/pdf"
+          className="sr-only"
+          disabled={orderPdfBusy}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = '';
+            if (file) void handleOrderPdfUpload(file);
+          }}
+        />
+        <CardHeader className="space-y-0 pb-2 pt-3 md:py-3">
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="flex min-w-0 items-center gap-2 text-base md:text-sm">
+              <Package className={cn('h-4 w-4 shrink-0 md:h-3.5 md:w-3.5', FAIR_UI.accent)} />
+              Equipamentos
+            </CardTitle>
+            <Button
+              type="button"
+              size="sm"
+              className={cn('h-10 shrink-0 touch-manipulation uppercase md:h-8', FAIR_UI.cta)}
+              disabled={orderPdfBusy}
+              onClick={() => document.getElementById('fair-order-pdf-input')?.click()}
+            >
+              {orderPdfBusy ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <FileUp className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              Enviar pedido PDF
+            </Button>
           </div>
+        </CardHeader>
+        <CardContent className="space-y-3 pb-3 md:pb-3">
+          {orderUnmatched.length > 0 && (
+            <Alert variant="destructive" className="border-amber-300 bg-amber-50 text-amber-950">
+              <AlertDescription className="space-y-2 text-sm">
+                <p className="font-medium">
+                  {orderUnmatched.length} SKU(s) do PDF não estão em feira.products — importamos o
+                  restante.
+                </p>
+                <p className="font-mono text-xs leading-relaxed">
+                  {orderUnmatched
+                    .slice(0, 12)
+                    .map((u) => `${u.rawSku}×${u.quantity}`)
+                    .join(' · ')}
+                  {orderUnmatched.length > 12 ? ` · +${orderUnmatched.length - 12}` : ''}
+                </p>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {konnenFunctionalBeta ? (
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {getAllFunctionalGroups().map((group) => {
+                const n = functionalGroupCounts?.[group] ?? 0;
+                if (n === 0) return null;
+                const on = selectedFunctionalGroup === group;
+                return (
+                  <Button
+                    key={group}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    title={getFunctionalGroupLabel(group)}
+                    className={cn(
+                      'h-11 min-w-fit shrink-0 touch-manipulation px-3 font-mono text-sm uppercase md:h-8 md:px-2.5 md:text-xs',
+                      on
+                        ? cn(FAIR_UI.cta, 'border-transparent hover:opacity-90')
+                        : FAIR_UI.toggleOff
+                    )}
+                    onClick={() => {
+                      setSelectedFunctionalGroup((prev) => (prev === group ? null : group));
+                      setSelectedLine(null);
+                      setSkuQuery('');
+                    }}
+                  >
+                    {getFunctionalGroupChipLabel(group)}
+                    <span className="ml-1 text-[10px] opacity-80">{n}</span>
+                  </Button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {productLines.map((line) => {
+                const n = lineCounts[line] ?? 0;
+                const on = selectedLine === line;
+                return (
+                  <Button
+                    key={line}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      'h-11 min-w-fit shrink-0 touch-manipulation px-3 font-mono text-sm uppercase md:h-8 md:px-2.5 md:text-xs',
+                      on
+                        ? cn(FAIR_UI.cta, 'border-transparent hover:opacity-90')
+                        : FAIR_UI.toggleOff
+                    )}
+                    onClick={() => {
+                      setSelectedLine((prev) => (prev === line ? null : line));
+                      setSkuQuery('');
+                    }}
+                  >
+                    {catalogLineLabel(line)}
+                    <span className="ml-1 text-[10px] opacity-80">{n}</span>
+                  </Button>
+                );
+              })}
+            </div>
+          )}
           <div className="flex gap-2">
             <div className="relative min-w-0 flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
-                className={cn(inputMobile, 'pl-10 font-mono')}
-                placeholder="SKU ou nome"
+                className={cn(
+                  inputMobile,
+                  'pl-10 font-mono uppercase placeholder:normal-case placeholder:uppercase'
+                )}
+                placeholder="SKU OU NOME"
                 value={skuQuery}
                 autoComplete="off"
                 autoCorrect="off"
@@ -549,36 +875,37 @@ export function FairQuoteCalculator() {
             </Button>
           </div>
 
-          {(skuQuery.trim().length >= 2 || selectedLine) && skuHits.length > 0 && (
-            <div className="max-h-[min(40vh,16rem)] overflow-y-auto overscroll-contain rounded-xl border divide-y">
-              {skuHits.map((h) => (
-                <button
-                  key={h.sku}
-                  type="button"
-                  className="flex min-h-[3.5rem] w-full flex-col justify-center px-4 py-3 text-left touch-manipulation active:bg-[var(--fair-accent-soft)]"
-                  onClick={() => openKitPicker(h)}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className={cn('font-mono text-base font-semibold', FAIR_UI.ink)}>
-                      {h.sku}
-                    </span>
-                    <Badge variant="outline" className="font-mono text-[10px]">
-                      {h.boxTypes.length} vol
-                    </Badge>
-                  </div>
-                  <span className="line-clamp-1 text-sm text-muted-foreground">{h.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
+          {(skuQuery.trim().length >= 2 ||
+            selectedLine ||
+            selectedFunctionalGroup ||
+            compactCatalog) &&
+            skuHits.length > 0 && (
+              <div className="max-h-[min(40vh,16rem)] overflow-y-auto overscroll-contain rounded-xl border divide-y">
+                {skuHits.map((h) => {
+                  return (
+                    <button
+                      key={h.sku}
+                      type="button"
+                      className="flex min-h-[3.5rem] w-full flex-col justify-center px-4 py-3 text-left touch-manipulation active:bg-[var(--fair-accent-soft)]"
+                      onClick={() => openKitPicker(h)}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={cn('font-mono text-base font-semibold', FAIR_UI.ink)}>
+                          {h.sku}
+                        </span>
+                        <Badge variant="outline" className="font-mono text-[10px]">
+                          {h.boxTypes.length} vol
+                        </Badge>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
           {lines.length === 0 ? (
-            <div className="rounded-xl border border-dashed px-4 py-8 text-center">
-              <Package className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">Nenhum item ainda</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Toque FM · PF · LD · FW · M2 · GL
-              </p>
+            <div className="rounded-xl border border-dashed px-4 py-6 text-center">
+              <Package className="mx-auto h-8 w-8 text-muted-foreground/40" />
             </div>
           ) : (
             <ul className="space-y-2.5">
@@ -608,9 +935,6 @@ export function FairQuoteCalculator() {
                               {volumeLabel(p, line.selectedBoxTypes)}
                             </Badge>
                           )}
-                        </div>
-                        <div className="mt-0.5 truncate text-sm text-muted-foreground">
-                          {p?.name}
                         </div>
                         {resolved && (
                           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground sm:text-sm">
@@ -693,13 +1017,25 @@ export function FairQuoteCalculator() {
         </CardContent>
       </Card>
 
+      {aggregate.equipmentCount > 0 && (
+        <div ref={gateCardRef}>
+          <FairFreightProfileCard
+            gate={gate}
+            manualMode={manualFreightMode}
+            onManualModeChange={(mode) => {
+              setManualFreightMode(mode);
+              invalidateQuote();
+            }}
+          />
+        </div>
+      )}
+
       {result && pricing && (
         <Card
           className={cn('shadow-md animate-in fade-in slide-in-from-bottom-2', FAIR_UI.resultCard)}
         >
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Frete estimado</CardTitle>
-            <CardDescription>Válido 48h — confirmação comercial</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className={cn('text-3xl font-bold tracking-tight sm:text-4xl', FAIR_UI.price)}>
@@ -707,14 +1043,11 @@ export function FairQuoteCalculator() {
             </p>
             <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
               <span>Frete</span>
-              <span className="text-right tabular-nums">
-                {formatCurrency(pricing.hubTotalCliente)}
-              </span>
-              <span>Pedágio estimado ({tenant?.tollFallbackPercent ?? 0}%)</span>
-              <span className="text-right tabular-nums">
-                {formatCurrency(pricing.pedagioEstimado)}
+              <span className="text-right tabular-nums font-medium text-foreground">
+                {formatCurrency(pricing.totalExibido)}
               </span>
             </div>
+            <p className="text-xs text-muted-foreground">Pedágio incluso no valor</p>
             {result.meta?.km_band_label && (
               <p className="text-sm text-muted-foreground">{result.meta.km_band_label}</p>
             )}
@@ -737,99 +1070,28 @@ export function FairQuoteCalculator() {
         initialQuantity={pickerInitial.quantity}
       />
 
-      {/* CTA fixo — safe area iOS/Android */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-4 pb-safe-bottom pt-3 backdrop-blur supports-[backdrop-filter]:bg-background/90">
-        {aggregate.equipmentCount > 0 && !result && (
-          <p className="mb-2 text-center text-xs text-muted-foreground">
-            {aggregate.weightKg.toFixed(0)} kg · {aggregate.boxesCount} caixas
-            {destination ? ` · ${destination.split('-')[0]?.trim()}` : ''}
-          </p>
+      {/* Desktop: barra inline — não bloqueia scroll */}
+      <div
+        className={cn(
+          'hidden rounded-lg border bg-card px-4 py-3 shadow-sm md:flex md:items-center md:gap-4',
+          FAIR_UI.resultCard
         )}
-        {result ? (
-          <div className="space-y-2">
-            {savedQuote && (
-              <p className="text-center text-xs text-muted-foreground">{savedQuote.code}</p>
-            )}
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                type="button"
-                variant={savedQuote ? 'outline' : 'default'}
-                className={cn(
-                  'h-12 touch-manipulation text-base font-semibold',
-                  !savedQuote && FAIR_UI.cta
-                )}
-                onClick={handleSave}
-                disabled={saving}
-              >
-                {saving ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : savedQuote ? (
-                  <>
-                    <Check className="mr-1.5 h-5 w-5" />
-                    Salvo
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-1.5 h-5 w-5" />
-                    Salvar COT
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                className={cn('h-12 touch-manipulation text-base font-semibold', FAIR_UI.cta)}
-                onClick={() => void handlePdf()}
-                disabled={!savedQuote || pdfBusy}
-              >
-                {pdfBusy ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <>
-                    <FileDown className="mr-1.5 h-5 w-5" />
-                    Emitir COT
-                  </>
-                )}
-              </Button>
-            </div>
-            <button
-              type="button"
-              className="flex h-10 w-full items-center justify-center gap-1.5 text-sm text-muted-foreground touch-manipulation"
-              onClick={invalidateQuote}
-            >
-              <Calculator className="h-4 w-4" />
-              Recalcular
-            </button>
-          </div>
-        ) : (
-          <Button
-            className={cn(
-              'h-12 w-full touch-manipulation text-base font-semibold active:scale-[0.99]',
-              FAIR_UI.cta
-            )}
-            onClick={handleCalculate}
-            disabled={
-              calculateFreight.isPending ||
-              lines.length === 0 ||
-              kmLoading ||
-              !(parseFloat(kmDistance) > 0)
-            }
-          >
-            {calculateFreight.isPending ? (
-              <Loader2 className="h-6 w-6 animate-spin" />
-            ) : (
-              <>
-                <Calculator className="mr-2 h-5 w-5" />
-                Calcular frete
-              </>
-            )}
-          </Button>
-        )}
+      >
+        <div className="min-w-0 flex-1">{footerLeading}</div>
+        <div className="shrink-0">{resultActions}</div>
       </div>
 
-      {!defaultTableId && (
+      {/* Mobile: CTA fixo — safe area iOS/Android */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-4 pb-safe-bottom pt-2 backdrop-blur supports-[backdrop-filter]:bg-background/90 md:hidden">
+        {footerLeading && <div className="mb-1.5">{footerLeading}</div>}
+        {resultActions}
+      </div>
+
+      {!priceTableId && (
         <Alert className="mb-2">
           <AlertDescription className="text-xs">
-            Tabela lotação padrão não encontrada — cálculo pode falhar.
+            Tabela {gate.hubModality === 'lotacao' ? 'lotação' : 'fracionado NTC'} não encontrada —
+            cálculo pode falhar.
           </AlertDescription>
         </Alert>
       )}

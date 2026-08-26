@@ -29,7 +29,12 @@ export type FairTenant = {
 };
 
 export function logoSrcForSlug(slug: string): string {
-  return `/brand/${slug.trim().toLowerCase()}-logo.svg`;
+  const key = slug.trim().toLowerCase();
+  // PNG curado no banner preto (mesmo padrão Konnen). Buckler permanece SVG.
+  if (key === 'konnen' || key === 'rotha' || key === 'playfit') {
+    return `/brand/${key}-logo.png`;
+  }
+  return `/brand/${key}-logo.svg`;
 }
 
 export function companyRowToTenant(row: FairCompanyRow): FairTenant {
@@ -91,13 +96,61 @@ export function signupDomainHint(tenants: readonly FairTenant[]): string {
   return domains.join(' ou ');
 }
 
+export {
+  fairSignupDomainHint,
+  fairSignupDomainsForSlug,
+  fairSignupEmailPlaceholder,
+  fairSignupPath,
+  isFairSignupEmail,
+  listFairSignupRoutes,
+  FAIR_SIGNUP_TENANTS,
+} from '@/lib/fair-signup';
+
+export const FAIR_STAFF_TENANT_SLUG_KEY = 'feira-staff-tenant-slug';
+
+export function canSwitchFairTenant(email: string | null | undefined): boolean {
+  return isVectraStaffEmail(email);
+}
+
+export function readFairStaffTenantSlug(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(FAIR_STAFF_TENANT_SLUG_KEY);
+    return raw?.trim().toLowerCase() || null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeFairStaffTenantSlug(slug: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(FAIR_STAFF_TENANT_SLUG_KEY, slug.trim().toLowerCase());
+  } catch {
+    /* quota / private mode */
+  }
+}
+
+export function resolveFairTenantBySlug(
+  slug: string | null | undefined,
+  tenants: readonly FairTenant[]
+): FairTenant | null {
+  const key = (slug ?? '').trim().toLowerCase();
+  if (!key) return null;
+  return tenants.find((t) => t.slug === key) ?? null;
+}
+
 export function resolveFairTenant(
   email: string | null | undefined,
-  tenants: readonly FairTenant[]
+  tenants: readonly FairTenant[],
+  staffTenantSlug?: string | null
 ): FairTenant | null {
   const hit = matchTenantByEmail(email, tenants);
   if (hit) return hit;
-  if (isVectraStaffEmail(email) && tenants.length > 0) return tenants[0] ?? null;
+  if (isVectraStaffEmail(email) && tenants.length > 0) {
+    const picked = resolveFairTenantBySlug(staffTenantSlug, tenants);
+    return picked ?? tenants[0] ?? null;
+  }
   return null;
 }
 

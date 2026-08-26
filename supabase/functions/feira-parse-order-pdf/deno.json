@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@supabase/server": "npm:@supabase/server",
+    "unpdf": "npm:unpdf@1.0.6"
+  }
+}

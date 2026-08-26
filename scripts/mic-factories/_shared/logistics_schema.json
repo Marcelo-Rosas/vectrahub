@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MicFactoryLogisticsRow",
+  "description": "Linha logística MIC — compatível com buckler-caixas-por-medida / shipper-product-catalog",
+  "type": "object",
+  "required": [
+    "Item",
+    "Produto",
+    "Qtd. Caixas Total",
+    "Tipo Caixa",
+    "COMPRIMENTO",
+    "LARGURA",
+    "ALTURA",
+    "Qtd. Tipos de Medida",
+    "Qtd. Caixas por Medida",
+    "Peso Bruto Total (kg)",
+    "Peso Médio por Caixa (kg)",
+    "Peso Estimado do Grupo (kg)"
+  ],
+  "properties": {
+    "Item": { "type": "string" },
+    "Produto": { "type": "string" },
+    "Qtd. Caixas Total": { "type": "number" },
+    "Tipo Caixa": { "type": "string" },
+    "COMPRIMENTO": { "type": "string" },
+    "LARGURA": { "type": "string" },
+    "ALTURA": { "type": "string" },
+    "Qtd. Tipos de Medida": { "type": "number" },
+    "Qtd. Caixas por Medida": { "type": "number" },
+    "Peso Bruto Total (kg)": { "type": "number" },
+    "Peso Médio por Caixa (kg)": { "type": "number" },
+    "Peso Estimado do Grupo (kg)": { "type": "number" },
+    "URL_Origem": { "type": "string" },
+    "MIC_Hash": { "type": "string" }
+  }
+}
