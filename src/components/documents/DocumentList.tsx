@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
 import { openDocument, downloadDocument } from '@/lib/storage';
+import { parsePodDocumentMeta } from '@/lib/pod-pdf-shippers';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -83,7 +84,8 @@ export function DocumentList({
 
   const documents = dedupeByType
     ? filteredDocuments.filter(
-        (doc, index, arr) => arr.findIndex((d) => d.type === doc.type) === index
+        (doc, index, arr) =>
+          doc.type === 'pod' || arr.findIndex((d) => d.type === doc.type) === index
       )
     : filteredDocuments;
   const deleteDocumentMutation = useDeleteDocument();
@@ -172,6 +174,9 @@ export function DocumentList({
               </div>
               <p className="text-xs text-muted-foreground">
                 {formatFileSize(doc.file_size)} • {formatDate(doc.created_at)}
+                {doc.type === 'pod' && parsePodDocumentMeta(doc.validation_metadata).shipper_name
+                  ? ` • ${parsePodDocumentMeta(doc.validation_metadata).shipper_name}`
+                  : ''}
               </p>
             </div>
 
@@ -182,7 +187,7 @@ export function DocumentList({
                   size="icon"
                   className="h-8 w-8 text-green-600 hover:text-green-700"
                   onClick={() => onGeneratePodPdf(doc)}
-                  title="Gerar Comprovante de Entrega PDF"
+                  title="Gerar comprovante de entrega (PDF). Viagem VG com dois embarcadores baixa um arquivo por embarcador."
                 >
                   <FileCheck2 className="w-4 h-4" />
                 </Button>
