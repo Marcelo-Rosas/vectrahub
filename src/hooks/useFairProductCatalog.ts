@@ -14,6 +14,12 @@ type ProductRow = {
   box_types_count: number;
   weight_kg_per_unit: number;
   volume_m3_per_unit: number;
+  has_weight_stack?: boolean | null;
+  weight_stack_sku?: string | null;
+  weight_stack_boxes_count?: number | null;
+  weight_kg_with_stack?: number | null;
+  volume_m3_with_stack?: number | null;
+  boxes_total_with_stack?: number | null;
   product_boxes?: Array<{
     box_type: string;
     length_mm: number;
@@ -22,6 +28,7 @@ type ProductRow = {
     boxes_per_unit: number;
     group_weight_kg: number;
     volume_m3: number;
+    box_role?: string | null;
   }> | null;
 };
 
@@ -36,6 +43,12 @@ function catalogFromRows(rows: ProductRow[]): ShipperProductCatalog {
       boxTypesCount: row.box_types_count,
       weightKgPerUnit: Number(row.weight_kg_per_unit),
       volumeM3PerUnit: Number(row.volume_m3_per_unit),
+      hasWeightStack: Boolean(row.has_weight_stack),
+      weightStackSku: row.weight_stack_sku ?? null,
+      weightStackBoxesCount: row.weight_stack_boxes_count ?? null,
+      weightKgWithStack: row.weight_kg_with_stack != null ? Number(row.weight_kg_with_stack) : null,
+      volumeM3WithStack: row.volume_m3_with_stack != null ? Number(row.volume_m3_with_stack) : null,
+      boxesTotalWithStack: row.boxes_total_with_stack ?? null,
       boxTypes: boxes.map((b) => ({
         boxType: b.box_type,
         lengthMm: b.length_mm,
@@ -44,6 +57,9 @@ function catalogFromRows(rows: ProductRow[]): ShipperProductCatalog {
         boxesPerUnit: Number(b.boxes_per_unit),
         groupWeightKg: Number(b.group_weight_kg),
         volumeM3: Number(b.volume_m3),
+        boxRole: (b.box_role === 'weight_stack' ? 'weight_stack' : 'frame') as
+          | 'frame'
+          | 'weight_stack',
       })),
     };
     catalog.set(String(row.sku).toUpperCase(), entry);
@@ -68,9 +84,11 @@ export function useFairProductCatalog() {
           `
             sku, name, boxes_total, box_types_count,
             weight_kg_per_unit, volume_m3_per_unit,
+            has_weight_stack, weight_stack_sku, weight_stack_boxes_count,
+            weight_kg_with_stack, volume_m3_with_stack, boxes_total_with_stack,
             product_boxes (
               box_type, length_mm, width_mm, height_mm,
-              boxes_per_unit, group_weight_kg, volume_m3
+              boxes_per_unit, group_weight_kg, volume_m3, box_role
             )
           `
         )

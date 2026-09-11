@@ -12,7 +12,12 @@ export type FairSavedQuote = {
   destination: string;
   km: number;
   cargoValue: number;
-  lines: { sku: string; quantity: number; selectedBoxTypes?: string[] }[];
+  lines: {
+    sku: string;
+    quantity: number;
+    selectedBoxTypes?: string[];
+    includeWeightStack?: boolean;
+  }[];
   weightKg: number;
   volumeM3: number;
   boxesCount: number;

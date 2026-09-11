@@ -2,7 +2,12 @@ import { computeFairToll } from '../_shared/fair-toll.ts';
 import { digitsOnly, feiraFrom, nextFairQuoteCode } from '../_shared/feira-client.ts';
 import { corsPreflight, jsonWithCors, resolveSupabaseContext } from '../_shared/supabase-server.ts';
 
-type LineIn = { sku?: string; quantity?: number; selectedBoxTypes?: string[] };
+type LineIn = {
+  sku?: string;
+  quantity?: number;
+  selectedBoxTypes?: string[];
+  includeWeightStack?: boolean;
+};
 type ClientIn = {
   document?: string;
   cnpj?: string;
@@ -131,7 +136,9 @@ Deno.serve(async (req) => {
 
   const skus = [...new Set(lines.map((l) => (l.sku ?? '').trim().toUpperCase()).filter(Boolean))];
   const { data: products } = await feiraFrom(supabase, 'products')
-    .select('sku, weight_kg_per_unit, volume_m3_per_unit, boxes_total')
+    .select(
+      'sku, weight_kg_per_unit, volume_m3_per_unit, boxes_total, has_weight_stack, weight_kg_with_stack, volume_m3_with_stack, boxes_total_with_stack'
+    )
     .eq('company_id', company.id)
     .in('sku', skus.length ? skus : ['__none__']);
 
@@ -145,6 +152,7 @@ Deno.serve(async (req) => {
     sku: string;
     quantity: number;
     selected_box_types: string[] | null;
+    include_weight_stack: boolean;
     weight_kg: number;
     volume_m3: number;
     boxes_count: number;
@@ -153,16 +161,39 @@ Deno.serve(async (req) => {
   for (const line of lines) {
     const sku = (line.sku ?? '').trim().toUpperCase();
     const qty = Math.max(1, Math.floor(num(line.quantity, 1)));
+    const withStack = Boolean(line.includeWeightStack);
     const prod = bySku.get(sku) as
       | {
           weight_kg_per_unit: number;
           volume_m3_per_unit: number;
           boxes_total: number;
+          has_weight_stack?: boolean;
+          weight_kg_with_stack?: number | null;
+          volume_m3_with_stack?: number | null;
+          boxes_total_with_stack?: number | null;
         }
       | undefined;
-    const w = prod ? num(prod.weight_kg_per_unit) * qty : 0;
-    const v = prod ? num(prod.volume_m3_per_unit) * qty : 0;
-    const b = prod ? num(prod.boxes_total) * qty : 0;
+    const unitWeight =
+      prod && withStack && prod.has_weight_stack && prod.weight_kg_with_stack != null
+        ? num(prod.weight_kg_with_stack)
+        : prod
+          ? num(prod.weight_kg_per_unit)
+          : 0;
+    const unitVolume =
+      prod && withStack && prod.has_weight_stack && prod.volume_m3_with_stack != null
+        ? num(prod.volume_m3_with_stack)
+        : prod
+          ? num(prod.volume_m3_per_unit)
+          : 0;
+    const unitBoxes =
+      prod && withStack && prod.has_weight_stack && prod.boxes_total_with_stack != null
+        ? num(prod.boxes_total_with_stack)
+        : prod
+          ? num(prod.boxes_total)
+          : 0;
+    const w = unitWeight * qty;
+    const v = unitVolume * qty;
+    const b = unitBoxes * qty;
     weightKg += w;
     volumeM3 += v;
     boxesCount += b;
@@ -170,6 +201,7 @@ Deno.serve(async (req) => {
       sku,
       quantity: qty,
       selected_box_types: line.selectedBoxTypes?.length ? line.selectedBoxTypes : null,
+      include_weight_stack: withStack,
       weight_kg: round2(w),
       volume_m3: v,
       boxes_count: b,

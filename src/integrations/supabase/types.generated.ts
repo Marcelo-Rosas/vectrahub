@@ -117,6 +117,7 @@ export type Database = {
       };
       product_boxes: {
         Row: {
+          box_role: string;
           box_type: string;
           boxes_per_unit: number;
           group_weight_kg: number;
@@ -128,6 +129,7 @@ export type Database = {
           width_mm: number;
         };
         Insert: {
+          box_role?: string;
           box_type: string;
           boxes_per_unit?: number;
           group_weight_kg?: number;
@@ -139,6 +141,7 @@ export type Database = {
           width_mm: number;
         };
         Update: {
+          box_role?: string;
           box_type?: string;
           boxes_per_unit?: number;
           group_weight_kg?: number;
@@ -164,34 +167,52 @@ export type Database = {
           active: boolean;
           box_types_count: number;
           boxes_total: number;
+          boxes_total_with_stack: number | null;
           company_id: string;
+          has_weight_stack: boolean;
           id: string;
           name: string;
           sku: string;
           volume_m3_per_unit: number;
+          volume_m3_with_stack: number | null;
           weight_kg_per_unit: number;
+          weight_kg_with_stack: number | null;
+          weight_stack_boxes_count: number | null;
+          weight_stack_sku: string | null;
         };
         Insert: {
           active?: boolean;
           box_types_count?: number;
           boxes_total?: number;
+          boxes_total_with_stack?: number | null;
           company_id: string;
+          has_weight_stack?: boolean;
           id?: string;
           name: string;
           sku: string;
           volume_m3_per_unit: number;
+          volume_m3_with_stack?: number | null;
           weight_kg_per_unit: number;
+          weight_kg_with_stack?: number | null;
+          weight_stack_boxes_count?: number | null;
+          weight_stack_sku?: string | null;
         };
         Update: {
           active?: boolean;
           box_types_count?: number;
           boxes_total?: number;
+          boxes_total_with_stack?: number | null;
           company_id?: string;
+          has_weight_stack?: boolean;
           id?: string;
           name?: string;
           sku?: string;
           volume_m3_per_unit?: number;
+          volume_m3_with_stack?: number | null;
           weight_kg_per_unit?: number;
+          weight_kg_with_stack?: number | null;
+          weight_stack_boxes_count?: number | null;
+          weight_stack_sku?: string | null;
         };
         Relationships: [
           {
@@ -207,6 +228,7 @@ export type Database = {
         Row: {
           boxes_count: number;
           id: string;
+          include_weight_stack: boolean;
           quantity: number;
           quote_id: string;
           selected_box_types: string[] | null;
@@ -217,6 +239,7 @@ export type Database = {
         Insert: {
           boxes_count: number;
           id?: string;
+          include_weight_stack?: boolean;
           quantity: number;
           quote_id: string;
           selected_box_types?: string[] | null;
@@ -227,6 +250,7 @@ export type Database = {
         Update: {
           boxes_count?: number;
           id?: string;
+          include_weight_stack?: boolean;
           quantity?: number;
           quote_id?: string;
           selected_box_types?: string[] | null;
@@ -5967,6 +5991,7 @@ export type Database = {
       };
       shipper_product_boxes: {
         Row: {
+          box_role: string;
           box_type: string;
           boxes_per_unit: number;
           created_at: string;
@@ -5979,6 +6004,7 @@ export type Database = {
           width_mm: number;
         };
         Insert: {
+          box_role?: string;
           box_type: string;
           boxes_per_unit?: number;
           created_at?: string;
@@ -5991,6 +6017,7 @@ export type Database = {
           width_mm: number;
         };
         Update: {
+          box_role?: string;
           box_type?: string;
           boxes_per_unit?: number;
           created_at?: string;
@@ -6017,40 +6044,58 @@ export type Database = {
           active: boolean;
           box_types_count: number;
           boxes_total: number;
+          boxes_total_with_stack: number | null;
           created_at: string;
+          has_weight_stack: boolean;
           id: string;
           name: string;
           shipper_id: string;
           sku: string;
           updated_at: string;
           volume_m3_per_unit: number;
+          volume_m3_with_stack: number | null;
           weight_kg_per_unit: number;
+          weight_kg_with_stack: number | null;
+          weight_stack_boxes_count: number | null;
+          weight_stack_sku: string | null;
         };
         Insert: {
           active?: boolean;
           box_types_count?: number;
           boxes_total?: number;
+          boxes_total_with_stack?: number | null;
           created_at?: string;
+          has_weight_stack?: boolean;
           id?: string;
           name: string;
           shipper_id: string;
           sku: string;
           updated_at?: string;
           volume_m3_per_unit: number;
+          volume_m3_with_stack?: number | null;
           weight_kg_per_unit: number;
+          weight_kg_with_stack?: number | null;
+          weight_stack_boxes_count?: number | null;
+          weight_stack_sku?: string | null;
         };
         Update: {
           active?: boolean;
           box_types_count?: number;
           boxes_total?: number;
+          boxes_total_with_stack?: number | null;
           created_at?: string;
+          has_weight_stack?: boolean;
           id?: string;
           name?: string;
           shipper_id?: string;
           sku?: string;
           updated_at?: string;
           volume_m3_per_unit?: number;
+          volume_m3_with_stack?: number | null;
           weight_kg_per_unit?: number;
+          weight_kg_with_stack?: number | null;
+          weight_stack_boxes_count?: number | null;
+          weight_stack_sku?: string | null;
         };
         Relationships: [
           {
