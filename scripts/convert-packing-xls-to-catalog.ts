@@ -13,8 +13,10 @@ import {
   assertNoSkuCollisions,
   mergeCatalogRows,
   normalizeFileToken,
+  overlayPloomesKitGaps,
   parseExoformGrid,
   parseImpulseGrid,
+  parsePloomesGrid,
   parseRockitGrid,
   parseXmasterGrid,
   skuCount,
@@ -25,6 +27,10 @@ const downloadsArg =
     .find((a) => a.startsWith('--downloads='))
     ?.slice(12)
     ?.trim() || 'C:/Users/marce/Downloads';
+const ploomesArg = process.argv
+  .find((a) => a.startsWith('--ploomes='))
+  ?.slice(10)
+  ?.trim();
 const fixtureDir = join(process.cwd(), 'src/lib/__tests__/fixtures');
 
 function findFile(matcher: (norm: string) => boolean): string {
@@ -122,7 +128,35 @@ function main() {
   ];
   assertNoSkuCollisions(chunks);
 
-  const merged = chunks.flatMap((c) => c.rows);
+  let merged = chunks.flatMap((c) => c.rows);
+
+  const ploomesPath =
+    ploomesArg ||
+    (() => {
+      try {
+        return findFile((n) => n.includes('produtos') && n.endsWith('.xlsx'));
+      } catch {
+        return '';
+      }
+    })();
+
+  if (ploomesPath) {
+    const ploomes = parsePloomesGrid(readSheetRows(ploomesPath));
+    merged = overlayPloomesKitGaps(merged, ploomes.kitOverlays);
+    const wsOverlay = [...ploomes.weightPlateKits.values()].flat();
+    if (wsOverlay.length > 0) {
+      merged = mergeCatalogRows(merged, wsOverlay);
+    }
+    console.log(
+      'ploomes overlay:',
+      ploomesPath,
+      'kits',
+      new Set(ploomes.kitOverlays.map((r) => r.Item)).size,
+      'plate kits',
+      ploomes.weightPlateKits.size
+    );
+  }
+
   writeFixture('konnen-catalog-merged.json', merged);
 
   console.log(

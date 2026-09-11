@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Building2, Save, Search } from 'lucide-react';
+import { Loader2, Building2, Save, Search, Download, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   Form,
@@ -34,6 +35,10 @@ import {
   pickLegalRepresentative,
   suggestTaxRegistrations,
 } from '@/lib/cnpjLookup';
+import {
+  FICHA_CADASTRAL_FILE_NAME,
+  generateCompanyFichaCadastralPdf,
+} from '@/lib/generateCompanyFichaCadastralPdf';
 
 const digits = (v: string) => v.replace(/\D/g, '');
 
@@ -77,6 +82,7 @@ export default function CompanySettings() {
   const createMutation = useCreateCompanySettings();
   const isFirstSetup = !settings?.id;
   const [isLookingUp, setIsLookingUp] = useState(false);
+  const [isDownloadingFicha, setIsDownloadingFicha] = useState(false);
   const cnpjTouchedForLookup = useRef(false);
 
   const form = useForm<FormData>({
@@ -217,6 +223,62 @@ export default function CompanySettings() {
   const isSaving = updateMutation.isPending || createMutation.isPending;
   const canSave = !isSaving && !isLookingUp;
 
+  const triggerBlobDownload = (blob: Blob, fileName: string) => {
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = fileName;
+    anchor.rel = 'noopener';
+    anchor.style.display = 'none';
+    document.documentElement.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+  };
+
+  const handleDownloadFichaCadastral = async () => {
+    const data = form.getValues();
+    if (!data.legal_name?.trim() || digits(data.cnpj).length !== 14) {
+      toast.error('Preencha razão social e CNPJ antes de baixar a ficha cadastral');
+      return;
+    }
+
+    setIsDownloadingFicha(true);
+    try {
+      const { blob, fileName } = await generateCompanyFichaCadastralPdf({
+        legal_name: data.legal_name,
+        trade_name: data.trade_name,
+        cnpj: data.cnpj,
+        state_registration: data.state_registration,
+        municipal_registration: data.municipal_registration,
+        address_street: data.address_street,
+        address_number: data.address_number,
+        address_complement: data.address_complement,
+        address_neighborhood: data.address_neighborhood,
+        address_city: data.address_city,
+        address_state: data.address_state,
+        address_zip: data.address_zip,
+        legal_representative_name: data.legal_representative_name,
+        legal_representative_cpf: data.legal_representative_cpf,
+        legal_representative_role: data.legal_representative_role,
+        bank_name: data.bank_name,
+        bank_agency: data.bank_agency,
+        bank_account: data.bank_account,
+        bank_pix_key: data.bank_pix_key,
+        default_jurisdiction: data.default_jurisdiction,
+        signature_city: data.signature_city,
+        phone: data.phone,
+        email: data.email,
+      });
+      triggerBlobDownload(blob, fileName);
+      toast.success('Ficha Cadastral Vectra HUB baixada');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Falha ao gerar a ficha cadastral');
+    } finally {
+      setIsDownloadingFicha(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <MainLayout>
@@ -239,6 +301,47 @@ export default function CompanySettings() {
             </p>
           </div>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Documentos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border hover:bg-muted/50 transition-colors">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <FileText className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    Ficha Cadastral Vectra HUB
+                  </p>
+                  <Badge variant="secondary" className="text-xs">
+                    PDF
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">{FICHA_CADASTRAL_FILE_NAME}</p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => void handleDownloadFichaCadastral()}
+                disabled={isDownloadingFicha}
+                title="Baixar Ficha Cadastral Vectra HUB"
+                aria-label="Baixar Ficha Cadastral Vectra HUB"
+                data-testid="btn-ficha-cadastral-download"
+              >
+                {isDownloadingFicha ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {isFirstSetup && (
           <Alert>

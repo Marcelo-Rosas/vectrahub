@@ -1,0 +1,18 @@
+{
+  "id": "strength-glute-leader",
+  "label": "Strength-Glute Leader",
+  "catalogGroup": "PIN LOADED",
+  "line": "GL",
+  "productGroupId": "CbtGShkuAHRF",
+  "expectedMicListings": 86,
+  "expectedProducts": 8,
+  "catalogSkuPattern": "GL-\\d{4}",
+  "dedupeByCatalogSku": true,
+  "listUrlTemplate": "https://realleaderfitness.en.made-in-china.com/product-list-{page}.html?pv_id=1k0iqt49fc&faw_id=1k0iqtdho6b2&bv_id=1k0iqtdhqda3&pbv_id=1k0iqt45p475m",
+  "canonicalGroupUrl": "https://realleaderfitness.en.made-in-china.com/product-group/CbtGShkuAHRF/Strength-Glute-Leader-catalog-1.html",
+  "canonicalListPathPattern": "/product-group/CbtGShkuAHRF/Strength-Glute-Leader-catalog-{page}.html",
+  "maxPages": 4,
+  "pageSize": 48,
+  "outputFile": "Strength_Glute_Leader_logistics.json",
+  "notes": "MIC productList API reports 86 listings = 86 unique MIC hashes, but only 8 canonical GL SKUs (SEO duplicate product pages per SKU)."
+}

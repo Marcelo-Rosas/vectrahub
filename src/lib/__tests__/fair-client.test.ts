@@ -9,13 +9,21 @@ import {
   EMPTY_FAIR_CLIENT,
   fairDestinationCep,
   fairDestinationLabel,
+  applyFairCnpjCepToRoute,
 } from '@/lib/fair-client';
 import {
+  canSwitchFairTenant,
   fairTenantOriginLocked,
   isFairTenantEmail,
+  isVectraStaffEmail,
   matchTenantByEmail,
   companyRowToTenant,
+  resolveFairTenant,
+  resolveFairTenantBySlug,
   type FairCompanyRow,
+  fairSignupDomainHint,
+  isFairSignupEmail,
+  fairSignupDomainsForSlug,
   signupDomainHint,
 } from '@/lib/fair-tenant';
 
@@ -94,6 +102,39 @@ describe('isFairTenantEmail', () => {
   });
 });
 
+describe('staff Vectra — troca de tenant', () => {
+  it('identifica email @vectracargo.com.br como staff', () => {
+    expect(isVectraStaffEmail('marcelo.rosas@vectracargo.com.br')).toBe(true);
+    expect(canSwitchFairTenant('ops@vectracargo.com.br')).toBe(true);
+    expect(isVectraStaffEmail('vendas@bucklerfit.com')).toBe(false);
+  });
+
+  it('staff sem domínio embarcador — resolve por slug ou primeiro tenant', () => {
+    expect(matchTenantByEmail('marcelo.rosas@vectracargo.com.br', TENANTS)).toBeNull();
+    expect(resolveFairTenant('marcelo.rosas@vectracargo.com.br', TENANTS, 'konnen')?.slug).toBe(
+      'konnen'
+    );
+    expect(resolveFairTenant('marcelo.rosas@vectracargo.com.br', TENANTS)?.slug).toBe('buckler');
+    expect(resolveFairTenantBySlug('konnen', TENANTS)?.name).toBe('Konnen Fitness');
+  });
+
+  it('vendedor embarcador continua preso ao domínio mesmo com slug staff', () => {
+    expect(resolveFairTenant('anderson.moraes@bucklerfit.com', TENANTS, 'konnen')?.slug).toBe(
+      'buckler'
+    );
+  });
+});
+
+describe('fairSignupDomainsForSlug', () => {
+  it('PlayFit cadastro — domínios canônico + alias', () => {
+    expect(fairSignupDomainsForSlug('playfit')).toContain('playfitpisos.com.br');
+    expect(fairSignupDomainsForSlug('playfit')).toContain('playfitpiso.com.br');
+    expect(isFairSignupEmail('carlos@playfitpiso.com.br', 'playfit')).toBe(true);
+    expect(isFairSignupEmail('vendas@playfitpisos.com.br', 'playfit')).toBe(true);
+    expect(isFairSignupEmail('vendas@gmail.com', 'playfit')).toBe(false);
+  });
+});
+
 describe('fair-client', () => {
   it('detecta CNPJ 14 e CPF 11', () => {
     expect(detectFairDocKind('12.345.678/0001-90')).toBe('cnpj');
@@ -141,6 +182,19 @@ describe('fair-client', () => {
     };
     expect(fairDestinationLabel(entrega)).toBe('Itajaí - SC');
     expect(fairDestinationCep(entrega)).toBe('88301000');
+  });
+
+  it('CNPJ CEP vai pro destino; origem do tenant permanece', () => {
+    const tenantOrigin = '06765-350';
+    const client = {
+      ...EMPTY_FAIR_CLIENT,
+      zipCode: '60115-221',
+      city: 'Fortaleza',
+      state: 'CE',
+    };
+    const route = applyFairCnpjCepToRoute({ originCep: tenantOrigin, client });
+    expect(route.originCep).toBe('06765-350');
+    expect(route.destCep).toBe('60115-221');
   });
 
   it('monta endereço sem tabela Hub', () => {

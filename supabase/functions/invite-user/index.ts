@@ -137,7 +137,7 @@ deno.serve(async (req: Request) => {
         persistSession: false,
       },
     });
-    const base = deno.env.get('SITE_URL') ?? 'https://app.vectracargo.com.br';
+    const base = deno.env.get('SITE_URL') ?? 'https://app.hub.vectracargo.com.br';
     const redirectTo = `${base}/auth`;
 
     const { data: inviteData, error: inviteError } =

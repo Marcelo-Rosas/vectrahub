@@ -1,0 +1,32 @@
+name: Hygiene Guard
+
+on:
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Block junk/binary/large files in PR diff
+        run: |
+          base="origin/${{ github.base_ref }}"
+          fail=0
+          for f in $(git diff --name-only --diff-filter=ACM "$base"...HEAD); do
+            case "$f" in
+              *.zip|*.pdf|*.xlsx|*.pptx)
+                echo "::error file=$f::binario proibido"; fail=1;;
+              docs/homolog/*|*/homolog/*|audits/*|.superpowers/*|docs/superpowers/*)
+                echo "::error file=$f::caminho proibido"; fail=1;;
+            esac
+            [ -f "$f" ] || continue
+            sz=$(git cat-file -s "HEAD:$f" 2>/dev/null || wc -c < "$f")
+            if [ "$sz" -gt 524288 ]; then
+              echo "::error file=$f::${sz}B > 512KB"; fail=1
+            fi
+          done
+          exit $fail

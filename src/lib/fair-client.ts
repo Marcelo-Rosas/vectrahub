@@ -108,3 +108,14 @@ export function fairDestinationUf(client: FairClientDraft): string {
   const uf = client.deliveryDifferent ? client.deliveryState : client.state;
   return uf.trim().toUpperCase().slice(0, 2);
 }
+
+/** CNPJ/CEP do cliente alimenta destino. Origem do tenant não muda. */
+export function applyFairCnpjCepToRoute(args: { originCep: string; client: FairClientDraft }): {
+  originCep: string;
+  destCep: string;
+} {
+  return {
+    originCep: formatFairCep(args.originCep),
+    destCep: formatFairCep(fairDestinationCep(args.client)),
+  };
+}

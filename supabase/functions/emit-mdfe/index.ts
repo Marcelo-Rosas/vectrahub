@@ -818,6 +818,7 @@ serve(async (req) => {
       numero,
       vectra,
       retry,
+      ambiente,
       municipiosCarregamento,
       seguros,
       proprietario,
@@ -921,8 +922,8 @@ serve(async (req) => {
   // mensagem} sem `status` e HTTP >= 400 — sem isto a row ficava 'processing'.
   else if (isError || focusResp.body.codigo) newStatus = 'rejected';
 
-  // Homolog: poll curto se processando (mesmo padrão emit-cte).
-  if (newStatus === 'processing') {
+  // Homolog: poll curto se processando. Prod retorna `processing` — UI consulta via manage-mdfe.
+  if (newStatus === 'processing' && ambiente === 'homolog') {
     const focus = new FocusClient({ ambiente });
     for (const waitMs of [2500, 3500, 5000]) {
       await new Promise((r) => setTimeout(r, waitMs));

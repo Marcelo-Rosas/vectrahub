@@ -1,0 +1,16 @@
+{
+  "id": "tianzhan",
+  "legalName": "Shandong Tianzhan Fitness Equipment Co., Ltd.",
+  "micSlug": "dezhoutianzhan",
+  "baseUrl": "https://dezhoutianzhan.en.made-in-china.com",
+  "scrape": {
+    "headless": true,
+    "minDelay": 2.5,
+    "maxDelay": 5.0,
+    "pageTimeout": 45000,
+    "tableTimeout": 15000,
+    "maxRetries": 3,
+    "maxPages": 3
+  },
+  "outputDir": "docs/homolog/mic-factories/tianzhan"
+}

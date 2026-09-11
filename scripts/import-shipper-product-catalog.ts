@@ -11,10 +11,24 @@ import { join } from 'path';
 import { createClient } from '@supabase/supabase-js';
 import { loadSupabaseScriptEnv } from './lib/load-supabase-env';
 import {
+  type BucklerWebCatalogExport,
+  resolveBucklerCatalogGroup,
+} from '../src/lib/buckler-web-catalog';
+import {
   buildShipperProductCatalog,
   type ShipperCatalogRawRow,
   type ShipperProductCatalogEntry,
 } from '../src/lib/shipper-product-catalog';
+import {
+  applyStackSpecToEntry,
+  inferStackKgFromKitEntry,
+  loadBucklerStackSpecsFromHomolog,
+  rebuildStackBoxesInEntry,
+} from '../src/lib/buckler-stack-spec';
+import {
+  isBucklerDiscontinuedLineSku,
+  isBucklerMicCatalogGhostSku,
+} from '../src/lib/buckler-catalog-sku';
 
 const shipperArg =
   process.argv
@@ -54,10 +68,12 @@ function loadCatalogRows(): ShipperCatalogRawRow[] {
   }
   return JSON.parse(
     readFileSync(join(fixtureDir, 'buckler-caixas-por-medida.json'), 'utf-8')
+  ).filter(
+    (row: ShipperCatalogRawRow) => !isBucklerDiscontinuedLineSku(String(row.Item ?? ''))
   ) as ShipperCatalogRawRow[];
 }
 
-function boxRows(productId: string, entry: ShipperProductCatalogEntry) {
+function publicBoxRows(productId: string, entry: ShipperProductCatalogEntry) {
   return entry.boxTypes.map((b) => ({
     product_id: productId,
     box_type: b.boxType,
@@ -67,6 +83,57 @@ function boxRows(productId: string, entry: ShipperProductCatalogEntry) {
     boxes_per_unit: b.boxesPerUnit,
     group_weight_kg: b.groupWeightKg,
     volume_m3: b.volumeM3,
+  }));
+}
+
+function loadBucklerSkuIndex(): BucklerWebCatalogExport['skuIndex'] {
+  if (shipperArg.toUpperCase() !== 'BUCKLER') return {};
+  try {
+    const raw = JSON.parse(
+      readFileSync(join(process.cwd(), 'docs/homolog/buckler-web-catalog.json'), 'utf-8')
+    ) as BucklerWebCatalogExport;
+    return raw.skuIndex ?? {};
+  } catch {
+    return {};
+  }
+}
+
+function loadRealleaderOemIndex(): Record<string, { catalogGroup: string }> {
+  if (shipperArg.toUpperCase() !== 'BUCKLER') return {};
+  try {
+    const raw = JSON.parse(
+      readFileSync(join(process.cwd(), 'docs/homolog/realleader-mic-catalog.json'), 'utf-8')
+    ) as { skuIndex?: Record<string, { catalogGroup: string }> };
+    const index = raw.skuIndex ?? {};
+    return Object.fromEntries(
+      Object.entries(index).filter(
+        ([sku]) => !isBucklerDiscontinuedLineSku(sku) && !isBucklerMicCatalogGhostSku(sku)
+      )
+    );
+  } catch {
+    return {};
+  }
+}
+
+function feiraCatalogGroup(
+  entry: ShipperProductCatalogEntry,
+  skuIndex: BucklerWebCatalogExport['skuIndex'],
+  oemIndex: Record<string, { catalogGroup: string }>
+): string | undefined {
+  if (shipperArg.toUpperCase() !== 'BUCKLER') return undefined;
+  return resolveBucklerCatalogGroup({ sku: entry.sku, name: entry.name }, skuIndex, oemIndex);
+}
+
+function feiraBoxRows(
+  productId: string,
+  companyId: string,
+  sku: string,
+  entry: ShipperProductCatalogEntry
+) {
+  return publicBoxRows(productId, entry).map((row) => ({
+    ...row,
+    company_id: companyId,
+    sku,
   }));
 }
 
@@ -80,6 +147,11 @@ async function main() {
 
   const rows = loadCatalogRows();
   const catalog = buildShipperProductCatalog(rows);
+  const applyStackSpecs =
+    !process.argv.includes('--no-stack-specs') && shipperArg.toUpperCase() === 'BUCKLER';
+  const stackSpecs = applyStackSpecs ? loadBucklerStackSpecsFromHomolog() : new Map();
+  const bucklerSkuIndex = loadBucklerSkuIndex();
+  const realleaderOemIndex = loadRealleaderOemIndex();
 
   const { data: shippers, error: sErr } = await sr
     .from('shippers')
@@ -125,7 +197,17 @@ async function main() {
   let upsertedFeira = 0;
   let boxesFeira = 0;
 
-  for (const entry of catalog.values()) {
+  for (const rawEntry of catalog.values()) {
+    const stackSpec = stackSpecs.get(rawEntry.sku);
+    let resolvedSpec = stackSpec;
+    if (stackSpec && stackSpec.stackKgOem <= 0) {
+      const inferred = inferStackKgFromKitEntry(rawEntry);
+      if (inferred > 0) resolvedSpec = { ...stackSpec, stackKgOem: inferred };
+      else resolvedSpec = undefined;
+    }
+    const entry: ShipperProductCatalogEntry = resolvedSpec
+      ? rebuildStackBoxesInEntry(rawEntry, resolvedSpec)
+      : rawEntry;
     const { data: product, error: pErr } = await sr
       .from('shipper_products')
       .upsert(
@@ -148,7 +230,7 @@ async function main() {
     await sr.from('shipper_product_boxes').delete().eq('product_id', product.id);
     const { error: bErr } = await sr
       .from('shipper_product_boxes')
-      .insert(boxRows(product.id, entry));
+      .insert(publicBoxRows(product.id, entry));
     if (bErr) throw new Error(`public ${entry.sku} boxes: ${bErr.message}`);
     upsertedPublic++;
 
@@ -163,6 +245,7 @@ async function main() {
           box_types_count: entry.boxTypesCount,
           weight_kg_per_unit: entry.weightKgPerUnit,
           volume_m3_per_unit: entry.volumeM3PerUnit,
+          catalog_group: feiraCatalogGroup(entry, bucklerSkuIndex, realleaderOemIndex),
           active: true,
         },
         { onConflict: 'company_id,sku' }
@@ -172,7 +255,7 @@ async function main() {
     if (fpErr) throw new Error(`feira ${entry.sku}: ${fpErr.message}`);
 
     await feira.from('product_boxes').delete().eq('product_id', fp.id);
-    const boxes = boxRows(fp.id, entry);
+    const boxes = feiraBoxRows(fp.id, companyId, entry.sku, entry);
     const { error: fbErr } = await feira.from('product_boxes').insert(boxes);
     if (fbErr) throw new Error(`feira ${entry.sku} boxes: ${fbErr.message}`);
     upsertedFeira++;

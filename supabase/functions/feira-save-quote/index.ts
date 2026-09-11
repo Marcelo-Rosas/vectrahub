@@ -23,8 +23,19 @@ type HubIn = {
   pricing_breakdown?: unknown;
 };
 
+type GateIn = {
+  modality?: 'lotacao' | 'fracionado';
+  freight_type_label?: 'Dedicado' | 'Fracionado';
+  vehicle_type_code?: string | null;
+  billable_weight_kg?: number;
+  alerts?: { level: string; code: string; message: string }[];
+  coverage_incomplete?: boolean;
+  mode_source?: 'auto' | 'manual';
+};
+
 type Body = {
   id?: string;
+  company_slug?: string;
   destination?: string;
   km_distance?: number;
   cargo_value?: number;
@@ -34,6 +45,7 @@ type Body = {
   client?: ClientIn;
   lines?: LineIn[];
   hub?: HubIn;
+  gate?: GateIn;
 };
 
 function num(value: unknown, fallback = 0): number {
@@ -74,9 +86,7 @@ Deno.serve(async (req) => {
   if (!user?.id) return jsonWithCors(req, { error: 'UNAUTHORIZED' }, 401);
 
   const email = (user.email ?? '').toLowerCase();
-  if (email.endsWith('@vectracargo.com.br')) {
-    return jsonWithCors(req, { error: 'Staff Vectra não grava COT feira' }, 403);
-  }
+  const isStaff = email.endsWith('@vectracargo.com.br');
 
   let body: Body;
   try {
@@ -103,31 +113,66 @@ Deno.serve(async (req) => {
   }
   if (legalName.length < 2) return jsonWithCors(req, { error: 'Nome do cliente obrigatório' }, 400);
 
-  const { data: link, error: linkErr } = await feiraFrom(supabase, 'user_company')
-    .select('company_id')
-    .eq('user_id', user.id)
-    .maybeSingle();
+  let company: {
+    id: string;
+    slug: string;
+    origin_label: string;
+    event_flag: string;
+    toll_fallback_percent: number | string;
+    active: boolean;
+  } | null = null;
 
-  if (linkErr) return jsonWithCors(req, { error: linkErr.message }, 400);
-  if (!link?.company_id) {
-    return jsonWithCors(req, { error: 'Domínio não habilitado para feira' }, 403);
+  if (isStaff) {
+    const slug = (body.company_slug ?? '').trim().toLowerCase();
+    if (!slug) {
+      return jsonWithCors(req, { error: 'company_slug obrigatório para staff Vectra' }, 400);
+    }
+    const { data: staffCompany, error: staffCompanyErr } = await feiraFrom(supabase, 'companies')
+      .select('id, slug, origin_label, event_flag, toll_fallback_percent, active')
+      .eq('slug', slug)
+      .eq('active', true)
+      .maybeSingle();
+    if (staffCompanyErr) return jsonWithCors(req, { error: staffCompanyErr.message }, 400);
+    if (!staffCompany) return jsonWithCors(req, { error: 'Embarcador não encontrado' }, 404);
+    company = staffCompany;
+  } else {
+    const { data: link, error: linkErr } = await feiraFrom(supabase, 'user_company')
+      .select('company_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (linkErr) return jsonWithCors(req, { error: linkErr.message }, 400);
+    if (!link?.company_id) {
+      return jsonWithCors(req, { error: 'Domínio não habilitado para feira' }, 403);
+    }
+
+    const { data: linkedCompany, error: companyErr } = await feiraFrom(supabase, 'companies')
+      .select('id, slug, origin_label, event_flag, toll_fallback_percent, active')
+      .eq('id', link.company_id)
+      .maybeSingle();
+
+    if (companyErr) return jsonWithCors(req, { error: companyErr.message }, 400);
+    if (!linkedCompany?.active) {
+      return jsonWithCors(req, { error: 'Tenant feira inativo' }, 403);
+    }
+    company = linkedCompany;
   }
 
-  const { data: company, error: companyErr } = await feiraFrom(supabase, 'companies')
-    .select('id, origin_label, event_flag, toll_fallback_percent, active')
-    .eq('id', link.company_id)
-    .maybeSingle();
-
-  if (companyErr) return jsonWithCors(req, { error: companyErr.message }, 400);
   if (!company?.active) return jsonWithCors(req, { error: 'Tenant feira inativo' }, 403);
 
   const fallbackPct = num(company.toll_fallback_percent, 12);
-  const toll = computeFairToll({
+  const percentToll = computeFairToll({
     freightWeight: hubFreight,
     tableTollPercent: null,
     fallbackPercent: fallbackPct,
   });
-  const totalExibido = displayedTotal(hubTotal, hubToll, toll.pedagio);
+  const isDedicado = body.gate?.modality === 'lotacao';
+  const toll = isDedicado
+    ? { pedagio: round2(hubToll), tollPercent: 0, method: 'hub_included' as const }
+    : percentToll;
+  const totalExibido = isDedicado
+    ? round2(hubTotal)
+    : displayedTotal(hubTotal, hubToll, percentToll.pedagio);
 
   const skus = [...new Set(lines.map((l) => (l.sku ?? '').trim().toUpperCase()).filter(Boolean))];
   const { data: products } = await feiraFrom(supabase, 'products')
@@ -234,6 +279,13 @@ Deno.serve(async (req) => {
     total_exibido: totalExibido,
     event_flag: company.event_flag,
     status: 'draft',
+    freight_modality: body.gate?.modality ?? null,
+    freight_type_label: body.gate?.freight_type_label ?? null,
+    vehicle_type_code: body.gate?.vehicle_type_code ?? null,
+    billable_weight_kg: body.gate?.billable_weight_kg ?? null,
+    gate_alerts: body.gate?.alerts ?? null,
+    coverage_incomplete: body.gate?.coverage_incomplete ?? false,
+    gate_mode_source: body.gate?.mode_source ?? null,
     pricing_breakdown: {
       seller_email: email,
       hub_toll: hubToll,
@@ -265,11 +317,22 @@ Deno.serve(async (req) => {
     const { data: codes } = await feiraFrom(supabase, 'quotes')
       .select('quote_code')
       .eq('company_id', company.id);
-    quoteCode = nextFairQuoteCode((codes ?? []).map((r: { quote_code: string }) => r.quote_code));
-    const { data: insertedQ, error: qInsErr } = await feiraFrom(supabase, 'quotes')
-      .insert({ ...quotePayload, quote_code: quoteCode })
-      .select('id')
-      .single();
+    const known = (codes ?? []).map((r: { quote_code: string }) => r.quote_code);
+    quoteCode = nextFairQuoteCode(known, company.slug);
+    let insertedQ: { id: string } | null = null;
+    let qInsErr: { message: string; code?: string } | null = null;
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const res = await feiraFrom(supabase, 'quotes')
+        .insert({ ...quotePayload, quote_code: quoteCode })
+        .select('id')
+        .single();
+      insertedQ = res.data;
+      qInsErr = res.error;
+      if (!qInsErr) break;
+      if (res.error?.code !== '23505') break;
+      known.push(quoteCode);
+      quoteCode = nextFairQuoteCode(known, company.slug);
+    }
     if (qInsErr) return jsonWithCors(req, { error: qInsErr.message }, 400);
     quoteId = insertedQ?.id ?? null;
   }

@@ -1,0 +1,16 @@
+{
+  "id": "__FACTORY_ID__",
+  "legalName": "__LEGAL_NAME__",
+  "micSlug": "__MIC_SLUG__",
+  "baseUrl": "https://__MIC_SLUG__.en.made-in-china.com",
+  "scrape": {
+    "headless": true,
+    "minDelay": 2.5,
+    "maxDelay": 5.0,
+    "pageTimeout": 45000,
+    "tableTimeout": 15000,
+    "maxRetries": 3,
+    "maxPages": 3
+  },
+  "outputDir": "docs/homolog/mic-factories/__FACTORY_ID__"
+}

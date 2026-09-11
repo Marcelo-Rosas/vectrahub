@@ -2,4 +2,23 @@
 if [ -z "$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null)" ]; then
   exit 0
 fi
+
+# --- Guarda anti-lixo: barra binario/dump/sensivel/grande no stage ---
+BLOCK=$(git diff --cached --name-only --diff-filter=ACM \
+  | grep -iE '\.(zip|pdf|xlsx|pptx)$|^docs/homolog/|/homolog/|^audits/|^\.superpowers/|^docs/superpowers/' || true)
+if [ -n "$BLOCK" ]; then
+  echo "pre-commit BLOQUEADO (lixo/binario/sensivel):"
+  echo "$BLOCK"
+  echo "Ajuste o stage/.gitignore. Excecao consciente: git commit --no-verify"
+  exit 1
+fi
+for f in $(git diff --cached --name-only --diff-filter=ACM); do
+  [ -f "$f" ] || continue
+  sz=$(git cat-file -s :"$f" 2>/dev/null || echo 0)
+  if [ "$sz" -gt 524288 ]; then
+    echo "pre-commit BLOQUEADO: $f = ${sz}B > 512KB"
+    exit 1
+  fi
+done
+
 npx lint-staged

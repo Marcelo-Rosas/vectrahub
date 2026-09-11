@@ -1,4 +1,4 @@
-export const LOGO_URL = 'https://app.vectracargo.com.br/brand/logo_vectra.jpg';
+export const LOGO_URL = 'https://app.hub.vectracargo.com.br/brand/logo_vectra.jpg';
 
 export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   pix: 'PIX',

@@ -1,11 +1,11 @@
-# index.html nunca deve ser cacheado — sempre busca a versão mais recente
-# para evitar "Failed to fetch dynamically imported module" após deploys
-/
+# HTML (SPA): nunca cachear — evita chunk 404 após deploy
+/*
   Cache-Control: no-cache, no-store, must-revalidate
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'self'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
 
-/index.html
-  Cache-Control: no-cache, no-store, must-revalidate
-
-# Assets com hash no nome podem ser cacheados por 1 ano (imutáveis)
+# Assets com hash: imutáveis (regra mais específica sobrescreve /*)
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

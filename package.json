@@ -17,6 +17,7 @@
     "preview": "npm run build && wrangler dev",
     "preview:static": "vite preview --port 4173",
     "deploy": "npm run build && node scripts/patch-wrangler-pages.mjs && wrangler pages deploy dist --project-name=vectrahub --branch=main",
+    "deploy:app": "npm run build && node scripts/patch-wrangler-pages.mjs && wrangler pages deploy dist --project-name=cargo-flow-navigator --branch=main",
     "deploy:feira": "npm run build && node scripts/patch-wrangler-pages.mjs && wrangler pages deploy dist --project-name=vectra-feira --branch=main",
     "deploy:pages": "node scripts/patch-wrangler-pages.mjs && wrangler pages deploy dist --project-name=vectrahub --branch=main",
     "preview:cf": "wrangler pages dev dist",

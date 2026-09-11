@@ -14,21 +14,23 @@ import {
 } from '@/lib/fair-brand-palettes';
 
 describe('fair-brand-palettes', () => {
-  it('tem 18 tokens e 4 embarcadores', () => {
+  it('tem 18 tokens e embarcadores feira', () => {
     expect(FAIR_BRAND_TOKEN_ROWS).toHaveLength(18);
     expect(FAIR_BRAND_PALETTES.map((p) => p.slug)).toEqual([
       'buckler',
       'konnen',
       'boost',
       'reebok',
+      'playfit',
+      'rotha',
     ]);
   });
 
-  it('Konnen CTA amarelo do site + texto preto', () => {
+  it('Konnen CTA fundo preto + texto amarelo', () => {
     expect(KONNEN_FAIR_PALETTE.tokens.accent).toBe('#FFD600');
-    expect(KONNEN_FAIR_PALETTE.tokens.ctaBg).toBe('#FFD600');
-    expect(KONNEN_FAIR_PALETTE.tokens.ctaFg).toBe('#000000');
-    expect(contrastText(KONNEN_FAIR_PALETTE.tokens.ctaBg)).toBe('#000000');
+    expect(KONNEN_FAIR_PALETTE.tokens.ctaBg).toBe('#000000');
+    expect(KONNEN_FAIR_PALETTE.tokens.ctaFg).toBe('#FFD600');
+    expect(contrastText(KONNEN_FAIR_PALETTE.tokens.ctaBg)).toBe('#FFFFFF');
   });
 
   it('Reebok header/logo pretos — pêssego Brand API só no chip', () => {
@@ -55,8 +57,8 @@ describe('fair-brand-palettes', () => {
     expect(resolveFairPalette('konnen').name).toBe('Konnen Fitness');
     expect(resolveFairPalette('nope').slug).toBe('buckler');
     const vars = fairPaletteCssVars(KONNEN_FAIR_PALETTE);
-    expect(vars['--fair-cta-bg']).toBe('#FFD600');
-    expect(vars['--fair-cta-fg']).toBe('#000000');
+    expect(vars['--fair-cta-bg']).toBe('#000000');
+    expect(vars['--fair-cta-fg']).toBe('#FFD600');
   });
 
   it('luminância amarelo Konnen alta', () => {
@@ -77,7 +79,7 @@ describe('fair-brand-palettes', () => {
       },
     };
     const undo = applyFairThemeToElement(el, KONNEN_FAIR_PALETTE);
-    expect(store['--fair-cta-bg']).toBe('#FFD600');
+    expect(store['--fair-cta-bg']).toBe('#000000');
     expect(store['--fair-price']).toBe('#000000');
     undo();
     expect(store['--fair-cta-bg']).toBeUndefined();

@@ -1,0 +1,309 @@
+ORÇAMENTO NºORÇAMENTO Nº 8.1448.144
+DATA DE FECHAMENTO:DATA DE FECHAMENTO: 11/10/202311/10/2023
+DADOS DO CLIENTEDADOS DO CLIENTE
+Razão Social: Dg Academias Ltda
+Nome Fantasia: Dg Academias Ltda
+CNPJ / CPF: 50.902.729/0001-21 / CEP: 60741-575
+Endereço: Avenida Augusto Dos Anjos 1140
+Bairro: Bonsucesso Cidade / Estado: Fortaleza / CE
+Telefone: (85) 99997-5518 E-mail: apollobarros@hotmail.com
+CódigoCódigo NomeNome ImagemImagem Prazo dePrazo de
+entregaentrega Valor UnitValor Unit QTDQTD DescontoDesconto SubtotalSubtotal
+E8 Esteira Profissional
+E8
+Pronte
+entrega R$ 29.370,14 20 R$ 12.745,54 R$ 332.492,00
+ECE5 Elliptical Encore Pronte
+entrega R$ 27.293,73 3 R$ 11.844,20 R$ 46.348,59
+R7 Recumbent Bike Pronte
+entrega R$ 22.426,21 2 R$ 9.732,12 R$ 25.388,18
+PS300 Spinning Pronte
+entrega R$ 10.471,10 3 R$ 4.543,96 R$ 17.781,42
+HB005 Air Bike Pronte
+entrega R$ 14.828,13 3 R$ 6.434,85 R$ 25.179,84
+HSR005 Row Pronte
+entrega R$ 11.860,13 3 R$ 5.146,85 R$ 20.139,84
+
+IF9301 CHEST PRESS -
+134KG
+Pronte
+entrega R$ 20.567,27 1 40,0% R$ 12.340,36
+IF9302 LAT PULLDOWN -
+134KG
+Pronte
+entrega R$ 20.945,45 1 40,0% R$ 12.567,27
+IF9303 BICEPS - 90KG Pronte
+entrega R$ 17.309,09 1 40,0% R$ 10.385,45
+IF9304 PECTORAL - 106KG Pronte
+entrega R$ 20.596,36 1 40,0% R$ 12.357,82
+IF9305 LEG EXTENSION -
+134KG
+Pronte
+entrega R$ 20.858,18 3 40,0% R$ 37.544,72
+IF9306 LEG CURL - 134KG Pronte
+entrega R$ 20.625,45 2 40,0% R$ 24.750,54
+IF9310 LEG PRESS - 134KG Pronte
+entrega R$ 20.625,45 1 40,0% R$ 12.375,27
+IF9312 SHOULDER PRESS -
+106KG
+Pronte
+entrega R$ 16.843,64 1 40,0% R$ 10.106,18
+IF9317 SEATED DIP -
+106KG
+Pronte
+entrega R$ 19.141,82 1 40,0% R$ 11.485,09
+
+IF9319 SEAT ROW - 134KG Pronte
+entrega R$ 20.247,27 1 40,0% R$ 12.148,36
+IF9321 PRONE LEG CURL -
+134KG
+Pronte
+entrega R$ 19.316,36 2 40,0% R$ 23.179,63
+IT9529 Multi Press (IT) Pronte
+entrega R$ 27.293,73 1 R$ 11.844,93 R$ 15.448,80
+IF9326 GLUTE - 106KG Pronte
+entrega R$ 18.210,91 1 40,0% R$ 10.926,55
+IF9324 DELTOID RAISED -
+106KG
+Pronte
+entrega R$ 18.647,27 1 40,0% R$ 11.188,36
+IF9320 ASSISTED CHIN-UP
+and DIP - 134KG
+Pronte
+entrega R$ 20.363,64 1 40,0% R$ 12.218,18
+IF9315 Pec fly/rear delt -
+134kg
+Pronte
+entrega R$ 18.414,55 2 40,0% R$ 22.097,46
+IF9322 LAT/ROW - 134KG Pronte
+entrega R$ 20.596,36 3 40,0% R$ 37.073,45
+
+TM07 Wide chest press Pronte
+entrega R$ 16.963,60 1 R$ 7.361,00 R$ 9.602,60
+TM06 Incline Row Pronte
+entrega R$ 16.963,60 1 R$ 7.361,00 R$ 9.602,60
+TM15 Seat incline chest
+press
+Pronte
+entrega R$ 14.540,23 1 R$ 6.309,00 R$ 8.231,23
+TM27 Out lat pull down Pronte
+entrega R$ 16.963,60 1 R$ 7.361,00 R$ 9.602,60
+TM25 Low row Pronte
+entrega R$ 16.963,60 1 R$ 7.361,00 R$ 9.602,60
+TM56 Incline pecfly Pronte
+entrega R$ 13.106,69 1 R$ 5.687,00 R$ 7.419,69
+TM72 Abdominal Pronte
+entrega R$ 16.963,60 1 R$ 7.361,00 R$ 9.602,60
+TM91 45 Degree legpress Pronte
+entrega R$ 26.520,56 2 R$ 11.508,00 R$ 30.025,12
+
+TM92 Sissy Pronte
+entrega R$ 4.095,84 1 R$ 1.776,00 R$ 2.319,84
+JN2063B Smith combo
+machine
+Pronte
+entrega R$ 24.990,00 1 40,0% R$ 14.994,00
+E3036A Flat Bench Pronte
+entrega R$ 3.864,34 1 R$ 1.677,00 R$ 2.187,34
+E3039A Super Bench Pronte
+entrega R$ 5.731,80 3 R$ 2.486,00 R$ 9.737,40
+E3043A Olympic Flat Bench Pronte
+entrega R$ 8.043,28 2 R$ 3.490,00 R$ 9.106,56
+E3042A Olympic Incline
+Bench
+Pronte
+entrega R$ 8.043,28 2 R$ 3.490,00 R$ 9.106,56
+IFP1623 Seated Calf Raise Pronte
+entrega R$ 4.782,60 2 40,0% R$ 5.739,12
+E3063A Smith Machine Pronte
+entrega R$ 26.296,48 2 R$ 11.411,00 R$ 29.770,96
+E3065A Super Squat Pronte
+entrega R$ 22.725,34 1 R$ 9.862,00 R$ 12.863,34
+
+E3057A Hack Squat Pronte
+entrega R$ 25.452,38 2 R$ 11.045,00 R$ 28.814,76
+E3061A Invline Level Row Pronte
+entrega R$ 6.562,84 1 R$ 2.847,80 R$ 3.715,04
+E3045A Back Extension Pronte
+entrega R$ 5.427,88 1 R$ 2.355,00 R$ 3.072,88
+E3044A Seated Preacher
+Curl
+Pronte
+entrega R$ 5.725,44 1 40,0% R$ 3.435,26
+E3047A Vertical Knees
+Up/Dip
+Pronte
+entrega R$ 7.448,00 1 40,0% R$ 4.468,80
+E3050A Squat Rack Pronte
+entrega R$ 13.139,93 1 R$ 5.702,00 R$ 7.437,93
+AB7017 Barra W - 47" EZ
+Curl Olympic Bar
+Pronte
+entrega R$ 1.015,93 1 R$ 440,00 R$ 575,93
+AB7019-
+1,2M Barra 1,2m Pronte
+entrega R$ 1.015,93 1 R$ 440,00 R$ 575,93
+
+AB7019 Barra Olímpica
+Cromada 2,2m
+Pronte
+entrega R$ 1.859,93 6 R$ 806,00 R$ 6.323,58
+AB7032
+Olympic Shrug Bar
+- Barra T p/
+Agachamento
+Pronte
+entrega R$ 1.703,63 1 R$ 739,00 R$ 964,63
+AB7119 Triangulo p/ pulley Pronte
+entrega R$ 343,85 2 R$ 59,00 R$ 569,70
+AB7155 BARRA PULLEY EM
+V
+Pronte
+entrega R$ 217,26 3 R$ 94,00 R$ 369,78
+BRTW-2.5
+Anilha BRTW
+Emborrachada c/
+Anel 2,5kg
+Pronte
+entrega R$ 157,01 14 R$ 68,00 R$ 1.246,14
+BRTW-5
+Anilha BRTW
+Emborrachada c/
+Anel 5kg
+Pronte
+entrega R$ 296,27 30 R$ 128,00 R$ 5.048,10
+BRTW-10
+Anilha BRTW
+Emborrachada c/
+Anel 10kg
+Pronte
+entrega R$ 521,52 50 R$ 226,00 R$ 14.776,00
+
+BRTW-20
+Anilha BRTW
+Emborrachada c/
+Anel 20kg
+Pronte
+entrega R$ 1.026,69 50 R$ 445,00 R$ 29.084,50
+SL7038 Glute Trainer Pronte
+entrega R$ 16.608,93 2 R$ 7.207,00 R$ 18.803,86
+IFP1201 Seated Chest Press Pronte
+entrega R$ 8.204,00 1 40,0% R$ 4.922,40
+IFP1103 Standing Lateral
+Raise
+Pronte
+entrega R$ 7.541,80 1 40,0% R$ 4.525,08
+IF9335 ABDUCTOR - 134kg Pronte
+entrega R$ 21.900,00 2 40,0% R$ 26.280,00
+IF9336 ADDUCTOR - 134kg Pronte
+entrega R$ 21.900,00 2 40,0% R$ 26.280,00
+IFP1206 Standing Chest Fly Pronte
+entrega R$ 8.755,84 1 40,0% R$ 5.253,50
+
+IFFT Functiotional
+Trainer 2* 90KG
+Pronte
+entrega R$ 26.390,00 2 40,0% R$ 31.668,00
+IFCC Cable Crossover
+2*90kg
+Pronte
+entrega R$ 27.549,40 2 R$ 11.955,60 R$ 31.187,60
+IFP1617 Hack Squat Pronte
+entrega R$ 17.070,21 1 40,0% R$ 10.242,13
+IFP1622 Standing Hip
+Abductor
+Pronte
+entrega R$ 10.337,78 1 40,0% R$ 6.202,67
+IFP1615 Belt Squat Pronte
+entrega R$ 8.792,63 1 40,0% R$ 5.275,58
+IFP1613 Vertical Leg Press Pronte
+entrega R$ 13.464,87 1 40,0% R$ 8.078,92
+RKC01UDB-
+S780
+Kit Dumbbell de
+Uretano 12-40kg
+(15 Pares) 780kg
+Pronte
+entrega R$ 61.290,00 2 40,0% R$ 73.548,00
+RKC02DBR-
+015
+Dumbbell Rack
+para 15 Pares
+Pronte
+entrega R$ 15.388,97 2 40,0% R$ 18.466,76
+
+P6111-15R Barra Montada
+Reta de 15kg
+Pronte
+entrega R$ 1.275,05 1 40,0% R$ 765,03
+P6111-15W Barra Montada W
+de 15kg
+Pronte
+entrega R$ 1.275,05 1 40,0% R$ 765,03
+P6111-20R Barra Montada
+Reta de 20kg
+Pronte
+entrega R$ 1.700,07 1 40,0% R$ 1.020,04
+P6111-20W Barra Montada W
+de 20kg
+Pronte
+entrega R$ 1.700,07 1 40,0% R$ 1.020,04
+P6111-25R Barra Montada
+Reta de 25kg
+Pronte
+entrega R$ 2.125,09 1 40,0% R$ 1.275,05
+P6111-25W Barra Montada W
+de 25kg
+Pronte
+entrega R$ 2.125,09 1 40,0% R$ 1.275,05
+P6111-30R Barra Montada
+Reta de 30kg
+Pronte
+entrega R$ 2.550,11 1 40,0% R$ 1.530,07
+P6111-30W Barra Montada W
+de 30kg
+Pronte
+entrega R$ 2.550,11 1 40,0% R$ 1.530,07
+P6111-35R Barra Montada
+Reta de 35kg
+Pronte
+entrega R$ 2.975,12 1 40,0% R$ 1.785,07
+
+P6111-35W Barra Montada W
+de 35kg
+Pronte
+entrega R$ 2.975,12 1 40,0% R$ 1.785,07
+E3055A Barbell Rack Pronte
+entrega R$ 7.401,00 1 40,0% R$ 4.440,60
+RKC01UDB-
+S110- 1-
+10KG
+Kit de Halteres de
+Uretano - 1 a 10 KG
+(PAR)
+Pronte
+entrega R$ 12.696,01 1 40,0% R$ 7.617,61
+RKC02VDR-
+010X
+Torre para Halteres
+de 1 a 10kg
+Pronte
+entrega R$ 6.014,31 1 40,0% R$ 3.608,59
+Total dos produtosTotal dos produtos 281 R$ 983.046,74 R$R$ 1.354.668,301.354.668,30
+Total do Orçamento: R$Total do Orçamento: R$ 1.354.668,301.354.668,30
+DADOS DO PAGAMENTODADOS DO PAGAMENTO
+EntradaEntrada Quantidade deQuantidade de
+ParcelasParcelas Valor das ParcelasValor das Parcelas Forma de PagamentoForma de Pagamento FreteFrete Previsão de entregaPrevisão de entrega
+R$ 144.929,96 20 R$ 60.486,92 Boleto FOB 11/10/2023
+OBSERVAÇÕESOBSERVAÇÕES
+****CONDIÇÃO DE PAGAMENTO****
+ENTRADA: NA ASSINATURA DO PEDIDO (PIX)
+VALOR: R$ 144.929.96
+PARCELAMENTO:20x (Boleto)
+VALOR DAS PARCELAS: R$ 60.486.92
+FRETE: FOB
+MONTAGEM: Cortesia
+EMISSÃO DE CONTRATO DE ALUGUEL COM OPÇÃO DE COMPRA.
+11/10/202311/10/2023
+
+OBSERVAÇÕESOBSERVAÇÕES
