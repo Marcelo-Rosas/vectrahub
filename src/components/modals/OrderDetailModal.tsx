@@ -96,7 +96,15 @@ import {
 } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
-import { generatePodPdf } from '@/lib/generatePodPdf';
+import { downloadPodPdfFiles, generatePodPdf } from '@/lib/generatePodPdf';
+import {
+  assignCanhotosToShippers,
+  buildPodShipperSlices,
+  parsePodAdditionalShippers,
+  parsePodDocumentMeta,
+  type PodCanhotoRef,
+  type PodCteRef,
+} from '@/lib/pod-pdf-shippers';
 import { generateNfItemsReportPdf } from '@/lib/generateNfItemsReportPdf';
 import { parseNfeXml } from '@/lib/parseNfeXml';
 import { getDocumentSignedUrl } from '@/lib/storage';
@@ -741,47 +749,145 @@ export function OrderDetailModal({
     }
   };
 
+  const blobToDataUrl = (blob: Blob) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
   const handleGeneratePodPdf = async (doc: OrderDocument) => {
     try {
       toast.loading('Gerando comprovante de entrega…', { id: 'pod-pdf' });
-      const signedUrl = await getDocumentSignedUrl(doc.file_url, 600);
-      const res = await fetch(signedUrl);
-      if (!res.ok) throw new Error('Falha ao baixar imagem do canhoto');
-      const blob = await res.blob();
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-      // Busca OC para pegar segundo remetente, se houver
-      let shipper2Name: string | null = null;
-      const { data: ocRows } = await supabase
-        .from('collection_orders')
-        .select('sender_2_data')
+      const { data: podRows } = await supabase
+        .from('documents')
+        .select('id, file_url, file_name, created_at, validation_metadata')
         .eq('order_id', order.id)
-        .not('sender_2_data', 'is', null)
-        .limit(1);
-      const ocSender2 = ocRows?.[0]?.sender_2_data;
-      if (ocSender2) {
-        const s2 = ocSender2 as { name?: string };
-        shipper2Name = s2.name?.trim() || null;
-      }
-      const { data: oc, error: ocErr } = await supabase
-        .from('collection_orders')
-        .select('sender_2_data')
-        .eq('order_id', order.id)
-        .limit(1)
-        .maybeSingle();
-      if (ocErr)
-        console.error('[POD PDF] collection_orders query error:', ocErr, 'order.id:', order.id);
-      console.log('[POD PDF] oc result:', oc, 'order.id:', order.id);
-      if (oc?.sender_2_data) {
-        const s2 = oc.sender_2_data as { name?: string };
-        shipper2Name = s2.name?.trim() || null;
+        .eq('type', 'pod')
+        .order('created_at', { ascending: true });
+
+      const podDocs = podRows?.length ? podRows : [doc];
+      if (!podDocs.some((p) => p.id === doc.id)) {
+        podDocs.unshift(doc);
       }
 
-      await generatePodPdf({
+      const canhotos: PodCanhotoRef[] = [];
+      for (const pod of podDocs) {
+        try {
+          const signedUrl = await getDocumentSignedUrl(pod.file_url, 600);
+          const res = await fetch(signedUrl);
+          if (!res.ok) continue;
+          const dataUrl = await blobToDataUrl(await res.blob());
+          const meta = parsePodDocumentMeta(pod.validation_metadata);
+          canhotos.push({
+            dataUrl,
+            shipper_id: meta.shipper_id ?? null,
+            shipper_name: meta.shipper_name ?? null,
+            file_name: pod.file_name,
+          });
+        } catch {
+          /* canhoto individual falhou — segue com os demais */
+        }
+      }
+      if (canhotos.length === 0) throw new Error('Falha ao baixar imagem do canhoto');
+      const dataUrl = canhotos[0]!.dataUrl;
+
+      const [{ data: oc }, { data: quoteRow }, { data: nfeDocs }, { data: cteRows }] =
+        await Promise.all([
+          supabase
+            .from('collection_orders')
+            .select('sender_2_data')
+            .eq('order_id', order.id)
+            .limit(1)
+            .maybeSingle(),
+          order.quote_id
+            ? supabase
+                .from('quotes')
+                .select('nfe_keys, additional_shippers')
+                .eq('id', order.quote_id)
+                .maybeSingle()
+            : Promise.resolve({ data: null }),
+          supabase
+            .from('documents')
+            .select('nfe_key')
+            .eq('order_id', order.id)
+            .eq('type', 'nfe')
+            .not('nfe_key', 'is', null),
+          supabase
+            .from('cte_emissions')
+            .select('numero, status, payload_sent')
+            .eq('order_id', order.id),
+        ]);
+
+      const ocSender2 = oc?.sender_2_data as { name?: string; cnpj?: string } | null;
+      const shipper2Name = ocSender2?.name?.trim() || null;
+
+      const additional = parsePodAdditionalShippers(
+        order.additional_shippers ?? quoteRow?.additional_shippers ?? []
+      );
+      if (shipper2Name && !additional.some((s) => s.name.trim() === shipper2Name)) {
+        additional.push({
+          name: shipper2Name,
+          origin: null,
+          cnpj: ocSender2?.cnpj ?? null,
+        });
+      }
+
+      const shipperIds = [order.shipper_id, ...additional.map((s) => s.shipper_id)].filter(
+        (id): id is string => Boolean(id)
+      );
+      const { data: shipperRows } =
+        shipperIds.length > 0
+          ? await supabase.from('shippers').select('id, cnpj').in('id', shipperIds)
+          : { data: [] as Array<{ id: string; cnpj: string | null }> };
+      const cnpjById = new Map((shipperRows ?? []).map((s) => [s.id, s.cnpj]));
+
+      const nfeKeys = new Set<string>();
+      for (const key of quoteRow?.nfe_keys ?? []) {
+        if (typeof key === 'string' && key.trim()) nfeKeys.add(key.trim());
+      }
+      for (const row of nfeDocs ?? []) {
+        if (row.nfe_key?.trim()) nfeKeys.add(row.nfe_key.trim());
+      }
+
+      const ctes: PodCteRef[] = (cteRows ?? []).map((row) => {
+        const sent = (row.payload_sent ?? {}) as Record<string, unknown>;
+        return {
+          numero: row.numero,
+          status: row.status,
+          remetente_name: typeof sent.nome_remetente === 'string' ? sent.nome_remetente : null,
+          remetente_cnpj: typeof sent.cnpj_remetente === 'string' ? sent.cnpj_remetente : null,
+        };
+      });
+
+      let tripNumber = linkedTripNumber;
+      if (!tripNumber && order.trip_id) {
+        const { data: tripRow } = await supabase
+          .from('trips')
+          .select('trip_number')
+          .eq('id', order.trip_id)
+          .maybeSingle();
+        tripNumber = tripRow?.trip_number ?? null;
+      }
+
+      const shippers = assignCanhotosToShippers(
+        buildPodShipperSlices({
+          primaryName: order.shipper_name,
+          primaryOrigin: order.origin,
+          primaryCnpj: order.shipper_id ? (cnpjById.get(order.shipper_id) ?? null) : null,
+          primaryShipperId: order.shipper_id ?? null,
+          additional: additional.map((s) => ({
+            ...s,
+            cnpj: s.cnpj ?? (s.shipper_id ? (cnpjById.get(s.shipper_id) ?? null) : null),
+          })),
+          nfes: [...nfeKeys].map((key) => ({ key })),
+          ctes,
+        }),
+        canhotos
+      );
+
+      const files = await generatePodPdf({
         os_number: order.os_number,
         client_name: order.client_name,
         origin: order.origin,
@@ -795,9 +901,18 @@ export function OrderDetailModal({
         pickup_date: order.pickup_date ?? null,
         eta: order.eta ?? null,
         pod_image_data_url: dataUrl,
+        pod_images: canhotos.map((c) => c.dataUrl),
         pod_uploaded_at: doc.created_at,
+        trip_number: tripNumber,
+        shippers,
       });
-      toast.success('Comprovante gerado com sucesso', { id: 'pod-pdf' });
+      downloadPodPdfFiles(files);
+      toast.success(
+        files.length > 1
+          ? `${files.length} comprovantes gerados (um por embarcador)`
+          : 'Comprovante gerado com sucesso',
+        { id: 'pod-pdf' }
+      );
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erro ao gerar comprovante', {
         id: 'pod-pdf',
@@ -1816,6 +1931,17 @@ export function OrderDetailModal({
                           )
                         }
                         onDocumentUploaded={handleDocumentUploaded}
+                        podShippers={[
+                          ...(order.shipper_name
+                            ? [
+                                {
+                                  shipper_id: order.shipper_id ?? undefined,
+                                  name: order.shipper_name,
+                                },
+                              ]
+                            : []),
+                          ...parsePodAdditionalShippers(order.additional_shippers),
+                        ]}
                       />
                     </>
                   )}
