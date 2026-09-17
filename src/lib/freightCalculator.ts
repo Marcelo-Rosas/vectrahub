@@ -22,6 +22,7 @@ import {
   estimateInsuranceRiskCosts,
   resolveLotacaoFretePeso,
 } from '@/lib/lotacao-freight-base';
+import { computeNtcFracionadoFretePeso } from '@/lib/ntc-fracionado-frete-peso';
 
 type PriceTableRow = Database['public']['Tables']['price_table_rows']['Row'];
 
@@ -530,6 +531,18 @@ export interface StoredPricingBreakdown {
     vpo?: VpoEmissionRecord;
     /** CIOT próprio ou de parceiro fracionado (cnpjResponsavel ≠ Vectra). */
     ciot?: CiotOrderMeta;
+    /**
+     * Cotação vs CIOT no mesmo caminhão/motorista.
+     * quoteFreightModality = 1 contratante → lotação; 2+ → fracionado.
+     * ciotObrigatorio não depende da tabela NTC.
+     */
+    tripContractors?: {
+      contractorKeys: string[];
+      distinctContractorCount: number;
+      quoteFreightModality: 'lotacao' | 'fracionado';
+      ciotCadastroType: 'carga_lotacao' | 'carga_fracionada' | 'tac_agregado';
+      ciotObrigatorio: boolean;
+    };
 
     /** KM por UF (para restauração e recálculo ICMS proporcional) */
     kmByUf?: Record<string, number>;
@@ -974,22 +987,6 @@ function resolveDirectCosts(input: FreightCalculationInput, receitaBruta: number
 }
 
 // ============================================
-// LTL WEIGHT COLUMN HELPER
-// ============================================
-
-function getLtlWeightColumn(weightKg: number): string | null {
-  if (weightKg <= 10) return 'weight_rate_10';
-  if (weightKg <= 20) return 'weight_rate_20';
-  if (weightKg <= 30) return 'weight_rate_30';
-  if (weightKg <= 50) return 'weight_rate_50';
-  if (weightKg <= 70) return 'weight_rate_70';
-  if (weightKg <= 100) return 'weight_rate_100';
-  if (weightKg <= 150) return 'weight_rate_150';
-  if (weightKg <= 200) return 'weight_rate_200';
-  return null; // acima de 200 kg → usa weight_rate_above_200 × kg
-}
-
-// ============================================
 // ICMS BASE CALCULATION
 // ============================================
 
@@ -1153,17 +1150,11 @@ export function calculateFreight(input: FreightCalculationInput): FreightCalcula
   let dispatchFee = 0;
 
   if (isLtl) {
-    // NTC Fracionado (LTL): R$/kg × peso em todas as faixas (proporcional)
-    const weightCol = getLtlWeightColumn(billableWeightKg);
-    if (weightCol) {
-      // ≤ 200 kg: peso × R$/kg da faixa
-      const ratePerKg = Number((row as Record<string, unknown>)[weightCol]) || 0;
-      baseCost = round2(billableWeightKg * ratePerKg);
-    } else {
-      // > 200 kg: peso × R$/kg
-      const ratePerKg = Number((row as Record<string, unknown>).weight_rate_above_200) || 0;
-      baseCost = round2(billableWeightKg * ratePerKg);
-    }
+    // ≤200 kg: R$/CTe da faixa. >200 kg: kg × R$/kg.
+    baseCost = computeNtcFracionadoFretePeso(
+      row as unknown as Record<string, unknown>,
+      billableWeightKg
+    );
     dispatchFee = input.ltlParams?.dispatchFee ?? 102.9;
   } else {
     // Lotação (FTL): cost_per_ton → cost_per_kg fallback

@@ -34,12 +34,14 @@ export function useAnttFloorRate(params: UseAnttFloorRateParams) {
       if (!axesCount) return null;
 
       // Estratégia simples: pega a mais recente (maior valid_from) ou sem valid_from
+      const today = new Date().toISOString().slice(0, 10);
       const { data, error } = await supabase
         .from('antt_floor_rates')
         .select('operation_table,cargo_type,axes_count,ccd,cc,valid_from,valid_until')
         .eq('operation_table', asDb(operationTable))
         .eq('cargo_type', asDb(cargoType))
         .eq('axes_count', asDb(axesCount))
+        .or(`valid_until.is.null,valid_until.gte.${today}`)
         .order('valid_from', { ascending: false, nullsFirst: false })
         .limit(1)
         .maybeSingle();

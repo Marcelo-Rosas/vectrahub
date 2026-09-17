@@ -67,7 +67,6 @@ import {
 import {
   isPriceTableMethodology,
   METHODOLOGY_LABELS,
-  modalityFromMethodology,
   type PriceTableMethodology,
 } from '@/lib/pricingMethodology';
 import { usePriceTableRowByKmRange, usePriceTableRows } from '@/hooks/usePriceTableRows';
@@ -113,7 +112,10 @@ import {
   parseContractSplitsJson,
   type ContractSplitItem,
 } from '@/lib/contract-split';
-import { resolveLotacaoKmOverPercent } from '@/lib/lotacao-freight-base';
+import {
+  classifyQuoteTripContractors,
+  resolveLotacaoKmOverPercent,
+} from '@/lib/lotacao-freight-base';
 import { buildStoredBreakdownFromEdgeResponse } from '@/hooks/useCalculateFreight';
 import { useEdgeFreightPreview } from '@/hooks/use-edge-freight-preview';
 import type { CalculateFreightInput, CalculateFreightResponse } from '@/types/freight';
@@ -530,8 +532,6 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
   const [equipmentRentalItems, setEquipmentRentalItems] = useState<EquipmentRentalItem[]>(() =>
     readEquipmentRentalFromBreakdown(quote?.pricing_breakdown)
   );
-  const { data: equipmentPricingRules = [] } = usePricingRulesByCategory('aluguel', true);
-  const { data: unloadingPricingRules = [] } = usePricingRulesByCategory('carga_descarga', true);
 
   const form = useForm<QuoteFormData>({
     resolver: zodResolver(quoteSchema),
@@ -729,14 +729,46 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
   const selectedPriceTable: PriceTableRow | null =
     (priceTables?.find((t) => t.id === watchedPriceTableId) as PriceTableRow | undefined) ?? null;
 
+  const quotePricingScope = useMemo(() => {
+    const methodology: PriceTableMethodology = isPriceTableMethodology(
+      selectedPriceTable?.methodology
+    )
+      ? selectedPriceTable.methodology
+      : 'lotacao';
+    return { methodology, vehicleTypeId: watchedVehicleTypeId || null };
+  }, [selectedPriceTable?.methodology, watchedVehicleTypeId]);
+
+  const { data: equipmentPricingRules = [] } = usePricingRulesByCategory(
+    'aluguel',
+    true,
+    quotePricingScope
+  );
+  const { data: unloadingPricingRules = [] } = usePricingRulesByCategory(
+    'carga_descarga',
+    true,
+    quotePricingScope
+  );
+
+  const watchedClientId = form.watch('client_id');
+  const watchedClientName = form.watch('client_name');
+  const watchedAdditionalRecipients = form.watch('additional_recipients');
+  const watchedAdditionalShippers = form.watch('additional_shippers');
+  const tripContractors = useMemo(
+    () =>
+      classifyQuoteTripContractors({
+        clientId: watchedClientId,
+        clientName: watchedClientName,
+        additionalRecipients: watchedAdditionalRecipients,
+        additionalShippers: watchedAdditionalShippers,
+      }),
+    [watchedClientId, watchedClientName, watchedAdditionalRecipients, watchedAdditionalShippers]
+  );
+
   useEffect(() => {
-    const meth = selectedPriceTable?.methodology;
-    if (!isPriceTableMethodology(meth)) return;
-    const derived = modalityFromMethodology(meth);
-    if (form.getValues('freight_modality') !== derived) {
-      form.setValue('freight_modality', derived);
+    if (form.getValues('freight_modality') !== tripContractors.quoteFreightModality) {
+      form.setValue('freight_modality', tripContractors.quoteFreightModality);
     }
-  }, [selectedPriceTable?.methodology, form]);
+  }, [tripContractors.quoteFreightModality, form]);
 
   // Nova cotação / troca modalidade: se Select ficou sem tabela, puxa NTC operacional.
   useEffect(() => {
@@ -1885,6 +1917,19 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
             },
           };
         }
+
+        pricingBreakdown = {
+          ...pricingBreakdown,
+          meta: {
+            ...pricingBreakdown.meta,
+            tripContractors: classifyQuoteTripContractors({
+              clientId: data.client_id,
+              clientName: data.client_name,
+              additionalRecipients: data.additional_recipients,
+              additionalShippers: data.additional_shippers,
+            }),
+          },
+        };
       }
 
       const storedValue = useStoredPricing && quote ? Number(quote.value) || 0 : 0;
@@ -2301,6 +2346,7 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
                       anttCcd={anttRate?.ccd != null ? Number(anttRate.ccd) : null}
                       anttCc={anttRate?.cc != null ? Number(anttRate.cc) : null}
                       anttKmDistance={kmDistanceForAntt}
+                      pricingMethodology={quotePricingScope.methodology}
                       quoteId={quote?.id ?? null}
                       pendingNfeXmlFiles={pendingNfeXmlFiles}
                       onPendingNfeXmlFilesChange={setPendingNfeXmlFiles}
@@ -2770,14 +2816,6 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
                               <Select
                                 onValueChange={(id) => {
                                   field.onChange(id);
-                                  const table = priceTables?.find((t) => t.id === id);
-                                  const meth = table?.methodology;
-                                  if (isPriceTableMethodology(meth)) {
-                                    form.setValue(
-                                      'freight_modality',
-                                      modalityFromMethodology(meth)
-                                    );
-                                  }
                                 }}
                                 value={field.value || ''}
                               >
@@ -3134,6 +3172,8 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
                               setEquipmentRentalItems(items);
                             }}
                             initialItems={equipmentRentalItems}
+                            methodology={quotePricingScope.methodology}
+                            vehicleTypeId={watchedVehicleTypeId}
                           />
                         </div>
                         <div className="col-span-2">
@@ -3144,6 +3184,8 @@ export function QuoteForm({ open, onClose, quote }: QuoteFormProps) {
                               setUnloadingCostItems(items);
                             }}
                             initialItems={unloadingCostItems}
+                            methodology={quotePricingScope.methodology}
+                            vehicleTypeId={watchedVehicleTypeId}
                           />
                         </div>
                       </div>
