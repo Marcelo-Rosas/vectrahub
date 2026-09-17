@@ -22,7 +22,7 @@ export const ANTT_FLOOR_DEFAULT_FLAGS: AnttFloorFlags = {
 };
 
 /**
- * Tabela ANTT — paridade calculadorafrete.antt.gov.br (Res. 6.076/2026 Anexo II):
+ * Tabela ANTT — paridade calculadorafrete.antt.gov.br (Res. 6.084/2026 Anexo II):
  * - Composição veicular / lotação (§1) → Tabela A ou C (alto desempenho)
  * - Apenas unidade de tração (§2) → Tabela B ou D
  */

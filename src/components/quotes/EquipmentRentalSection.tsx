@@ -3,6 +3,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { usePricingRulesByCategory, type PricingRuleConfig } from '@/hooks/usePricingRules';
+import { compareSkuNatural } from '@/lib/sku-sort';
+import type { PriceTableMethodology } from '@/lib/pricingMethodology';
 
 export interface EquipmentRentalItem {
   id: string;
@@ -23,6 +25,8 @@ interface EquipmentRentalSectionProps {
   onChange: (total: number, items: EquipmentRentalItem[]) => void;
   initialItems?: EquipmentRentalItem[];
   readOnly?: boolean;
+  methodology?: PriceTableMethodology;
+  vehicleTypeId?: string | null;
 }
 
 export function EquipmentRentalSection({
@@ -30,8 +34,22 @@ export function EquipmentRentalSection({
   onChange,
   initialItems = [],
   readOnly = false,
+  methodology,
+  vehicleTypeId,
 }: EquipmentRentalSectionProps) {
-  const { data: rates, isLoading } = usePricingRulesByCategory('aluguel', true);
+  const { data: rates, isLoading } = usePricingRulesByCategory(
+    'aluguel',
+    true,
+    methodology ? { methodology, vehicleTypeId } : undefined
+  );
+
+  const sortedRates = useMemo(
+    () =>
+      [...(rates ?? [])].sort(
+        (a, b) => compareSkuNatural(a.key, b.key) || compareSkuNatural(a.label, b.label)
+      ),
+    [rates]
+  );
 
   const [selectionByRate, setSelectionByRate] = useState<
     Map<string, { selected: boolean; quantity: number; description?: string }>
@@ -100,7 +118,7 @@ export function EquipmentRentalSection({
     quantity: number,
     description?: string
   ) => {
-    if (!rates) return;
+    if (!sortedRates.length) return;
     const selectionKey = toSelectionKey(rate);
     setSelectionByRate((prev) => {
       const next = new Map(prev);
@@ -115,7 +133,7 @@ export function EquipmentRentalSection({
         next.delete(selectionKey);
       }
 
-      const items = buildItems(rates, next);
+      const items = buildItems(sortedRates, next);
       const total = items.reduce((s, i) => s + i.total, 0);
       onChange(
         total,
@@ -126,7 +144,7 @@ export function EquipmentRentalSection({
   };
 
   const handleDescriptionChange = (rateId: string, description: string) => {
-    if (!rates) return;
+    if (!sortedRates.length) return;
     setSelectionByRate((prev) => {
       const next = new Map(prev);
       const existing = prev.get(rateId);
@@ -134,7 +152,7 @@ export function EquipmentRentalSection({
         next.set(rateId, { ...existing, description: description || undefined });
       }
 
-      const items = buildItems(rates, next);
+      const items = buildItems(sortedRates, next);
       const total = items.reduce((s, i) => s + i.total, 0);
       onChange(
         total,
@@ -145,15 +163,15 @@ export function EquipmentRentalSection({
   };
 
   const computedTotal = useMemo(() => {
-    if (!rates) return 0;
-    return rates.reduce((s, rule) => {
+    if (!sortedRates.length) return 0;
+    return sortedRates.reduce((s, rule) => {
       const sel = selectionByRate.get(toSelectionKey(rule));
       if (!sel?.selected || sel.quantity <= 0) return s;
       return s + sel.quantity * (Number(rule.value) || 0);
     }, 0);
-  }, [rates, selectionByRate]);
+  }, [sortedRates, selectionByRate]);
 
-  if (isLoading || !rates?.length) {
+  if (isLoading || !sortedRates.length) {
     return (
       <div className="space-y-2">
         <Label>Aluguel de Máquinas</Label>
@@ -168,7 +186,7 @@ export function EquipmentRentalSection({
     <div className="space-y-3">
       <Label>Aluguel de Máquinas</Label>
       <div className="rounded-md border divide-y">
-        {rates.map((rate) => {
+        {sortedRates.map((rate) => {
           const selectionKey = toSelectionKey(rate);
           const unitValue = Number(rate.value) || 0;
           const unit = getRuleUnit(rate);
@@ -176,7 +194,7 @@ export function EquipmentRentalSection({
           const lineTotal = sel.selected && sel.quantity > 0 ? sel.quantity * unitValue : 0;
           return (
             <div
-              key={selectionKey}
+              key={rate.id || `${selectionKey}:${rate.methodology}`}
               className="flex flex-col gap-1 px-3 py-2 bg-background hover:bg-muted/30"
             >
               <div className="flex items-center gap-3">

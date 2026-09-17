@@ -35,6 +35,7 @@ import {
   resolveLotacaoFretePeso,
   resolveLotacaoKmOverPercent,
 } from '../_shared/lotacao-freight-base.ts';
+import { computeNtcFracionadoFretePeso } from '../_shared/ntc-fracionado-frete-peso.ts';
 
 type WaitingRuleRow = {
   free_hours?: number | null;
@@ -372,22 +373,6 @@ Deno.serve(async (req) => {
     }
 
     // =====================================================
-    // LTL: Determina coluna de faixa de peso
-    // =====================================================
-
-    function getLtlWeightColumn(weightKg: number): string | null {
-      if (weightKg <= 10) return 'weight_rate_10';
-      if (weightKg <= 20) return 'weight_rate_20';
-      if (weightKg <= 30) return 'weight_rate_30';
-      if (weightKg <= 50) return 'weight_rate_50';
-      if (weightKg <= 70) return 'weight_rate_70';
-      if (weightKg <= 100) return 'weight_rate_100';
-      if (weightKg <= 150) return 'weight_rate_150';
-      if (weightKg <= 200) return 'weight_rate_200';
-      return null; // acima de 200 kg → usa weight_rate_above_200 * kg
-    }
-
-    // =====================================================
     // GET PRICE TABLE ROW
     // =====================================================
 
@@ -425,26 +410,14 @@ Deno.serve(async (req) => {
           priceTableRowId = priceRow.id;
 
           if (modality === 'fracionado') {
-            // =====================================================
-            // NTC FRACIONADO (LTL) Dez/25 — R$/kg × peso em todas as faixas
-            // =====================================================
-            const weightCol = getLtlWeightColumn(billableWeightKg);
-
-            if (weightCol) {
-              // ≤ 200 kg: peso × R$/kg da faixa (proporcional)
-              const ratePerKg = Number(priceRow[weightCol]) || 0;
-              baseCost = billableWeightKg * ratePerKg;
-              console.log(
-                `[calculate-freight] NTC Fracionado | Faixa: ${kmBandLabel}, col: ${weightCol}, rate: ${ratePerKg}/kg, frete: R$ ${baseCost}`
-              );
-            } else {
-              // > 200 kg: peso × R$/kg
-              const ratePerKg = Number(priceRow.weight_rate_above_200) || 0;
-              baseCost = billableWeightKg * ratePerKg;
-              console.log(
-                `[calculate-freight] NTC Fracionado | Faixa: ${kmBandLabel}, >200kg, rate: ${ratePerKg}/kg, frete: R$ ${baseCost}`
-              );
-            }
+            // ≤200 kg: R$/CTe da faixa. >200 kg: kg × R$/kg.
+            baseCost = computeNtcFracionadoFretePeso(
+              priceRow as Record<string, unknown>,
+              billableWeightKg
+            );
+            console.log(
+              `[calculate-freight] NTC Fracionado | Faixa: ${kmBandLabel}, kg: ${billableWeightKg}, frete_peso: R$ ${baseCost}`
+            );
 
             // Fracionado: linha da tabela > ltl_parameters (somente GRIS) > Central > default
             const ruleGris = resolveRulePercent('gris_percent');
@@ -578,12 +551,14 @@ Deno.serve(async (req) => {
         cargoTypeLabel: input.cargo_type,
       });
 
+      const today = new Date().toISOString().slice(0, 10);
       const { data: anttRate } = await supabase
         .from('antt_floor_rates')
         .select('id, ccd, cc, cargo_type')
         .eq('operation_table', operationTable)
         .eq('cargo_type', anttCargoType)
         .eq('axes_count', axesCount)
+        .or(`valid_until.is.null,valid_until.gte.${today}`)
         .order('valid_from', { ascending: false, nullsFirst: false })
         .limit(1)
         .maybeSingle();
@@ -646,7 +621,7 @@ Deno.serve(async (req) => {
 
     const ntc_base = frete_peso + frete_valor + gris + tso + dispatchFee;
     // ntc_base = pacote comercial NTC (peso + risco + despacho). NÃO é PAG/base motorista.
-    // Base motorista fracionado = frete_peso (kg × R$/kg). Repasse de risco = receita Hub.
+    // Base motorista fracionado = frete_peso (R$/CTe ≤200 kg; kg×R$/kg >200). Repasse = receita Hub.
 
     // Base para taxas condicionais que aplicam sobre frete: mantém comportamento anterior
     // (correction + markup) para não alterar cobrança de fees já cadastrados

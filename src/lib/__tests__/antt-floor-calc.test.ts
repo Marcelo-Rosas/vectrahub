@@ -42,6 +42,16 @@ describe('resolveAnttKmForPiso', () => {
 });
 
 describe('computeAnttPisoCarreteiroReais', () => {
+  it('Res. 6.084/2026 tabela A 6 eixos 2245 km — paridade calculadora oficial', () => {
+    const r = computeAnttPisoCarreteiroReais({
+      kmDistance: 2245,
+      ccd: 7.3547,
+      cc: 671.93,
+    });
+    expect(r.kmUsed).toBe(2245);
+    expect(r.total).toBe(17183.23);
+  });
+
   it('SUROC N4 tabela A 6 eixos — paridade calculadora', () => {
     const r = computeAnttPisoCarreteiroReais({
       kmDistance: 2756,

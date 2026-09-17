@@ -13,6 +13,7 @@ import type {
 import { isPriceTableMethodology, type PriceTableMethodology } from '@/lib/pricingMethodology';
 import {
   resolvePricingRule as resolvePricingRuleCore,
+  listCatalogPricingRules,
   type ResolvePricingRuleScope,
 } from '@/lib/resolvePricingRule';
 
@@ -240,18 +241,20 @@ export function usePricingRulesConfig(activeOnly = true) {
   });
 }
 
-export function usePricingRulesByCategory(category: PricingRulesCategory, activeOnly = true) {
+export function usePricingRulesByCategory(
+  category: PricingRulesCategory,
+  activeOnly = true,
+  scope?: ResolvePricingRuleScope
+) {
   const query = usePricingRulesConfig(activeOnly);
   const filtered = useMemo(
     () =>
-      (query.data ?? [])
-        .filter((rule) => String(rule.category).trim().toLowerCase() === category)
-        .sort(
-          (a, b) =>
-            String(a.label).localeCompare(String(b.label), 'pt-BR') ||
-            String(a.key).localeCompare(String(b.key), 'pt-BR')
-        ),
-    [query.data, category]
+      listCatalogPricingRules(query.data ?? [], {
+        category,
+        methodology: scope?.methodology,
+        vehicleTypeId: scope?.vehicleTypeId,
+      }),
+    [query.data, category, scope?.methodology, scope?.vehicleTypeId]
   );
 
   return { ...query, data: filtered };
