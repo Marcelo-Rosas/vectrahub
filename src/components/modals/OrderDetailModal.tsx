@@ -1982,10 +1982,17 @@ export function OrderDetailModal({
                   vehiclePlate={wizardVehiclePlate}
                   vehicleTypeName={wizardVehicleType}
                   tripId={order.trip_id}
-                  originUf={order.origin?.match(/,?\s*([A-Z]{2})\s*$/i)?.[1]?.toUpperCase()}
-                  destinationUf={order.destination
-                    ?.match(/,?\s*([A-Z]{2})\s*$/i)?.[1]
-                    ?.toUpperCase()}
+                  originUf={
+                    order.quote?.origin_uf ??
+                    order.origin?.match(/,?\s*([A-Z]{2})\s*$/i)?.[1]?.toUpperCase()
+                  }
+                  destinationUf={
+                    order.quote?.destination_uf ??
+                    order.destination?.match(/,?\s*([A-Z]{2})\s*$/i)?.[1]?.toUpperCase()
+                  }
+                  originIbge={order.quote?.origin_ibge ?? null}
+                  destinationIbge={order.quote?.destination_ibge ?? null}
+                  cargoType={order.cargo_type ?? null}
                 />
               </TabsContent>
 

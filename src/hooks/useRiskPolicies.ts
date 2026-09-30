@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { filterSupabaseRows } from '@/lib/supabase-utils';
+import { checkCoverageLimit, type LimitContext } from '@/lib/insurance-limit';
 
 export interface RiskPolicy {
   id: string;
@@ -51,40 +52,30 @@ export function calculatePremium(policy: RiskPolicy, cargoValue: number): number
   return Math.round(cargoValue * (premiumRate / 100) * 100) / 100;
 }
 
-const RJ_UF = 'RJ';
-
-function fmt(v: number) {
-  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-}
-
 /**
- * Verifica se a carga está dentro da cobertura da apólice.
- * Aplica sublimites regionais do metadata.lmg_breakdown quando a rota passa pelo RJ metropolitano.
+ * Verifica se a carga está dentro da cobertura da apólice (LMG por classe de mercadoria e
+ * sublimite RM-RJ em metadata.lmg_breakdown). Mesma regra do bloqueio server-side em
+ * emit-cte/emit-mdfe (src/lib/insurance-limit.ts ↔ _shared/insurance-limit.ts).
  */
 export function validateCoverage(
   policy: RiskPolicy,
   cargoValue: number,
-  context?: { destinationUf?: string }
+  context?: LimitContext
 ): { ok: boolean; message?: string; appliedLimit: number } {
-  const lmg = policy.metadata?.lmg_breakdown as Record<string, number> | null | undefined;
-  const baseLimit = policy.coverage_limit ?? 0;
-
-  // Sublimite RJ metropolitano (Berkley: R$ 600.000)
-  const isRjRoute = context?.destinationUf?.toUpperCase() === RJ_UF;
-  const rjLimit = lmg?.rj_metropolitano;
-  const appliedLimit = isRjRoute && rjLimit ? rjLimit : baseLimit;
-
-  if (!appliedLimit) return { ok: true, appliedLimit: 0 };
-
-  if (cargoValue > appliedLimit) {
-    const region = isRjRoute && rjLimit ? ' (sublimite RJ Metropolitano)' : '';
+  const check = checkCoverageLimit(policy, cargoValue, context ?? {});
+  if (!check.limit) return { ok: true, appliedLimit: 0 };
+  if (!check.ok) {
     return {
       ok: false,
-      appliedLimit,
-      message: `Valor da carga R$ ${fmt(cargoValue)} excede limite ${policy.policy_type}${region}: R$ ${fmt(appliedLimit)}`,
+      appliedLimit: check.limit,
+      message: `Valor da carga ${formatBrl(cargoValue)} excede ${policy.policy_type} — ${check.label}`,
     };
   }
-  return { ok: true, appliedLimit };
+  return { ok: true, appliedLimit: check.limit };
+}
+
+function formatBrl(v: number) {
+  return `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 /**
