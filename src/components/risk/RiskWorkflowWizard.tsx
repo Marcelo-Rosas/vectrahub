@@ -40,6 +40,7 @@ import {
 } from '@/hooks/useRiskEvaluation';
 import { CRITICALITY_CONFIG, REQUIREMENT_LABELS, type RiskCriticality } from '@/types/risk';
 import { BuonnyRegistrationModal, type BuonnyRegistrationData } from './BuonnyRegistrationModal';
+import { InsuranceExceptionPanel } from './InsuranceExceptionPanel';
 import type { RiskEvidence } from '@/types/risk';
 import {
   resolveAnttConsultPath,
@@ -69,6 +70,9 @@ interface RiskWorkflowWizardProps {
   tripId?: string | null;
   originUf?: string;
   destinationUf?: string;
+  originIbge?: number | null;
+  destinationIbge?: number | null;
+  cargoType?: string | null;
 }
 
 const STEPS = [
@@ -93,6 +97,9 @@ export function RiskWorkflowWizard({
   tripId,
   originUf = 'SC',
   destinationUf = 'SP',
+  originIbge,
+  destinationIbge,
+  cargoType,
 }: RiskWorkflowWizardProps) {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -212,17 +219,23 @@ export function RiskWorkflowWizard({
     () =>
       activePolicies.map((p) => ({
         policy: p,
-        coverage: validateCoverage(p, cargoValue, { destinationUf }),
+        coverage: validateCoverage(p, cargoValue, {
+          cargoType,
+          originUf,
+          destinationUf,
+          originIbge,
+          destinationIbge,
+        }),
         validity: validateValidity(p),
         premium: calculatePremium(p, cargoValue),
       })),
-    [activePolicies, cargoValue, destinationUf]
+    [activePolicies, cargoValue, cargoType, originUf, destinationUf, originIbge, destinationIbge]
   );
 
   const aggregateExposureWarning = useMemo(() => {
     if (!driverExposure?.totalOtherOrders || !activePolicies.length) return null;
     const totalExposure = cargoValue + driverExposure.totalOtherOrders;
-    const minLimit = Math.min(...activePolicies.map((p) => p.coverage_limit ?? Infinity));
+    const minLimit = Math.min(...policyChecks.map((c) => c.coverage.appliedLimit || Infinity));
     if (totalExposure > minLimit) {
       return {
         totalExposure,
@@ -231,7 +244,7 @@ export function RiskWorkflowWizard({
       };
     }
     return null;
-  }, [driverExposure, cargoValue, activePolicies]);
+  }, [driverExposure, cargoValue, activePolicies, policyChecks]);
 
   const coverageOk =
     activePolicies.length === 0 ||
@@ -915,6 +928,15 @@ export function RiskWorkflowWizard({
           );
         })}
       </div>
+
+      <InsuranceExceptionPanel
+        orderId={orderId}
+        coverageOk={policyChecks.every((c) => c.coverage.ok)}
+        coverageMessage={policyChecks.find((c) => !c.coverage.ok)?.coverage.message}
+        vehiclePlate={vehiclePlate}
+        vehicleTypeName={vehicleTypeName}
+        driverContract={cadastroContractType}
+      />
 
       {/* Step Content */}
       <Card>

@@ -37,6 +37,7 @@ const InsuranceMonitoringDashboard = lazy(() =>
     default: m.InsuranceMonitoringDashboard,
   }))
 );
+const InsuranceExceptions = lazy(() => import('./pages/InsuranceExceptions'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const FairQuote = lazyWithRetry(() => import('./pages/FairQuote'));
 const FairSimpleQuote = lazyWithRetry(() => import('./pages/FairSimpleQuote'));
@@ -313,6 +314,20 @@ const App = () => (
                       description="Ocorreu um erro ao carregar o monitoramento de seguros. Tente novamente."
                     >
                       <InsuranceMonitoringDashboard />
+                    </RouteErrorBoundary>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/seguro/liberacoes"
+                element={
+                  <ProtectedRoute requiredRoles={['admin', 'financeiro', 'operacional']}>
+                    <RouteErrorBoundary
+                      title="Erro no módulo Liberações de embarque"
+                      description="Ocorreu um erro ao carregar as liberações de embarque. Tente novamente."
+                    >
+                      <InsuranceExceptions />
                     </RouteErrorBoundary>
                   </ProtectedRoute>
                 }

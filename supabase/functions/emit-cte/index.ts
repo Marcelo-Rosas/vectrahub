@@ -28,6 +28,7 @@ import {
 import { calculateRouteDistance } from '../_shared/webrouter-client.ts';
 import { consultSefaz } from '../_shared/sefaz-consult.ts';
 import { resolveFocusNfeToken } from '../_shared/nfe-extract.ts';
+import { checkInsuranceGate, gateErrorBody } from '../_shared/insurance-exception-gate.ts';
 import {
   extractDestFromNfeXml,
   mergeNfeDestIntoMetadata,
@@ -530,7 +531,7 @@ serve(async (req) => {
       supabase.from('clients').select('*').eq('id', quote.client_id).single(),
       supabase
         .from('orders')
-        .select('id, value, cargo_value, weight')
+        .select('id, value, cargo_value, weight, trip_id, cargo_type')
         .eq('quote_id', quote.id)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -551,6 +552,44 @@ serve(async (req) => {
       422,
       cors
     );
+  }
+
+  // Seguro: embarque acima do LMG da apólice exige liberação excepcional MS/Fairfax vigente
+  // (apólice RC-DC item 13). Antes de qualquer alocação de numeração. Viagem (trip) = soma das OS.
+  {
+    let gateQuoteIds: string[] = [quote.id];
+    let gateValue = Number(order?.cargo_value ?? quote.cargo_value ?? 0);
+    if (order?.trip_id) {
+      const { data: tripOrders } = await supabase
+        .from('orders')
+        .select('quote_id, cargo_value')
+        .eq('trip_id', order.trip_id);
+      if (tripOrders?.length) {
+        gateValue = tripOrders.reduce(
+          (sum: number, o: { cargo_value: number | null }) => sum + Number(o.cargo_value ?? 0),
+          0
+        );
+        gateQuoteIds = tripOrders
+          .map((o: { quote_id: string | null }) => o.quote_id)
+          .filter(Boolean) as string[];
+      }
+    }
+    try {
+      const gate = await checkInsuranceGate(supabase, {
+        quoteIds: gateQuoteIds,
+        cargoValue: gateValue,
+        ctx: {
+          cargoType: order?.cargo_type ?? quote.cargo_type,
+          originIbge: quote.origin_ibge,
+          destinationIbge: quote.destination_ibge,
+          originUf: quote.origin_uf,
+          destinationUf: quote.destination_uf,
+        },
+      });
+      if (!gate.allowed) return json(gateErrorBody(gate), 422, cors);
+    } catch (err) {
+      return json({ error: 'insurance_gate_failed', detail: String(err) }, 500, cors);
+    }
   }
 
   const shipperPatched = await ensurePartyIe(supabase, await resolveIbge(shipper), 'shippers');
