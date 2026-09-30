@@ -1,5 +1,5 @@
 /**
- * Consulta de CNPJ via BrasilAPI.
+ * Consulta de CNPJ via BrasilAPI (fallback minhareceita.org e publica.cnpj.ws).
  *
  * BrasilAPI retorna numa unica chamada todos os campos do cartao CNPJ + QSA
  * (https://brasilapi.com.br/api/cnpj/v1/{cnpj}). Esse modulo normaliza a
@@ -254,23 +254,169 @@ export class CnpjLookupError extends Error {
   }
 }
 
-/**
- * Fallback para minhareceita.org quando a BrasilAPI nao encontra o CNPJ.
- * O formato de resposta eh compativel com o shape BrasilApiCnpj.
- */
-async function fetchMinhaReceita(cnpj: string): Promise<BrasilApiCnpj> {
-  const res = await fetch(`https://minhareceita.org/${cnpj}`, {
-    headers: { 'User-Agent': 'vectra-cargo (cnpj-lookup; +https://vectracargo.com.br)' },
-  });
-  if (!res.ok) {
-    throw new CnpjLookupError(`Erro ao consultar CNPJ (status ${res.status})`, 'STATUS');
+const UA = { 'User-Agent': 'vectra-cargo (cnpj-lookup; +https://vectracargo.com.br)' };
+const PROVIDER_TIMEOUT_MS = 5000; // resposta normal < 1 s; pior caso ~10 s com 2 provedores pendurados
+
+/** Falha de um provedor: 'not_found' (404) ou 'unavailable' (rede, timeout, 5xx, 429…). */
+class ProviderError extends Error {
+  constructor(
+    public readonly provider: string,
+    public readonly kind: 'not_found' | 'unavailable',
+    detail: string
+  ) {
+    super(`${provider}: ${detail}`);
   }
-  return (await res.json()) as BrasilApiCnpj;
+}
+
+async function fetchJson(provider: string, url: string): Promise<unknown> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), PROVIDER_TIMEOUT_MS);
+  let res: Response;
+  try {
+    // BrasilAPI bloqueia o User-Agent default do undici (Node fetch) com 403.
+    // No browser este header nao tem efeito (forbidden header).
+    res = await fetch(url, { headers: UA, signal: ctrl.signal });
+  } catch (e) {
+    const timedOut = e instanceof Error && e.name === 'AbortError';
+    throw new ProviderError(provider, 'unavailable', timedOut ? 'timeout' : String(e));
+  } finally {
+    clearTimeout(timer);
+  }
+  if (res.status === 404) throw new ProviderError(provider, 'not_found', 'status 404');
+  if (!res.ok) throw new ProviderError(provider, 'unavailable', `status ${res.status}`);
+  return res.json();
+}
+
+interface CnpjWsNamed {
+  id?: string | number;
+  descricao?: string;
+  nome?: string;
+  sigla?: string;
+}
+
+interface CnpjWs {
+  razao_social?: string;
+  capital_social?: string | number;
+  responsavel_federativo?: string;
+  porte?: CnpjWsNamed | null;
+  natureza_juridica?: CnpjWsNamed | null;
+  simples?: { simples?: string | null; mei?: string | null } | null;
+  socios?: {
+    nome?: string;
+    cpf_cnpj_socio?: string;
+    data_entrada?: string;
+    faixa_etaria?: string;
+    qualificacao_socio?: CnpjWsNamed | null;
+    pais?: CnpjWsNamed | null;
+  }[];
+  estabelecimento?: {
+    cnpj?: string;
+    nome_fantasia?: string;
+    email?: string;
+    ddd1?: string;
+    telefone1?: string;
+    ddd2?: string;
+    telefone2?: string;
+    tipo_logradouro?: string;
+    logradouro?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
+    cep?: string;
+    cidade?: CnpjWsNamed | null;
+    estado?: CnpjWsNamed | null;
+    situacao_cadastral?: string;
+    data_situacao_cadastral?: string;
+    data_inicio_atividade?: string;
+    motivo_situacao_cadastral?: CnpjWsNamed | null;
+    atividade_principal?: CnpjWsNamed | null;
+    atividades_secundarias?: CnpjWsNamed[];
+  } | null;
+}
+
+const simNao = (v: unknown): boolean | null =>
+  v === 'Sim' ? true : v === 'Não' || v === 'Nao' ? false : null;
+
+/** Converte publica.cnpj.ws para o shape BrasilAPI (mesmo normalize). */
+export function cnpjWsToBrasilApi(d: CnpjWs): BrasilApiCnpj {
+  const e = d.estabelecimento ?? {};
+  const phone = (ddd?: string, tel?: string) => (tel ? `${ddd ?? ''}${tel}` : undefined);
+  const street = [e.tipo_logradouro, e.logradouro].filter(Boolean).join(' ');
+  return {
+    cnpj: e.cnpj,
+    razao_social: d.razao_social,
+    nome_fantasia: e.nome_fantasia,
+    email: e.email,
+    ddd_telefone_1: phone(e.ddd1, e.telefone1),
+    ddd_telefone_2: phone(e.ddd2, e.telefone2),
+    logradouro: street || undefined,
+    numero: e.numero,
+    complemento: e.complemento,
+    bairro: e.bairro,
+    cep: e.cep,
+    municipio: e.cidade?.nome,
+    uf: e.estado?.sigla,
+    natureza_juridica: d.natureza_juridica?.descricao,
+    codigo_natureza_juridica: d.natureza_juridica?.id,
+    descricao_porte: d.porte?.descricao,
+    data_inicio_atividade: e.data_inicio_atividade,
+    descricao_situacao_cadastral: e.situacao_cadastral,
+    data_situacao_cadastral: e.data_situacao_cadastral,
+    motivo_situacao_cadastral: e.motivo_situacao_cadastral?.descricao,
+    ente_federativo_responsavel: d.responsavel_federativo,
+    cnae_fiscal: e.atividade_principal?.id,
+    cnae_fiscal_descricao: e.atividade_principal?.descricao,
+    cnaes_secundarios: (e.atividades_secundarias ?? []).map((a) => ({
+      codigo: a.id,
+      descricao: a.descricao,
+    })),
+    capital_social: d.capital_social,
+    qsa: (d.socios ?? []).map((s) => ({
+      nome_socio: s.nome,
+      qualificacao_socio: s.qualificacao_socio?.descricao?.trim(),
+      codigo_qualificacao_socio: s.qualificacao_socio?.id,
+      cnpj_cpf_do_socio: s.cpf_cnpj_socio,
+      data_entrada_sociedade: s.data_entrada,
+      pais: s.pais?.nome,
+      faixa_etaria: s.faixa_etaria,
+    })),
+    opcao_pelo_simples: simNao(d.simples?.simples),
+    opcao_pelo_mei: simNao(d.simples?.mei),
+  };
 }
 
 /**
- * Consulta CNPJ na BrasilAPI (com fallback para minhareceita.org) e retorna o shape normalizado.
- * @throws CnpjLookupError quando CNPJ invalido, nao encontrado, ou erro de rede.
+ * Cadeia de provedores. BrasilAPI e minhareceita.org compartilham a mesma base
+ * (BrasilAPI faz proxy do minhareceita) — quando um cai, o outro costuma cair junto.
+ * publica.cnpj.ws é base independente (CORS liberado; limite 3 req/min por IP).
+ */
+const PROVIDERS: { name: string; fetch: (cnpj: string) => Promise<BrasilApiCnpj> }[] = [
+  {
+    name: 'BrasilAPI',
+    fetch: async (cnpj) =>
+      (await fetchJson(
+        'BrasilAPI',
+        `https://brasilapi.com.br/api/cnpj/v1/${cnpj}`
+      )) as BrasilApiCnpj,
+  },
+  {
+    name: 'minhareceita',
+    fetch: async (cnpj) =>
+      (await fetchJson('minhareceita', `https://minhareceita.org/${cnpj}`)) as BrasilApiCnpj,
+  },
+  {
+    name: 'CNPJ.ws',
+    fetch: async (cnpj) =>
+      cnpjWsToBrasilApi(
+        (await fetchJson('CNPJ.ws', `https://publica.cnpj.ws/cnpj/${cnpj}`)) as CnpjWs
+      ),
+  },
+];
+
+/**
+ * Consulta CNPJ (BrasilAPI → minhareceita.org → publica.cnpj.ws) e retorna o shape normalizado.
+ * Cai para o próximo provedor em rede/timeout/5xx/429/404.
+ * @throws CnpjLookupError NOT_FOUND só se todo provedor que respondeu disse 404.
  */
 export async function lookupCnpj(rawCnpj: string): Promise<CnpjLookupResult> {
   const cnpj = sanitizeCnpj(rawCnpj);
@@ -278,42 +424,33 @@ export async function lookupCnpj(rawCnpj: string): Promise<CnpjLookupResult> {
     throw new CnpjLookupError('CNPJ deve ter 14 digitos', 'INVALID');
   }
 
-  let res: Response;
-  try {
-    // BrasilAPI bloqueia o User-Agent default do undici (Node fetch) com 403.
-    // Mandar um UA identificavel resolve. No browser este header nao tem efeito
-    // (forbidden header), entao convive com o uso original em formularios.
-    res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`, {
-      headers: { 'User-Agent': 'vectra-cargo (cnpj-lookup; +https://vectracargo.com.br)' },
-    });
-  } catch (e) {
-    // Erro de rede na BrasilAPI -> tenta fallback
+  const failures: ProviderError[] = [];
+  for (const provider of PROVIDERS) {
     try {
-      const data = await fetchMinhaReceita(cnpj);
-      return normalize(data);
-    } catch {
-      throw new CnpjLookupError(
-        e instanceof Error ? e.message : 'Falha de rede ao consultar CNPJ',
-        'NETWORK'
+      return normalize(await provider.fetch(cnpj));
+    } catch (e) {
+      failures.push(
+        e instanceof ProviderError ? e : new ProviderError(provider.name, 'unavailable', String(e))
       );
     }
   }
 
-  if (res.status === 404) {
-    // CNPJ nao encontrado na BrasilAPI -> tenta fallback
-    try {
-      const data = await fetchMinhaReceita(cnpj);
-      return normalize(data);
-    } catch {
-      throw new CnpjLookupError('CNPJ nao encontrado na base da Receita Federal', 'NOT_FOUND');
-    }
+  const answered = failures.filter((f) => f.kind === 'not_found');
+  if (answered.length > 0 && answered.length === failures.length) {
+    throw new CnpjLookupError('CNPJ nao encontrado na base da Receita Federal', 'NOT_FOUND');
   }
-  if (!res.ok) {
-    throw new CnpjLookupError(`Erro ao consultar CNPJ (status ${res.status})`, 'STATUS');
+  if (answered.length > 0) {
+    throw new CnpjLookupError(
+      `CNPJ nao encontrado (${failures.map((f) => f.message).join('; ')})`,
+      'NOT_FOUND'
+    );
   }
-
-  const data = (await res.json()) as BrasilApiCnpj;
-  return normalize(data);
+  throw new CnpjLookupError(
+    `Serviços de consulta CNPJ indisponíveis no momento — preencha manualmente ou tente em alguns minutos (${failures
+      .map((f) => f.message)
+      .join('; ')})`,
+    'NETWORK'
+  );
 }
 
 /**
