@@ -37,6 +37,8 @@ import { resolveMdfePercursoUfs } from '../_shared/uf-percurso.ts';
 import { calculateRouteDistanceFull } from '../_shared/webrouter-client.ts';
 import { extractNcmFromNfeXml, extractNcmFromPdfBytes } from '../_shared/nfe-extract.ts';
 import { resolveMdfeSeguros } from '../_shared/mdfe-seguro-resolver.ts';
+import { checkInsuranceGate, gateErrorBody } from '../_shared/insurance-exception-gate.ts';
+import { touchesRjMetro } from '../_shared/insurance-limit.ts';
 
 function envOrThrow(key: string): string {
   const v = Deno.env.get(key);
@@ -161,6 +163,53 @@ serve(async (req) => {
     .in('id', quoteIds);
   if (quotesErr || !quotes) return json({ error: 'quotes_load_failed' }, 500, cors);
   const quoteById = new Map<string, any>(quotes.map((q: any) => [q.id, q]));
+
+  // Seguro: valor por veículo (soma dos CT-es deste MDF-e) acima do LMG da apólice exige
+  // liberação excepcional MS/Fairfax vigente (apólice RC-DC item 13). Antes de next_mdfe_numero.
+  let liberationCode = '';
+  {
+    const seenQuote = new Set<string>();
+    let gateValue = 0;
+    let rjCtx: Record<string, unknown> | null = null;
+    let firstCtx: Record<string, unknown> | null = null;
+    const bodyRouteUfs = Array.isArray(body.percurso_ufs)
+      ? (body.percurso_ufs as string[]).map((u) => String(u).toUpperCase().slice(0, 2))
+      : [];
+    for (const cte of ctes as any[]) {
+      const q = quoteById.get(cte.quote_id);
+      const ps = (cte.payload_sent ?? {}) as Record<string, unknown>;
+      const v = Number(ps.valor_carga);
+      if (Number.isFinite(v) && v > 0) {
+        gateValue += v;
+      } else if (q && !seenQuote.has(q.id)) {
+        gateValue += Number(q.cargo_value ?? 0);
+      }
+      if (q) seenQuote.add(q.id);
+      const ctx = {
+        cargoType: q?.cargo_type ?? null,
+        originIbge: ps.codigo_municipio_inicio ?? q?.origin_ibge ?? null,
+        destinationIbge: ps.codigo_municipio_fim ?? q?.destination_ibge ?? null,
+        originUf: (ps.uf_inicio as string) ?? q?.origin_uf ?? null,
+        destinationUf: (ps.uf_fim as string) ?? q?.destination_uf ?? null,
+        routeUfs: bodyRouteUfs,
+      };
+      firstCtx ??= ctx;
+      if (!rjCtx && touchesRjMetro(ctx)) rjCtx = ctx;
+    }
+    try {
+      const gate = await checkInsuranceGate(supabase, {
+        quoteIds: Array.from(seenQuote),
+        cargoValue: gateValue,
+        ctx: (rjCtx ?? firstCtx ?? {}) as any,
+      });
+      if (!gate.allowed) return json(gateErrorBody(gate), 422, cors);
+      liberationCode = String(gate.exception?.liberation_code ?? '')
+        .replace(/\s/g, '')
+        .slice(0, 40);
+    } catch (err) {
+      return json({ error: 'insurance_gate_failed', detail: String(err) }, 500, cors);
+    }
+  }
 
   // Load shippers + clients (IBGE/UF fallback quando quote.*_ibge/_uf vazios)
   const shipperIds = Array.from(new Set(quotes.map((q: any) => q.shipper_id).filter(Boolean)));
@@ -308,6 +357,7 @@ serve(async (req) => {
   // Seguro da carga: apólices ativas (RCTR-C / RC-DC). Responsável = emitente (Vectra).
   // SEFAZ 699: nAver obrigatório no rodoviário. Fontes (ordem — ver mdfe-seguro-resolver):
   //   1) averbacoes AT&M do CT-e
+  //   1b) código informado pela MS na liberação excepcional (insurance_exception_requests)
   //   2) risk_policies.metadata.numero_averbacao
   //   3) proposta Fairfax (averbacao_modo=email_ms) — averbação manual MS até AT&M
   //   4) secret VECTRA_SEGURO_NAVER
@@ -338,6 +388,7 @@ serve(async (req) => {
   const seguros = resolveMdfeSeguros({
     policies: (policies ?? []) as any[],
     naverFromCte,
+    naverLiberacao: liberationCode || undefined,
     naverEnvOverride: naverEnv || undefined,
     ambiente: ambienteEarly === 'homolog' ? 'homolog' : 'prod',
   });

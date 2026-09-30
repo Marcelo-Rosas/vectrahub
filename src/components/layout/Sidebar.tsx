@@ -16,6 +16,7 @@ import {
   BarChart3,
   ShieldCheck,
   Activity,
+  FileWarning,
   Building2,
   Tent,
 } from 'lucide-react';
@@ -54,6 +55,12 @@ const navItems = [
     path: '/monitoramento-seguros',
     icon: Activity,
     label: 'Monit. Seguros',
+    roles: ['admin', 'financeiro', 'operacional'] as UserProfile[],
+  },
+  {
+    path: '/seguro/liberacoes',
+    icon: FileWarning,
+    label: 'Liberações Seguro',
     roles: ['admin', 'financeiro', 'operacional'] as UserProfile[],
   },
   { path: '/clientes', icon: Users, label: 'Clientes' },
