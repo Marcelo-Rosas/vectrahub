@@ -554,44 +554,6 @@ serve(async (req) => {
     );
   }
 
-  // Seguro: embarque acima do LMG da apólice exige liberação excepcional MS/Fairfax vigente
-  // (apólice RC-DC item 13). Antes de qualquer alocação de numeração. Viagem (trip) = soma das OS.
-  {
-    let gateQuoteIds: string[] = [quote.id];
-    let gateValue = Number(order?.cargo_value ?? quote.cargo_value ?? 0);
-    if (order?.trip_id) {
-      const { data: tripOrders } = await supabase
-        .from('orders')
-        .select('quote_id, cargo_value')
-        .eq('trip_id', order.trip_id);
-      if (tripOrders?.length) {
-        gateValue = tripOrders.reduce(
-          (sum: number, o: { cargo_value: number | null }) => sum + Number(o.cargo_value ?? 0),
-          0
-        );
-        gateQuoteIds = tripOrders
-          .map((o: { quote_id: string | null }) => o.quote_id)
-          .filter(Boolean) as string[];
-      }
-    }
-    try {
-      const gate = await checkInsuranceGate(supabase, {
-        quoteIds: gateQuoteIds,
-        cargoValue: gateValue,
-        ctx: {
-          cargoType: order?.cargo_type ?? quote.cargo_type,
-          originIbge: quote.origin_ibge,
-          destinationIbge: quote.destination_ibge,
-          originUf: quote.origin_uf,
-          destinationUf: quote.destination_uf,
-        },
-      });
-      if (!gate.allowed) return json(gateErrorBody(gate), 422, cors);
-    } catch (err) {
-      return json({ error: 'insurance_gate_failed', detail: String(err) }, 500, cors);
-    }
-  }
-
   const shipperPatched = await ensurePartyIe(supabase, await resolveIbge(shipper), 'shippers');
   const clientPatched = await ensurePartyIe(supabase, await resolveIbge(client), 'clients');
 
@@ -621,6 +583,46 @@ serve(async (req) => {
     destination_ibge: destinationIbge,
     destination_uf: destinationUf,
   };
+
+  // Seguro: embarque acima do LMG da apólice exige liberação excepcional MS/Fairfax vigente
+  // (apólice RC-DC item 13). Depois de resolver origem/destino, antes de qualquer alocação de numeração. Viagem (trip) = soma das OS.
+  {
+    let gateQuoteIds: string[] = [quote.id];
+    let gateValue = Number(order?.cargo_value ?? quote.cargo_value ?? 0);
+    if (order?.trip_id) {
+      const { data: tripOrders } = await supabase
+        .from('orders')
+        .select('quote_id, cargo_value')
+        .eq('trip_id', order.trip_id);
+      if (tripOrders?.length) {
+        gateValue = tripOrders.reduce(
+          (sum: number, o: { cargo_value: number | null }) => sum + Number(o.cargo_value ?? 0),
+          0
+        );
+        gateQuoteIds = tripOrders
+          .map((o: { quote_id: string | null }) => o.quote_id)
+          .filter(Boolean) as string[];
+      }
+    }
+    try {
+      const gate = await checkInsuranceGate(supabase, {
+        quoteIds: gateQuoteIds,
+        cargoValue: gateValue,
+        ctx: {
+          cargoType: order?.cargo_type ?? quote.cargo_type,
+          // Cotação sem origem/destino (ex.: COT-2026-10-0001) → embarcador/destinatário resolvidos.
+          // Sem isso a saída do RJ passava como "fora do RJ" e o limite virava o de academia (R$ 3 mi).
+          originIbge: originIbge ?? shipperPatched.ibge_code ?? null,
+          destinationIbge: destinationIbge ?? clientPatched.ibge_code ?? null,
+          originUf: originUf ?? shipperPatched.state ?? null,
+          destinationUf: destinationUf ?? clientPatched.state ?? null,
+        },
+      });
+      if (!gate.allowed) return json(gateErrorBody(gate), 422, cors);
+    } catch (err) {
+      return json({ error: 'insurance_gate_failed', detail: String(err) }, 500, cors);
+    }
+  }
 
   const ambiente = (Deno.env.get('FOCUS_NFE_AMBIENTE') as FocusAmbiente) ?? 'homolog';
   let vectra: VectraConfig;
