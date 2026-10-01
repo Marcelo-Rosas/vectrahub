@@ -217,6 +217,8 @@ export function InsuranceExceptionDialog({
   const send = useSendInsuranceException();
 
   const [form, setForm] = useState<MsLiberacaoForm | null>(null);
+  /** Rascunho já gravado nesta abertura: reenvio após falha atualiza em vez de duplicar. */
+  const [savedId, setSavedId] = useState<string | null>(null);
   const [plannedStart, setPlannedStart] = useState('');
   const [to, setTo] = useState(formatEmailList(AVERBA_MS_TO_DEFAULT));
   const [cc, setCc] = useState(formatEmailList(AVERBA_MS_CC_DEFAULT));
@@ -240,6 +242,7 @@ export function InsuranceExceptionDialog({
     if (!open) {
       setForm(null);
       setShowErrors(false);
+      setSavedId(null);
       setMessage('');
       return;
     }
@@ -299,7 +302,7 @@ export function InsuranceExceptionDialog({
     if (!form || !loaded || !check) return null;
     const reasons = MS_CHECK_GROUPS.motivo.filter((k) => form.checks[k as MsCheckKey]);
     return save.mutateAsync({
-      id: request?.id,
+      id: request?.id ?? savedId ?? undefined,
       order_id: loaded.order.id,
       trip_id: loaded.order.trip_id,
       quote_ids: loaded.tripQuoteIds,
@@ -317,8 +320,12 @@ export function InsuranceExceptionDialog({
   }
 
   async function onSaveDraft() {
-    const saved = await persist();
-    if (saved) onOpenChange(false);
+    try {
+      const saved = await persist();
+      if (saved) onOpenChange(false);
+    } catch {
+      // toast já exibido pelo hook
+    }
   }
 
   async function onSend() {
@@ -326,16 +333,21 @@ export function InsuranceExceptionDialog({
     if (errors.length) return;
     const toList = parseEmailList(to);
     if (!toList.length) return;
-    const saved = await persist();
-    if (!saved) return;
-    await send.mutateAsync({
-      requestId: saved.id,
-      to: toList,
-      cc: parseEmailList(cc),
-      message: message.trim() || undefined,
-      resend: saved.status === 'sent',
-    });
-    onOpenChange(false);
+    try {
+      const saved = await persist();
+      if (!saved) return;
+      setSavedId(saved.id);
+      await send.mutateAsync({
+        requestId: saved.id,
+        to: toList,
+        cc: parseEmailList(cc),
+        message: message.trim() || undefined,
+        resend: saved.status === 'sent',
+      });
+      onOpenChange(false);
+    } catch {
+      // toast já exibido pelo hook; diálogo fica aberto e o próximo clique reusa o rascunho
+    }
   }
 
   const busy = save.isPending || send.isPending;
