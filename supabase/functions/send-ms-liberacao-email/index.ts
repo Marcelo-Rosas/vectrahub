@@ -76,8 +76,12 @@ Deno.serve(async (req) => {
     const userSb = createClient(supabaseUrl, anonKey, {
       global: { headers: { authorization: authHeader } },
     });
-    const { data: userData, error: userErr } = await userSb.auth.getUser();
-    if (userErr || !userData?.user) return json({ error: 'unauthorized' }, 401, corsHeaders);
+    // JWT explícito: sem argumento, getUser() procura sessão local (inexistente no servidor) e falha.
+    const jwt = authHeader.replace(/^Bearer\s+/i, '');
+    const { data: userData, error: userErr } = await userSb.auth.getUser(jwt);
+    if (userErr || !userData?.user) {
+      return json({ error: 'unauthorized', detail: userErr?.message }, 401, corsHeaders);
+    }
     const adminSb = createClient(supabaseUrl, serviceKey);
 
     // Leitura via RLS do usuário: garante perfil admin/financeiro/operacional/comercial.
