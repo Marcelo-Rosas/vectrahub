@@ -275,7 +275,7 @@ export function InsuranceExceptionDialog({
   }, [open, form, request, loaded, check, policies, vehiclePlate, vehicleTypeName, driverContract]);
 
   const errors = useMemo(() => (form ? validateMsForm(form) : []), [form]);
-  const readOnly = !!request && !['draft', 'sent'].includes(request.status);
+  const readOnly = !!request && !['draft', 'sent', 'risk_accepted'].includes(request.status);
 
   const setText = (k: MsTextKey, v: string) =>
     setForm((f) => (f ? { ...f, text: { ...f.text, [k]: v } } : f));
@@ -315,7 +315,8 @@ export function InsuranceExceptionDialog({
         ? new Date(`${plannedStart}T12:00:00-03:00`).toISOString()
         : null,
       reasons: reasons.length ? reasons.map((r) => r.replace('motivo_', '')) : ['limite'],
-      form_data: form,
+      // Valor declarado à MS = valor da carga da OS (servidor recusa divergência).
+      form_data: { ...form, text: { ...form.text, mercadoria_valor: brl(loaded.tripValue) } },
     });
   }
 
@@ -342,7 +343,7 @@ export function InsuranceExceptionDialog({
         to: toList,
         cc: parseEmailList(cc),
         message: message.trim() || undefined,
-        resend: saved.status === 'sent',
+        resend: saved.status !== 'draft',
       });
       onOpenChange(false);
     } catch {
@@ -477,7 +478,7 @@ export function InsuranceExceptionDialog({
               ) : (
                 <Mail className="h-4 w-4 mr-1" />
               )}
-              {request?.status === 'sent' ? 'Reenviar à MS' : 'Enviar à MS'}
+              {request && request.status !== 'draft' ? 'Reenviar à MS' : 'Enviar à MS'}
             </Button>
           </DialogFooter>
         )}

@@ -48,6 +48,14 @@ function jwtSub(jwt: string): string | null {
   }
 }
 
+/** "R$ 788.894,50" | "788894.50" | "788.894,50" → número; null se ilegível. */
+function parseBrl(v: string): number | null {
+  const t = v.replace(/[^\d.,-]/g, '');
+  if (!t) return null;
+  const n = t.includes(',') ? Number(t.replace(/\./g, '').replace(',', '.')) : Number(t);
+  return Number.isFinite(n) ? n : null;
+}
+
 function json(body: unknown, status: number, cors: Record<string, string>) {
   return new Response(JSON.stringify(body), {
     status,
@@ -109,14 +117,16 @@ Deno.serve(async (req) => {
     if (rErr) return json({ error: 'unauthorized', detail: rErr.message }, 401, corsHeaders);
     if (!request) return json({ error: 'Pedido não encontrado' }, 404, corsHeaders);
 
-    if (!['draft', 'sent'].includes(request.status)) {
+    // risk_accepted pode ser reenviado (correção de dados à MS) sem perder o risco assumido.
+    const alreadySent = ['sent', 'risk_accepted'].includes(request.status);
+    if (!['draft', 'sent', 'risk_accepted'].includes(request.status)) {
       return json(
         { error: `Pedido em status '${request.status}' não pode ser enviado` },
         409,
         corsHeaders
       );
     }
-    if (request.status === 'sent' && !body.resend) {
+    if (alreadySent && !body.resend) {
       return json(
         { error: 'Pedido já enviado — use reenvio para corrigir dados' },
         409,
@@ -135,6 +145,22 @@ Deno.serve(async (req) => {
     const errors = validateMsForm(form);
     if (errors.length) return json({ error: 'Formulário incompleto', errors }, 422, corsHeaders);
 
+    // Valor declarado à MS tem que ser o da carga (caso real: formulário saiu com "600000").
+    const declared = parseBrl(String(form.text?.mercadoria_valor ?? ''));
+    const cargo = Number(request.cargo_value) || 0;
+    if (declared == null || Math.abs(declared - cargo) > 1) {
+      return json(
+        {
+          error: 'Valor da mercadoria no formulário difere do valor da carga',
+          errors: [
+            `Formulário: ${form.text?.mercadoria_valor ?? '(vazio)'} — carga da OS: R$ ${cargo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          ],
+        },
+        422,
+        corsHeaders
+      );
+    }
+
     const docx = buildMsLiberacaoDocx(form);
     const sentAt = new Date();
     const stamp = sentAt.toISOString().replace(/[:.]/g, '-');
@@ -152,7 +178,7 @@ Deno.serve(async (req) => {
     const html = buildMsLiberacaoHtml({
       form,
       deadline,
-      resend: request.status === 'sent',
+      resend: alreadySent,
       message: typeof body.message === 'string' ? body.message : undefined,
     });
 
@@ -163,7 +189,7 @@ Deno.serve(async (req) => {
         from: resendFrom,
         to,
         ...(cc.length ? { cc } : {}),
-        subject: `${request.status === 'sent' ? '[REENVIO] ' : ''}Liberação de embarque excepcional — ${plate || 'veículo'} — ${form.text?.mercadoria_valor ?? ''} — Vectra Hub`,
+        subject: `${alreadySent ? '[REENVIO] ' : ''}Liberação de embarque excepcional — ${plate || 'veículo'} — ${form.text?.mercadoria_valor ?? ''} — Vectra Hub`,
         html,
         attachments: [{ filename, content: bytesToB64(docx) }],
       }),
@@ -177,7 +203,7 @@ Deno.serve(async (req) => {
     const { error: updErr } = await adminSb
       .from('insurance_exception_requests')
       .update({
-        status: 'sent',
+        status: request.status === 'risk_accepted' ? 'risk_accepted' : 'sent',
         sent_at: sentAt.toISOString(),
         sent_by: userId,
         response_deadline: deadline.toISOString(),
