@@ -203,3 +203,25 @@ export function groupCteLegs<T extends CteLegInput>(legs: T[]): CteLegGroup<T>[]
   }
   return [...groups.values()];
 }
+
+/**
+ * Totais da NF-e a partir do XML: vNF (ICMSTot) e soma de pesoB dos volumes.
+ * Fonte de verdade para infCarga/vCarga por CT-e — nunca o rateio do total da OS.
+ */
+export function nfeTotalsFromXml(xml: string): { valor_nf_xml?: number; peso_bruto_xml?: number } {
+  const out: { valor_nf_xml?: number; peso_bruto_xml?: number } = {};
+  const text = String(xml ?? '');
+  const tot = text.match(/<ICMSTot>([\s\S]*?)<\/ICMSTot>/);
+  const vnf = (tot ? tot[1] : text).match(/<vNF>\s*([0-9.]+)\s*<\/vNF>/);
+  if (vnf) {
+    const v = Number(vnf[1]);
+    if (Number.isFinite(v) && v > 0) out.valor_nf_xml = Number(v.toFixed(2));
+  }
+  let peso = 0;
+  for (const m of text.matchAll(/<pesoB>\s*([0-9.]+)\s*<\/pesoB>/g)) {
+    const p = Number(m[1]);
+    if (Number.isFinite(p)) peso += p;
+  }
+  if (peso > 0) out.peso_bruto_xml = Number(peso.toFixed(3));
+  return out;
+}

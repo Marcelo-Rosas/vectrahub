@@ -4,6 +4,7 @@ import {
   nfeNumeroFromChave,
   planCteEmissions,
   groupCteLegs,
+  nfeTotalsFromXml,
   splitFreightProportional,
   type CteNfeForSplit,
 } from '@/lib/cte-nfe-split';
@@ -155,5 +156,28 @@ describe('groupCteLegs — Academia JP (out/2026)', () => {
   it('destinatários diferentes nunca se juntam', () => {
     const g = groupCteLegs([nf10583, { ...nf10585, destTaxId: '11222333000181' }]);
     expect(g).toHaveLength(2);
+  });
+});
+
+describe('nfeTotalsFromXml — vCarga real da NF (não rateio)', () => {
+  const xml16775 = `<nfeProc><NFe><infNFe Id="NFe33260919827141000291550010000167751779404521">
+    <det nItem="1"><prod><vProd>5510.04</vProd></prod><imposto><ICMS><ICMS00><vBC>5510.04</vBC></ICMS00></ICMS></imposto></det>
+    <total><ICMSTot><vBC>5510.04</vBC><vICMS>220.40</vICMS><vProd>5510.04</vProd><vNF>5510.04</vNF></ICMSTot></total>
+    <transp><modFrete>1</modFrete><vol><qVol>30</qVol><pesoB>3500.000</pesoB></vol></transp>
+  </infNFe></NFe></nfeProc>`;
+
+  it('NF 16775: vNF 5.510,04 e pesoB 3.500 kg', () => {
+    expect(nfeTotalsFromXml(xml16775)).toEqual({ valor_nf_xml: 5510.04, peso_bruto_xml: 3500 });
+  });
+
+  it('soma pesoB de vários volumes e lê vNF só do ICMSTot', () => {
+    const xml =
+      '<det><prod><vNF>1</vNF></prod></det><ICMSTot><vNF>401039.37</vNF></ICMSTot>' +
+      '<vol><pesoB>1200.5</pesoB></vol><vol><pesoB>800</pesoB></vol>';
+    expect(nfeTotalsFromXml(xml)).toEqual({ valor_nf_xml: 401039.37, peso_bruto_xml: 2000.5 });
+  });
+
+  it('XML sem totais → vazio (cai no fallback, nunca inventa valor)', () => {
+    expect(nfeTotalsFromXml('<NFe></NFe>')).toEqual({});
   });
 });
