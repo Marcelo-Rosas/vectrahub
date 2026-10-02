@@ -32,6 +32,22 @@ interface RequestBody {
 const BUCKET = 'insurance-exceptions';
 const DOUBLE_SEND_WINDOW_MS = 2 * 60 * 1000;
 
+/** `sub` do JWT (assinatura validada pelo PostgREST na leitura com RLS). */
+function jwtSub(jwt: string): string | null {
+  try {
+    const part = jwt.split('.')[1];
+    if (!part) return null;
+    const b64 = part
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
+      .padEnd(Math.ceil(part.length / 4) * 4, '=');
+    const sub = JSON.parse(atob(b64))?.sub;
+    return typeof sub === 'string' && sub.length > 0 ? sub : null;
+  } catch {
+    return null;
+  }
+}
+
 function json(body: unknown, status: number, cors: Record<string, string>) {
   return new Response(JSON.stringify(body), {
     status,
@@ -73,24 +89,25 @@ Deno.serve(async (req) => {
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+    // Autenticação = mesma do send-averba-ms-email: leitura via PostgREST com o JWT do usuário.
+    // PostgREST valida assinatura/expiração e a RLS exige perfil; auth.getUser() dentro do
+    // runtime devolvia HTML (gateway interno) e quebrava com 401 para todo usuário.
+    const jwt = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const userId = jwtSub(jwt);
+    if (!userId) return json({ error: 'unauthorized', detail: 'JWT sem sub' }, 401, corsHeaders);
+
     const userSb = createClient(supabaseUrl, anonKey, {
-      global: { headers: { authorization: authHeader } },
+      global: { headers: { Authorization: `Bearer ${jwt}` } },
     });
-    // JWT explícito: sem argumento, getUser() procura sessão local (inexistente no servidor) e falha.
-    const jwt = authHeader.replace(/^Bearer\s+/i, '');
-    const { data: userData, error: userErr } = await userSb.auth.getUser(jwt);
-    if (userErr || !userData?.user) {
-      return json({ error: 'unauthorized', detail: userErr?.message }, 401, corsHeaders);
-    }
     const adminSb = createClient(supabaseUrl, serviceKey);
 
-    // Leitura via RLS do usuário: garante perfil admin/financeiro/operacional/comercial.
     const { data: request, error: rErr } = await userSb
       .from('insurance_exception_requests')
       .select('*')
       .eq('id', body.requestId)
       .maybeSingle();
-    if (rErr || !request) return json({ error: 'Pedido não encontrado' }, 404, corsHeaders);
+    if (rErr) return json({ error: 'unauthorized', detail: rErr.message }, 401, corsHeaders);
+    if (!request) return json({ error: 'Pedido não encontrado' }, 404, corsHeaders);
 
     if (!['draft', 'sent'].includes(request.status)) {
       return json(
@@ -162,7 +179,7 @@ Deno.serve(async (req) => {
       .update({
         status: 'sent',
         sent_at: sentAt.toISOString(),
-        sent_by: userData.user.id,
+        sent_by: userId,
         response_deadline: deadline.toISOString(),
         email_to: to,
         email_cc: cc,
