@@ -170,3 +170,34 @@ describe('ailog-ciot-client — resposta real 02/10/2026 e ambiente', () => {
     }
   });
 });
+
+describe('buildHubAilogEmit — data de início não pode ser passada', () => {
+  const lookups = {
+    origin: { ibge_code: 4211306, uf: 'SC', municipio: 'Navegantes' },
+    dest: { ibge_code: 4208203, uf: 'SC', municipio: 'Itajaí' },
+    contratante: { ibge_code: 4211306, uf: 'SC', municipio: 'Navegantes' },
+  };
+  const now = new Date('2026-10-02T19:31:00Z'); // 02/10 16:31 BRT
+
+  it('coleta 30/09 emitida 02/10 → início 02/10, fim mantém duração', () => {
+    const built = buildHubAilogEmit(
+      { ...load, pickupDate: '2026-09-30T12:00:00Z', eta: '2026-10-05T12:00:00Z' },
+      lookups,
+      now
+    );
+    if (!built.ok) throw new Error(built.error);
+    expect(built.input.dataInicioViagem).toBe('02/10/2026');
+    expect(built.input.dataFimViagem).toBe('07/10/2026');
+  });
+
+  it('coleta futura é mantida', () => {
+    const built = buildHubAilogEmit(
+      { ...load, pickupDate: '2026-10-04T12:00:00Z', eta: null },
+      lookups,
+      now
+    );
+    if (!built.ok) throw new Error(built.error);
+    expect(built.input.dataInicioViagem).toBe('04/10/2026');
+    expect(built.input.dataFimViagem).toBe('11/10/2026');
+  });
+});
