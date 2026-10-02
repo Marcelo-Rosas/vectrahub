@@ -140,8 +140,10 @@ export function resolveAilogCiotAmbiente(): AilogCiotAmbiente {
   const explicit = (getEnv('CIOT_AMBIENTE') || '').toLowerCase();
   if (explicit === 'producao' || explicit === 'prod') return 'producao';
   if (explicit === 'homologacao' || explicit === 'homolog') return 'homologacao';
+  // FOCUS_NFE_AMBIENTE usa 'prod' | 'homolog' (FocusAmbiente) — 'prod' caía em homologação e o
+  // CIOT era emitido no ambiente HML com CT-e/MDF-e em produção.
   const focus = (getEnv('FOCUS_NFE_AMBIENTE') || '').toLowerCase();
-  if (focus === 'producao' || focus === 'production') return 'producao';
+  if (focus === 'prod' || focus === 'producao' || focus === 'production') return 'producao';
   return 'homologacao';
 }
 
@@ -158,12 +160,35 @@ export function parseAilogCiotResponse(json: unknown): AilogCiotResult {
     }
     return '';
   };
-  const ciot = digits(pick('numeroCiot', 'numero_ciot', 'ciot', 'CIOT')).slice(0, 16);
+  const ciot = digits(pick('numeroCiot', 'numeroCIOT', 'numero_ciot', 'ciot', 'CIOT')).slice(0, 16);
   const protocolo = pick('numeroProtocoloCiot', 'protocolo', 'numeroProtocolo');
-  const mensagem = pick('mensagem', 'message', 'erro', 'error');
   const status = pick('status', 'situacao').toUpperCase();
+  // AILOG devolve { sucesso:false, status:'NAO_AUTORIZADO', mensagens:[...] }
+  const rawMsgs = nested.mensagens ?? obj.mensagens;
+  const mensagens = Array.isArray(rawMsgs)
+    ? rawMsgs
+        .map((m) =>
+          m && typeof m === 'object'
+            ? String(
+                (m as Record<string, unknown>).mensagem ??
+                  (m as Record<string, unknown>).descricao ??
+                  (m as Record<string, unknown>).message ??
+                  JSON.stringify(m)
+              )
+            : String(m ?? '')
+        )
+        .filter((t) => t.trim())
+        .join('; ')
+    : '';
+  const mensagem = pick('mensagem', 'message', 'erro', 'error') || mensagens;
+  const sucesso = nested.sucesso ?? obj.sucesso;
   const failed =
-    status.includes('ERRO') || status.includes('FALHA') || /erro|fail|invalid/i.test(mensagem);
+    sucesso === false ||
+    status.includes('ERRO') ||
+    status.includes('FALHA') ||
+    status.includes('NAO_AUTORIZ') ||
+    status.includes('REJEIT') ||
+    /erro|fail|invalid/i.test(mensagem);
   if (ciot && !failed) {
     return { ok: true, ciotNumber: ciot, protocolo: protocolo || undefined, raw: obj };
   }
@@ -174,7 +199,11 @@ export function parseAilogCiotResponse(json: unknown): AilogCiotResult {
     ok: false,
     ciotNumber: ciot || undefined,
     protocolo: protocolo || undefined,
-    message: mensagem || 'AILOG CIOT sem número na resposta',
+    message:
+      mensagem ||
+      (status
+        ? `AILOG CIOT ${status.replace(/_/g, ' ').toLowerCase()} — sem motivo informado pela AILOG`
+        : 'AILOG CIOT sem número na resposta'),
     raw: obj,
   };
 }
