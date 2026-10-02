@@ -158,6 +158,20 @@ export function evaluateEmissionGate(input: GateInput): GateResult {
       );
     }) ?? null;
   const base = `Valor da carga ${brl(input.cargoValue)} excede ${input.limitLabel}. Emissão bloqueada até liberação excepcional da MS/Fairfax.`;
+  // Liberação vigente para as mesmas cotações, mas com valor menor que a carga atual.
+  const undervalued =
+    input.requests.find(
+      (r) =>
+        isExceptionGranted(r, now) && input.quoteIds.every((q) => (r.quote_ids ?? []).includes(q))
+    ) ?? null;
+  if (undervalued) {
+    return {
+      allowed: false,
+      error: 'insurance_exception_pending',
+      detail: `${base} A liberação vigente (${effectiveStatus(undervalued, now)}) cobre só até ${brl(Number(undervalued.cargo_value) || 0)}. Reenvie o pedido em Risco → Reenviar com o valor atual da carga.`,
+      pending: undervalued,
+    };
+  }
   if (pending) {
     const prazo = pending.response_deadline
       ? ` Aceite tácito após ${new Date(pending.response_deadline).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}.`
