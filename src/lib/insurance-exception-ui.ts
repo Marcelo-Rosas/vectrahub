@@ -4,6 +4,7 @@ import type { EffectiveStatus } from '@/lib/insurance-exception';
 export const EXCEPTION_STATUS_LABEL: Record<EffectiveStatus, string> = {
   draft: 'Rascunho',
   sent: 'Aguardando MS',
+  risk_accepted: 'Risco assumido',
   accepted: 'Aceito',
   tacit_accepted: 'Aceite tácito',
   rejected: 'Recusado',
@@ -13,6 +14,7 @@ export const EXCEPTION_STATUS_LABEL: Record<EffectiveStatus, string> = {
 export const EXCEPTION_STATUS_CLASS: Record<EffectiveStatus, string> = {
   draft: 'bg-muted text-muted-foreground',
   sent: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
+  risk_accepted: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200',
   accepted: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
   tacit_accepted: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
   rejected: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',

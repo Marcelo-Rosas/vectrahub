@@ -8,7 +8,12 @@
  * Por isso CT-e e MDF-e ficam bloqueados até a liberação estar vigente.
  */
 
-export type ExceptionStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'cancelled';
+/**
+ * risk_accepted: admin liberou CT-e/MDF-e antes do retorno da MS, assumindo o risco pela VECTRA HUB
+ * (sem cobertura do seguro até aceite expresso ou tácito). Não é aceite da seguradora.
+ */
+export type ExceptionStatus =
+  'draft' | 'sent' | 'risk_accepted' | 'accepted' | 'rejected' | 'cancelled';
 
 export type ExceptionRequestRow = {
   id: string;
@@ -74,7 +79,12 @@ export function responseDeadline(sentAt: Date, businessDays = RESPONSE_BUSINESS_
 
 export function effectiveStatus(req: ExceptionRequestRow, now: Date = new Date()): EffectiveStatus {
   const s = String(req.status) as ExceptionStatus;
-  if (s === 'sent' && req.response_deadline && now.getTime() > Date.parse(req.response_deadline)) {
+  // Prazo vencido sem resposta = aceite tácito (com cobertura), inclusive se já liberado por risco assumido.
+  if (
+    (s === 'sent' || s === 'risk_accepted') &&
+    req.response_deadline &&
+    now.getTime() > Date.parse(req.response_deadline)
+  ) {
     return 'tacit_accepted';
   }
   return s;
@@ -82,7 +92,7 @@ export function effectiveStatus(req: ExceptionRequestRow, now: Date = new Date()
 
 export function isExceptionGranted(req: ExceptionRequestRow, now: Date = new Date()): boolean {
   const s = effectiveStatus(req, now);
-  return s === 'accepted' || s === 'tacit_accepted';
+  return s === 'accepted' || s === 'tacit_accepted' || s === 'risk_accepted';
 }
 
 /**

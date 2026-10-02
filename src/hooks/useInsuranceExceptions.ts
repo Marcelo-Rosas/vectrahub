@@ -33,6 +33,9 @@ export interface InsuranceExceptionRequest {
   response_notes: string | null;
   response_storage_path: string | null;
   liberation_code: string | null;
+  risk_accepted_by: string | null;
+  risk_accepted_at: string | null;
+  risk_acceptance_reason: string | null;
   created_at: string;
   updated_at: string;
   order?: { os_number: string | null; client_name: string | null } | null;
@@ -174,6 +177,28 @@ export function useDecideInsuranceException() {
       qc.invalidateQueries({ queryKey: KEY });
     },
     onError: (err: Error) => toast.error(`Falha ao registrar decisão: ${err.message}`),
+  });
+}
+
+/**
+ * Admin libera CT-e/MDF-e sem retorno da MS, assumindo o risco (sem cobertura até aceite).
+ * Banco exige admin + status 'sent' + justificativa ≥ 20 caracteres e carimba autor/horário.
+ */
+export function useAcceptInsuranceRisk() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { id: string; reason: string }) => {
+      const { error } = await table()
+        .update({ status: 'risk_accepted', risk_acceptance_reason: params.reason.trim() })
+        .eq('id', params.id)
+        .eq('status', 'sent');
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.warning('Embarque liberado com RISCO ASSUMIDO — sem cobertura até o aceite da MS');
+      qc.invalidateQueries({ queryKey: KEY });
+    },
+    onError: (err: Error) => toast.error(`Falha ao liberar: ${err.message}`),
   });
 }
 

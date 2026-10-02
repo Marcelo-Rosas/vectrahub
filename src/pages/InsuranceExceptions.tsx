@@ -33,8 +33,9 @@ import { brl } from '@/lib/ms-liberacao-prefill';
 type FilterKey = 'abertos' | 'liberados' | 'todos';
 
 const FILTERS: Record<FilterKey, (s: EffectiveStatus) => boolean> = {
-  abertos: (s) => s === 'draft' || s === 'sent' || s === 'rejected',
-  liberados: (s) => s === 'accepted' || s === 'tacit_accepted',
+  // risk_accepted aparece nas duas: CT-e liberado, mas MS ainda sem resposta.
+  abertos: (s) => s === 'draft' || s === 'sent' || s === 'risk_accepted' || s === 'rejected',
+  liberados: (s) => s === 'accepted' || s === 'tacit_accepted' || s === 'risk_accepted',
   todos: () => true,
 };
 
@@ -57,7 +58,9 @@ export default function InsuranceExceptions() {
         .filter(({ st }) => FILTERS[filter](st)),
     [requests, filter, now]
   );
-  const waiting = requests.filter((r) => effectiveStatus(r, now) === 'sent').length;
+  const waiting = requests.filter((r) =>
+    ['sent', 'risk_accepted'].includes(effectiveStatus(r, now))
+  ).length;
 
   return (
     <MainLayout>
@@ -140,7 +143,9 @@ export default function InsuranceExceptions() {
                   </TableCell>
                   <TableCell className="whitespace-nowrap">{formatDeadline(r.sent_at)}</TableCell>
                   <TableCell className="whitespace-nowrap">
-                    {st === 'sent' ? formatDeadline(r.response_deadline) : '—'}
+                    {st === 'sent' || st === 'risk_accepted'
+                      ? formatDeadline(r.response_deadline)
+                      : '—'}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
@@ -169,7 +174,7 @@ export default function InsuranceExceptions() {
                           <Mail className="h-4 w-4 mr-1" /> {st === 'draft' ? 'Enviar' : 'Reenviar'}
                         </Button>
                       )}
-                      {st === 'sent' && (
+                      {(st === 'sent' || st === 'risk_accepted') && (
                         <Button size="sm" onClick={() => setDeciding(r)}>
                           Resposta
                         </Button>

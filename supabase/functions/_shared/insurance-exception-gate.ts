@@ -44,7 +44,7 @@ export async function checkInsuranceGate(
       .from('insurance_exception_requests')
       .select('id, status, quote_ids, cargo_value, sent_at, response_deadline, liberation_code')
       .overlaps('quote_ids', quoteIds)
-      .in('status', ['draft', 'sent', 'accepted'])
+      .in('status', ['draft', 'sent', 'risk_accepted', 'accepted'])
       .order('created_at', { ascending: false });
     if (error) throw new Error(`insurance_exception_requests: ${error.message}`);
     requests = (data ?? []) as ExceptionRequestRow[];
