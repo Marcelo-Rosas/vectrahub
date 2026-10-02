@@ -25,6 +25,7 @@ import {
   nfeNumeroFromChave,
   splitFreightProportional,
   groupCteLegs,
+  nfeTotalsFromXml,
 } from '../_shared/cte-nfe-split.ts';
 import { calculateRouteDistance } from '../_shared/webrouter-client.ts';
 import { consultSefaz } from '../_shared/sefaz-consult.ts';
@@ -160,6 +161,8 @@ async function hydrateNfeDestMeta(
     merged = mergeNfeDestIntoMetadata({
       ...merged,
       ...extractDestFromNfeXml(xmlFromFile),
+      // vNF / pesoB reais da NF (vCarga do CT-e) — antes nunca eram lidos do XML.
+      ...nfeTotalsFromXml(xmlFromFile),
     });
   }
   if (String(merged.destinatario_nome ?? '').trim() && String(merged.uf ?? '').trim()) {
@@ -180,7 +183,7 @@ async function hydrateNfeDestMeta(
     merged = mergeNfeDestIntoMetadata({
       ...merged,
       sefaz: sefazResult.metadata,
-      ...(sefazResult.xml ? { xml: sefazResult.xml } : {}),
+      ...(sefazResult.xml ? { xml: sefazResult.xml, ...nfeTotalsFromXml(sefazResult.xml) } : {}),
     });
   }
   return merged;
@@ -939,8 +942,20 @@ serve(async (req) => {
     const weightTotal = Number(
       (order as { weight?: number | null } | null)?.weight ?? quote.weight ?? 0
     );
-    const nfCargoRaw = rawLegs.map((l) => Number(l.meta.valor_nf ?? 0));
-    const nfWeightRaw = rawLegs.map((l) => Number(l.meta.peso_kg ?? 0));
+    // Valor/peso reais: XML da NF (vNF/pesoB). valor_nf/peso_kg gravados por rateio antigo
+    // (sobrescreviam o documento) são ignorados — marcados com *_source='rateio' daqui em diante.
+    const realOrZero = (xmlV: unknown, metaV: unknown, source: unknown) => {
+      const x = Number(xmlV ?? 0);
+      if (x > 0) return x;
+      if (source === 'rateio') return 0;
+      return Number(metaV ?? 0);
+    };
+    const nfCargoRaw = rawLegs.map((l) =>
+      realOrZero(l.meta.valor_nf_xml, l.meta.valor_nf, l.meta.valor_nf_source)
+    );
+    const nfWeightRaw = rawLegs.map((l) =>
+      realOrZero(l.meta.peso_bruto_xml, l.meta.peso_kg, l.meta.peso_kg_source)
+    );
     const useCargoSplit = cargoTotal > 0 && nfCargoRaw.every((v) => !(v > 0));
     const useWeightSplit = weightTotal > 0 && nfWeightRaw.every((v) => !(v > 0));
     const cargoParts = useCargoSplit ? splitFreightProportional(cargoTotal, kms) : nfCargoRaw;
@@ -955,8 +970,13 @@ serve(async (req) => {
               ...rawLegs[i].meta,
               km_negociado: kms[i],
               valor_prestacao_sugerido: parts[i],
-              valor_nf: cargoParts[i] > 0 ? cargoParts[i] : rawLegs[i].meta.valor_nf,
-              peso_kg: weightParts[i] > 0 ? weightParts[i] : rawLegs[i].meta.peso_kg,
+              // Nunca sobrescrever o valor/peso real da NF com rateio: rateio vai em campo próprio.
+              valor_nf: nfCargoRaw[i] > 0 ? nfCargoRaw[i] : null,
+              valor_nf_source: nfCargoRaw[i] > 0 ? 'xml' : useCargoSplit ? 'rateio' : null,
+              ...(useCargoSplit ? { valor_nf_rateado: cargoParts[i] } : {}),
+              peso_kg: nfWeightRaw[i] > 0 ? nfWeightRaw[i] : null,
+              peso_kg_source: nfWeightRaw[i] > 0 ? 'xml' : useWeightSplit ? 'rateio' : null,
+              ...(useWeightSplit ? { peso_kg_rateado: weightParts[i] } : {}),
               remetente_cnpj: rawLegs[i].remitter.party.cnpj,
               remetente_nome: rawLegs[i].remitter.party.name,
               remetente_shipper_id: rawLegs[i].remitter.party.id,
