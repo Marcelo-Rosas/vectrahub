@@ -4,8 +4,8 @@
  *
  * Body: { quote_id: string, natureza_operacao?: string }
  *
- * 1 NF → 1 CT-e.
- * N NFs (destinatários e/ou emitentes distintos) → N CT-es com frete rateado por km.
+ * NFs do mesmo emitente (NF-e) e mesmo destinatário → 1 CT-e com N NF-e (groupCteLegs).
+ * Emitentes ou destinatários distintos → CT-es separados, frete rateado por km.
  * Soma das parcelas = frete contratado (order.value ?? quote.value).
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
@@ -24,6 +24,7 @@ import {
   nfeEmitCnpjFromChave,
   nfeNumeroFromChave,
   splitFreightProportional,
+  groupCteLegs,
 } from '../_shared/cte-nfe-split.ts';
 import { calculateRouteDistance } from '../_shared/webrouter-client.ts';
 import { consultSefaz } from '../_shared/sefaz-consult.ts';
@@ -979,7 +980,10 @@ serve(async (req) => {
       km_negociado: kms[i] ?? 0,
     }));
 
-    const toEmit = legs.filter((l) => !activeNfeKeys.has(l.nfe_key));
+    const pending = legs.filter((l) => !activeNfeKeys.has(l.nfe_key));
+    const toEmit = groupCteLegs(
+      pending.map((l) => ({ ...l, destTaxId: String(l.dest.cnpj ?? l.dest.cpf ?? '') }))
+    );
     if (toEmit.length === 0) {
       return json(
         {
@@ -994,7 +998,11 @@ serve(async (req) => {
     }
 
     const emissions = [];
-    for (const leg of toEmit) {
+    for (const group of toEmit) {
+      const leg = group.legs[0];
+      // Rótulo do grupo: "10583/10585" (ref usa só dígitos; info adicional lista as NF-e).
+      const nfeLabel = group.nfe_numeros.join('/');
+      const nfeRefDigits = group.nfe_numeros.join('');
       const dest = await resolveIbge(await enrichDestIe(leg.dest));
       const remitterPatched = await ensurePartyIe(
         supabase,
@@ -1006,9 +1014,9 @@ serve(async (req) => {
       const rem = (remitterPatched ?? leg.shipper) as PartyRow;
       const quoteLeg: QuoteRow = {
         ...quotePatched,
-        nfe_keys: [leg.nfe_key],
-        cargo_value: leg.cargo_value,
-        weight: leg.weight,
+        nfe_keys: group.nfe_keys,
+        cargo_value: group.cargo_value,
+        weight: group.weight,
         origin_cep: leg.origin_cep,
         origin: leg.origin_label || rem.city,
         origin_uf: rem.state,
@@ -1018,9 +1026,15 @@ serve(async (req) => {
         destination: dest.city,
         destination_cep: dest.zip_code,
       };
-      const retry = (existingEmissions ?? []).filter((e) =>
-        String(e.ref ?? '').includes(`-NF${leg.nfe_numero}`)
-      ).length;
+      // Mesmo grupo de NFs (ref termina em -NF<dígitos> ou -NF<dígitos>-rN); não casa prefixo de outro grupo.
+      const refPrefix = `-NF${nfeRefDigits}`;
+      const retry = (existingEmissions ?? []).filter((e) => {
+        const r = String(e.ref ?? '');
+        const i = r.lastIndexOf(refPrefix);
+        if (i < 0) return false;
+        const tail = r.slice(i + refPrefix.length);
+        return tail === '' || /^-r[0-9]+$/.test(tail);
+      }).length;
       const result = await emitOneCte({
         supabase,
         userId,
@@ -1032,18 +1046,19 @@ serve(async (req) => {
         orderId: order?.id ?? null,
         orderValue: null,
         retry,
-        nfeNumero: leg.nfe_numero,
-        valorPrestacao: leg.valor_prestacao,
+        nfeNumero: nfeLabel,
+        valorPrestacao: group.valor_prestacao,
         naturezaOperacao,
       });
       emissions.push({
         ...result,
-        nfe_key: leg.nfe_key,
-        nfe_numero: leg.nfe_numero,
+        nfe_key: group.nfe_keys.join(','),
+        nfe_numero: nfeLabel,
+        nfe_count: group.nfe_keys.length,
         rem_name: rem.name,
         dest_name: dest.name,
-        valor_total: leg.valor_prestacao,
-        km_negociado: leg.km_negociado,
+        valor_total: group.valor_prestacao,
+        km_negociado: group.km_negociado,
       });
     }
 

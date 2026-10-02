@@ -3,6 +3,7 @@ import {
   nfeEmitCnpjFromChave,
   nfeNumeroFromChave,
   planCteEmissions,
+  groupCteLegs,
   splitFreightProportional,
   type CteNfeForSplit,
 } from '@/lib/cte-nfe-split';
@@ -114,5 +115,45 @@ describe('planCteEmissions', () => {
     }));
     const plan = planCteEmissions({ nfes, tomadorTipo: 0, ufInicio: 'SC' });
     expect(plan.mode).toBe('per_destinatario');
+  });
+});
+
+describe('groupCteLegs — Academia JP (out/2026)', () => {
+  const ACAD = '60718879000133';
+  const leg = (nfe_key: string, nfe_numero: string, cargo_value: number, valor_prestacao = 0) => ({
+    nfe_key,
+    nfe_numero,
+    destTaxId: ACAD,
+    cargo_value,
+    weight: 0,
+    valor_prestacao,
+    km_negociado: 2450,
+  });
+  // Mega Armazéns 05.592.876/0001-98
+  const nf10583 = leg('33260905592876000198550010000105831475480948', '10583', 592858.68, 12500);
+  const nf10585 = leg('33260905592876000198550010000105851680828696', '10585', 196035.82, 12500);
+  const nf10584 = leg('33260905592876000198550010000105841657242217', '10584', 334245.43);
+  const nf10586 = leg('33260905592876000198550010000105861020774286', '10586', 401039.37);
+  // Core Health & Fitness 19.827.141/0002-91
+  const nf16775 = leg('33260919827141000291550010000167751779404521', '16775', 5510.04);
+
+  it('carro 1: mesmo emitente + mesmo destinatário → 1 CT-e com 2 NF-e', () => {
+    const g = groupCteLegs([nf10583, nf10585]);
+    expect(g).toHaveLength(1);
+    expect(g[0].nfe_numeros).toEqual(['10583', '10585']);
+    expect(g[0].cargo_value).toBe(788894.5);
+    expect(g[0].valor_prestacao).toBe(25000);
+  });
+
+  it('carro 2: emitentes diferentes → Mega (2 NF) + Core (1 NF)', () => {
+    const g = groupCteLegs([nf10584, nf16775, nf10586]);
+    expect(g.map((x) => x.nfe_numeros)).toEqual([['10584', '10586'], ['16775']]);
+    expect(g[0].cargo_value).toBe(735284.8);
+    expect(g[1].cargo_value).toBe(5510.04);
+  });
+
+  it('destinatários diferentes nunca se juntam', () => {
+    const g = groupCteLegs([nf10583, { ...nf10585, destTaxId: '11222333000181' }]);
+    expect(g).toHaveLength(2);
   });
 });
