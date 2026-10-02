@@ -148,3 +148,58 @@ export function planCteEmissions(input: {
     groups: [...destGroups.entries()].map(([destTaxId, list]) => ({ destTaxId, nfes: list })),
   };
 }
+
+/**
+ * Agrupa NFs em CT-es normais: mesma NF-e emitente (chave pos. 7–20) + mesmo destinatário
+ * → 1 CT-e com N NF-e (planCteEmissions 'normal_multi_nfe'). Emitentes distintos → CT-es
+ * separados (rej. 729/744 sem globalizado). Somas de valor/peso/frete; ordem estável.
+ */
+export type CteLegInput = {
+  nfe_key: string;
+  nfe_numero: string;
+  destTaxId: string;
+  cargo_value: number;
+  weight: number;
+  valor_prestacao: number;
+  km_negociado: number;
+};
+
+export type CteLegGroup<T extends CteLegInput> = {
+  key: string;
+  legs: T[];
+  nfe_keys: string[];
+  nfe_numeros: string[];
+  cargo_value: number;
+  weight: number;
+  valor_prestacao: number;
+  km_negociado: number;
+};
+
+export function groupCteLegs<T extends CteLegInput>(legs: T[]): CteLegGroup<T>[] {
+  const groups = new Map<string, CteLegGroup<T>>();
+  const r2 = (n: number) => Number(n.toFixed(2));
+  for (const leg of legs) {
+    const key = `${nfeEmitCnpjFromChave(leg.nfe_key) || '_'}|${digitsOnly(leg.destTaxId) || '_'}`;
+    const g =
+      groups.get(key) ??
+      ({
+        key,
+        legs: [],
+        nfe_keys: [],
+        nfe_numeros: [],
+        cargo_value: 0,
+        weight: 0,
+        valor_prestacao: 0,
+        km_negociado: 0,
+      } as CteLegGroup<T>);
+    g.legs.push(leg);
+    g.nfe_keys.push(leg.nfe_key);
+    g.nfe_numeros.push(leg.nfe_numero);
+    g.cargo_value = r2(g.cargo_value + (Number(leg.cargo_value) || 0));
+    g.weight = Number((g.weight + (Number(leg.weight) || 0)).toFixed(3));
+    g.valor_prestacao = r2(g.valor_prestacao + (Number(leg.valor_prestacao) || 0));
+    g.km_negociado = Math.max(g.km_negociado, Number(leg.km_negociado) || 0);
+    groups.set(key, g);
+  }
+  return [...groups.values()];
+}
