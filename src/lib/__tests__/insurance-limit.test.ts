@@ -240,6 +240,49 @@ describe('evaluateEmissionGate', () => {
   });
 });
 
+describe('risco assumido (admin, sem retorno da MS)', () => {
+  const base = {
+    id: 'r9',
+    quote_ids: ['q1'],
+    cargo_value: 932614.15,
+    response_deadline: '2026-10-08T02:59:59.000Z',
+  };
+  const before = new Date('2026-10-05T12:00:00Z');
+  const after = new Date('2026-10-08T03:00:00Z');
+
+  it('libera emissão antes do prazo, mas continua sendo risco assumido (não aceite)', () => {
+    const req = { ...base, status: 'risk_accepted' };
+    expect(effectiveStatus(req, before)).toBe('risk_accepted');
+    const g = evaluateEmissionGate({
+      limitOk: false,
+      limit: 600000,
+      limitLabel: 'Sublimite academia RJ',
+      cargoValue: 932614.15,
+      quoteIds: ['q1'],
+      requests: [req],
+      now: before,
+    });
+    expect(g.allowed).toBe(true);
+  });
+
+  it('prazo vence sem resposta → vira aceite tácito', () => {
+    expect(effectiveStatus({ ...base, status: 'risk_accepted' }, after)).toBe('tacit_accepted');
+  });
+
+  it('risco assumido não cobre valor maior que o submetido à MS', () => {
+    const g = evaluateEmissionGate({
+      limitOk: false,
+      limit: 600000,
+      limitLabel: 'x',
+      cargoValue: 950000,
+      quoteIds: ['q1'],
+      requests: [{ ...base, status: 'risk_accepted' }],
+      now: before,
+    });
+    expect(g.allowed).toBe(false);
+  });
+});
+
 describe('paridade src/lib ↔ supabase/functions/_shared', () => {
   const strip = (s: string) => s.replace(/^ \* Paridade obrigatória com .*$/m, '');
   for (const f of ['insurance-limit.ts', 'insurance-exception.ts']) {
