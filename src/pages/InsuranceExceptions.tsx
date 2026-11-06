@@ -169,11 +169,13 @@ export default function InsuranceExceptions() {
                           <FileCheck2 className="h-4 w-4" />
                         </Button>
                       )}
-                      {(st === 'draft' || st === 'sent') && r.order_id && (
-                        <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
-                          <Mail className="h-4 w-4 mr-1" /> {st === 'draft' ? 'Enviar' : 'Reenviar'}
-                        </Button>
-                      )}
+                      {(st === 'draft' || st === 'sent' || st === 'risk_accepted') &&
+                        r.order_id && (
+                          <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
+                            <Mail className="h-4 w-4 mr-1" />{' '}
+                            {st === 'draft' ? 'Enviar' : 'Reenviar'}
+                          </Button>
+                        )}
                       {(st === 'sent' || st === 'risk_accepted') && (
                         <Button size="sm" onClick={() => setDeciding(r)}>
                           Resposta

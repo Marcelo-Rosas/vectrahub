@@ -6,6 +6,7 @@ import {
   formatPlateForCiot,
   parseAilogCiotResponse,
   parseCityUfLabel,
+  resolveAilogCiotAmbiente,
 } from '../ailog-ciot-client.ts';
 import {
   buildHubAilogEmit,
@@ -115,5 +116,88 @@ describe('ailog-ciot-client', () => {
     expect(r.doc).toBe('12345678901');
     expect(r.rntrc).toBe('12345678');
     expect(r.nome).toBe('João TAC');
+  });
+});
+
+describe('ailog-ciot-client — resposta real 02/10/2026 e ambiente', () => {
+  it('NAO_AUTORIZADO sem mensagens → erro explícito (não "sem número")', () => {
+    const r = parseAilogCiotResponse({
+      ciot: null,
+      status: 'NAO_AUTORIZADO',
+      sucesso: false,
+      mensagens: null,
+      numeroCIOT: null,
+      dataHoraEmissao: null,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.message).toBe('AILOG CIOT nao autorizado — sem motivo informado pela AILOG');
+  });
+
+  it('mensagens[] da AILOG vira a mensagem de erro', () => {
+    const r = parseAilogCiotResponse({
+      sucesso: false,
+      status: 'NAO_AUTORIZADO',
+      mensagens: [{ mensagem: 'RNTRC do contratado inválido' }, 'Placa não vinculada'],
+    });
+    expect(r.ok).toBe(false);
+    expect(r.message).toBe('RNTRC do contratado inválido; Placa não vinculada');
+  });
+
+  it('numeroCIOT (maiúsculo) com sucesso', () => {
+    const r = parseAilogCiotResponse({
+      sucesso: true,
+      status: 'AUTORIZADO',
+      numeroCIOT: '520021999999',
+    });
+    expect(r.ok).toBe(true);
+    expect(r.ciotNumber).toBe('520021999999');
+  });
+
+  it("FOCUS_NFE_AMBIENTE='prod' → CIOT em produção", () => {
+    const g = globalThis as { Deno?: unknown };
+    const prev = g.Deno;
+    const env: Record<string, string> = { FOCUS_NFE_AMBIENTE: 'prod' };
+    g.Deno = { env: { get: (k: string) => env[k] } };
+    try {
+      expect(resolveAilogCiotAmbiente()).toBe('producao');
+      env.FOCUS_NFE_AMBIENTE = 'homolog';
+      expect(resolveAilogCiotAmbiente()).toBe('homologacao');
+      env.CIOT_AMBIENTE = 'homologacao';
+      env.FOCUS_NFE_AMBIENTE = 'prod';
+      expect(resolveAilogCiotAmbiente()).toBe('homologacao'); // override explícito vence
+    } finally {
+      g.Deno = prev;
+    }
+  });
+});
+
+describe('buildHubAilogEmit — data de início não pode ser passada', () => {
+  const lookups = {
+    origin: { ibge_code: 4211306, uf: 'SC', municipio: 'Navegantes' },
+    dest: { ibge_code: 4208203, uf: 'SC', municipio: 'Itajaí' },
+    contratante: { ibge_code: 4211306, uf: 'SC', municipio: 'Navegantes' },
+  };
+  const now = new Date('2026-10-02T19:31:00Z'); // 02/10 16:31 BRT
+
+  it('coleta 30/09 emitida 02/10 → início 02/10, fim mantém duração', () => {
+    const built = buildHubAilogEmit(
+      { ...load, pickupDate: '2026-09-30T12:00:00Z', eta: '2026-10-05T12:00:00Z' },
+      lookups,
+      now
+    );
+    if (!built.ok) throw new Error(built.error);
+    expect(built.input.dataInicioViagem).toBe('02/10/2026');
+    expect(built.input.dataFimViagem).toBe('07/10/2026');
+  });
+
+  it('coleta futura é mantida', () => {
+    const built = buildHubAilogEmit(
+      { ...load, pickupDate: '2026-10-04T12:00:00Z', eta: null },
+      lookups,
+      now
+    );
+    if (!built.ok) throw new Error(built.error);
+    expect(built.input.dataInicioViagem).toBe('04/10/2026');
+    expect(built.input.dataFimViagem).toBe('11/10/2026');
   });
 });

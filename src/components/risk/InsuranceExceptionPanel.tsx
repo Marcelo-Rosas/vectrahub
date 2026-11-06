@@ -136,7 +136,7 @@ export function InsuranceExceptionPanel({
                       <Download className="h-4 w-4" />
                     </Button>
                   )}
-                  {(st === 'draft' || st === 'sent') && (
+                  {(st === 'draft' || st === 'sent' || st === 'risk_accepted') && (
                     <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
                       <Mail className="h-4 w-4 mr-1" />{' '}
                       {st === 'draft' ? 'Revisar e enviar' : 'Reenviar'}

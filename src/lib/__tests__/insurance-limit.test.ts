@@ -269,6 +269,20 @@ describe('risco assumido (admin, sem retorno da MS)', () => {
     expect(effectiveStatus({ ...base, status: 'risk_accepted' }, after)).toBe('tacit_accepted');
   });
 
+  it('liberação com valor menor orienta a reenviar (caso R$ 788.894,44 × ,50)', () => {
+    const g = evaluateEmissionGate({
+      limitOk: false,
+      limit: 600000,
+      limitLabel: 'Sublimite academia RJ',
+      cargoValue: 788894.5,
+      quoteIds: ['q1'],
+      requests: [{ ...base, cargo_value: 788894.44, status: 'risk_accepted' }],
+      now: before,
+    });
+    expect(g.allowed).toBe(false);
+    if (!g.allowed) expect(g.detail).toContain('cobre só até R$ 788.894,44');
+  });
+
   it('risco assumido não cobre valor maior que o submetido à MS', () => {
     const g = evaluateEmissionGate({
       limitOk: false,

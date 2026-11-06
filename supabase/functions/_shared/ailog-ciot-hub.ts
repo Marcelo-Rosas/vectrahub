@@ -81,8 +81,7 @@ export type HubCiotLoad = {
 };
 
 export type HubCiotBuildResult =
-  | { ok: true; input: AilogCiotEmitInput }
-  | { ok: false; error: string };
+  { ok: true; input: AilogCiotEmitInput } | { ok: false; error: string };
 
 /** Fonte: cadastro Motoristas (CPF, ANTT/RNTRC, TAC/ETC). TAC = contratado é o motorista. */
 export function pickContratadoFromDriverCadastro(opts: {
@@ -139,13 +138,20 @@ export async function resolveLookups(load: HubCiotLoad): Promise<{
   return { origin, dest, contratante };
 }
 
+/** yyyymmdd no fuso de Brasília (comparação de datas de viagem). */
+function formatCiotDateKey(d: Date): string {
+  const [dd, mm, yyyy] = formatCiotDate(d).split('/');
+  return `${yyyy}${mm}${dd}`;
+}
+
 export function buildHubAilogEmit(
   load: HubCiotLoad,
   lookups: {
     origin: IbgeLookupResult | null;
     dest: IbgeLookupResult | null;
     contratante: IbgeLookupResult | null;
-  }
+  },
+  now: Date = new Date()
 ): HubCiotBuildResult {
   const plate = formatPlateForCiot(load.plate);
   if (plate.length < 7) return { ok: false, error: 'Placa do veículo inválida para CIOT' };
@@ -194,8 +200,20 @@ export function buildHubAilogEmit(
     return { ok: false, error: 'Destinatário sem CPF/CNPJ (cliente da OS).' };
   }
 
-  const start = load.pickupDate ? new Date(load.pickupDate) : new Date();
-  const end = load.eta ? new Date(load.eta) : new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
+  // CIOT não aceita início no passado (AILOG prod: DADOS_INVALIDOS com coleta 30/09 emitida 02/10).
+  // Coleta já passada → início = hoje; fim mantém a duração prevista (padrão 7 dias).
+  const DAY = 24 * 60 * 60 * 1000;
+  const plannedStart = load.pickupDate ? new Date(load.pickupDate) : now;
+  const plannedEnd = load.eta ? new Date(load.eta) : null;
+  const durationMs =
+    plannedEnd && !Number.isNaN(plannedEnd.getTime()) && !Number.isNaN(plannedStart.getTime())
+      ? Math.max(plannedEnd.getTime() - plannedStart.getTime(), DAY)
+      : 7 * DAY;
+  const start =
+    Number.isNaN(plannedStart.getTime()) || formatCiotDateKey(plannedStart) < formatCiotDateKey(now)
+      ? now
+      : plannedStart;
+  const end = new Date(start.getTime() + durationMs);
   const hasBank = Boolean(
     digits(load.bancoCodigo) && digits(load.bancoAgencia) && digits(load.bancoConta)
   );
