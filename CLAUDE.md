@@ -39,7 +39,7 @@ npm run docs:claude                        # Regenera CLAUDE.md UTF-8 (repo prin
 
 ## Supabase
 - Isolamento: **`docs/TENANCY.md`** (obrigatório)
-- Project ref: `lrbtbrpoklgwaaclbufz` (Vectra HUB) — dashboard completo, nunca `.../project/lrbtb`
+- Project ref: `ztyqoufakcxbhabknujd` (Vectra HUB) — dashboard completo, nunca `.../project/lrbtb`
 - Região: sa-east-1
 - Custom domain: `https://app.hub.vectracargo.com.br` (Pages `vectrahub`)
 - Feira: mesmo projeto, Pages `vectra-feira` → `https://app.feira.vectracargo.com.br`

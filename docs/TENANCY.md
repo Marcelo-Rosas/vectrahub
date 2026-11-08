@@ -4,7 +4,7 @@
 
 Hostname DNS **não** escolhe banco. Banco = `VITE_SUPABASE_URL` **bakeado no `npm run build`**. Um `dist/` Hub no Pages Cargo mistura tenant. Isso já aconteceu. Não repetir.
 
-Dashboard Supabase exige o **ref completo** (20 chars). `https://supabase.com/dashboard/project/lrbtb` **não existe** — o projeto Hub é `lrbtbrpoklgwaaclbufz`.
+Dashboard Supabase exige o **ref completo** (20 chars). `https://supabase.com/dashboard/project/ztyqo` **não existe** — o projeto Hub é `ztyqoufakcxbhabknujd`.
 
 ---
 
@@ -13,20 +13,22 @@ Dashboard Supabase exige o **ref completo** (20 chars). `https://supabase.com/da
 | Papel | Empresa | Repo (cwd) | Supabase ref | Dashboard | API | Cloudflare Pages | Domínio prod | Script deploy |
 |---|---|---|---|---|---|---|---|---|
 | **Cargo** | Vectra Cargo | `C:\Users\marce\cargo-flow-navigator` | `epgedaiukjippepujuzc` | [epgedaiukjippepujuzc](https://supabase.com/dashboard/project/epgedaiukjippepujuzc) | `https://epgedaiukjippepujuzc.supabase.co` | `cargo-flow-navigator` | `https://app.vectracargo.com.br` | **só** nesse repo: `npm run deploy` |
-| **Hub** | VECTRA HUB LTDA | `C:\Users\marce\vectra-hub` | `lrbtbrpoklgwaaclbufz` | [lrbtbrpoklgwaaclbufz](https://supabase.com/dashboard/project/lrbtbrpoklgwaaclbufz) | `https://lrbtbrpoklgwaaclbufz.supabase.co` | `vectrahub` | `https://app.hub.vectracargo.com.br` | `npm run deploy` |
-| **Feira** | IHRSA / embarcadores (Rotha, PlayFit, …) | **mesmo repo Hub** | **mesmo** `lrbtbrpoklgwaaclbufz` (schema `feira`) | idem Hub | idem Hub | `vectra-feira` | `https://app.feira.vectracargo.com.br` | `npm run deploy:feira` |
+| **Hub** | VECTRA HUB LTDA | `C:\Users\marce\vectra-hub` | `ztyqoufakcxbhabknujd` | [ztyqoufakcxbhabknujd](https://supabase.com/dashboard/project/ztyqoufakcxbhabknujd) | `https://ztyqoufakcxbhabknujd.supabase.co` | `vectrahub` | `https://app.hub.vectracargo.com.br` | `npm run deploy` |
+| **Feira** | IHRSA / embarcadores (Rotha, PlayFit, …) | **mesmo repo Hub** | **mesmo** `ztyqoufakcxbhabknujd` (schema `feira`) | idem Hub | idem Hub | `vectra-feira` | `https://app.feira.vectracargo.com.br` | `npm run deploy:feira` |
 
 Feira **não** é terceiro projeto Supabase. É segunda **rota** (Pages) do Hub. Dados de feira = schema `feira.*` no Hub. Dados TMS Hub = `public.*` no Hub. Dados Cargo = **outro** Postgres.
 
 Projeto antigo `tgbpbxvcrxbiixzeofff` (us-west-2) foi **descartado**. Não usar.
 
+Projeto Hub `lrbtbrpoklgwaaclbufz` foi **aposentado** na migração de 2026-11 para `ztyqoufakcxbhabknujd` (plano: `.agents/research/2026-11-07-implementation-plan.md`). `npm run deploy` recusa esse ref. Só leitura, para conferência, até ser excluído.
+
 ---
 
 ## Regras (agentes e humanos)
 
-1. **Repo Hub (`vectra-hub`)** só aponta `lrbtbrpoklgwaaclbufz`. `VITE_SUPABASE_*`, `supabase/config.toml`, `supabase link`, `functions deploy --project-ref` = Hub.
+1. **Repo Hub (`vectra-hub`)** só aponta `ztyqoufakcxbhabknujd`. `VITE_SUPABASE_*`, `supabase/config.toml`, `supabase link`, `functions deploy --project-ref` = Hub.
 2. **Nunca** `wrangler pages deploy` do Hub para `cargo-flow-navigator`. No Hub, `npm run deploy:app` **recusa** de propósito.
-3. **Nunca** bakear `epgedaiukjippepujuzc` no build Hub, nem `lrbtbrpoklgwaaclbufz` no build Cargo.
+3. **Nunca** bakear `epgedaiukjippepujuzc` no build Hub, nem `ztyqoufakcxbhabknujd` no build Cargo.
 4. **Cargo** só se mexe em `C:\Users\marce\cargo-flow-navigator`. Lá o Pages é `cargo-flow-navigator` e o Supabase é `epgedaiukjippepujuzc`.
 5. Auth Hub **não** lista `app.vectracargo.com.br` em redirect. CORS Hub **não** libera origem Cargo.
 6. Clone Cargo→Hub (`scripts/clone-*-cargo-to-hub.ts`) é **cópia pontual**, não sync contínuo, não autoriza apontar o SPA Cargo pro Hub.
@@ -39,7 +41,7 @@ Projeto antigo `tgbpbxvcrxbiixzeofff` (us-west-2) foi **descartado**. Não usar.
 ```bash
 # Bundle live fala com qual projeto? (Hub)
 curl -sS https://app.hub.vectracargo.com.br/assets/ | findstr supabase
-# No JS compilado deve aparecer só lrbtbrpoklgwaaclbufz
+# No JS compilado deve aparecer só ztyqoufakcxbhabknujd
 
 # Cargo (depois restore no repo cargo)
 curl -sS https://app.vectracargo.com.br/ -o NUL
@@ -56,7 +58,7 @@ Local: `src/integrations/supabase/client.ts` lê `import.meta.env.VITE_SUPABASE_
 
 ```bash
 cd C:\Users\marce\vectra-hub
-# .env com VITE_SUPABASE_URL=https://lrbtbrpoklgwaaclbufz.supabase.co
+# .env com VITE_SUPABASE_URL=https://ztyqoufakcxbhabknujd.supabase.co
 npm run deploy          # Pages vectrahub → app.hub.vectracargo.com.br
 npm run deploy:feira    # Pages vectra-feira → app.feira.vectracargo.com.br
 ```

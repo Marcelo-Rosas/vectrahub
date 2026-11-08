@@ -5,7 +5,7 @@ VECTRA_SPA_PROD = [
     "https://app.feira.vectracargo.com.br",
 ]
 
-VECTRA_SUPABASE_PROJECT = "lrbtbrpoklgwaaclbufz"
+VECTRA_SUPABASE_PROJECT = "ztyqoufakcxbhabknujd"
 VECTRA_SUPABASE_BASE = f"https://{VECTRA_SUPABASE_PROJECT}.supabase.co"
 
 EDGE_FUNCTIONS_SAMPLE = [

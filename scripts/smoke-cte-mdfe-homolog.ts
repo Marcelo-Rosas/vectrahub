@@ -53,7 +53,7 @@ const REQUIRED_VECTRA_SECRETS = [
 ] as const;
 
 /**
- * Snapshot nomes secrets Hub (`npx supabase secrets list --project-ref lrbtbrpoklgwaaclbufz`).
+ * Snapshot nomes secrets Hub (`npx supabase secrets list --project-ref ztyqoufakcxbhabknujd`).
  * Atualizado 2026-08-03 — inclui endereço emitente + Focus.
  */
 const HUB_SECRETS_PRESENT = new Set([

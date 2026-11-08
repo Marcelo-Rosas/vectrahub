@@ -7,7 +7,7 @@ targets:
     - https://app.vectracargo.com.br
     - https://app.feira.vectracargo.com.br
   supabase:
-    base: https://lrbtbrpoklgwaaclbufz.supabase.co
+    base: https://ztyqoufakcxbhabknujd.supabase.co
     auth_paths:
       - /auth/v1/token?grant_type=password
       - /auth/v1/recover

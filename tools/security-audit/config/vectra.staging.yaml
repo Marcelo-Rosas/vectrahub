@@ -6,7 +6,7 @@ targets:
   spa:
     - https://staging.app.vectracargo.com.br
   supabase:
-    base: https://lrbtbrpoklgwaaclbufz.supabase.co
+    base: https://ztyqoufakcxbhabknujd.supabase.co
     functions_sample:
       - lookup-cep
       - calculate-freight
@@ -20,11 +20,11 @@ user_enum:
   nonexistent_email: no-such-user-99999@example.invalid
 
 sqli_endpoints:
-  - url: https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/lookup-cep
+  - url: https://ztyqoufakcxbhabknujd.supabase.co/functions/v1/lookup-cep
     method: GET
     param: cep
     location: query
 
 idor_resources:
-  - url_template: https://lrbtbrpoklgwaaclbufz.supabase.co/rest/v1/quotes?id=eq.{id}
+  - url_template: https://ztyqoufakcxbhabknujd.supabase.co/rest/v1/quotes?id=eq.{id}
     owner_a_ids: ['00000000-0000-0000-0000-000000000001']

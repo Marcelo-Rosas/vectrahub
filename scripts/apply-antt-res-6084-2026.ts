@@ -29,8 +29,8 @@ if (!apply) {
   process.exit(0);
 }
 
-if (!scriptEnv.url.includes('lrbtbrpoklgwaaclbufz')) {
-  console.error('Recusado: este script só aplica no Hub (lrbtbrpoklgwaaclbufz).');
+if (!scriptEnv.url.includes('ztyqoufakcxbhabknujd')) {
+  console.error('Recusado: este script só aplica no Hub (ztyqoufakcxbhabknujd).');
   process.exit(1);
 }
 
