@@ -5,6 +5,7 @@ import {
   CARGO_SUPABASE_REF,
   FAIR_APP_ORIGIN,
   HUB_APP_ORIGIN,
+  HUB_LEGACY_SUPABASE_REF,
   HUB_PAGES_PROJECT,
   HUB_SUPABASE_REF,
   HUB_SUPABASE_URL,
@@ -12,7 +13,7 @@ import {
 
 describe('tenancy — isolamento Hub ≠ Cargo', () => {
   it('Hub e Cargo têm refs e hosts distintos', () => {
-    expect(HUB_SUPABASE_REF).toBe('lrbtbrpoklgwaaclbufz');
+    expect(HUB_SUPABASE_REF).toBe('ztyqoufakcxbhabknujd');
     expect(CARGO_SUPABASE_REF).toBe('epgedaiukjippepujuzc');
     expect(HUB_SUPABASE_REF).not.toBe(CARGO_SUPABASE_REF);
     expect(HUB_APP_ORIGIN).toBe('https://app.hub.vectracargo.com.br');
@@ -24,6 +25,12 @@ describe('tenancy — isolamento Hub ≠ Cargo', () => {
   it('URL Hub contém só o ref Hub', () => {
     expect(HUB_SUPABASE_URL).toContain(HUB_SUPABASE_REF);
     expect(HUB_SUPABASE_URL).not.toContain(CARGO_SUPABASE_REF);
+    expect(HUB_SUPABASE_URL).not.toContain(HUB_LEGACY_SUPABASE_REF);
+  });
+
+  it('ref antigo do Hub fica só como legado, distinto do atual', () => {
+    expect(HUB_LEGACY_SUPABASE_REF).toBe('lrbtbrpoklgwaaclbufz');
+    expect(HUB_LEGACY_SUPABASE_REF).not.toBe(HUB_SUPABASE_REF);
   });
 
   it('Pages Hub ≠ Pages Cargo', () => {

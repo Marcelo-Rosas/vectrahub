@@ -6,7 +6,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const HUB_REF = 'lrbtbrpoklgwaaclbufz';
+const HUB_REF = 'ztyqoufakcxbhabknujd';
+const HUB_LEGACY_REF = 'lrbtbrpoklgwaaclbufz';
 const CARGO_REF = 'epgedaiukjippepujuzc';
 const mode = process.argv[2] || 'hub';
 
@@ -41,7 +42,7 @@ function die(msg) {
 if (mode === 'refuse-cargo') {
   die(
     [
-      'Este repo é Vectra HUB (lrbtbrpoklgwaaclbufz).',
+      `Este repo é Vectra HUB (${HUB_REF}).`,
       'Deploy para Pages cargo-flow-navigator / app.vectracargo.com.br é proibido daqui.',
       '',
       'Hub:    npm run deploy        → vectrahub → app.hub.vectracargo.com.br',
@@ -54,6 +55,9 @@ if (mode === 'refuse-cargo') {
 const fileEnv = loadDotEnv();
 const url = process.env.VITE_SUPABASE_URL || fileEnv.VITE_SUPABASE_URL || '';
 
+if (url.includes(HUB_LEGACY_REF)) {
+  die(`VITE_SUPABASE_URL aponta o Hub antigo (${HUB_LEGACY_REF}), aposentado.\nUse ${HUB_REF}.`);
+}
 if (!url.includes(HUB_REF)) {
   die(
     `VITE_SUPABASE_URL deve ser Hub (${HUB_REF}).\nLido: ${url || '(vazio)'}\nNão use epgedaiukjippepujuzc neste repo.`

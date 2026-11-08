@@ -3,8 +3,10 @@
  * Não apontar SPA Hub para CARGO_* nem deploy Pages cargo-flow-navigator.
  */
 
-export const HUB_SUPABASE_REF = 'lrbtbrpoklgwaaclbufz';
+export const HUB_SUPABASE_REF = 'ztyqoufakcxbhabknujd';
 export const HUB_SUPABASE_URL = `https://${HUB_SUPABASE_REF}.supabase.co`;
+/** Projeto Hub aposentado na migração de 2026-11. Nunca apontar deploy para ele. */
+export const HUB_LEGACY_SUPABASE_REF = 'lrbtbrpoklgwaaclbufz';
 export const HUB_APP_ORIGIN = 'https://app.hub.vectracargo.com.br';
 export const HUB_PAGES_PROJECT = 'vectrahub';
 
