@@ -177,7 +177,7 @@ interface QuoteComplianceStripProps {
   className?: string;
 }
 
-/** Aviso educativo: modalidade NTC (tabela) ≠ tipo de operação CIOT (regulatório). */
+/** Aviso educativo: cotação (contratantes no caminhão) ≠ obrigação de emitir CIOT. */
 export function QuoteComplianceStrip({
   freightModality,
   priceTableModality,
@@ -212,10 +212,12 @@ export function QuoteComplianceStrip({
       <div className="space-y-1 min-w-0 text-slate-700 dark:text-slate-300">
         <p className="font-medium text-slate-900 dark:text-slate-100">Compliance (CIOT / ANTT)</p>
         <p className="leading-relaxed text-muted-foreground">
-          <span className="font-medium text-foreground">CIOT lotação</span> = um contratante na
-          viagem (várias paradas na mesma rota são permitidas).{' '}
-          <span className="font-medium text-foreground">CIOT fracionada</span> = dois ou mais
-          contratantes — isso é regulatório e não é o mesmo que a modalidade da tabela NTC.
+          <span className="font-medium text-foreground">Cotação</span>: mesmo caminhão e motorista
+          com um contratante embarcado = lotação (NTC + piso PAG). Dois ou mais contratantes
+          distintos nessa viagem = fracionado. Paradas do mesmo cliente não mudam a cotação.{' '}
+          <span className="font-medium text-foreground">CIOT</span> é obrigatório no TRC remunerado
+          (Lei 13.703 art. 7º), lotação ou fracionado — não é a tabela NTC. Cadastro CIOT lotação =
+          um contratante; CIOT fracionada = dois ou mais.
         </p>
         {(freightLabel || tableLabel) && (
           <p className="text-[11px]">

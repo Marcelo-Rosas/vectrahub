@@ -1,10 +1,12 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { pickReferencePolicy, touchesRjMetro } from '../_shared/insurance-limit.ts';
 
 /**
  * evaluate-risk
  * Evaluates risk criticality for an order (or trip) based on:
  * - cargo_value thresholds from risk_policy_rules
+ * - cargo_value_rj thresholds (only when origin/destination touches RM-RJ — apólice Fairfax item 19)
  * - km_distance heuristics
  * - VG aggregation (sum cargo_value across trip orders)
  * Creates/updates risk_evaluation and optionally auto-approves (LOW/MEDIUM).
@@ -61,7 +63,7 @@ Deno.serve(async (req) => {
     // 1. Fetch order data
     const { data: order, error: orderErr } = await supabase
       .from('orders')
-      .select('id, cargo_value, km_distance, trip_id, pricing_breakdown')
+      .select('id, cargo_value, km_distance, trip_id, pricing_breakdown, quote_id')
       .eq('id', body.order_id)
       .single();
 
@@ -73,15 +75,35 @@ Deno.serve(async (req) => {
     const kmDistance = Number(order.km_distance ?? 0);
     const tripId = body.trip_id ?? order.trip_id;
 
+    // RM-RJ (origem/destino) ativa as regras cargo_value_rj
+    let rjTouch = false;
+    if (order.quote_id) {
+      const { data: q } = await supabase
+        .from('quotes')
+        .select('origin_ibge, destination_ibge, origin_uf, destination_uf')
+        .eq('id', order.quote_id)
+        .maybeSingle();
+      if (q) {
+        rjTouch = !!touchesRjMetro({
+          originIbge: q.origin_ibge,
+          destinationIbge: q.destination_ibge,
+          originUf: q.origin_uf,
+          destinationUf: q.destination_uf,
+        });
+      }
+    }
+    const valueRuleApplies = (triggerType: string) =>
+      triggerType === 'cargo_value' || (triggerType === 'cargo_value_rj' && rjTouch);
+
     // 2. Fetch active policy + rules
+    // Determinístico: RC-DC (inclui RCTR-C) > RCTR-C > outra. Apólices criadas juntas têm o mesmo created_at.
     const { data: policies } = await supabase
       .from('risk_policies')
-      .select('id')
+      .select('id, policy_type')
       .eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .limit(1);
+      .order('created_at', { ascending: false });
 
-    const policyId = policies?.[0]?.id;
+    const policyId = pickReferencePolicy(policies ?? [])?.id;
     if (!policyId) {
       return json({ success: false, error: 'No active risk policy found' }, 400);
     }
@@ -103,7 +125,7 @@ Deno.serve(async (req) => {
       const cfg = rule.trigger_config as { min?: number; max?: number | null };
       let matches = false;
 
-      if (rule.trigger_type === 'cargo_value') {
+      if (valueRuleApplies(rule.trigger_type)) {
         const min = cfg.min ?? 0;
         const max = cfg.max ?? Infinity;
         matches = cargoValue >= min && cargoValue <= max;
@@ -238,7 +260,7 @@ Deno.serve(async (req) => {
         let tripBoost = 0;
         for (const rule of rules ?? []) {
           const cfg = rule.trigger_config as { min?: number; max?: number | null };
-          if (rule.trigger_type === 'cargo_value') {
+          if (valueRuleApplies(rule.trigger_type)) {
             const min = cfg.min ?? 0;
             const max = cfg.max ?? Infinity;
             if (totalCargoValue >= min && totalCargoValue <= max) {

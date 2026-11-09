@@ -107,12 +107,14 @@ export async function getAnttFloorRate(
   cargoType = 'carga_geral',
   operationTable = 'A'
 ): Promise<AnttFloorRate | null> {
+  const today = new Date().toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from('antt_floor_rates')
     .select('ccd, cc')
     .eq('operation_table', operationTable)
     .eq('cargo_type', cargoType)
     .eq('axes_count', axesCount)
+    .or(`valid_until.is.null,valid_until.gte.${today}`)
     .order('valid_from', { ascending: false, nullsFirst: false })
     .limit(1)
     .maybeSingle();

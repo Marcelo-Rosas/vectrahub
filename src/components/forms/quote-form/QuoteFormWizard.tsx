@@ -19,6 +19,7 @@ import type { RiskPolicy } from '@/hooks/useRiskPolicies';
 import type { InsuranceOption } from '@/hooks/useInsuranceOptionsRefactored';
 import type { BuonnyError } from '@/lib/errors/BuonnyError';
 import type { AnttFloorFlags } from '@/lib/antt-floor-calc';
+import type { PriceTableMethodology } from '@/lib/pricingMethodology';
 
 const STEP_COUNT = QUOTE_WIZARD_STEPS.length;
 
@@ -106,6 +107,7 @@ interface QuoteFormWizardProps {
   anttCcd: number | null;
   anttCc: number | null;
   anttKmDistance: number;
+  pricingMethodology?: PriceTableMethodology;
   quoteId?: string | null;
   pendingNfeXmlFiles?: File[];
   onPendingNfeXmlFilesChange?: (files: File[]) => void;
@@ -167,6 +169,7 @@ export function QuoteFormWizard({
   anttCcd,
   anttCc,
   anttKmDistance,
+  pricingMethodology,
   quoteId,
   pendingNfeXmlFiles,
   onPendingNfeXmlFilesChange,
@@ -305,6 +308,8 @@ export function QuoteFormWizard({
             anttCcd={anttCcd}
             anttCc={anttCc}
             anttKmDistance={anttKmDistance}
+            pricingMethodology={pricingMethodology}
+            vehicleTypeId={form.watch('vehicle_type_id')}
           />
         );
       case 3:

@@ -32,6 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_shipper_products_shipper ON public.shipper_produc
 CREATE INDEX IF NOT EXISTS idx_shipper_products_sku ON public.shipper_products(sku);
 CREATE INDEX IF NOT EXISTS idx_shipper_product_boxes_product ON public.shipper_product_boxes(product_id);
 
+DROP TRIGGER IF EXISTS update_shipper_products_updated_at ON public.shipper_products;
 CREATE TRIGGER update_shipper_products_updated_at
   BEFORE UPDATE ON public.shipper_products
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
@@ -39,22 +40,26 @@ CREATE TRIGGER update_shipper_products_updated_at
 ALTER TABLE public.shipper_products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shipper_product_boxes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "shipper_products_select_authenticated" ON public.shipper_products;
 CREATE POLICY "shipper_products_select_authenticated"
   ON public.shipper_products FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "shipper_products_write_comercial" ON public.shipper_products;
 CREATE POLICY "shipper_products_write_comercial"
   ON public.shipper_products FOR ALL
   TO authenticated
   USING (public.has_any_role(auth.uid(), ARRAY['admin', 'comercial']::app_role[]))
   WITH CHECK (public.has_any_role(auth.uid(), ARRAY['admin', 'comercial']::app_role[]));
 
+DROP POLICY IF EXISTS "shipper_product_boxes_select_authenticated" ON public.shipper_product_boxes;
 CREATE POLICY "shipper_product_boxes_select_authenticated"
   ON public.shipper_product_boxes FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "shipper_product_boxes_write_comercial" ON public.shipper_product_boxes;
 CREATE POLICY "shipper_product_boxes_write_comercial"
   ON public.shipper_product_boxes FOR ALL
   TO authenticated

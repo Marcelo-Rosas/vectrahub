@@ -451,6 +451,9 @@ export function buildCtePayload(input: BuildCteInput): BuildCteResult {
     ...(icmsValor != null ? { valor_icms: Number(icmsValor.toFixed(2)) } : {}),
 
     // === infCarga ===
+    // Focus: vCarga = valor_total_carga (doc emitir_cte). valor_carga não é lido pela Focus
+    // (XML saía com vCarga=0) — mantido porque emit-mdfe / send-averba-ms-email leem do payload_sent.
+    valor_total_carga: moneyToBRL(quote.cargo_value),
     valor_carga: moneyToBRL(quote.cargo_value),
     produto_predominante: nz(quote.cargo_type, 'CARGA GERAL'),
     quantidades: [

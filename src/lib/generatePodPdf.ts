@@ -1,6 +1,14 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatDate } from '@/lib/formatters';
+import { cropReceiptDataUrl } from '@/lib/pod-receipt-crop';
+import {
+  podPdfCode,
+  podPdfFileName,
+  shouldSplitPodByShipper,
+  singlePodPdfFileName,
+  type PodShipperSlice,
+} from '@/lib/pod-pdf-shippers';
 
 export interface PodPdfPayload {
   os_number: string;
@@ -18,7 +26,21 @@ export interface PodPdfPayload {
   cte_number?: string | null;
   nfe_number?: string | null;
   pod_image_data_url: string;
+  /** Extra canhotos no mesmo PDF (OS não-VG). VG usa um por fatia. */
+  pod_images?: string[];
   pod_uploaded_at: string;
+  /** Viagem (VG-YYYY-MM-NNNN). Quando VG + ≥2 embarcadores, gera um PDF por fatia. */
+  trip_number?: string | null;
+  /** Fatias já resolvidas (origem/NF/CT-e por embarcador). */
+  shippers?: PodShipperSlice[];
+  /** Logo já em data URL — testes Node / smoke sem Vite. */
+  logoBase64Override?: string | null;
+}
+
+export interface PodPdfFile {
+  blob: Blob;
+  fileName: string;
+  shipper_name: string | null;
 }
 
 type PdfDoc = jsPDF & { lastAutoTable?: { finalY?: number } };
@@ -41,6 +63,32 @@ const PW = 210;
 const ML = 12;
 const MR = 12;
 const CW = PW - ML - MR;
+/** Teto baixo: retrato com fundo não toma a página. Paisagem fina encolhe sozinha. */
+export const POD_IMAGE_MAX_HEIGHT_MM = 62;
+const POD_FOOTER_RESERVE_MM = 16;
+
+/**
+ * Encaixa a foto no retângulo (contain): mantém aspect ratio, nunca estoura
+ * maxW/maxH. Usado para canhotos paisagem (ex.: 1600×355) e retrato.
+ */
+export function fitImageContain(
+  srcW: number,
+  srcH: number,
+  maxW: number,
+  maxH: number
+): { width: number; height: number } {
+  const boxW = Math.max(0, maxW);
+  const boxH = Math.max(0, maxH);
+  if (boxW <= 0 || boxH <= 0) return { width: 0, height: 0 };
+  if (!Number.isFinite(srcW) || !Number.isFinite(srcH) || srcW <= 0 || srcH <= 0) {
+    return { width: boxW, height: Math.min(boxH, 40) };
+  }
+  const scale = Math.min(boxW / srcW, boxH / srcH);
+  return {
+    width: srcW * scale,
+    height: srcH * scale,
+  };
+}
 
 const VECTRA = {
   name: 'VECTRA HUB LTDA',
@@ -62,14 +110,6 @@ const fmtDate = (d: string | null | undefined): string => {
   }
 };
 
-const fmtCurrency = (cents: number | null | undefined): string => {
-  if (cents == null) return '—';
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(cents / 100);
-};
-
 async function loadLogoBase64(): Promise<string | null> {
   try {
     const mod = (await import('@/assets/logo_vectra_cargo.jpg?url')) as { default?: string };
@@ -87,6 +127,47 @@ async function loadLogoBase64(): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+function fallbackShippers(payload: PodPdfPayload): PodShipperSlice[] {
+  if (payload.shippers && payload.shippers.length > 0) {
+    return payload.shippers.filter((s) => s.name.trim().length > 0);
+  }
+  const slices: PodShipperSlice[] = [];
+  const primary = payload.shipper_name?.trim();
+  if (primary) {
+    slices.push({
+      name: primary,
+      origin: payload.origin,
+      nfe_numbers: payload.nfe_number?.trim() ? [payload.nfe_number.trim()] : [],
+      cte_numbers: payload.cte_number?.trim() ? [payload.cte_number.trim()] : [],
+    });
+  }
+  const second = payload.shipper_2_name?.trim();
+  if (second) {
+    slices.push({
+      name: second,
+      origin: null,
+      nfe_numbers: [],
+      cte_numbers: [],
+    });
+  }
+  return slices;
+}
+
+function payloadForSlice(base: PodPdfPayload, slice: PodShipperSlice): PodPdfPayload {
+  const image = slice.pod_image_data_url?.trim() || base.pod_image_data_url;
+  return {
+    ...base,
+    shipper_name: slice.name,
+    shipper_2_name: null,
+    origin: slice.origin?.trim() || base.origin,
+    nfe_number: slice.nfe_numbers.length > 0 ? slice.nfe_numbers.join(', ') : null,
+    cte_number: slice.cte_numbers.length > 0 ? slice.cte_numbers.join(', ') : null,
+    pod_image_data_url: image,
+    pod_images: image ? [image] : [],
+    shippers: undefined,
+  };
 }
 
 function drawHeader(doc: PdfDoc, payload: PodPdfPayload, logoBase64: string | null): number {
@@ -121,7 +202,10 @@ function drawHeader(doc: PdfDoc, payload: PodPdfPayload, logoBase64: string | nu
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(...C.orangeLight);
-  doc.text(`OS: ${payload.os_number}`, PW - MR, 14.5, { align: 'right' });
+  const headerRef = payload.trip_number?.trim()
+    ? `${payload.os_number}  ·  ${payload.trip_number.trim()}`
+    : payload.os_number;
+  doc.text(`OS: ${headerRef}`, PW - MR, 14.5, { align: 'right' });
 
   doc.setTextColor(200, 215, 235);
   doc.setFontSize(7);
@@ -187,34 +271,67 @@ function drawInfoGrid(doc: PdfDoc, payload: PodPdfPayload, y: number): number {
   return (doc as PdfDoc).lastAutoTable?.finalY ?? y + rows.length * 8;
 }
 
-function drawPodImage(doc: PdfDoc, imageDataUrl: string, y: number): number {
+function imageFormat(dataUrl: string): 'PNG' | 'JPEG' | 'WEBP' {
+  if (dataUrl.startsWith('data:image/png')) return 'PNG';
+  if (dataUrl.startsWith('data:image/webp')) return 'WEBP';
+  return 'JPEG';
+}
+
+function drawContainedImage(doc: PdfDoc, imageDataUrl: string, y: number, maxH: number): number {
+  if (maxH < 12) return y;
+  try {
+    const props = doc.getImageProperties(imageDataUrl);
+    const fitted = fitImageContain(props.width, props.height, CW, maxH);
+    const x = ML + (CW - fitted.width) / 2;
+    const ext = imageFormat(imageDataUrl);
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.2);
+    doc.rect(x, y, fitted.width, fitted.height);
+    doc.addImage(imageDataUrl, ext, x, y, fitted.width, fitted.height, undefined, 'FAST');
+    return y + fitted.height + 3;
+  } catch {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.muted);
+    doc.text('[Imagem do canhoto não disponível]', ML, y + 6);
+    return y + 12;
+  }
+}
+
+function drawPodImages(doc: PdfDoc, imageDataUrls: string[], y: number): number {
+  const urls = imageDataUrls.map((u) => u.trim()).filter(Boolean);
   const sectionTitleY = y + 4;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(...C.muted);
-  doc.text('CANHOTO ASSINADO (Foto do POD)', ML, sectionTitleY);
+  doc.text(
+    urls.length > 1 ? 'CANHOTOS ASSINADOS (Fotos do POD)' : 'CANHOTO ASSINADO (Foto do POD)',
+    ML,
+    sectionTitleY
+  );
 
   doc.setDrawColor(...C.border);
   doc.setLineWidth(0.3);
   doc.line(ML, sectionTitleY + 1.5, PW - MR, sectionTitleY + 1.5);
 
-  const imgY = sectionTitleY + 4;
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const availH = pageHeight - imgY - 20;
-  const imgW = CW;
-  const imgH = Math.min(availH, 120);
-
-  try {
-    const ext = imageDataUrl.startsWith('data:image/png') ? 'PNG' : 'JPEG';
-    doc.addImage(imageDataUrl, ext, ML, imgY, imgW, imgH, undefined, 'FAST');
-    return imgY + imgH + 4;
-  } catch {
+  let imgY = sectionTitleY + 4;
+  if (urls.length === 0) {
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(8);
     doc.setTextColor(...C.muted);
     doc.text('[Imagem do canhoto não disponível]', ML, imgY + 6);
     return imgY + 12;
   }
+
+  const pageHeight = doc.internal.pageSize.getHeight();
+  for (let i = 0; i < urls.length; i++) {
+    const remain = pageHeight - imgY - POD_FOOTER_RESERVE_MM;
+    const left = urls.length - i;
+    const slot = Math.min(POD_IMAGE_MAX_HEIGHT_MM, remain / left - (left > 1 ? 3 : 0));
+    if (slot < 10) break;
+    imgY = drawContainedImage(doc, urls[i]!, imgY, slot);
+  }
+  return imgY;
 }
 
 function drawFooter(doc: PdfDoc, payload: PodPdfPayload): void {
@@ -227,8 +344,11 @@ function drawFooter(doc: PdfDoc, payload: PodPdfPayload): void {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.5);
   doc.setTextColor(200, 215, 235);
+  const footerRef = payload.trip_number?.trim()
+    ? `OS ${payload.os_number} · ${payload.trip_number.trim()}`
+    : `OS ${payload.os_number}`;
   doc.text(
-    `Documento gerado por Vectra Cargo TMS em ${fmtDate(new Date().toISOString())} • OS ${payload.os_number}`,
+    `Documento gerado por Vectra Cargo TMS em ${fmtDate(new Date().toISOString())} • ${footerRef}`,
     ML,
     fy + 0.5
   );
@@ -237,16 +357,75 @@ function drawFooter(doc: PdfDoc, payload: PodPdfPayload): void {
   });
 }
 
-export async function generatePodPdf(payload: PodPdfPayload): Promise<void> {
+async function renderPodPdf(
+  payload: PodPdfPayload,
+  logoBase64: string | null,
+  fileName: string
+): Promise<PodPdfFile> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as PdfDoc;
-
-  const logoBase64 = await loadLogoBase64();
 
   let y = drawHeader(doc, payload, logoBase64);
   y = drawStatusBadge(doc, y);
   y = drawInfoGrid(doc, payload, y + 2);
-  y = drawPodImage(doc, payload.pod_image_data_url, y + 4);
+  const rawImages =
+    payload.pod_images && payload.pod_images.length > 0
+      ? payload.pod_images
+      : payload.pod_image_data_url
+        ? [payload.pod_image_data_url]
+        : [];
+  const images = await Promise.all(rawImages.map((url) => cropReceiptDataUrl(url)));
+  y = drawPodImages(doc, images, y + 4);
   drawFooter(doc, payload);
 
-  doc.save(`comprovante-entrega-${payload.os_number}.pdf`);
+  return {
+    blob: doc.output('blob'),
+    fileName,
+    shipper_name: payload.shipper_name,
+  };
+}
+
+export async function generatePodPdf(payload: PodPdfPayload): Promise<PodPdfFile[]> {
+  const logoBase64 =
+    payload.logoBase64Override !== undefined ? payload.logoBase64Override : await loadLogoBase64();
+
+  const shippers = fallbackShippers(payload);
+  const split = shouldSplitPodByShipper({
+    os_number: payload.os_number,
+    trip_number: payload.trip_number,
+    shippers,
+  });
+
+  if (split) {
+    const code = podPdfCode(payload.os_number, payload.trip_number);
+    const files: PodPdfFile[] = [];
+    for (const slice of shippers) {
+      files.push(
+        await renderPodPdf(
+          payloadForSlice(payload, slice),
+          logoBase64,
+          podPdfFileName(code, slice.name)
+        )
+      );
+    }
+    return files;
+  }
+
+  return [await renderPodPdf(payload, logoBase64, singlePodPdfFileName(payload.os_number))];
+}
+
+export function downloadPodPdfFiles(files: PodPdfFile[]): void {
+  files.forEach((file, index) => {
+    window.setTimeout(() => {
+      const objectUrl = URL.createObjectURL(file.blob);
+      const anchor = document.createElement('a');
+      anchor.href = objectUrl;
+      anchor.download = file.fileName;
+      anchor.rel = 'noopener';
+      anchor.style.display = 'none';
+      document.documentElement.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    }, index * 400);
+  });
 }

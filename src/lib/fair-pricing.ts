@@ -4,7 +4,7 @@ export function roundFairMoney(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-/** Hub já inclui toll → não soma de novo. Senão soma pedágio estimado. */
+/** Hub já inclui toll → não soma de novo. Senão soma pedágio estimado (fracionado 12%). */
 export function fairDisplayedTotal(
   hubTotalCliente: number,
   hubToll: number,
@@ -19,7 +19,21 @@ export function fairQuotePricing(input: {
   hubTotalCliente: number;
   hubToll: number;
   fallbackPercent: number;
+  /** true = fracionado (%). false = dedicado (toll Hub já no total). */
+  applyPercentToll?: boolean;
 }) {
+  const applyPercent = input.applyPercentToll !== false;
+
+  if (!applyPercent) {
+    return {
+      freightWeight: input.freightWeight,
+      hubToll: input.hubToll,
+      hubTotalCliente: input.hubTotalCliente,
+      pedagioEstimado: input.hubToll,
+      totalExibido: roundFairMoney(input.hubTotalCliente || 0),
+    };
+  }
+
   const { pedagio } = computeFairToll({
     freightWeight: input.freightWeight,
     tableTollPercent: null,

@@ -1,5 +1,7 @@
 # Cargo Flow Navigator — Contexto para Agentes AI
 
+**Isolamento:** este checkout = **Vectra HUB**. Mapa canônico: `docs/TENANCY.md`.
+
 ## Projeto
 TMS (Transport Management System) da VECTRA HUB LTDA, operação em Navegantes e Itajaí, SC.
 Sistema web para gestão de cotações de frete, ordens de serviço, precificação, financeiro, documentos de transporte, frota e notificações.
@@ -36,8 +38,12 @@ npm run docs:claude                        # Regenera CLAUDE.md UTF-8 (repo prin
 - Edge Functions: chamar via `invokeEdgeFunction` em `src/lib/edgeFunctions.ts`
 
 ## Supabase
-- Project ref: lrbtbrpoklgwaaclbufz (Vectra HUB)
-- Region: sa-east-1
+- Isolamento: **`docs/TENANCY.md`** (obrigatório)
+- Project ref: `lrbtbrpoklgwaaclbufz` (Vectra HUB) — dashboard completo, nunca `.../project/lrbtb`
+- Região: sa-east-1
+- Custom domain: `https://app.hub.vectracargo.com.br` (Pages `vectrahub`)
+- Feira: mesmo projeto, Pages `vectra-feira` → `https://app.feira.vectracargo.com.br`
+- Cargo (`epgedaiukjippepujuzc` / `app.vectracargo.com.br`) = **outro repo** (`C:\Users\marce\cargo-flow-navigator`)
 - RLS habilitado em todas as tabelas
 - Service Role Key: apenas em Edge Functions
 
@@ -138,4 +144,5 @@ Toda IA roda **server-side em Edge Functions** — nunca chamar LLM do cliente (
 - Não exibir valores sem R$ e 2 casas decimais
 - Não sobrescrever `useRouteMetrics` para métricas de composição — usar `useCompositionRouteMetrics`
 - Não chamar LLM do cliente nem hardcodar prompt no worker — prompts em `_shared/prompts/`, IA só server-side
+- Não fazer deploy deste repo para Pages `cargo-flow-navigator` nem bakear `epgedaiukjippepujuzc`
 - Não `JSON.parse` cru em resposta de LLM — usar `llm-json-parse.ts` + schema

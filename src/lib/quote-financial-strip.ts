@@ -11,7 +11,7 @@ import {
 } from '@/lib/freightCalculator';
 
 /**
- * NTC Fracionado: base motorista = frete peso (kg faturável × R$/kg da faixa).
+ * NTC Fracionado: base motorista = frete peso (R$/CTe ≤200 kg; kg × R$/kg >200).
  * Não usa piso ANTT (só lotação) nem snapshot legado `ntc_base`
  * (peso + GRIS + TSO + RCTR-C + despacho — receita da Hub, não PAG).
  */

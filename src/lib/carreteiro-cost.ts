@@ -1,5 +1,12 @@
 import type { StoredPricingBreakdown } from '@/lib/freightCalculator';
 
+/**
+ * Reader do piso ANTT já gravado no breakdown.
+ * Fórmula oficial: `antt-floor-calc.ts` → ceil(km)×CCD+CC.
+ * Coeficientes: `antt_floor_rates` (Res. ANTT 6.084/2026).
+ * Este arquivo não calcula CCD/CC.
+ */
+
 /** Lê piso ANTT do meta (camelCase ou legado snake_case no JSONB). */
 export function readMetaAnttPisoCarreteiro(
   meta: StoredPricingBreakdown['meta'] | null | undefined

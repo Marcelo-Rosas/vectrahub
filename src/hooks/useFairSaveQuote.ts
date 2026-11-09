@@ -1,8 +1,13 @@
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { persistFairQuote, type FairSavedQuote } from '@/lib/fair-quote-store';
+import type { PlayFitQuoteBreakdown } from '@/lib/playfit-quote-build';
+import { useFairResolvedTenant } from '@/hooks/useFairCompanies';
 
 export type FairQuoteDraft = Omit<FairSavedQuote, 'id' | 'code' | 'createdAt'> &
-  Partial<Pick<FairSavedQuote, 'id' | 'code' | 'createdAt'>> & { hubToll?: number };
+  Partial<Pick<FairSavedQuote, 'id' | 'code' | 'createdAt'>> & {
+    hubToll?: number;
+    playfitBreakdown?: PlayFitQuoteBreakdown;
+  };
 
 type FeiraSaveQuoteResponse = {
   id: string;
@@ -21,10 +26,13 @@ type FeiraSaveQuoteResponse = {
 };
 
 export function useFairSaveQuote() {
+  const { tenant, canSwitchTenant } = useFairResolvedTenant();
+
   const save = async (draft: FairQuoteDraft): Promise<FairSavedQuote> => {
     const saved = await invokeEdgeFunction<FeiraSaveQuoteResponse>('feira-save-quote', {
       body: {
         id: draft.id,
+        company_slug: canSwitchTenant ? tenant?.slug : undefined,
         destination: draft.destination,
         km_distance: draft.km,
         cargo_value: draft.cargoValue,
@@ -45,8 +53,22 @@ export function useFairSaveQuote() {
           freight_weight: draft.freightWeight,
           total_cliente: draft.hubTotalCliente,
           toll: draft.hubToll ?? 0,
-          pricing_breakdown: { km_band_label: draft.kmBandLabel },
+          pricing_breakdown: {
+            km_band_label: draft.kmBandLabel,
+            playfit: draft.playfitBreakdown ?? null,
+          },
         },
+        gate: draft.freightModality
+          ? {
+              modality: draft.freightModality,
+              freight_type_label: draft.freightTypeLabel,
+              vehicle_type_code: draft.vehicleTypeCode ?? null,
+              billable_weight_kg: draft.billableWeightKg,
+              alerts: draft.gateAlerts,
+              coverage_incomplete: draft.coverageIncomplete,
+              mode_source: draft.gateModeSource,
+            }
+          : undefined,
       },
     });
 
@@ -68,6 +90,7 @@ export function useFairSaveQuote() {
       weightKg: saved.weight_kg || draft.weightKg,
       volumeM3: saved.volume_m3 || draft.volumeM3,
       boxesCount: saved.boxes_count || draft.boxesCount,
+      playfitBreakdown: draft.playfitBreakdown,
     };
     persistFairQuote(quote);
     return quote;

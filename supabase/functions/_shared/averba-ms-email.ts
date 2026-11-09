@@ -1,8 +1,8 @@
 export const AVERBA_MS_TO_DEFAULT = [
   'operacional.cargo@fairfax.com.br',
-  'kevin.cercal@msseguros.com',
-  'Fellipe.medeiros@msseguros.com',
-  'Ruan.nascimento@msseguros.com',
+  'kevin.cercal@msseguros.com.br',
+  'Fellipe.medeiros@msseguros.com.br',
+  'Ruan.nascimento@msseguros.com.br',
 ];
 
 export const AVERBA_MS_CC_DEFAULT = ['marcelo.rosas@vectracargo.com.br'];

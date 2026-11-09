@@ -1,0 +1,11 @@
+{
+  "id": "gm-series",
+  "label": "GM Series (Pin Loaded Machine)",
+  "expectedProducts": 29,
+  "catalogGroup": "PIN LOADED",
+  "line": "GM",
+  "listPathPattern": "/product-group/AoeGLTBPHiVS/GM-Series-Pin-Loaded-Machine--{page}.html",
+  "maxPages": 3,
+  "outputFile": "gm-series-logistics.json",
+  "script": "scrape_gm_series_logistics.py"
+}

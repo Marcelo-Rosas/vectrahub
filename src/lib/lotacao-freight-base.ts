@@ -1,5 +1,6 @@
 /**
  * Lotação (FTL): base de custo carreteiro para gross-up = Piso ANTT bruto, quando calculado.
+ * Cotação lotação/fracionado no mesmo caminhão+motorista: 1 contratante vs 2+ (eixo separado do CIOT).
  * Tabela NTC (+ over km) é referência comercial; fretePesoReferenciaMax = max(tabela+over km, piso) para compliance.
  * Paridade obrigatória com supabase/functions/_shared/lotacao-freight-base.ts
  */
@@ -12,6 +13,125 @@ export const LOTACAO_KM_OVER_RULE_KEYS = [
 ] as const;
 
 export const LOTACAO_OVER_ANTT_KEY = 'over_lotacao_percent';
+
+export type QuoteFreightModality = 'lotacao' | 'fracionado';
+export type CiotCadastroType = 'carga_lotacao' | 'carga_fracionada' | 'tac_agregado';
+
+export interface QuoteTripParty {
+  client_id?: string | null;
+  shipper_id?: string | null;
+  name?: string | null;
+}
+
+export interface QuoteTripContractorInput {
+  clientId?: string | null;
+  clientName?: string | null;
+  additionalRecipients?: QuoteTripParty[];
+  additionalShippers?: QuoteTripParty[];
+  tacAgregado?: boolean;
+  remuneratedRoadCargo?: boolean;
+  international?: boolean;
+  unplatedNewVehicle?: boolean;
+  specialUnhomologatedComposition?: boolean;
+}
+
+export interface QuoteTripContractorClassification {
+  contractorKeys: string[];
+  distinctContractorCount: number;
+  /** Tabela NTC / motor de cotação — 1 contratante no caminhão = lotação. */
+  quoteFreightModality: QuoteFreightModality;
+  /** Portaria SUROC nº 6/2026 art. 7º (cadastro CIOT). Não define o preço. */
+  ciotCadastroType: CiotCadastroType;
+  /** Lei 13.703/2018 art. 7º — independente da modalidade da cotação. */
+  ciotObrigatorio: boolean;
+}
+
+export function normalizeContractorKey(raw: string | null | undefined): string | null {
+  const v = String(raw ?? '')
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+  return v.length > 0 ? v : null;
+}
+
+export function collectQuoteTripContractorKeys(input: QuoteTripContractorInput): string[] {
+  const keys = new Set<string>();
+  const primaryId = normalizeContractorKey(input.clientId);
+  const primaryName = normalizeContractorKey(input.clientName);
+  if (primaryId) keys.add(`id:${primaryId}`);
+  else if (primaryName) keys.add(`name:${primaryName}`);
+
+  for (const r of input.additionalRecipients ?? []) {
+    const id = normalizeContractorKey(r.client_id);
+    if (id) keys.add(`id:${id}`);
+  }
+  for (const s of input.additionalShippers ?? []) {
+    const id = normalizeContractorKey(s.shipper_id);
+    if (id) keys.add(`id:${id}`);
+  }
+  return [...keys];
+}
+
+/**
+ * Cotação (NTC + piso PAG): mesmo caminhão/motorista.
+ * 1 contratante embarcado → lotação. 2+ contratantes distintos → fracionado.
+ * Não usa tipo CIOT nem tabela escolhida.
+ */
+export function resolveQuoteFreightModality(distinctContractorCount: number): QuoteFreightModality {
+  return distinctContractorCount >= 2 ? 'fracionado' : 'lotacao';
+}
+
+/** Cadastro CIOT (SUROC 6 art. 7). Eixo regulatório separado da cotação. */
+export function resolveCiotCadastroType(params: {
+  distinctContractorCount: number;
+  tacAgregado?: boolean;
+}): CiotCadastroType {
+  if (params.tacAgregado) return 'tac_agregado';
+  return params.distinctContractorCount >= 2 ? 'carga_fracionada' : 'carga_lotacao';
+}
+
+/**
+ * Obrigação de gerar CIOT (Lei 13.703 art. 7º + SUROC 6 art. 29).
+ * Fracionado NTC ou lotação NTC: CIOT continua obrigatório no TRC remunerado.
+ */
+export function isCiotGenerationObligatory(params?: {
+  quoteFreightModality?: QuoteFreightModality;
+  remuneratedRoadCargo?: boolean;
+  international?: boolean;
+  unplatedNewVehicle?: boolean;
+  specialUnhomologatedComposition?: boolean;
+}): boolean {
+  void params?.quoteFreightModality;
+  if (params?.remuneratedRoadCargo === false) return false;
+  if (params?.international) return false;
+  if (params?.unplatedNewVehicle) return false;
+  if (params?.specialUnhomologatedComposition) return false;
+  return true;
+}
+
+export function classifyQuoteTripContractors(
+  input: QuoteTripContractorInput = {}
+): QuoteTripContractorClassification {
+  const contractorKeys = collectQuoteTripContractorKeys(input);
+  const distinctContractorCount = contractorKeys.length;
+  return {
+    contractorKeys,
+    distinctContractorCount,
+    quoteFreightModality: resolveQuoteFreightModality(distinctContractorCount),
+    ciotCadastroType: resolveCiotCadastroType({
+      distinctContractorCount,
+      tacAgregado: input.tacAgregado,
+    }),
+    ciotObrigatorio: isCiotGenerationObligatory({
+      remuneratedRoadCargo: input.remuneratedRoadCargo,
+      international: input.international,
+      unplatedNewVehicle: input.unplatedNewVehicle,
+      specialUnhomologatedComposition: input.specialUnhomologatedComposition,
+    }),
+  };
+}
 
 /** Prêmio seguro estimado (custo real): RCTR-C 0,015% + RC-DC 0,015% s/ valor da carga. */
 export const INSURANCE_RCTR_C_RATE = 0.00015;

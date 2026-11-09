@@ -40,6 +40,10 @@ import {
 } from '@/hooks/useRiskEvaluation';
 import { CRITICALITY_CONFIG, REQUIREMENT_LABELS, type RiskCriticality } from '@/types/risk';
 import { BuonnyRegistrationModal, type BuonnyRegistrationData } from './BuonnyRegistrationModal';
+import { InsuranceExceptionPanel } from './InsuranceExceptionPanel';
+import { useInsuranceExceptions } from '@/hooks/useInsuranceExceptions';
+import { effectiveStatus, isExceptionGranted } from '@/lib/insurance-exception';
+import { EXCEPTION_STATUS_LABEL } from '@/lib/insurance-exception-ui';
 import type { RiskEvidence } from '@/types/risk';
 import {
   resolveAnttConsultPath,
@@ -69,6 +73,9 @@ interface RiskWorkflowWizardProps {
   tripId?: string | null;
   originUf?: string;
   destinationUf?: string;
+  originIbge?: number | null;
+  destinationIbge?: number | null;
+  cargoType?: string | null;
 }
 
 const STEPS = [
@@ -93,6 +100,9 @@ export function RiskWorkflowWizard({
   tripId,
   originUf = 'SC',
   destinationUf = 'SP',
+  originIbge,
+  destinationIbge,
+  cargoType,
 }: RiskWorkflowWizardProps) {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -212,17 +222,23 @@ export function RiskWorkflowWizard({
     () =>
       activePolicies.map((p) => ({
         policy: p,
-        coverage: validateCoverage(p, cargoValue, { destinationUf }),
+        coverage: validateCoverage(p, cargoValue, {
+          cargoType,
+          originUf,
+          destinationUf,
+          originIbge,
+          destinationIbge,
+        }),
         validity: validateValidity(p),
         premium: calculatePremium(p, cargoValue),
       })),
-    [activePolicies, cargoValue, destinationUf]
+    [activePolicies, cargoValue, cargoType, originUf, destinationUf, originIbge, destinationIbge]
   );
 
   const aggregateExposureWarning = useMemo(() => {
     if (!driverExposure?.totalOtherOrders || !activePolicies.length) return null;
     const totalExposure = cargoValue + driverExposure.totalOtherOrders;
-    const minLimit = Math.min(...activePolicies.map((p) => p.coverage_limit ?? Infinity));
+    const minLimit = Math.min(...policyChecks.map((c) => c.coverage.appliedLimit || Infinity));
     if (totalExposure > minLimit) {
       return {
         totalExposure,
@@ -231,11 +247,27 @@ export function RiskWorkflowWizard({
       };
     }
     return null;
-  }, [driverExposure, cargoValue, activePolicies]);
+  }, [driverExposure, cargoValue, activePolicies, policyChecks]);
+
+  // Liberação excepcional vigente (aceita, tácita ou risco assumido) cobre o excesso de LMG —
+  // mesma regra do gate em emit-cte/emit-mdfe: valor liberado ≥ valor da carga.
+  const { data: exceptionRequests = [] } = useInsuranceExceptions({ orderId });
+  const coveringException = useMemo(() => {
+    const now = new Date();
+    return (
+      exceptionRequests.find(
+        (r) => isExceptionGranted(r, now) && Number(r.cargo_value) + 0.005 >= cargoValue
+      ) ?? null
+    );
+  }, [exceptionRequests, cargoValue]);
+  const coveringExceptionLabel = coveringException
+    ? `${EXCEPTION_STATUS_LABEL[effectiveStatus(coveringException)]} até ${formatCurrency(Number(coveringException.cargo_value))}`
+    : null;
+  const limitOk = policyChecks.every((c) => c.coverage.ok) || !!coveringException;
 
   const coverageOk =
     activePolicies.length === 0 ||
-    (policyChecks.every((c) => c.coverage.ok && c.validity.ok) && !aggregateExposureWarning);
+    (limitOk && policyChecks.every((c) => c.validity.ok) && !aggregateExposureWarning);
   const { data: evaluation } = useRiskEvaluationByEntity('order', orderId);
   const { data: evidence } = useRiskEvidence(evaluation?.id);
 
@@ -916,6 +948,15 @@ export function RiskWorkflowWizard({
         })}
       </div>
 
+      <InsuranceExceptionPanel
+        orderId={orderId}
+        coverageOk={policyChecks.every((c) => c.coverage.ok)}
+        coverageMessage={policyChecks.find((c) => !c.coverage.ok)?.coverage.message}
+        vehiclePlate={vehiclePlate}
+        vehicleTypeName={vehicleTypeName}
+        driverContract={cadastroContractType}
+      />
+
       {/* Step Content */}
       <Card>
         <CardContent className="pt-6">
@@ -1011,6 +1052,7 @@ export function RiskWorkflowWizard({
               anttValid={anttValid}
               buonnyValid={buonnyValid}
               coverageOk={coverageOk}
+              coveringExceptionLabel={coveringExceptionLabel}
               policyChecks={policyChecks}
               aggregateExposureWarning={aggregateExposureWarning}
               cargoValue={cargoValue}
@@ -1745,6 +1787,7 @@ function StepSubmit({
   anttValid,
   buonnyValid,
   coverageOk,
+  coveringExceptionLabel,
   policyChecks,
   aggregateExposureWarning,
   cargoValue,
@@ -1762,6 +1805,8 @@ function StepSubmit({
   anttValid: boolean;
   buonnyValid: boolean;
   coverageOk: boolean;
+  /** Liberação excepcional que cobre o excesso de LMG (ex.: "Risco assumido até R$ 788.894,50"). */
+  coveringExceptionLabel: string | null;
   policyChecks: {
     policy: import('@/hooks/useRiskPolicies').RiskPolicy;
     coverage: ReturnType<typeof validateCoverage>;
@@ -1842,6 +1887,11 @@ function StepSubmit({
             <XCircle className="h-4 w-4 text-red-500" />
           )}
           <span>Cobertura do seguro</span>
+          {coverageOk && coveringExceptionLabel && (
+            <span className="text-xs text-orange-700 dark:text-orange-300">
+              — liberação excepcional: {coveringExceptionLabel}
+            </span>
+          )}
           {!coverageOk && policyChecks.length > 0 && (
             <span className="text-xs text-red-600">
               —{' '}

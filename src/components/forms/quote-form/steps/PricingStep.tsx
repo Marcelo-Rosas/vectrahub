@@ -50,6 +50,7 @@ import type { AnttFloorFlags } from '@/lib/antt-floor-calc';
 import { resolveAnttRsKm } from '@/lib/antt-rs-km';
 import { buildQuoteFinancialStripFromCalculation } from '@/lib/quote-financial-strip';
 import { FinancialDualStrip } from '@/components/forms/quote-form/FinancialDualStrip';
+import type { PriceTableMethodology } from '@/lib/pricingMethodology';
 
 interface PaymentTerm {
   id: string;
@@ -69,6 +70,8 @@ interface PricingStepProps {
   onEquipmentRentalChange: (total: number, items: EquipmentRentalItem[]) => void;
   unloadingCostItems: UnloadingCostItem[];
   onUnloadingCostChange: (total: number, items: UnloadingCostItem[]) => void;
+  pricingMethodology?: PriceTableMethodology;
+  vehicleTypeId?: string | null;
   anttFloorFlags?: AnttFloorFlags;
   onAnttFloorFlagsChange?: (patch: Partial<AnttFloorFlags>) => void;
   pisoAnttPreview?: number | null;
@@ -88,6 +91,8 @@ export function PricingStep({
   onEquipmentRentalChange,
   unloadingCostItems,
   onUnloadingCostChange,
+  pricingMethodology,
+  vehicleTypeId,
   isLegacy = false,
   paymentTerms = [],
   anttFloorFlags,
@@ -149,8 +154,7 @@ export function PricingStep({
     () =>
       buildQuoteFinancialStripFromCalculation(calculationResult, {
         modality: (watchModality === 'fracionado' ? 'fracionado' : 'lotacao') as
-          | 'lotacao'
-          | 'fracionado',
+          'lotacao' | 'fracionado',
       }),
     [calculationResult, watchModality]
   );
@@ -487,6 +491,8 @@ export function PricingStep({
                       value={form.watch('aluguel_maquinas') || 0}
                       onChange={onEquipmentRentalChange}
                       initialItems={equipmentRentalItems}
+                      methodology={pricingMethodology}
+                      vehicleTypeId={vehicleTypeId ?? form.watch('vehicle_type_id')}
                     />
                   </SectionBlock>
                   <SectionBlock variant="card" label="Carga e Descarga" collapsible defaultOpen>
@@ -494,6 +500,8 @@ export function PricingStep({
                       value={form.watch('descarga') || 0}
                       onChange={onUnloadingCostChange}
                       initialItems={unloadingCostItems}
+                      methodology={pricingMethodology}
+                      vehicleTypeId={vehicleTypeId ?? form.watch('vehicle_type_id')}
                     />
                   </SectionBlock>
                   <SectionBlock

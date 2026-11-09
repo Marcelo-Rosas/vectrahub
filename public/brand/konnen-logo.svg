@@ -1,4 +1,25 @@
-<svg width="220" height="40" viewBox="0 0 220 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Konnen Fitness">
-  <rect width="220" height="40" rx="4" fill="#000000"/>
-  <text x="110" y="26" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#FFD600" letter-spacing="0.08em">KONNEN</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 56" role="img" aria-label="Konnen Fitness" fill="none">
+  <!-- Wordmark amarelo em fundo transparente — banner preto vem do CSS do lockup. -->
+  <path
+    fill="#FFD600"
+    d="M8 8h14.5c.6 0 1.1.2 1.5.6l16.2 16.8c.5.5.5 1.3 0 1.8L24 44.2c-.4.4-.9.6-1.5.6H8c-.8 0-1.4-.6-1.4-1.4V9.4C6.6 8.6 7.2 8 8 8zm12.2 6.2v21.4l10.4-10.7-10.4-10.7z"
+  />
+  <text
+    x="52"
+    y="36"
+    fill="#FFD600"
+    font-family="Arial Black, Helvetica Neue, Arial, sans-serif"
+    font-size="32"
+    font-weight="800"
+    letter-spacing="-1.2"
+  >konnen</text>
+  <text
+    x="54"
+    y="50"
+    fill="#FFD600"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="9"
+    font-style="italic"
+    opacity="0.92"
+  >Equipamentos Fitness</text>
 </svg>

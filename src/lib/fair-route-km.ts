@@ -1,13 +1,25 @@
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { digitsOnly } from '@/lib/fair-client';
 
-/** KM origem→destino via WebRouter. Pedágio da resposta é ignorado (feira usa % do frete peso). */
+export type FairRouteKmResult = {
+  km: number;
+  /** Pedágio WebRouter (praças). 0 se a Edge não trouxe. */
+  toll: number;
+};
+
+function roundMoney(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+/** KM (+ pedágio Hub) via WebRouter. Prefetch de KM não precisa de eixos. */
 export async function fetchFairRouteKm(input: {
   originCep: string;
   destinationCep: string;
   originUf: string;
   destinationUf: string;
-}): Promise<number> {
+  axesCount?: number;
+  categoriaVeiculo?: string;
+}): Promise<FairRouteKmResult> {
   const origin = digitsOnly(input.originCep);
   const dest = digitsOnly(input.destinationCep);
   if (origin.length !== 8 || dest.length !== 8) {
@@ -16,7 +28,7 @@ export async function fetchFairRouteKm(input: {
 
   const data = await invokeEdgeFunction<{
     success: boolean;
-    data?: { km_distance: number };
+    data?: { km_distance: number; toll?: number };
     error?: string;
   }>('calculate-distance-webrouter', {
     body: {
@@ -24,6 +36,8 @@ export async function fetchFairRouteKm(input: {
       destination_cep: dest,
       origin_uf: input.originUf,
       destination_uf: input.destinationUf,
+      axes_count: input.axesCount,
+      categoria_veiculo: input.categoriaVeiculo,
     },
   });
 
@@ -36,5 +50,33 @@ export async function fetchFairRouteKm(input: {
     throw new Error('Distância inválida retornada pela rota');
   }
 
-  return Math.round(km);
+  const tollRaw = Number(data.data?.toll);
+  const toll = Number.isFinite(tollRaw) && tollRaw > 0 ? roundMoney(tollRaw) : 0;
+
+  return { km: Math.round(km), toll };
+}
+
+/** Dedicado: pedágio Hub (WebRouter + eixos). Fracionado: sem toll no motor (12% no overlay). */
+export async function resolveFairHubToll(input: {
+  originCep: string;
+  destinationCep: string;
+  originUf: string;
+  destinationUf: string;
+  dedicado: boolean;
+  axesCount?: number | null;
+  kmFallback: number;
+}): Promise<{ km: number; tollValue: number }> {
+  if (!input.dedicado) {
+    return { km: input.kmFallback, tollValue: 0 };
+  }
+
+  const route = await fetchFairRouteKm({
+    originCep: input.originCep,
+    destinationCep: input.destinationCep,
+    originUf: input.originUf,
+    destinationUf: input.destinationUf,
+    axesCount: input.axesCount ?? undefined,
+  });
+
+  return { km: route.km, tollValue: route.toll };
 }

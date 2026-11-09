@@ -14,7 +14,7 @@ const AUTH_PREFIX = '/auth/v1';
 // ---------------------------------------------------------------------------
 
 /** Supabase project ref — used to build the localStorage key. */
-const SUPABASE_PROJECT_REF = 'epgedaiukjippepujuzc';
+const SUPABASE_PROJECT_REF = 'lrbtbrpoklgwaaclbufz';
 
 /**
  * Creates a minimal fake JWT that Supabase JS v2 can decode without

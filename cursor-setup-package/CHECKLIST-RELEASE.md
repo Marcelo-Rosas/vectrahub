@@ -73,6 +73,37 @@
 - [ ] Lint limpo: `npm run lint`
 - [ ] Auditoria CI passa: `npx tsx scripts/audit-compliance.ts --ci`
 
+### 8.1 Branch protection (`main`)
+
+Repo: `Marcelo-Rosas/vectrahub`. Proteção aplicada via GitHub REST API — sem branch protection legada nem rulesets antes disso.
+
+Config ativa:
+
+- [ ] `required_status_checks`: `check` (job do `ci.yml` = tsc + lint + build), `strict: true` (branch precisa estar atualizada com `main`)
+- [ ] `allow_force_pushes`: false — force push em `main` bloqueado
+- [ ] `allow_deletions`: false — deleção de `main` bloqueada
+- [ ] `enforce_admins`: false — admin pode bypassar em emergência
+- [ ] `required_pull_request_reviews`: null — sem exigência de PR/aprovação (repo praticamente solo; exigir aprovação travaria o próprio autor)
+
+Nota: os jobs do `ci.yml` não têm `name:`, então o contexto do status check = id do job (`check`). `supabase-migrate-check` ficou de fora (pode passar verde-vazio quando o secret `SUPABASE_DB_URL` está ausente).
+
+Aplicar / re-aplicar:
+
+```bash
+gh api -X PUT repos/Marcelo-Rosas/vectrahub/branches/main/protection --input - <<'JSON'
+{
+  "required_status_checks": { "strict": true, "contexts": ["check"] },
+  "enforce_admins": false,
+  "required_pull_request_reviews": null,
+  "restrictions": null
+}
+JSON
+```
+
+Verificar: `gh api repos/Marcelo-Rosas/vectrahub/branches/main/protection`
+
+Reverter: `gh api -X DELETE repos/Marcelo-Rosas/vectrahub/branches/main/protection`
+
 ## 9. Documentação
 
 - [ ] `.cursorrules` atualizado com mudanças recentes

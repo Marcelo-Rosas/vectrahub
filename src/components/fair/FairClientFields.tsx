@@ -70,6 +70,19 @@ export function FairClientFields({ value, onChange }: Props) {
         state: result.state ?? draft.state,
       });
       toast.success('Cliente preenchido pelo CNPJ');
+      if (digitsOnly(result.zip_code ?? '').length === 8) {
+        void handleCepLookup({
+          ...draft,
+          kind: 'cnpj',
+          document: formatFairDocument('cnpj', result.cnpj || draft.document),
+          name: (result.name ?? result.trade_name ?? draft.name).trim(),
+          zipCode: formatFairCep(result.zip_code ?? draft.zipCode),
+          address: address || draft.address,
+          email: (result.email ?? draft.email).trim(),
+          city: result.city ?? draft.city,
+          state: result.state ?? draft.state,
+        });
+      }
     } catch (e) {
       lastCnpj.current = '';
       toast.error(e instanceof CnpjLookupError ? e.message : 'Falha ao consultar CNPJ');
@@ -189,16 +202,13 @@ export function FairClientFields({ value, onChange }: Props) {
             <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
           )}
         </div>
-        {value.kind === 'cnpj' && (
-          <p className="text-xs text-muted-foreground">Consulta Receita ao sair do campo</p>
-        )}
       </div>
 
       <div className="space-y-2">
         <Label>Nome</Label>
         <Input
           className={inputMobile}
-          placeholder={value.kind === 'cnpj' ? 'Razão social (API)' : 'Nome completo'}
+          placeholder={value.kind === 'cnpj' ? 'RAZÃO SOCIAL' : 'NOME COMPLETO'}
           value={value.name}
           onChange={(e) => patch({ name: e.target.value })}
           readOnly={value.kind === 'cnpj' && cnpjLoading}
@@ -231,7 +241,7 @@ export function FairClientFields({ value, onChange }: Props) {
         <Label>Endereço</Label>
         <Input
           className={inputMobile}
-          placeholder="Rua, número, bairro, cidade"
+          placeholder="RUA, NÚMERO, BAIRRO, CIDADE"
           value={value.address}
           onChange={(e) => patch({ address: e.target.value })}
         />
@@ -244,15 +254,24 @@ export function FairClientFields({ value, onChange }: Props) {
           type="email"
           inputMode="email"
           autoComplete="email"
-          placeholder="contato@empresa.com"
+          placeholder="CONTATO@EMPRESA.COM"
           value={value.email}
           onChange={(e) => patch({ email: e.target.value })}
         />
       </div>
 
-      <label className="flex min-h-11 items-start gap-3 rounded-xl border px-3 py-3 touch-manipulation">
+      <label
+        className={cn(
+          'flex min-h-11 items-start gap-3 rounded-xl border border-transparent px-3 py-3 touch-manipulation',
+          FAIR_UI.cta,
+          'hover:opacity-100'
+        )}
+      >
         <Checkbox
-          className="mt-0.5 h-5 w-5"
+          className={cn(
+            'mt-0.5 h-5 w-5 border-[color:var(--fair-cta-fg)] data-[state=unchecked]:bg-transparent',
+            'data-[state=checked]:bg-[color:var(--fair-cta-fg)] data-[state=checked]:text-[color:var(--fair-cta-bg)] data-[state=checked]:border-[color:var(--fair-cta-fg)]'
+          )}
           checked={value.deliveryDifferent}
           onCheckedChange={(checked) =>
             onChange({
@@ -261,7 +280,7 @@ export function FairClientFields({ value, onChange }: Props) {
             })
           }
         />
-        <span className="text-sm leading-snug">
+        <span className="text-sm font-semibold leading-snug text-[color:var(--fair-cta-fg)]">
           Entrega em cidade diferente do cadastro (Receita/CEP)
         </span>
       </label>
@@ -293,7 +312,7 @@ export function FairClientFields({ value, onChange }: Props) {
             <Label>Cidade da entrega</Label>
             <Input
               className={inputMobile}
-              placeholder="Cidade"
+              placeholder="CIDADE"
               value={value.deliveryCity}
               onChange={(e) => patch({ deliveryCity: e.target.value })}
             />

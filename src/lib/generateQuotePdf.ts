@@ -83,7 +83,13 @@ export interface QuotePdfPayload {
   route_stops?: QuotePdfRouteStop[];
   event_flag?: string | null;
   pedagio_estimado?: number | null;
+  /** Valor NF / mercadoria (feira) */
+  cargo_value?: number | null;
+  /** Frete hub sem pedágio extra (feira) */
+  fair_freight_total?: number | null;
   fair_disclaimer?: boolean;
+  /** Veículo sugerido (feira dedicado) */
+  suggested_vehicle_label?: string | null;
 }
 
 type PdfDoc = jsPDF & { lastAutoTable?: { finalY?: number } };
@@ -447,7 +453,7 @@ function drawItineraryBlock(doc: PdfDoc, payload: QuotePdfPayload, y: number): n
   const caption =
     midCount > 0
       ? `ROTEIRO COM ${midCount} PARADA(S) INTERMEDIÁRIA(S) · ${points.length} PONTOS`
-      : 'ROTEIRO DIRETO (ORIGEM → DESTINO)';
+      : 'ROTEIRO DIRETO (ORIGEM -> DESTINO)';
   doc.text(caption, ML, y + 3);
   y += 6;
 
@@ -541,38 +547,39 @@ function drawRouteSummaryBlock(doc: PdfDoc, payload: QuotePdfPayload, y: number)
   const points = buildItinerary(payload);
   const mid = points.filter((p) => p.stop_type === 'stop').length;
 
-  return drawFieldsBlock(
-    doc,
-    [
-      { label: 'TIPO FRETE', value: tipoFrete },
-      {
-        label: 'DISTÂNCIA',
-        value: payload.km_distance != null ? fmtUnit(payload.km_distance, 'km') : '—',
-      },
-      { label: 'PONTOS', value: String(points.length) },
-      { label: 'PARADAS', value: String(mid) },
-    ],
-    y,
-    16
-  );
+  const fields = [
+    { label: 'TIPO FRETE', value: tipoFrete },
+    {
+      label: 'DISTÂNCIA',
+      value: payload.km_distance != null ? fmtUnit(payload.km_distance, 'km') : '—',
+    },
+    { label: 'PONTOS', value: String(points.length) },
+    { label: 'PARADAS', value: String(mid) },
+  ];
+  if (payload.suggested_vehicle_label) {
+    fields.splice(1, 0, {
+      label: 'VEÍCULO SUGERIDO',
+      value: payload.suggested_vehicle_label,
+    });
+  }
+
+  return drawFieldsBlock(doc, fields, y, 16);
 }
 
 function drawCargoBlock(doc: PdfDoc, payload: QuotePdfPayload, y: number): number {
-  return drawFieldsBlock(
-    doc,
-    [
-      { label: 'TIPO DE CARGA', value: humanizeCargoType(payload.cargo_type) },
-      { label: 'PESO', value: formatWeight(payload.weight) },
-      { label: 'VOLUME', value: payload.volume != null ? fmtUnit(payload.volume, 'm³') : '—' },
-      {
-        label: 'COLETA ESTIMADA',
-        value: payload.estimated_loading_date
-          ? fmtDate(payload.estimated_loading_date)
-          : 'A CONFIRMAR',
-      },
-    ],
-    y
-  );
+  const fields = [
+    { label: 'TIPO DE CARGA', value: humanizeCargoType(payload.cargo_type) },
+    { label: 'PESO', value: formatWeight(payload.weight) },
+    { label: 'VOLUME', value: payload.volume != null ? fmtUnit(payload.volume, 'm³') : '—' },
+  ];
+  if (payload.cargo_value != null && payload.cargo_value > 0) {
+    fields.push({ label: 'VALOR MERCADORIA', value: formatCurrency(payload.cargo_value) });
+  }
+  fields.push({
+    label: 'COLETA ESTIMADA',
+    value: payload.estimated_loading_date ? fmtDate(payload.estimated_loading_date) : 'A CONFIRMAR',
+  });
+  return drawFieldsBlock(doc, fields, y);
 }
 
 function drawPricingBlock(
@@ -611,8 +618,11 @@ function drawPricingBlock(
     }
   }
 
-  if (payload.fair_disclaimer && (payload.pedagio_estimado ?? 0) > 0) {
-    rows.push(['Pedágio estimado', formatCurrency(payload.pedagio_estimado ?? 0)]);
+  if (payload.fair_disclaimer) {
+    if ((payload.fair_freight_total ?? 0) > 0) {
+      rows.push(['Frete', formatCurrency(payload.fair_freight_total ?? 0)]);
+    }
+    rows.push(['Pedágio', 'Incluso no valor']);
   }
 
   if (rows.length === 0) return y;

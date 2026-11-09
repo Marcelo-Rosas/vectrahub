@@ -16,6 +16,7 @@ import {
   BarChart3,
   ShieldCheck,
   Activity,
+  FileWarning,
   Building2,
   Tent,
 } from 'lucide-react';
@@ -24,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { BrandLogo } from '@/components/BrandLogo';
 import { useLayout } from '@/components/layout/useLayout';
+import { useUserRole, type UserProfile } from '@/hooks/useUserRole';
 import { FAIR_APP_HOME } from '@/lib/fair-origins';
 
 const navItems = [
@@ -53,6 +55,12 @@ const navItems = [
     path: '/monitoramento-seguros',
     icon: Activity,
     label: 'Monit. Seguros',
+    roles: ['admin', 'financeiro', 'operacional'] as UserProfile[],
+  },
+  {
+    path: '/seguro/liberacoes',
+    icon: FileWarning,
+    label: 'Liberações Seguro',
     roles: ['admin', 'financeiro', 'operacional'] as UserProfile[],
   },
   { path: '/clientes', icon: Users, label: 'Clientes' },

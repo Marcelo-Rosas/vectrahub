@@ -39,6 +39,7 @@ import {
   stripAnttTransportadorPrefix,
 } from '@/lib/risk-antt-evidence';
 import { supabase } from '@/integrations/supabase/client';
+import { CnpjLookupError, lookupCnpj } from '@/lib/cnpjLookup';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 import { zodCpfOrCnpj, zodPhone, zodCep, zodRntrcOptional, maskRntrcInput } from '@/lib/validators';
@@ -360,34 +361,24 @@ export function OwnerForm({ open, onClose, owner }: OwnerFormProps) {
 
     setIsLookingUp(true);
     try {
-      const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
-      if (!res.ok) {
-        setIsLookingUp(false);
-        return;
-      }
-      const data = (await res.json()) as Record<string, unknown>;
+      const data = await lookupCnpj(cnpj);
 
-      safeSet('name', data.razao_social || data.nome_fantasia || data.name);
-      safeSet('email', data.email || data.email_contato);
-      safeSet('phone', data.ddd_telefone_1 || data.telefone || data.phone);
+      safeSet('name', data.name || data.trade_name);
+      safeSet('email', data.email);
+      safeSet('phone', data.phone);
 
-      const street = data.logradouro || data.endereco || data.street;
-      const number = data.numero || data.number;
-      const district = data.bairro || data.distrito || data.neighborhood;
-      const composedAddress = [street, number, district].filter(Boolean).join(', ');
+      const composedAddress = [data.address, data.address_number, data.address_neighborhood]
+        .filter(Boolean)
+        .join(', ');
       safeSet('address', composedAddress);
 
-      safeSet('city', data.municipio || data.cidade || data.city);
-
-      const uf = (data.uf || data.estado || data.state || '').toString().toUpperCase();
-      safeSet('state', uf?.slice(0, 2));
-
-      const cep = (data.cep || data.codigo_postal || data.zip_code || '').toString();
-      safeSet('zip_code', cep);
+      safeSet('city', data.city);
+      safeSet('state', data.state?.slice(0, 2));
+      safeSet('zip_code', data.zip_code);
 
       toast.success('Dados preenchidos automaticamente pelo CNPJ');
-    } catch {
-      // API pode estar indisponível
+    } catch (err) {
+      if (err instanceof CnpjLookupError && err.code !== 'INVALID') toast.error(err.message);
     } finally {
       setIsLookingUp(false);
     }

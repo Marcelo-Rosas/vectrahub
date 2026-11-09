@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
+  aggregateCatalogQuoteLines,
   buildShipperProductCatalog,
+  stackLbsFromPdfWeightKg,
   type ShipperCatalogRawRow,
 } from '@/lib/shipper-product-catalog';
 
@@ -34,5 +36,15 @@ describe('konnen packing fixtures', () => {
     const p = catalog.get('RKC01UDB-002');
     expect(p?.boxesTotal).toBe(1);
     expect(p?.boxTypes[0]?.lengthMm).toBe(215);
+  });
+
+  it('IF9302 kit inclui weight stack 295 (7 caixas)', () => {
+    const catalog = buildShipperProductCatalog(loadFixture('konnen-catalog-merged.json'));
+    expect(catalog.get('IF9302')?.boxesTotal).toBe(3);
+    const agg = aggregateCatalogQuoteLines(catalog, [
+      { sku: 'IF9302', quantity: 1, stackWeightKg: 134 },
+    ]);
+    expect(agg.lines[0]?.boxesCount).toBe(7);
+    expect(agg.lines[0]?.weightKg).toBeCloseTo(248.7, 1);
   });
 });

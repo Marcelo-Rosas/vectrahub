@@ -42,6 +42,23 @@ describe('resolveMdfeSeguros — Fairfax VECTRA HUB', () => {
     },
   ];
 
+  it('código da liberação excepcional MS vence proposta, mas não averbação AT&M', () => {
+    const lib = resolveMdfeSeguros({
+      policies: fairfaxPolicies,
+      naverFromCte: [],
+      naverLiberacao: ' LIB-2026 0931 ',
+      ambiente: 'prod',
+    });
+    expect(lib[0].numero_averbacao).toBe('LIB-20260931');
+    const atm = resolveMdfeSeguros({
+      policies: fairfaxPolicies,
+      naverFromCte: ['999888777'],
+      naverLiberacao: 'LIB-20260931',
+      ambiente: 'prod',
+    });
+    expect(atm[0].numero_averbacao).toBe('999888777');
+  });
+
   it('usa proposta RC-DC como nAver quando averbação manual (sem AT&M)', () => {
     const seguros = resolveMdfeSeguros({
       policies: fairfaxPolicies,

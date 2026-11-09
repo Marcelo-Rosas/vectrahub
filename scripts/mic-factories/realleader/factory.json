@@ -1,0 +1,15 @@
+{
+  "id": "realleader",
+  "legalName": "Shandong Realleader Fitness Co., Ltd.",
+  "micSlug": "realleaderfitness",
+  "baseUrl": "https://realleaderfitness.en.made-in-china.com",
+  "fetchMode": "http",
+  "scrape": {
+    "maxPages": 4,
+    "minDelay": 1.2,
+    "maxDelay": 2.5,
+    "pageTimeout": 45000,
+    "tableTimeout": 15000,
+    "maxRetries": 3
+  }
+}

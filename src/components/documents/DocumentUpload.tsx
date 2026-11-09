@@ -56,6 +56,8 @@ interface DocumentUploadProps {
   onDocumentCreated?: (documentId: string, type: DocumentType, file: File) => void;
   /** Wizard/CT-e: só XML autorizado da NF-e (tipo nfe). Recusa DANFE PDF. */
   nfeXmlContext?: boolean;
+  /** Embarcadores da OS — ao anexar POD, escolhe de quem é o canhoto. */
+  podShippers?: Array<{ shipper_id?: string; name: string }>;
 }
 
 const STANDALONE_FISCAL_DOCUMENT_TYPES: { value: DocumentType; label: string }[] = [
@@ -215,6 +217,7 @@ export function DocumentUpload({
   onDocumentCreated,
   standaloneFiscalContext,
   nfeXmlContext,
+  podShippers = [],
 }: DocumentUploadProps) {
   const { user } = useAuth();
   const createDocumentMutation = useCreateDocument();
@@ -270,6 +273,16 @@ export function DocumentUpload({
   const [selectedType, setSelectedType] = useState<DocumentType>(
     nfeXmlContext || standaloneFiscalContext ? 'nfe' : (availableTypes[0]?.value ?? 'outros')
   );
+  const podShipperKey = (s: { shipper_id?: string; name: string }) => s.shipper_id || s.name;
+  const [selectedPodShipperKey, setSelectedPodShipperKey] = useState<string>(
+    podShippers[0] ? podShipperKey(podShippers[0]) : ''
+  );
+  useEffect(() => {
+    if (podShippers.length === 0) return;
+    if (!podShippers.some((s) => podShipperKey(s) === selectedPodShipperKey)) {
+      setSelectedPodShipperKey(podShipperKey(podShippers[0]!));
+    }
+  }, [podShippers, selectedPodShipperKey]);
 
   // Atualiza o tipo selecionado quando o estágio muda
   useEffect(() => {
@@ -319,6 +332,12 @@ export function DocumentUpload({
 
       // Store the storage path (NOT a public URL) — access via signed URL at read time
       // uploadData.path is already the bare path: <user_id>/<timestamp>-<random>.<ext>
+      const podShipper =
+        type === 'pod' && podShippers.length > 0
+          ? (podShippers.find((s) => podShipperKey(s) === selectedPodShipperKey) ??
+            podShippers[0] ??
+            null)
+          : null;
       const created = await createDocumentMutation.mutateAsync({
         file_name: file.name,
         file_url: uploadData.path,
@@ -327,6 +346,9 @@ export function DocumentUpload({
         order_id: orderId || null,
         quote_id: quoteId || null,
         uploaded_by: user.id,
+        validation_metadata: podShipper
+          ? { shipper_id: podShipper.shipper_id ?? null, shipper_name: podShipper.name }
+          : undefined,
       });
 
       if (CARRIER_PAYMENT_TYPES.includes(type) && created?.id && onCarrierPaymentDocCreated) {
@@ -372,6 +394,8 @@ export function DocumentUpload({
       onQuotePaymentDocCreated,
       onDocumentUploaded,
       nfeXmlContext,
+      podShippers,
+      selectedPodShipperKey,
     ]
   );
 
@@ -451,6 +475,24 @@ export function DocumentUpload({
               {availableTypes.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
                   {type.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {selectedType === 'pod' && podShippers.length >= 2 && (
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-foreground">Embarcador do canhoto:</span>
+          <Select value={selectedPodShipperKey} onValueChange={setSelectedPodShipperKey}>
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="Selecione o embarcador" />
+            </SelectTrigger>
+            <SelectContent>
+              {podShippers.map((s) => (
+                <SelectItem key={podShipperKey(s)} value={podShipperKey(s)}>
+                  {s.name}
                 </SelectItem>
               ))}
             </SelectContent>

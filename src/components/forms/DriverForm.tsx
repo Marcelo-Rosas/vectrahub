@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -162,21 +162,31 @@ export function DriverForm({ open, onClose, driver }: DriverFormProps) {
     return created?.id ?? null;
   }
 
+  async function syncCiotCadastroToOwnerAndVehicles(data: DriverFormData) {
+    const isTac = data.rntrc_registry_type === 'TAC';
+    if (!data.is_owner && !isTac) return;
+    const ownerId = await upsertOwnerFromDriver(data);
+    if (!ownerId) return;
+    const cpf = (data.cpf || '').replace(/\D/g, '');
+    for (const v of linkedVehicles) {
+      await updateVehicleMutation.mutateAsync({
+        id: v.id,
+        updates: {
+          owner_id: ownerId,
+          rntrc_proprietario: data.antt && data.antt !== '' ? data.antt : null,
+          cpf_cnpj_proprietario: cpf || null,
+          nome_proprietario: data.name,
+        },
+      });
+    }
+  }
+
   // Busca veículo(s) vinculado ao motorista (apenas em modo edição)
   const { data: allVehicles } = useVehicles(driver?.id ?? null);
   const linkedVehicles = useMemo(
     () => allVehicles?.filter((v) => v.driver_id === driver?.id) ?? [],
     [allVehicles, driver?.id]
   );
-
-  // Verifica se o motorista já é proprietário de algum veículo vinculado
-  const [initialIsOwner, setInitialIsOwner] = useState(false);
-  useEffect(() => {
-    if (isEditing && linkedVehicles.length > 0) {
-      const hasOwnership = linkedVehicles.some((v) => v.owner?.name === driver?.name);
-      setInitialIsOwner(hasOwnership);
-    }
-  }, [isEditing, linkedVehicles, driver?.name]);
 
   const form = useForm<DriverFormData>({
     resolver: zodResolver(driverSchema),
@@ -200,6 +210,7 @@ export function DriverForm({ open, onClose, driver }: DriverFormProps) {
   });
 
   useEffect(() => {
+    if (!open) return;
     if (driver) {
       form.reset({
         name: driver.name,
@@ -210,7 +221,7 @@ export function DriverForm({ open, onClose, driver }: DriverFormProps) {
         antt: driver.antt || '',
         contract_type: driver.contract_type ?? 'proprio',
         rntrc_registry_type: (driver.rntrc_registry_type ?? undefined) as 'TAC' | 'ETC',
-        is_owner: initialIsOwner,
+        is_owner: false,
         active: driver.active,
         payment_prefer: '',
         pix_key: '',
@@ -237,7 +248,23 @@ export function DriverForm({ open, onClose, driver }: DriverFormProps) {
         bank_account: '',
       });
     }
-  }, [driver, form, initialIsOwner]);
+    // Só reidrata ao abrir / trocar motorista. initialIsOwner depois não pode apagar Categoria.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, driver?.id, form]);
+
+  const ownerSyncedFor = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      ownerSyncedFor.current = null;
+      return;
+    }
+    if (!isEditing || !driver?.id || linkedVehicles.length === 0) return;
+    if (ownerSyncedFor.current === driver.id) return;
+    ownerSyncedFor.current = driver.id;
+    const hasOwnership = linkedVehicles.some((v) => v.owner?.name === driver.name);
+    form.setValue('is_owner', hasOwnership);
+  }, [open, isEditing, linkedVehicles, driver, form]);
 
   const isOwnerWatch = form.watch('is_owner');
   const payPreferWatch = form.watch('payment_prefer');
@@ -260,21 +287,13 @@ export function DriverForm({ open, onClose, driver }: DriverFormProps) {
           },
         });
 
-        if (data.is_owner) {
+        if (data.is_owner || data.rntrc_registry_type === 'TAC') {
           try {
-            const ownerId = await upsertOwnerFromDriver(data);
-            if (ownerId) {
-              for (const v of linkedVehicles) {
-                if (v.owner_id !== ownerId) {
-                  await updateVehicleMutation.mutateAsync({
-                    id: v.id,
-                    updates: { owner_id: ownerId },
-                  });
-                }
-              }
-            }
+            await syncCiotCadastroToOwnerAndVehicles(data);
           } catch (err) {
-            toast.error(`Owner clone falhou: ${err instanceof Error ? err.message : String(err)}`);
+            toast.error(
+              `Owner/CIOT clone falhou: ${err instanceof Error ? err.message : String(err)}`
+            );
           }
         }
 
@@ -291,7 +310,7 @@ export function DriverForm({ open, onClose, driver }: DriverFormProps) {
           rntrc_registry_type: data.rntrc_registry_type,
           active: data.active,
         });
-        if (data.is_owner) {
+        if (data.is_owner || data.rntrc_registry_type === 'TAC') {
           try {
             await upsertOwnerFromDriver(data);
           } catch {
@@ -423,19 +442,26 @@ export function DriverForm({ open, onClose, driver }: DriverFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Categoria</FormLabel>
-                      <FormControl>
-                        <select
-                          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                          {...field}
-                        >
-                          <option value="">Selecionar...</option>
+                      <Select
+                        onValueChange={(v) => field.onChange(v === '__none__' ? '' : v)}
+                        value={field.value || '__none__'}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecionar..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="z-[80]">
+                          <SelectItem value="__none__">
+                            <span className="text-muted-foreground">Selecionar...</span>
+                          </SelectItem>
                           {cnhCategories.map((cat) => (
-                            <option key={cat.code} value={cat.code}>
+                            <SelectItem key={cat.code} value={cat.code}>
                               {`${cat.code} — ${cat.description}`}
-                            </option>
+                            </SelectItem>
                           ))}
-                        </select>
-                      </FormControl>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -477,16 +503,18 @@ export function DriverForm({ open, onClose, driver }: DriverFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo de vínculo operacional *</FormLabel>
-                    <FormControl>
-                      <select
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        {...field}
-                      >
-                        <option value="proprio">Frota</option>
-                        <option value="agregado">Agregado</option>
-                        <option value="terceiro">Terceiro</option>
-                      </select>
-                    </FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecionar..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="z-[80]">
+                        <SelectItem value="proprio">Frota</SelectItem>
+                        <SelectItem value="agregado">Agregado</SelectItem>
+                        <SelectItem value="terceiro">Terceiro</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <p className="text-xs text-muted-foreground">
                       Esta definição será usada na consulta ANTT do Step 1 do risco.
                     </p>
@@ -501,20 +529,20 @@ export function DriverForm({ open, onClose, driver }: DriverFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Registro RNTRC (TAC/ETC) *</FormLabel>
-                    <FormControl>
-                      <select
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        value={field.value ?? ''}
-                        onChange={(e) => field.onChange(e.target.value || undefined)}
-                      >
-                        <option value="">Selecione…</option>
-                        <option value="TAC">TAC</option>
-                        <option value="ETC">ETC</option>
-                      </select>
-                    </FormControl>
+                    <Select onValueChange={field.onChange} value={field.value || undefined}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione…" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="z-[80]">
+                        <SelectItem value="TAC">TAC</SelectItem>
+                        <SelectItem value="ETC">ETC</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <p className="text-xs text-muted-foreground">
-                      Obrigatório. Define se o motorista é Transportador Autônomo (TAC) ou vinculado
-                      a Empresa de Transporte (ETC) — usado para regra de CIOT.
+                      Obrigatório. TAC: CPF + RNTRC deste cadastro alimentam CIOT (contratado). ETC:
+                      contratado vem do proprietário do veículo.
                     </p>
                     <FormMessage />
                   </FormItem>
@@ -541,7 +569,8 @@ export function DriverForm({ open, onClose, driver }: DriverFormProps) {
                         Motorista é proprietário do veículo
                       </FormLabel>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Clona CPF, RNTRC e dados bancários para Owners (MDF-e infPag).
+                        Clona CPF, RNTRC e banco para Owners (MDF-e infPag / CIOT). TAC já clona
+                        CPF+RNTRC mesmo sem marcar esta caixa.
                         {isEditing && linkedVehicles.length > 0
                           ? ' Vincula aos veículos deste motorista.'
                           : ''}

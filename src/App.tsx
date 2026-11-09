@@ -2,16 +2,17 @@ import { Suspense, lazy } from 'react';
 
 import { RouteErrorBoundary } from '@/components/ErrorBoundary';
 import { SuspenseFallback } from '@/components/SuspenseFallback';
+import { lazyWithRetry } from '@/lib/lazy-with-retry';
+import { FairTenantProvider } from '@/contexts/FairTenantContext';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/hooks/useAuth';
 import { isTransientError } from '@/lib/errors/AppError';
-import { FAIR_DASHBOARD_OWNER_EMAIL } from '@/lib/fair-dashboard-access';
 import { Sentry } from '@/lib/sentry';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 
 const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
 
@@ -36,9 +37,11 @@ const InsuranceMonitoringDashboard = lazy(() =>
     default: m.InsuranceMonitoringDashboard,
   }))
 );
+const InsuranceExceptions = lazy(() => import('./pages/InsuranceExceptions'));
 const NotFound = lazy(() => import('./pages/NotFound'));
-const FairQuote = lazy(() => import('./pages/FairQuote'));
-const FairDashboard = lazy(() => import('./pages/FairDashboard'));
+const FairQuote = lazyWithRetry(() => import('./pages/FairQuote'));
+const FairSimpleQuote = lazyWithRetry(() => import('./pages/FairSimpleQuote'));
+const FairDashboard = lazyWithRetry(() => import('./pages/FairDashboard'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,28 +74,49 @@ const App = () => (
                 path="/feira"
                 element={
                   <ProtectedRoute>
+                    <FairTenantProvider>
+                      <Outlet />
+                    </FairTenantProvider>
+                  </ProtectedRoute>
+                }
+              >
+                <Route
+                  index
+                  element={
                     <RouteErrorBoundary
                       title="Erro na cotação feira"
                       description="Recarregue a página ou tente novamente."
                     >
                       <FairQuote />
                     </RouteErrorBoundary>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/feira/dashboard"
-                element={
-                  <ProtectedRoute allowedEmails={[FAIR_DASHBOARD_OWNER_EMAIL]}>
+                  }
+                />
+                <Route
+                  path="simples"
+                  element={
                     <RouteErrorBoundary
-                      title="Erro no dashboard feira"
+                      title="Erro na cotação rápida"
                       description="Recarregue a página ou tente novamente."
                     >
-                      <FairDashboard />
+                      <FairSimpleQuote />
                     </RouteErrorBoundary>
-                  </ProtectedRoute>
-                }
-              />
+                  }
+                />
+                <Route
+                  path="dashboard"
+                  element={
+                    <ProtectedRoute allowFairStaffTester>
+                      <RouteErrorBoundary
+                        title="Erro no dashboard feira"
+                        description="Recarregue a página ou tente novamente."
+                      >
+                        <FairDashboard />
+                      </RouteErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+              </Route>
+              <Route path="/feira/simple" element={<Navigate to="/feira/simples" replace />} />
 
               <Route
                 path="/"
@@ -290,6 +314,20 @@ const App = () => (
                       description="Ocorreu um erro ao carregar o monitoramento de seguros. Tente novamente."
                     >
                       <InsuranceMonitoringDashboard />
+                    </RouteErrorBoundary>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/seguro/liberacoes"
+                element={
+                  <ProtectedRoute requiredRoles={['admin', 'financeiro', 'operacional']}>
+                    <RouteErrorBoundary
+                      title="Erro no módulo Liberações de embarque"
+                      description="Ocorreu um erro ao carregar as liberações de embarque. Tente novamente."
+                    >
+                      <InsuranceExceptions />
                     </RouteErrorBoundary>
                   </ProtectedRoute>
                 }

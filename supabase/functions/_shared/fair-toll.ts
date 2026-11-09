@@ -1,4 +1,4 @@
-export type FairTollMethod = 'table_percent' | 'fallback';
+export type FairTollMethod = 'table_percent' | 'fallback' | 'hub_included';
 
 export type FairTollInput = {
   freightWeight: number;

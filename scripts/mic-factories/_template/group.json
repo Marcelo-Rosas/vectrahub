@@ -1,0 +1,11 @@
+{
+  "id": "__GROUP_ID__",
+  "label": "__GROUP_LABEL__",
+  "expectedProducts": 0,
+  "catalogGroup": "PIN LOADED",
+  "line": "__LINE__",
+  "listPathPattern": "/product-group/__GROUP_HASH__/__Group-Slug__--{page}.html",
+  "maxPages": 3,
+  "outputFile": "__GROUP_ID__-logistics.json",
+  "script": "scrape___GROUP_ID___logistics.py"
+}

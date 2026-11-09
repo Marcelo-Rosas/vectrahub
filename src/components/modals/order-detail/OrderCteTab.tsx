@@ -50,18 +50,38 @@ function triggerDownload(blob: Blob, fileName: string): void {
   URL.revokeObjectURL(url);
 }
 
+async function blobFromStoragePath(stored: string): Promise<Blob | null> {
+  const [bucket, ...rest] = stored.split('/');
+  const path = rest.join('/');
+  if (!bucket || !path || stored.startsWith('http')) return null;
+
+  const { data, error } = await supabase.storage.from(bucket).download(path);
+  if (!error && data) return data;
+
+  const { data: signed } = await supabase.storage.from(bucket).createSignedUrl(path, 120);
+  if (!signed?.signedUrl) return null;
+  const res = await fetch(signed.signedUrl);
+  if (!res.ok) return null;
+  return res.blob();
+}
+
 async function fetchDacteBlob(e: CteEmissionRow): Promise<Blob> {
   if (e.dacte_storage_path) {
-    const [bucket, ...rest] = e.dacte_storage_path.split('/');
-    const { data, error } = await supabase.storage.from(bucket).download(rest.join('/'));
-    if (!error && data) return data;
+    const blob = await blobFromStoragePath(e.dacte_storage_path);
+    if (blob) return blob;
   }
-  const url = focusDacteOf(e);
-  if (url) {
-    const res = await fetch(url);
-    if (res.ok) return await res.blob();
+  throw new Error(`DACTE do CT-e nº ${e.numero ?? '?'} indisponível no storage`);
+}
+
+function openFocusDacteTabs(rows: CteEmissionRow[]): number {
+  let opened = 0;
+  for (const e of rows) {
+    const url = focusDacteOf(e);
+    if (!url) continue;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    opened += 1;
   }
-  throw new Error(`DACTE do CT-e nº ${e.numero ?? '?'} indisponível`);
+  return opened;
 }
 
 function emissionToPayload(
@@ -170,7 +190,7 @@ function emissionToPayload(
 }
 
 export function OrderCteTab({ quoteId, vehiclePlate, canManage }: OrderCteTabProps) {
-  const { data: emissions = [], isLoading } = useCteEmissionsByQuote(quoteId);
+  const { data: emissions = [], isLoading, refetch } = useCteEmissionsByQuote(quoteId);
   const { data: company } = useCompanySettings();
   const [generating, setGenerating] = useState(false);
   const [downloadingDacte, setDownloadingDacte] = useState(false);
@@ -194,18 +214,51 @@ export function OrderCteTab({ quoteId, vehiclePlate, canManage }: OrderCteTabPro
     if (authorized.length === 0) return;
     setDownloadingDacte(true);
     try {
-      const blobs = await Promise.all(authorized.map(fetchDacteBlob));
-      const blob = await mergePdfBlobs(blobs);
-      const fileName = quoteCode
-        ? `DACTE-${quoteCode}.pdf`
-        : `DACTE-CTe-${authorized.map((e) => e.numero).join('-')}.pdf`;
-      triggerDownload(blob, fileName);
-      toast({
-        title:
-          authorized.length === 1
-            ? `DACTE CT-e nº ${authorized[0].numero}`
-            : `DACTE unificado — ${authorized.length} CT-es (${numsLabel})`,
-      });
+      const fresh = await refetch();
+      const rows = (fresh.data ?? authorized)
+        .filter((e) => e.status === 'authorized')
+        .slice()
+        .sort((a, b) => (a.numero ?? 0) - (b.numero ?? 0));
+
+      const blobs: Blob[] = [];
+      const missing: CteEmissionRow[] = [];
+      for (const e of rows) {
+        try {
+          blobs.push(await fetchDacteBlob(e));
+        } catch {
+          missing.push(e);
+        }
+      }
+
+      if (blobs.length > 0) {
+        const blob = await mergePdfBlobs(blobs);
+        const fileName = quoteCode
+          ? `DACTE-${quoteCode}.pdf`
+          : `DACTE-CTe-${rows.map((e) => e.numero).join('-')}.pdf`;
+        triggerDownload(blob, fileName);
+        toast({
+          title:
+            blobs.length === 1
+              ? `DACTE CT-e nº ${rows[0]?.numero}`
+              : `DACTE unificado — ${blobs.length} CT-es`,
+        });
+      }
+
+      if (missing.length > 0) {
+        const opened = openFocusDacteTabs(missing);
+        if (opened > 0) {
+          toast({
+            title: 'DACTE Focus aberto em nova aba',
+            description: 'S3 da Focus bloqueia fetch no navegador (CORS). PDF abre direto.',
+          });
+        } else if (blobs.length === 0) {
+          toast({
+            title: 'Falha ao baixar DACTE',
+            description: 'Arquivo não está no storage e URL Focus ausente.',
+            variant: 'destructive',
+          });
+        }
+      }
     } catch (e) {
       toast({
         title: 'Falha ao baixar DACTE',

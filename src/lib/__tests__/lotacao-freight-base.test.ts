@@ -1,10 +1,82 @@
 import { describe, expect, it } from 'vitest';
 import {
   calculateLotacaoProfitability,
+  classifyQuoteTripContractors,
+  collectQuoteTripContractorKeys,
   estimateInsuranceRiskCosts,
+  isCiotGenerationObligatory,
+  resolveCiotCadastroType,
   resolveLotacaoFretePeso,
   resolveLotacaoKmOverPercent,
+  resolveQuoteFreightModality,
 } from '@/lib/lotacao-freight-base';
+
+describe('cotação vs CIOT — mesmo caminhão/motorista', () => {
+  it('1 contratante na viagem → cotação lotação', () => {
+    expect(resolveQuoteFreightModality(1)).toBe('lotacao');
+    expect(resolveQuoteFreightModality(0)).toBe('lotacao');
+  });
+
+  it('2+ contratantes no mesmo caminhão → cotação fracionado', () => {
+    expect(resolveQuoteFreightModality(2)).toBe('fracionado');
+    expect(resolveQuoteFreightModality(5)).toBe('fracionado');
+  });
+
+  it('várias paradas do mesmo cliente não viram fracionado', () => {
+    const keys = collectQuoteTripContractorKeys({
+      clientId: 'cli-jp',
+      additionalRecipients: [
+        { client_id: 'cli-jp', name: 'Filial 2' },
+        { client_id: 'cli-jp', name: 'Filial 3' },
+      ],
+    });
+    expect(keys).toEqual(['id:cli-jp']);
+    expect(resolveQuoteFreightModality(keys.length)).toBe('lotacao');
+  });
+
+  it('destinatários extras sem client_id = paradas, não contratantes', () => {
+    const keys = collectQuoteTripContractorKeys({
+      clientId: 'cli-jp',
+      additionalRecipients: [{ name: 'Obra João Pessoa' }],
+    });
+    expect(keys).toEqual(['id:cli-jp']);
+  });
+
+  it('clientes distintos no mesmo caminhão → fracionado', () => {
+    const c = classifyQuoteTripContractors({
+      clientId: 'cli-a',
+      additionalRecipients: [{ client_id: 'cli-b', name: 'Outro pagador' }],
+    });
+    expect(c.distinctContractorCount).toBe(2);
+    expect(c.quoteFreightModality).toBe('fracionado');
+    expect(c.ciotCadastroType).toBe('carga_fracionada');
+    expect(c.ciotObrigatorio).toBe(true);
+  });
+
+  it('embarcadores extras distintos → fracionado', () => {
+    const c = classifyQuoteTripContractors({
+      clientId: 'cli-a',
+      additionalShippers: [{ shipper_id: 'emb-b', name: 'Outro embarcador' }],
+    });
+    expect(c.quoteFreightModality).toBe('fracionado');
+    expect(c.ciotCadastroType).toBe('carga_fracionada');
+  });
+
+  it('CIOT tipo segue nº de contratantes; obrigação NÃO segue tabela NTC', () => {
+    expect(resolveCiotCadastroType({ distinctContractorCount: 1 })).toBe('carga_lotacao');
+    expect(resolveCiotCadastroType({ distinctContractorCount: 2 })).toBe('carga_fracionada');
+    expect(resolveCiotCadastroType({ distinctContractorCount: 1, tacAgregado: true })).toBe(
+      'tac_agregado'
+    );
+    expect(isCiotGenerationObligatory()).toBe(true);
+    expect(isCiotGenerationObligatory({ quoteFreightModality: 'fracionado' })).toBe(true);
+    expect(isCiotGenerationObligatory({ quoteFreightModality: 'lotacao' })).toBe(true);
+    expect(isCiotGenerationObligatory({ international: true })).toBe(false);
+    expect(isCiotGenerationObligatory({ unplatedNewVehicle: true })).toBe(false);
+    expect(isCiotGenerationObligatory({ specialUnhomologatedComposition: true })).toBe(false);
+    expect(isCiotGenerationObligatory({ remuneratedRoadCargo: false })).toBe(false);
+  });
+});
 
 describe('resolveLotacaoKmOverPercent', () => {
   it('escolhe faixa por km', () => {

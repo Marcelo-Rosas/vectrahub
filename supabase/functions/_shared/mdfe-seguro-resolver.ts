@@ -27,6 +27,8 @@ export type MdfeSeguroRow = {
 export type ResolveMdfeSegurosInput = {
   policies: RiskPolicyRow[];
   naverFromCte: string[];
+  /** Código informado pela MS na liberação excepcional do embarque. */
+  naverLiberacao?: string;
   naverEnvOverride?: string;
   ambiente: 'homolog' | 'prod';
 };
@@ -65,7 +67,7 @@ export function resolveInsurerCnpj(pol: RiskPolicyRow): string {
 }
 
 /**
- * nAver: averbação AT&M do CT-e → metadata → proposta (modo email_ms) → secret.
+ * nAver: averbação AT&M do CT-e → código da liberação MS → metadata → proposta (modo email_ms) → secret.
  * CNSP: se RC-DC + RCTR-C ativos, MDF-e leva só RC-DC (55 inclui 54).
  */
 export function resolveMdfeSeguros(input: ResolveMdfeSegurosInput): MdfeSeguroRow[] {
@@ -102,6 +104,7 @@ export function resolveMdfeSeguros(input: ResolveMdfeSegurosInput): MdfeSeguroRo
 
     let averbacao =
       input.naverFromCte[0] ||
+      cleanAverbacao(input.naverLiberacao) ||
       fromMeta ||
       (emailMsMode && propostaFallback ? propostaFallback : '') ||
       naverEnv ||

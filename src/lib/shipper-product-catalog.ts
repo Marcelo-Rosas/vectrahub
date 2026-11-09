@@ -3,6 +3,8 @@
  * SKU + qtd → peso/volume/caixas para cotação feira (sem caminhão/tabela na UI).
  */
 
+import { bucklerCatalogGroupFallback } from './buckler-web-catalog';
+
 /** Linha bruta (JSON export Base / Caixas por Medida). */
 export type ShipperCatalogRawRow = {
   Item: string;
@@ -39,6 +41,11 @@ export type ShipperProductCatalogEntry = {
   weightKgPerUnit: number;
   volumeM3PerUnit: number;
   boxTypes: ShipperProductBoxType[];
+  /** Chip feira Rotha/outros — ex. KITS, ANILHA. */
+  catalogGroup?: string;
+  /** Grupo funcional Konnen (docs/audit) — UI beta; chips comerciais intactos. */
+  functionalGroup?: string;
+  productKind?: 'kit' | 'individual';
 };
 
 export type ShipperProductCatalog = Map<string, ShipperProductCatalogEntry>;
@@ -48,6 +55,8 @@ export type CatalogQuoteLine = {
   quantity: number;
   /** Tipos caixa incluídos (ex. ['A','C']). Vazio = kit completo. */
   selectedBoxTypes?: string[];
+  /** Peso stack no PDF Konnen (ex. 134 → 295 lb). */
+  stackWeightKg?: number;
 };
 
 export type CatalogQuoteLineResolved = CatalogQuoteLine & {
@@ -265,37 +274,269 @@ export function validateCatalogWeights(
   return out.sort((a, b) => a.sku.localeCompare(b.sku));
 }
 
-/** Linhas comerciais Buckler (prefixo SKU). */
+/** Linhas comerciais Buckler (prefixo SKU). M3 fora — descontinuada (ver buckler-catalog-sku). */
 export const BUCKLER_PRODUCT_LINES = ['FM', 'PF', 'LD', 'FW', 'M2', 'GL'] as const;
 export type BucklerProductLine = (typeof BUCKLER_PRODUCT_LINES)[number];
 
-export function skuProductLine(sku: string): string {
-  const m = String(sku)
+const BUCKLER_LINE_RE = /^(FM|PF|LD|FW|M2|GL)-/;
+
+/** Modo chips catálogo feira — Konnen/Buckler/Rotha(grupo)/demais prefixo SKU. */
+export type CatalogLineMode = 'konnen' | 'buckler' | 'rotha' | 'shipper';
+
+export function catalogLineModeForTenantSlug(slug: string | undefined): CatalogLineMode {
+  if (slug === 'buckler') return 'buckler';
+  if (slug === 'konnen') return 'konnen';
+  if (slug === 'rotha') return 'rotha';
+  return 'shipper';
+}
+
+const ROTHA_GROUP_ORDER = [
+  'DUMBBELLS',
+  'ANILHAS',
+  'BARRAS MONTADAS',
+  'BARRAS',
+  'PUXADORES',
+  'SUPORTES',
+  'FUNCIONAL',
+];
+const KONNEN_PREFERRED_LINE_ORDER = [
+  'IMPULSE',
+  'XMASTER',
+  'ROCKIT',
+  'FM',
+  'PF',
+  'LD',
+  'FW',
+  'M2',
+  'GL',
+];
+/** Chips feira Buckler — categorias do site (não prefixo SKU). */
+const BUCKLER_PREFERRED_LINE_ORDER = [
+  'PIN LOADED',
+  'CARDIO',
+  'BENCHES & RACKS',
+  'PLATE LOADED',
+  'CABLE CROSS',
+  'ACESSORIOS',
+  'OUTROS',
+];
+
+function skuProductLineBuckler(sku: string): string {
+  return skuProductLineBucklerLegacyChip(sku);
+}
+
+/** Fallback chip Buckler quando feira.products.catalog_group ausente. */
+function skuProductLineBucklerLegacyChip(sku: string, name = ''): string {
+  return bucklerCatalogGroupFallback(sku, name);
+}
+
+function skuProductLineShipper(sku: string): string {
+  const u = String(sku).trim().toUpperCase();
+  const prefix = u.match(/^([A-Z][A-Z0-9]*)-/);
+  return prefix?.[1] ?? 'OUTROS';
+}
+
+function skuProductLineKonnen(sku: string): string {
+  const u = String(sku).trim().toUpperCase();
+  if (u.startsWith('XMT')) return 'XMASTER';
+  if (u.startsWith('RKC')) return 'ROCKIT';
+  const buckler = u.match(BUCKLER_LINE_RE);
+  if (buckler) return buckler[1]!;
+  return 'IMPULSE';
+}
+
+/** IT95 packing repeats the same WEIGHT PLATE kits already as FEWS-*. */
+const WEIGHT_PLATE_ALIAS_RE = /^IT95WS-(.+)$/;
+
+const EQUIPMENT_WS_RULES = [
+  {
+    test: (sku: string) => /^FE97[A-Z0-9]+$/.test(sku) && !sku.startsWith('FEWS'),
+    wsPrefix: 'FEWS',
+  },
+  {
+    test: (sku: string) => /^IF93[A-Z0-9]+$/.test(sku) && !sku.includes('WS-'),
+    wsPrefix: 'IF93WS',
+  },
+  { test: (sku: string) => /^IT95\d/.test(sku) && !sku.includes('WS-'), wsPrefix: 'IT95WS' },
+] as const;
+
+const STACK_LBS_BY_PDF_KG = [
+  { lbs: '160', kg: 72.6 },
+  { lbs: '200', kg: 90.7 },
+  { lbs: '235', kg: 106.6 },
+  { lbs: '295', kg: 133.8 },
+] as const;
+
+const BOX_TYPE_LABELS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+/** PDF Konnen: "-134KG" no nome = stack 295 lb (~133,8 kg). */
+export function stackLbsFromPdfWeightKg(kg: number): string | null {
+  let best: { lbs: string; delta: number } | null = null;
+  for (const target of STACK_LBS_BY_PDF_KG) {
+    const delta = Math.abs(kg - target.kg);
+    if (delta <= 4 && (!best || delta < best.delta)) {
+      best = { lbs: target.lbs, delta };
+    }
+  }
+  return best?.lbs ?? null;
+}
+
+export function defaultStackLbsForEquipment(sku: string): string | null {
+  return EQUIPMENT_WS_RULES.some((r) => r.test(sku)) ? '295' : null;
+}
+
+/** Equipamento pin-load → SKU weight stack (ex. FE9701 + 295 → FEWS-295). */
+export function weightStackSkuForEquipment(sku: string, stackLbs: string): string | null {
+  const rule = EQUIPMENT_WS_RULES.find((r) => r.test(sku));
+  return rule ? `${rule.wsPrefix}-${stackLbs}` : null;
+}
+
+/** Equipamento + weight stack (runtime, ex. IF9302 + IF93WS-295). */
+export function composeEquipmentWithWeightStack(
+  catalog: ShipperProductCatalog,
+  sku: string,
+  stackLbs: string
+): ShipperProductCatalogEntry | null {
+  const equip = catalog.get(sku);
+  if (!equip) return null;
+  const wsSku = weightStackSkuForEquipment(sku, stackLbs);
+  if (!wsSku) return equip;
+  const ws = catalog.get(wsSku);
+  if (!ws) return equip;
+
+  const relabel = (boxes: ShipperProductBoxType[], offset: number): ShipperProductBoxType[] =>
+    boxes.map((b, i) => ({
+      ...b,
+      boxType: BOX_TYPE_LABELS[offset + i] ?? `Z${offset + i}`,
+    }));
+
+  const boxTypes = [...equip.boxTypes, ...relabel(ws.boxTypes, equip.boxTypes.length)];
+  return {
+    sku: equip.sku,
+    name: equip.name,
+    boxesTotal: boxTypes.length,
+    boxTypesCount: boxTypes.length,
+    weightKgPerUnit: equip.weightKgPerUnit + ws.weightKgPerUnit,
+    volumeM3PerUnit: equip.volumeM3PerUnit + ws.volumeM3PerUnit,
+    boxTypes,
+  };
+}
+
+function resolveProductForQuoteLine(
+  catalog: ShipperProductCatalog,
+  line: CatalogQuoteLine
+): ShipperProductCatalogEntry | null {
+  const sku = String(line.sku ?? '')
     .trim()
-    .toUpperCase()
-    .match(/^([A-Z0-9]+)-/);
-  return m?.[1] ?? 'OUTROS';
+    .toUpperCase();
+  const base = catalog.get(sku);
+  if (!base) return null;
+
+  const stackLbs =
+    line.stackWeightKg != null
+      ? stackLbsFromPdfWeightKg(line.stackWeightKg)
+      : defaultStackLbsForEquipment(sku);
+  if (!stackLbs) return base;
+
+  return composeEquipmentWithWeightStack(catalog, sku, stackLbs) ?? base;
+}
+
+export function catalogEntryLine(
+  entry: ShipperProductCatalogEntry,
+  mode: CatalogLineMode = 'konnen'
+): string {
+  if (mode === 'rotha') {
+    if (entry.catalogGroup) return entry.catalogGroup.toUpperCase();
+    if (entry.productKind === 'kit' || entry.sku.toUpperCase().startsWith('ROTHA-KIT-')) {
+      return 'KITS';
+    }
+    return 'OUTROS';
+  }
+  if (mode === 'buckler') {
+    if (entry.catalogGroup) return entry.catalogGroup.toUpperCase();
+    return skuProductLineBucklerLegacyChip(entry.sku, entry.name);
+  }
+  return skuProductLine(entry.sku, mode);
+}
+
+export function skuProductLine(sku: string, mode: CatalogLineMode = 'konnen'): string {
+  if (mode === 'buckler') return skuProductLineBuckler(sku);
+  if (mode === 'shipper') return skuProductLineShipper(sku);
+  return skuProductLineKonnen(sku);
+}
+
+/** Label do chip (XMT→XMASTER já vem do id da linha). */
+export function catalogLineLabel(line: string): string {
+  return line.trim().toUpperCase();
+}
+
+/**
+ * Remove IT95WS-* se FEWS-* do mesmo peso já está no catálogo (mesmo WEIGHT PLATE).
+ */
+export function pruneAliasWeightPlates(catalog: ShipperProductCatalog): ShipperProductCatalog {
+  const next: ShipperProductCatalog = new Map();
+  for (const [sku, entry] of catalog) {
+    const alias = sku.toUpperCase().match(WEIGHT_PLATE_ALIAS_RE);
+    if (alias && catalog.has(`FEWS-${alias[1]}`)) continue;
+    next.set(sku, entry);
+  }
+  return next;
 }
 
 export function catalogEntriesByLine(
   catalog: ShipperProductCatalog,
-  line: string
+  line: string,
+  mode: CatalogLineMode = 'konnen'
 ): ShipperProductCatalogEntry[] {
   const prefix = line.trim().toUpperCase();
   const hits: ShipperProductCatalogEntry[] = [];
   for (const entry of catalog.values()) {
-    if (skuProductLine(entry.sku) === prefix) hits.push(entry);
+    if (catalogEntryLine(entry, mode) === prefix) hits.push(entry);
   }
   return hits.sort((a, b) => a.sku.localeCompare(b.sku));
 }
 
-export function catalogLineCounts(catalog: ShipperProductCatalog): Record<string, number> {
+export function catalogLineCounts(
+  catalog: ShipperProductCatalog,
+  mode: CatalogLineMode = 'konnen'
+): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const entry of catalog.values()) {
-    const line = skuProductLine(entry.sku);
+    const line = catalogEntryLine(entry, mode);
     counts[line] = (counts[line] ?? 0) + 1;
   }
   return counts;
+}
+
+/** Catálogos pequenos (Rotha, PlayFit): listar tudo sem chip. */
+export const FAIR_SMALL_CATALOG_SKUS = 20;
+
+/** Todas entradas ordenadas por SKU (catálogo compacto). */
+export function catalogAllEntries(catalog: ShipperProductCatalog): ShipperProductCatalogEntry[] {
+  return [...catalog.values()].sort((a, b) => a.sku.localeCompare(b.sku));
+}
+
+/** Prefixos/clusters presentes no catálogo do tenant. */
+export function catalogProductLines(
+  catalog: ShipperProductCatalog,
+  limit = 16,
+  mode: CatalogLineMode = 'konnen'
+): string[] {
+  const counts = catalogLineCounts(catalog, mode);
+  const preferred =
+    mode === 'buckler'
+      ? BUCKLER_PREFERRED_LINE_ORDER
+      : mode === 'rotha'
+        ? ROTHA_GROUP_ORDER
+        : KONNEN_PREFERRED_LINE_ORDER;
+  const rank = (line: string) => {
+    const i = preferred.indexOf(line);
+    return i === -1 ? 100 + line.charCodeAt(0) : i;
+  };
+  const lineLimit = mode === 'rotha' ? 24 : limit;
+  return Object.keys(counts)
+    .sort((a, b) => rank(a) - rank(b) || (counts[b] ?? 0) - (counts[a] ?? 0) || a.localeCompare(b))
+    .slice(0, lineLimit);
 }
 
 /** Busca SKU / nome (feira autocomplete). */
@@ -335,7 +576,7 @@ export function aggregateCatalogQuoteLines(
     const quantity = Math.max(0, Math.floor(Number(line.quantity) || 0));
     if (!sku || quantity <= 0) continue;
 
-    const product = catalog.get(sku);
+    const product = resolveProductForQuoteLine(catalog, line);
     if (!product) {
       unknownSkus.push(sku);
       continue;

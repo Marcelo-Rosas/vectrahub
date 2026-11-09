@@ -13,10 +13,23 @@ export function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
-export function nextFairQuoteCode(existingCodes: string[], now = new Date()): string {
+export function fairQuoteCodeSlug(slug: string): string {
+  const key = slug
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+    .slice(0, 16);
+  return (key || 'feira').toUpperCase();
+}
+
+export function fairQuoteCodePrefix(slug: string, now = new Date()): string {
   const y = now.getUTCFullYear();
   const m = String(now.getUTCMonth() + 1).padStart(2, '0');
-  const prefix = `FEIRA-${y}-${m}-`;
+  return `FEIRA-${fairQuoteCodeSlug(slug)}-${y}-${m}-`;
+}
+
+export function nextFairQuoteCode(existingCodes: string[], slug: string, now = new Date()): string {
+  const prefix = fairQuoteCodePrefix(slug, now);
   let max = 0;
   for (const code of existingCodes) {
     if (!code.startsWith(prefix)) continue;

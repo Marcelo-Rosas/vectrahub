@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from 'jsr:@supabase/supabase-js@2';
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { pickReferencePolicy } from '../_shared/insurance-limit.ts';
 
 /**
  * auto-approval-worker
@@ -221,19 +222,20 @@ async function evaluateCriteria(
 
 async function calculateRiskScore(sb: SupabaseClient, cargoValue: number): Promise<number> {
   // Buscar policy ativa e regras
+  // Determinístico (RC-DC > RCTR-C): apólices Fairfax têm o mesmo created_at.
   const { data: policies } = await sb
     .from('risk_policies')
-    .select('id')
+    .select('id, policy_type')
     .eq('is_active', true)
-    .order('created_at', { ascending: false })
-    .limit(1);
+    .order('created_at', { ascending: false });
 
-  if (!policies?.[0]) return 0;
+  const policy = pickReferencePolicy(policies ?? []);
+  if (!policy) return 0;
 
   const { data: rules } = await sb
     .from('risk_policy_rules')
     .select('trigger_type, trigger_config, criticality, criticality_boost')
-    .eq('policy_id', policies[0].id)
+    .eq('policy_id', policy.id)
     .eq('is_active', true)
     .order('sort_order');
 

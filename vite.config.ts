@@ -7,6 +7,10 @@ import { componentTagger } from 'lovable-tagger';
 const isDev = process.env.NODE_ENV === 'development';
 
 export default defineConfig({
+  test: {
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['**/node_modules/**', '**/dist/**', 'gentle-shape-7467/**'],
+  },
   server: {
     host: '::',
     port: Number(process.env.PORT) || 8080,

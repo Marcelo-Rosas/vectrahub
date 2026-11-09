@@ -81,3 +81,21 @@ Exemplo calculadora oficial: `2756 × 7,4124 + 648,95 = R$ 21.077,52` (6 eixos, 
 **Mapeamento tabela (paridade calculadorafrete.antt.gov.br)**:
 - Composição veicular = Sim → **Tabela A** (não B)
 - Apenas unidade de tração → **Tabela B**
+
+---
+
+## Resolução ANTT nº 6.084/2026 — 16/07/2026 (DOU 17/07/2026)
+
+**Fonte**: [DOU - Resolução 6.084/2026](https://www.in.gov.br/web/dou/-/resolucao-antt-n-6.084-de-16-de-julho-de-2026-719732378)
+
+Substitui o Anexo II inteiro (tabelas A–D). CCD **e** CC mudam.
+
+| Eixos | CCD (Tabela A, carga geral) | CC (R$) |
+|-------|-----------------------------|---------|
+| 6     | **7,3547**                  | **671,93** |
+
+Paridade calculadora oficial: `2245 × 7,3547 + 671,93 = R$ 17.183,23`.
+
+**Dados**: `data/antt_res_6084_2026_anexo_ii.json`
+**Script**: `npx tsx scripts/apply-antt-res-6084-2026.ts --apply`
+**Fórmula** (não muda): `ceil(km) × CCD + CC` em `src/lib/antt-floor-calc.ts`. `src/lib/carreteiro-cost.ts` só lê o snapshot.

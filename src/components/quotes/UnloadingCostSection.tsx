@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { usePricingRulesByCategory, type PricingRuleConfig } from '@/hooks/usePricingRules';
+import type { PriceTableMethodology } from '@/lib/pricingMethodology';
 
 export interface UnloadingCostItem {
   id: string;
@@ -20,6 +21,8 @@ interface UnloadingCostSectionProps {
   onChange: (total: number, items: UnloadingCostItem[]) => void;
   initialItems?: UnloadingCostItem[];
   readOnly?: boolean;
+  methodology?: PriceTableMethodology;
+  vehicleTypeId?: string | null;
 }
 
 export function UnloadingCostSection({
@@ -27,8 +30,14 @@ export function UnloadingCostSection({
   onChange,
   initialItems = [],
   readOnly = false,
+  methodology,
+  vehicleTypeId,
 }: UnloadingCostSectionProps) {
-  const { data: rates, isLoading } = usePricingRulesByCategory('carga_descarga', true);
+  const { data: rates, isLoading } = usePricingRulesByCategory(
+    'carga_descarga',
+    true,
+    methodology ? { methodology, vehicleTypeId } : undefined
+  );
 
   const [quantitiesByRate, setQuantitiesByRate] = useState<Map<string, number>>(new Map());
 
@@ -125,7 +134,7 @@ export function UnloadingCostSection({
           const lineTotal = qty * unitValue;
           return (
             <div
-              key={selectionKey}
+              key={rate.id || `${selectionKey}:${rate.methodology}`}
               className="flex items-center gap-3 px-3 py-2 bg-background hover:bg-muted/30"
             >
               <span className="flex-1 text-sm truncate">{rate.label}</span>

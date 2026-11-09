@@ -7,7 +7,7 @@
  *
  * Secrets: EFRETE_HASH, EFRETE_BASE_URL (opcional)
  *
- * NÃO usar WebRouter/AILOG Bank para CIOT (pago).
+ * Contingência. Produção Hub: WebRouter AILOG Bank (`generate-ciot` + WEBROUTER_API_KEY).
  */
 
 export interface EfreteCiotFreeInput {

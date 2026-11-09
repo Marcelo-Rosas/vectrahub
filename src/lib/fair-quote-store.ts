@@ -1,4 +1,5 @@
 import type { FairClientDraft } from '@/lib/fair-client';
+import type { PlayFitQuoteBreakdown } from '@/lib/playfit-quote-build';
 
 export type FairSavedQuote = {
   id: string;
@@ -21,6 +22,16 @@ export type FairSavedQuote = {
   pedagioEstimado: number;
   totalExibido: number;
   kmBandLabel: string | null;
+  /** Gate lotação vs fracionado */
+  freightModality?: 'lotacao' | 'fracionado';
+  freightTypeLabel?: 'Dedicado' | 'Fracionado';
+  vehicleTypeCode?: string | null;
+  billableWeightKg?: number;
+  gateAlerts?: { level: string; code: string; message: string }[];
+  coverageIncomplete?: boolean;
+  gateModeSource?: 'auto' | 'manual';
+  suggestedVehicleLabel?: string | null;
+  playfitBreakdown?: PlayFitQuoteBreakdown;
 };
 
 const KEY = 'feira-saved-quotes';
