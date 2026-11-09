@@ -48,7 +48,7 @@ const localNotInCargo = local.filter((v) => !cargoRemote.includes(v));
 
 const report = {
   generated_at: new Date().toISOString(),
-  hub_ref: 'lrbtbrpoklgwaaclbufz',
+  hub_ref: 'ztyqoufakcxbhabknujd',
   cargo_ref: 'epgedaiukjippepujuzc',
   counts: {
     local_files: local.length,

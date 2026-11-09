@@ -2,7 +2,7 @@
  * Clone cadastro tables Cargo → Vectra HUB (option A).
  *
  * Source: cargo-flow-navigator .env (epgedaiukjippepujuzc)
- * Target: vectra-hub .env (lrbtbrpoklgwaaclbufz)
+ * Target: vectra-hub .env (ztyqoufakcxbhabknujd)
  *
  * Tables (FK order): vehicle_types (missing), owners, drivers, shippers, clients, vehicles
  *

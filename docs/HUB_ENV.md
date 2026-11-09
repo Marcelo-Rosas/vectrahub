@@ -9,8 +9,8 @@
 | IE | 263768406 |
 | GitHub | https://github.com/Marcelo-Rosas/vectrahub |
 | Local | `C:\Users\marce\vectra-hub` |
-| Supabase ref | `lrbtbrpoklgwaaclbufz` |
-| Supabase URL | https://lrbtbrpoklgwaaclbufz.supabase.co |
+| Supabase ref | `ztyqoufakcxbhabknujd` |
+| Supabase URL | https://ztyqoufakcxbhabknujd.supabase.co |
 | Região | sa-east-1 |
 | Cloudflare Pages | `vectrahub` (`https://vectrahub.pages.dev`) |
 | Custom domain | `https://app.hub.vectracargo.com.br` |
@@ -31,7 +31,7 @@ Prod: `https://vectrahub.pages.dev` · `https://app.hub.vectracargo.com.br`
 
 Usados só por workflows auxiliares (CI/audit/lighthouse), **não** por deploy Pages:
 
-- `VITE_SUPABASE_URL` = `https://lrbtbrpoklgwaaclbufz.supabase.co` ✅
+- `VITE_SUPABASE_URL` = `https://ztyqoufakcxbhabknujd.supabase.co` ✅
 - `VITE_SUPABASE_PUBLISHABLE_KEY` = anon Hub ✅
 - `CLOUDFLARE_ACCOUNT_ID` = `361e9e1383bfa8e95e1db54e6c2a3bba` ✅ (opcional se só wrangler local)
 - `CLOUDFLARE_API_TOKEN` / `SUPABASE_ACCESS_TOKEN` — opcional (CI migrations/edge; deploy Pages = wrangler)
@@ -54,7 +54,7 @@ Usados só por workflows auxiliares (CI/audit/lighthouse), **não** por deploy P
 ## Sync Cargo → Hub (Task 9 — política)
 
 **Repos:** `origin` = `Marcelo-Rosas/vectrahub` · `cargo-upstream` = Cargo (somente leitura/port).  
-**Nunca** apontar CI do Cargo para `lrbtbrpoklgwaaclbufz` nem copiar `VECTRA_CNPJ`/Focus token Cargo.
+**Nunca** apontar CI do Cargo para `ztyqoufakcxbhabknujd` nem copiar `VECTRA_CNPJ`/Focus token Cargo.
 
 ### Modelo
 
@@ -70,7 +70,7 @@ Usados só por workflows auxiliares (CI/audit/lighthouse), **não** por deploy P
 2. Feature que nasceu no Cargo → merge/cherry **primeiro** no Cargo; depois portar arquivos + migration para Hub.
 3. Migration nova no Hub: arquivo em `supabase/migrations/` → `npx supabase db push --linked` (projeto Hub).
 4. Antes de `db push`: rodar audit drift (abaixo). Orphans remote sem arquivo local **bloqueiam** push.
-5. Edge Functions: `npx supabase functions deploy <fn> --project-ref lrbtbrpoklgwaaclbufz`.
+5. Edge Functions: `npx supabase functions deploy <fn> --project-ref ztyqoufakcxbhabknujd`.
 6. Frontend: `npm run build` + `npx wrangler pages deploy dist --project-name=vectrahub --branch=main`.
 
 ### Audit migration drift
@@ -140,13 +140,13 @@ Presentes: `FOCUS_NFE_*`, `VECTRA_*` (CNPJ/IE/RNTRC/endereço/IBGE/CRT).
 
 ```bash
 # Conta: https://sintegrapi.com.br/app/api-keys
-npx supabase secrets set SINTEGRA_API_KEY=<key> --project-ref lrbtbrpoklgwaaclbufz
+npx supabase secrets set SINTEGRA_API_KEY=<key> --project-ref ztyqoufakcxbhabknujd
 ```
 
 Webhook Focus (já recebe POSTs 200 no Hub):
 
 ```
-POST https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/focus-webhook
+POST https://ztyqoufakcxbhabknujd.supabase.co/functions/v1/focus-webhook
 Header: X-Focus-Auth: <FOCUS_WEBHOOK_SECRET>
 ```
 
@@ -184,7 +184,7 @@ Seguradora: Fairfax Brasil `10.793.428/0001-92`. Averbação manual: e-mail MS/F
 
 ```bash
 # Opcional — override nAver real (produção / pós-averbação AT&M)
-npx supabase secrets set VECTRA_SEGURO_NAVER=<nAver> --project-ref lrbtbrpoklgwaaclbufz
+npx supabase secrets set VECTRA_SEGURO_NAVER=<nAver> --project-ref ztyqoufakcxbhabknujd
 ```
 
 ## NVIDIA NIM (local CLI)

@@ -3,7 +3,7 @@ import { getCorsHeaders } from '../../../supabase/functions/_shared/cors';
 import { CARGO_APP_ORIGIN, FAIR_APP_ORIGIN, HUB_APP_ORIGIN } from '@/lib/tenancy';
 
 function req(headers: Record<string, string>): Request {
-  return new Request('https://lrbtbrpoklgwaaclbufz.supabase.co/functions/v1/calculate-freight', {
+  return new Request('https://ztyqoufakcxbhabknujd.supabase.co/functions/v1/calculate-freight', {
     method: 'OPTIONS',
     headers,
   });

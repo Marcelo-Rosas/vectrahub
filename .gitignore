@@ -96,3 +96,6 @@ audits/
 # Artefatos de planejamento de agente
 .superpowers/
 docs/superpowers/
+
+# Projeto usa npm (package-lock.json); pnpm-lock.yaml faz o Cloudflare Pages rodar pnpm install
+pnpm-lock.yaml
