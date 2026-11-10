@@ -28,6 +28,7 @@ import {
   nfeTotalsFromXml,
 } from '../_shared/cte-nfe-split.ts';
 import { calculateRouteDistance } from '../_shared/webrouter-client.ts';
+import { cepRouteKm } from '../_shared/cep-route-km.ts';
 import { consultSefaz } from '../_shared/sefaz-consult.ts';
 import { resolveFocusNfeToken } from '../_shared/nfe-extract.ts';
 import { checkInsuranceGate, gateErrorBody } from '../_shared/insurance-exception-gate.ts';
@@ -904,6 +905,10 @@ serve(async (req) => {
       if (originCep.length === 8 && destCep.length === 8) {
         const wr = await calculateRouteDistance(originCep, destCep);
         if (wr.success && wr.km_distance > 0) return wr.km_distance;
+        // Sem WebRouter (chave ausente ou falha): km rodoviário via BrasilAPI + ORS.
+        const fallback = await cepRouteKm(originCep, destCep);
+        if (fallback.success) return fallback.km_distance;
+        console.warn('[emit-cte] km fallback falhou', originCep, destCep, fallback.error);
       }
       return 0;
     }
