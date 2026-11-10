@@ -157,6 +157,78 @@ describe('closeCiotsForMdfe', () => {
   });
 });
 
+/** Viagem multi-OS: mesmo CIOT (77) em O1 (MDF-e M1) e O2 (MDF-e M2). */
+function tripDb(m2Status: string) {
+  return fakeDb({
+    mdfe_cte_link: [
+      { mdfe_id: 'M1', cte_emission_id: 'C1' },
+      { mdfe_id: 'M2', cte_emission_id: 'C2' },
+    ],
+    cte_emissions: [
+      { id: 'C1', order_id: 'O1' },
+      { id: 'C2', order_id: 'O2' },
+    ],
+    mdfe_emissions: [
+      { id: 'M1', numero: 24, status: 'encerrado' },
+      { id: 'M2', numero: 23, status: m2Status },
+    ],
+    ciot_operations: [
+      {
+        id: 'A',
+        service_order_id: 'O1',
+        status: 'generated',
+        provider: 'ciotonline',
+        provider_ciot_id: 77,
+        payload: { peso_carga: 1374 },
+      },
+      {
+        id: 'B',
+        service_order_id: 'O2',
+        status: 'generated',
+        provider: 'ciotonline',
+        provider_ciot_id: 77,
+        payload: { peso_carga: 1380 },
+      },
+    ],
+    orders: [
+      { id: 'O1', ciot_status: 'generated' },
+      { id: 'O2', ciot_status: 'generated' },
+    ],
+  });
+}
+
+describe('closeCiotsForMdfe — CIOT compartilhado por vários MDF-e', () => {
+  it('outro MDF-e da viagem ainda autorizado → adia, não encerra na ANTT', async () => {
+    const d = tripDb('authorized');
+    const client = { encerrar: vi.fn() };
+    const out = await closeCiotsForMdfe({ supabase: d.supabase, client }, 'M1');
+    expect(client.encerrar).not.toHaveBeenCalled();
+    expect(out).toEqual([expect.objectContaining({ operation_id: 'A', ok: true, deferred: true })]);
+    expect(out[0].error).toContain('23');
+    expect(d.tables.ciot_operations.every((r) => r.status === 'generated')).toBe(true);
+  });
+
+  it('último MDF-e encerrado → encerra 1x com peso total e fecha todas as OS', async () => {
+    const d = tripDb('encerrado');
+    const client = { encerrar: vi.fn(async () => OK as never) };
+    const out = await closeCiotsForMdfe({ supabase: d.supabase, client }, 'M2');
+    expect(client.encerrar).toHaveBeenCalledTimes(1);
+    expect(client.encerrar).toHaveBeenCalledWith(77, { peso_carga_total: 2754 });
+    expect(out.every((o) => o.ok)).toBe(true);
+    expect(d.tables.ciot_operations.map((r) => r.status)).toEqual(['closed', 'closed']);
+    expect(d.tables.orders.map((r) => r.ciot_status)).toEqual(['closed', 'closed']);
+  });
+
+  it('retry manual fecha todas as linhas do mesmo CIOT', async () => {
+    const d = tripDb('encerrado');
+    const client = { encerrar: vi.fn(async () => OK as never) };
+    const r = await closeCiotOperation({ supabase: d.supabase, client }, 'A');
+    expect(r.ok).toBe(true);
+    expect(client.encerrar).toHaveBeenCalledTimes(1);
+    expect(d.tables.ciot_operations.map((x) => x.status)).toEqual(['closed', 'closed']);
+  });
+});
+
 describe('closeCiotOperation', () => {
   it('recusa operação que não está generated', async () => {
     const d = db();
