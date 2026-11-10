@@ -309,7 +309,7 @@ Deno.serve(async (req) => {
   try {
     let payload = rawPayload;
     let ailogLoad: HubCiotLoad | null = null;
-    const provider = (Deno.env.get('CIOT_PROVIDER') || 'ciotonline').toLowerCase();
+    const provider = (Deno.env.get('CIOT_PROVIDER') || 'ciotonline').trim().toLowerCase();
     if (provider === 'ciotonline' && !orderId) {
       return jsonResponse(
         { success: false, status: 'error', message: 'CIOT Online exige orderId (OS).', provider },
