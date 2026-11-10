@@ -189,7 +189,26 @@ serve(async (req) => {
         response_received: resp.body,
       })
       .eq('id', emissionId);
-    return json({ ok: true, focus_status: resp.status, focus_body: resp.body }, 200, cors);
+
+    // MDF-e encerrado = viagem terminou → encerra CIOTs (CIOT Online) das OS do manifesto.
+    // Falha aqui nunca desfaz o encerramento do MDF-e (já aceito pela SEFAZ).
+    let ciotClose: unknown[] = [];
+    if (Deno.env.get('CIOTONLINE_TOKEN')) {
+      try {
+        ciotClose = await closeCiotsForMdfe(
+          { supabase, client: createCiotOnlineClient() },
+          emissionId
+        );
+      } catch (e) {
+        console.error('[manage-mdfe] encerrar CIOT falhou (ignorado)', String(e));
+        ciotClose = [{ ok: false, error: String(e) }];
+      }
+    }
+    return json(
+      { ok: true, focus_status: resp.status, focus_body: resp.body, ciot_close: ciotClose },
+      200,
+      cors
+    );
   }
 
   // ============================================================
