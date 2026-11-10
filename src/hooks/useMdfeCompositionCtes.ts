@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { CteEmissionRow } from '@/hooks/useCteEmission';
+import { filterCtesSameUfFim } from '@/lib/mdfe-composition';
 
 export type MdfeCompositionCte = CteEmissionRow & {
   os_number?: string | null;
@@ -129,7 +130,10 @@ export function useMdfeCompositionCtes(opts: {
         .order('numero', { ascending: true });
       if (error) throw error;
 
-      const withOs: MdfeCompositionCte[] = (ctes ?? []).map((c) => {
+      const withOs: MdfeCompositionCte[] = filterCtesSameUfFim(
+        (ctes ?? []) as CteEmissionRow[],
+        quoteId
+      ).map((c) => {
         const row = c as CteEmissionRow;
         const os = (row.order_id && orderOs.get(row.order_id)) || null;
         return { ...row, os_number: os };
