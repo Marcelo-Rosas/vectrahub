@@ -1,5 +1,6 @@
 -- Reconstrução dos dados feira.* no Hub novo (projeto antigo lrbtb excluído; histórico era teste).
 -- Gerado a partir do DML das migrations feira, em ordem. Idempotente (ON CONFLICT). Não toca auth.users.
+-- Ignora DML dentro de corpo de função ($$ ... $$).
 BEGIN;
 
 -- >>> 20260818140000_feira_schema.sql
@@ -52,10 +53,6 @@ ON CONFLICT (slug) DO UPDATE SET
   email_domains = EXCLUDED.email_domains,
   event_flag = EXCLUDED.event_flag,
   toll_fallback_percent = EXCLUDED.toll_fallback_percent;
-
-  INSERT INTO feira.user_company (user_id, company_id)
-  VALUES (NEW.id, v_company_id)
-  ON CONFLICT (user_id) DO UPDATE SET company_id = EXCLUDED.company_id;
 
 INSERT INTO feira.user_company (user_id, company_id)
 SELECT u.id, feira.resolve_company_id_for_email(u.email)
