@@ -22,8 +22,10 @@ import { createCiotOnlineClient, type CiotOnlineClient } from '../_shared/cioton
 import {
   buildCiotOnlineEmit,
   findAdoptableCiot,
+  isOrderCiotActive,
   listItemsFromResponse,
   mergeCiotMeta,
+  shouldTryAdoption,
 } from '../_shared/ciotonline-hub.ts';
 
 const CIOT_BRIDGE_URL = Deno.env.get('CIOT_BRIDGE_URL') || 'http://localhost:8080';
@@ -62,80 +64,72 @@ const brl = (v: number) =>
   Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /**
- * Emissão via CIOT Online (provider padrão). Spec §4.2.
- * Bloqueia duplicidade (CIOT generated na OS), recalcula piso pela API, e em timeout/503
- * adota CIOT já criado na ANTT (codigo_cliente = OS) em vez de emitir de novo.
+ * Emissão via CIOT Online (provider padrão). Spec §4.2 + correções da revisão final:
+ * - guarda pelo estado da OS (orders.ciot_number/ciot_status), não por linhas legadas;
+ * - escritas com service role após validar usuário + perfil (admin/operacional/financeiro);
+ * - linha 'pending' gravada ANTES do POST (índice único parcial impede emissão concorrente);
+ * - antes de emitir e após falha de comunicação, adota CIOT já criado na ANTT (codigo_cliente = OS);
+ * - falha não altera a OS (CIOT anterior cancelado continua cancelado).
  */
+const PENDING_STALE_MS = 10 * 60 * 1000;
+
 async function emitViaCiotOnline(opts: {
   // deno-lint-ignore no-explicit-any
-  supabase: any;
-  authHeader: string;
-  load: HubCiotLoad | null;
-  serviceOrderId?: string | null;
+  userClient: any;
+  load: HubCiotLoad;
+  serviceOrderId: string;
   quoteId?: string | null;
-  ambiente: string;
   allowBelowFloor: boolean;
   corsHeaders: Record<string, string>;
 }): Promise<Response> {
-  const { supabase, load, corsHeaders } = opts;
+  const { userClient, load, corsHeaders } = opts;
   const provider = 'ciotonline';
   const orderId = opts.serviceOrderId;
-  if (!load || !orderId) {
-    return jsonResponse(
-      { success: false, status: 'error', message: 'CIOT Online exige orderId (OS).', provider },
-      400,
-      corsHeaders
-    );
-  }
+  const fail = (status: number, body: Record<string, unknown>) =>
+    jsonResponse({ success: false, status: 'error', provider, ...body }, status, corsHeaders);
 
-  const { data: existing } = await supabase
-    .from('ciot_operations')
-    .select('id, ciot_number')
-    .eq('service_order_id', orderId)
-    .eq('status', 'generated')
-    .limit(1)
+  const { data: userData, error: userErr } = await userClient.auth.getUser();
+  if (userErr || !userData?.user) return fail(401, { message: 'Sessão inválida.' });
+  const userId = userData.user.id as string;
+  const { data: allowed } = await userClient.rpc('has_profile', {
+    allowed: ['admin', 'operacional', 'financeiro'],
+  });
+  if (allowed !== true) {
+    return fail(403, {
+      errorCode: 'sem_permissao',
+      message: 'Perfil sem permissão para emitir CIOT.',
+    });
+  }
+  const admin = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+
+  const { data: ord } = await admin
+    .from('orders')
+    .select('ciot_number, ciot_status, pricing_breakdown')
+    .eq('id', orderId)
     .maybeSingle();
-  if (existing) {
-    return jsonResponse(
-      {
-        success: false,
-        status: 'error',
-        errorCode: 'ciot_ja_emitido',
-        message: `OS já tem CIOT ${existing.ciot_number ?? ''} emitido — cancele antes de emitir outro.`,
-        operationId: existing.id,
-        provider,
-      },
-      409,
-      corsHeaders
-    );
+  if (ord && isOrderCiotActive(ord)) {
+    return fail(409, {
+      errorCode: 'ciot_ja_emitido',
+      message: `OS já tem CIOT ${ord.ciot_number} vigente — cancele antes de emitir outro.`,
+    });
   }
 
   let client: CiotOnlineClient;
   try {
     client = createCiotOnlineClient();
   } catch {
-    return jsonResponse(
-      {
-        success: false,
-        status: 'error',
-        errorCode: 'token_ausente',
-        message: 'CIOTONLINE_TOKEN ausente — configure o token do CIOT Online.',
-        provider,
-      },
-      503,
-      corsHeaders
-    );
+    return fail(503, {
+      errorCode: 'token_ausente',
+      message: 'CIOTONLINE_TOKEN ausente — configure o token do CIOT Online.',
+    });
   }
 
   const lookups = await resolveLookups(load);
   const built = buildCiotOnlineEmit(load, lookups);
-  if (!built.ok) {
-    return jsonResponse(
-      { success: false, status: 'validation_failed', message: built.error, provider },
-      422,
-      corsHeaders
-    );
-  }
+  if (!built.ok) return fail(422, { status: 'validation_failed', message: built.error });
 
   let anttPisoMinimo: number | null = null;
   let belowFloor = false;
@@ -149,76 +143,95 @@ async function emitViaCiotOnline(opts: {
     belowFloor = built.payload.valor_frete < anttPisoMinimo;
   }
   if (belowFloor && !opts.allowBelowFloor) {
-    return jsonResponse(
-      {
-        success: false,
-        status: 'validation_failed',
-        errorCode: 'abaixo_piso',
-        message: `Frete R$ ${brl(built.payload.valor_frete)} abaixo do piso ANTT R$ ${brl(
-          anttPisoMinimo ?? 0
-        )} — confirme para emitir mesmo assim.`,
-        anttPisoMinimo,
-        belowFloor,
-        provider,
-      },
-      422,
-      corsHeaders
-    );
+    return fail(422, {
+      status: 'validation_failed',
+      errorCode: 'abaixo_piso',
+      message: `Frete R$ ${brl(built.payload.valor_frete)} abaixo do piso ANTT R$ ${brl(
+        anttPisoMinimo ?? 0
+      )} — confirme para emitir mesmo assim.`,
+      anttPisoMinimo,
+      belowFloor,
+    });
   }
 
-  const r = await client.emitir(built.payload as unknown as Record<string, unknown>);
-  let adopted: { id: number; numero_ciot: string; protocolo: string } | null = null;
-  if (!r.ok && (r.error.code === 'network_error' || r.error.code === 'antt_sem_protocolo')) {
+  const findAdopted = async () => {
     const list = await client.listar({ status: 'emitido', limit: 100 });
-    if (list.ok) {
-      adopted = findAdoptableCiot(
-        listItemsFromResponse(list.data) as unknown as Parameters<typeof findAdoptableCiot>[0],
-        load.osNumber
-      );
-    }
-  }
+    if (!list.ok) return null;
+    return findAdoptableCiot(
+      listItemsFromResponse(list.data) as unknown as Parameters<typeof findAdoptableCiot>[0],
+      load.osNumber
+    );
+  };
 
-  const success = r.ok || adopted != null;
-  const emitted = r.ok ? r.data : adopted;
-  const errorCode = r.ok ? undefined : r.error.code;
-  const anttStatus = r.ok ? undefined : r.error.anttStatus;
-  const message = success
-    ? adopted
-      ? 'CIOT recuperado do CIOT Online após falha de comunicação.'
-      : 'CIOT emitido.'
-    : r.ok
-      ? ''
-      : r.error.message;
+  // Pending travado (crash) há mais de 10 min → error, para não bloquear a OS para sempre.
+  await admin
+    .from('ciot_operations')
+    .update({ status: 'error', error_message: 'Emissão interrompida (pending expirado).' })
+    .eq('service_order_id', orderId)
+    .eq('provider', provider)
+    .eq('status', 'pending')
+    .lt('created_at', new Date(Date.now() - PENDING_STALE_MS).toISOString());
 
-  const { data: opRow, error: insertErr } = await supabase
+  const { data: opRow, error: insErr } = await admin
     .from('ciot_operations')
     .insert({
       service_order_id: orderId,
       quote_id: opts.quoteId ?? null,
       provider,
+      status: 'pending',
+      ambiente: 'producao',
+      payload: built.payload,
+      antt_piso_minimo: anttPisoMinimo,
+      below_floor: belowFloor,
+      created_by: userId,
+    })
+    .select('id')
+    .single();
+  if (insErr || !opRow) {
+    if (insErr?.code === '23505') {
+      return fail(409, {
+        errorCode: 'emissao_em_andamento',
+        message: 'Já há uma emissão de CIOT em andamento para esta OS — aguarde e consulte.',
+      });
+    }
+    return fail(500, { message: `Falha ao registrar operação CIOT: ${insErr?.message ?? ''}` });
+  }
+
+  // Retentativa após falha anterior de comunicação: CIOT pode já existir na ANTT (GET é grátis).
+  let adopted = await findAdopted();
+  // deno-lint-ignore no-explicit-any
+  let r: any = null;
+  if (!adopted) {
+    r = await client.emitir(built.payload as unknown as Record<string, unknown>);
+    if (!r.ok && shouldTryAdoption(r.error)) adopted = await findAdopted();
+  }
+
+  const success = Boolean(r?.ok) || adopted != null;
+  const emitted = r?.ok ? r.data : adopted;
+  const errorCode = success ? undefined : r?.error?.code;
+  const anttStatus = success ? undefined : r?.error?.anttStatus;
+  const message = success
+    ? adopted
+      ? 'CIOT já existente no CIOT Online vinculado à OS (sem nova emissão).'
+      : 'CIOT emitido.'
+    : String(r?.error?.message ?? 'Falha na emissão');
+
+  const now = new Date().toISOString();
+  await admin
+    .from('ciot_operations')
+    .update({
       provider_ciot_id: emitted?.id ?? null,
       ciot_number: emitted?.numero_ciot ?? null,
       protocolo: emitted?.protocolo ?? null,
       status: success ? 'generated' : 'error',
-      ambiente: opts.ambiente,
-      payload: built.payload,
-      raw_response: r.ok ? r.data : { error: r.error, raw: r.raw, adopted },
+      raw_response: r?.ok ? r.data : { error: r?.error ?? null, raw: r?.raw ?? null, adopted },
       error_message: success ? null : message,
-      antt_piso_minimo: anttPisoMinimo,
-      below_floor: belowFloor,
-      created_by: getUserIdFromJwt(opts.authHeader),
+      updated_at: now,
     })
-    .select('id')
-    .single();
-  if (insertErr) console.error('[generate-ciot] ciot_operations insert error:', insertErr.message);
+    .eq('id', opRow.id);
 
   if (success && emitted) {
-    const { data: ord } = await supabase
-      .from('orders')
-      .select('pricing_breakdown')
-      .eq('id', orderId)
-      .maybeSingle();
-    await supabase
+    await admin
       .from('orders')
       .update({
         ciot_number: emitted.numero_ciot,
@@ -227,15 +240,10 @@ async function emitViaCiotOnline(opts: {
           number: emitted.numero_ciot,
           protocolo: emitted.protocolo,
           provider,
-          emitted_at: new Date().toISOString(),
+          emitted_at: now,
         }),
-        updated_at: new Date().toISOString(),
+        updated_at: now,
       })
-      .eq('id', orderId);
-  } else {
-    await supabase
-      .from('orders')
-      .update({ ciot_status: 'error', updated_at: new Date().toISOString() })
       .eq('id', orderId);
   }
 
@@ -248,12 +256,13 @@ async function emitViaCiotOnline(opts: {
       message,
       errorCode,
       anttStatus,
-      operationId: opRow?.id,
+      operationId: opRow.id,
       anttPisoMinimo,
       belowFloor,
       provider,
     },
-    success ? 200 : 502,
+    // 200 também na recusa: corpo carrega errorCode/anttStatus para a UI traduzir.
+    200,
     corsHeaders
   );
 }
@@ -300,6 +309,14 @@ Deno.serve(async (req) => {
   try {
     let payload = rawPayload;
     let ailogLoad: HubCiotLoad | null = null;
+    const provider = (Deno.env.get('CIOT_PROVIDER') || 'ciotonline').toLowerCase();
+    if (provider === 'ciotonline' && !orderId) {
+      return jsonResponse(
+        { success: false, status: 'error', message: 'CIOT Online exige orderId (OS).', provider },
+        400,
+        corsHeaders
+      );
+    }
 
     if (orderId) {
       const loaded = await loadHubCiotForOrder(supabase, orderId);
@@ -307,6 +324,18 @@ Deno.serve(async (req) => {
         return jsonResponse({ success: false, error: loaded.error }, loaded.status, corsHeaders);
       }
       ailogLoad = loaded.load;
+      // CIOT Online não usa o schema/payload AILOG (ciotOperacaoPayloadSchema): desvia aqui para
+      // que erros de cadastro cheguem com a mensagem PT-BR do mapper.
+      if (provider === 'ciotonline') {
+        return await emitViaCiotOnline({
+          userClient: supabase,
+          load: loaded.load,
+          serviceOrderId: loaded.osId,
+          quoteId: loaded.osQuoteId || quoteId,
+          allowBelowFloor: Boolean(allowBelowFloor),
+          corsHeaders,
+        });
+      }
       const plate = loaded.load.plate;
       const contratadoDoc = loaded.contratadoDoc;
       const contratanteDoc = loaded.contratanteDoc;
@@ -349,20 +378,6 @@ Deno.serve(async (req) => {
     }
 
     const validatedPayload = payloadParse.data;
-
-    const provider = (Deno.env.get('CIOT_PROVIDER') || 'ciotonline').toLowerCase();
-    if (provider === 'ciotonline') {
-      return await emitViaCiotOnline({
-        supabase,
-        authHeader,
-        load: ailogLoad,
-        serviceOrderId: validatedPayload.serviceOrderId,
-        quoteId: validatedPayload.quoteId,
-        ambiente: validatedPayload.ambiente,
-        allowBelowFloor: Boolean(allowBelowFloor),
-        corsHeaders,
-      });
-    }
 
     let anttPisoMinimo: number | null = null;
     let belowFloor = false;

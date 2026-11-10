@@ -59,3 +59,9 @@ ALTER TABLE public.orders DROP CONSTRAINT IF EXISTS orders_ciot_status_check;
 ALTER TABLE public.orders
   ADD CONSTRAINT orders_ciot_status_check
   CHECK (ciot_status = ANY (ARRAY['pending', 'generated', 'cancelled', 'error', 'closed']));
+
+-- No máximo 1 CIOT Online pendente/vigente por OS (trava emissão concorrente / duplo débito).
+-- Restrito ao provider ciotonline: linhas legadas (manual/backfill/ailog) não entram.
+CREATE UNIQUE INDEX IF NOT EXISTS ciot_operations_one_active_ciotonline_per_order
+  ON public.ciot_operations (service_order_id)
+  WHERE provider = 'ciotonline' AND status IN ('pending', 'generated');

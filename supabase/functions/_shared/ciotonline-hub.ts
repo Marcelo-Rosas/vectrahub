@@ -247,3 +247,23 @@ export function mergeCiotMeta(
   pb.meta = meta;
   return pb;
 }
+
+/**
+ * Guarda de emissão pelo estado da OS (fonte lida pelo MDF-e): há CIOT vigente se existe número
+ * e o status não é cancelled/error. Linhas legadas em ciot_operations não bloqueiam.
+ */
+export function isOrderCiotActive(order: {
+  ciot_number?: string | null;
+  ciot_status?: string | null;
+}): boolean {
+  if (!String(order.ciot_number ?? '').trim()) return false;
+  return !['cancelled', 'error'].includes(String(order.ciot_status ?? ''));
+}
+
+/** Falha de comunicação (ANTT pode ter criado o CIOT) → procurar na listagem antes de reemitir. */
+export function shouldTryAdoption(error: { code: string; httpStatus: number }): boolean {
+  if (['network_error', 'antt_sem_protocolo', 'resposta_invalida'].includes(error.code)) {
+    return true;
+  }
+  return error.httpStatus >= 500 || error.httpStatus === 0;
+}

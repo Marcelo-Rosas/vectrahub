@@ -39,6 +39,17 @@ Deno.serve(async (req) => {
   });
   const { data: userData, error: userErr } = await userClient.auth.getUser();
   if (userErr || !userData?.user) return json({ error: 'unauthorized' }, 401, cors);
+  // Ações fiscais (cancelar/encerrar na ANTT) e consumo de cota: mesmos perfis do orders_update.
+  const { data: allowed } = await userClient.rpc('has_profile', {
+    allowed: ['admin', 'operacional', 'financeiro'],
+  });
+  if (allowed !== true) {
+    return json(
+      { error: 'sem_permissao', message: 'Perfil sem permissão para operar CIOT.' },
+      403,
+      cors
+    );
+  }
   const supabase = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
   let body: Record<string, unknown>;

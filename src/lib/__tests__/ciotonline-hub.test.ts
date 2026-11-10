@@ -3,6 +3,8 @@ import {
   buildCiotOnlineEmit,
   findAdoptableCiot,
   mergeCiotMeta,
+  isOrderCiotActive,
+  shouldTryAdoption,
   listItemsFromResponse,
   tipoViagemFromProprietario,
 } from '../../../supabase/functions/_shared/ciotonline-hub';
@@ -231,5 +233,38 @@ describe('mergeCiotMeta', () => {
 
   it('pricing_breakdown nulo vira objeto', () => {
     expect(mergeCiotMeta(null, { number: '9' })).toEqual({ meta: { ciot: { number: '9' } } });
+  });
+});
+
+describe('isOrderCiotActive (guarda de emissão pela OS)', () => {
+  it('número com status generated/pending/null → ativo', () => {
+    expect(isOrderCiotActive({ ciot_number: '123', ciot_status: 'generated' })).toBe(true);
+    expect(isOrderCiotActive({ ciot_number: '123', ciot_status: 'pending' })).toBe(true);
+    expect(isOrderCiotActive({ ciot_number: '123', ciot_status: null })).toBe(true);
+  });
+
+  it('cancelado/erro ou sem número → não bloqueia (legado marcado como cancelado)', () => {
+    expect(isOrderCiotActive({ ciot_number: '123', ciot_status: 'cancelled' })).toBe(false);
+    expect(isOrderCiotActive({ ciot_number: '123', ciot_status: 'error' })).toBe(false);
+    expect(isOrderCiotActive({ ciot_number: null, ciot_status: 'generated' })).toBe(false);
+  });
+
+  it('encerrado → bloqueia (viagem concluída)', () => {
+    expect(isOrderCiotActive({ ciot_number: '123', ciot_status: 'closed' })).toBe(true);
+  });
+});
+
+describe('shouldTryAdoption (falha de comunicação → procurar CIOT já criado)', () => {
+  const e = (code: string, httpStatus: number) => ({ code, message: '', httpStatus });
+  it('comunicação/5xx → true', () => {
+    expect(shouldTryAdoption(e('network_error', 0))).toBe(true);
+    expect(shouldTryAdoption(e('antt_sem_protocolo', 503))).toBe(true);
+    expect(shouldTryAdoption(e('resposta_invalida', 502))).toBe(true);
+    expect(shouldTryAdoption(e('http_504', 504))).toBe(true);
+  });
+  it('recusa de dados → false', () => {
+    expect(shouldTryAdoption(e('emissao_falhou', 422))).toBe(false);
+    expect(shouldTryAdoption(e('campo_obrigatorio', 400))).toBe(false);
+    expect(shouldTryAdoption(e('licenca_vencida', 402))).toBe(false);
   });
 });

@@ -408,6 +408,14 @@ export function CiotPanel({
         protocoloCancelamento: protocolo,
         dataCancelamento: new Date().toISOString(),
       });
+      // Linha original deixa de constar como 'generated' (RLS: só as do próprio usuário).
+      const { error: upErr } = await supabase
+        .from('ciot_operations')
+        .update({ status: 'cancelled' })
+        .eq('service_order_id', order.id)
+        .eq('ciot_number', ciotNumber)
+        .eq('status', 'generated');
+      if (upErr) console.warn('[CiotPanel] atualizar linha original falhou:', upErr.message);
       toast.success(
         protocolo
           ? `CIOT ${ciotNumber} cancelado (prot. ${protocolo})`
