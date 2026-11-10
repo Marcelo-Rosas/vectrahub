@@ -127,7 +127,8 @@ Deno.serve(async (req) => {
       const plateRaw = String(os.vehicle_plate || '');
       const plate = formatPlateForCiot(plateRaw);
       const vehSelect = `id, plate, plate_2, driver_id, owner_id, cpf_cnpj_proprietario, nome_proprietario, rntrc_proprietario,
-             owner:owners(id, cpf_cnpj, name, rntrc, bank_code, bank_agency, bank_account)`;
+             owner:owners(id, cpf_cnpj, name, rntrc, bank_code, bank_agency, bank_account, pix_key, tipo_proprietario),
+             vehicle_type:vehicle_types(axes_count)`;
       let veh: Record<string, unknown> | null = null;
       if (plate) {
         const { data: vehRows } = await supabase
@@ -139,6 +140,12 @@ Deno.serve(async (req) => {
             (row) => formatPlateForCiot(String(row.plate || '')) === plate
           ) ?? null;
       }
+
+      const vehType = (
+        veh?.vehicle_type && !Array.isArray(veh.vehicle_type)
+          ? veh.vehicle_type
+          : (veh?.vehicle_type as unknown[] | undefined)?.[0]
+      ) as { axes_count?: number | null } | undefined;
 
       let driver: Record<string, unknown> | null = null;
       const driverId = String(os.driver_id || veh?.driver_id || '');
@@ -158,7 +165,9 @@ Deno.serve(async (req) => {
       if ((!owner || !digits(owner.rntrc)) && driverCpf.length === 11) {
         const { data: ownerByCpf } = await supabase
           .from('owners')
-          .select('id, cpf_cnpj, name, rntrc, bank_code, bank_agency, bank_account')
+          .select(
+            'id, cpf_cnpj, name, rntrc, bank_code, bank_agency, bank_account, pix_key, tipo_proprietario'
+          )
           .eq('cpf_cnpj', driverCpf)
           .maybeSingle();
         if (ownerByCpf) owner = ownerByCpf as Record<string, unknown>;
@@ -258,6 +267,9 @@ Deno.serve(async (req) => {
         bancoAgencia: owner?.bank_agency ? String(owner.bank_agency) : null,
         bancoConta: owner?.bank_account ? String(owner.bank_account) : null,
         bancoCpfTitular: contratadoDoc.length === 11 ? contratadoDoc : null,
+        pixKey: owner?.pix_key ? String(owner.pix_key) : null,
+        tipoProprietario: owner?.tipo_proprietario != null ? Number(owner.tipo_proprietario) : null,
+        eixos: Number(vehType?.axes_count) || null,
       };
 
       payload = {

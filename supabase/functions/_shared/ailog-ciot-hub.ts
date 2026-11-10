@@ -78,6 +78,12 @@ export type HubCiotLoad = {
   bancoAgencia?: string | null;
   bancoConta?: string | null;
   bancoCpfTitular?: string | null;
+  /** owners.pix_key — pagamento ao TAC por PIX (CIOT Online). */
+  pixKey?: string | null;
+  /** owners.tipo_proprietario (0 = TAC agregado, 1 = TAC independente, 2 = outros). */
+  tipoProprietario?: number | null;
+  /** Eixos do veículo (tipo do veículo); null = não cadastrado. */
+  eixos?: number | null;
 };
 
 export type HubCiotBuildResult =
@@ -144,6 +150,29 @@ function formatCiotDateKey(d: Date): string {
   return `${yyyy}${mm}${dd}`;
 }
 
+/**
+ * Janela da viagem para CIOT. CIOT não aceita início no passado (AILOG prod: DADOS_INVALIDOS
+ * com coleta 30/09 emitida 02/10). Coleta já passada → início = hoje; fim mantém a duração
+ * prevista (padrão 7 dias, mínimo 1 dia).
+ */
+export function ciotTripWindow(
+  load: Pick<HubCiotLoad, 'pickupDate' | 'eta'>,
+  now: Date = new Date()
+): { start: Date; end: Date } {
+  const DAY = 24 * 60 * 60 * 1000;
+  const plannedStart = load.pickupDate ? new Date(load.pickupDate) : now;
+  const plannedEnd = load.eta ? new Date(load.eta) : null;
+  const durationMs =
+    plannedEnd && !Number.isNaN(plannedEnd.getTime()) && !Number.isNaN(plannedStart.getTime())
+      ? Math.max(plannedEnd.getTime() - plannedStart.getTime(), DAY)
+      : 7 * DAY;
+  const start =
+    Number.isNaN(plannedStart.getTime()) || formatCiotDateKey(plannedStart) < formatCiotDateKey(now)
+      ? now
+      : plannedStart;
+  return { start, end: new Date(start.getTime() + durationMs) };
+}
+
 export function buildHubAilogEmit(
   load: HubCiotLoad,
   lookups: {
@@ -200,20 +229,7 @@ export function buildHubAilogEmit(
     return { ok: false, error: 'Destinatário sem CPF/CNPJ (cliente da OS).' };
   }
 
-  // CIOT não aceita início no passado (AILOG prod: DADOS_INVALIDOS com coleta 30/09 emitida 02/10).
-  // Coleta já passada → início = hoje; fim mantém a duração prevista (padrão 7 dias).
-  const DAY = 24 * 60 * 60 * 1000;
-  const plannedStart = load.pickupDate ? new Date(load.pickupDate) : now;
-  const plannedEnd = load.eta ? new Date(load.eta) : null;
-  const durationMs =
-    plannedEnd && !Number.isNaN(plannedEnd.getTime()) && !Number.isNaN(plannedStart.getTime())
-      ? Math.max(plannedEnd.getTime() - plannedStart.getTime(), DAY)
-      : 7 * DAY;
-  const start =
-    Number.isNaN(plannedStart.getTime()) || formatCiotDateKey(plannedStart) < formatCiotDateKey(now)
-      ? now
-      : plannedStart;
-  const end = new Date(start.getTime() + durationMs);
+  const { start, end } = ciotTripWindow(load, now);
   const hasBank = Boolean(
     digits(load.bancoCodigo) && digits(load.bancoAgencia) && digits(load.bancoConta)
   );
