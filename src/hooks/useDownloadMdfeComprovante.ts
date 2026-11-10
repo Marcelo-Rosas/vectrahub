@@ -6,6 +6,7 @@ import {
   type MdfeComprovantePayload,
 } from '@/lib/generateMdfeComprovantePdf';
 import type { MdfeEmissionRow } from '@/hooks/useMdfeEmission';
+import { extractMdfeComprovanteExtras, resolveAutorizadoEm } from '@/lib/mdfe-comprovante-extras';
 
 function digits(s: string | null | undefined): string {
   return String(s ?? '').replace(/\D/g, '');
@@ -159,9 +160,11 @@ export async function buildMdfeComprovantePayload(
     status: emission.status,
     uf_inicio: emission.uf_inicio,
     uf_fim: emission.uf_fim,
-    data_autorizacao: emission.data_autorizacao
-      ? new Date(emission.data_autorizacao).toLocaleString('pt-BR')
-      : null,
+    data_autorizacao: (() => {
+      const at = resolveAutorizadoEm(emission as Parameters<typeof resolveAutorizadoEm>[0]);
+      return at ? new Date(at).toLocaleString('pt-BR') : null;
+    })(),
+    ...extractMdfeComprovanteExtras(ps),
     vehicle_plate: plate,
     vehicle_plate_2: plate2,
     driver_name: driverName,

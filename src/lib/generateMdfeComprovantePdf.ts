@@ -2,6 +2,11 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { loadVectraPdfLogo } from '@/lib/pdfLogo';
 import { buildCanonicalFilename } from '@/lib/canonical-doc-ref';
+import {
+  formatUfRoute,
+  type MdfeComprovanteProprietario,
+  type MdfeComprovanteSeguro,
+} from '@/lib/mdfe-comprovante-extras';
 
 export interface MdfeComprovanteCte {
   numero?: number | string | null;
@@ -43,6 +48,8 @@ export interface MdfeComprovantePayload {
   vpo?: MdfeComprovanteVpo | null;
   ctes: MdfeComprovanteCte[];
   issued_at?: string | null;
+  seguros?: MdfeComprovanteSeguro[];
+  proprietario?: MdfeComprovanteProprietario | null;
 }
 
 type PdfDoc = jsPDF & { lastAutoTable?: { finalY?: number } };
@@ -153,7 +160,7 @@ export async function generateMdfeComprovantePdf(
   doc.text('Resumo:', ML + 3, y + 5);
   doc.setFont('helvetica', 'normal');
   doc.text(
-    `Documento auxiliar interno. Complementa o DAMDFE Focus (que não imprime CIOT nem chaves dos CT-es). ` +
+    `Documento auxiliar interno. Complementa o DAMDFE Focus (que não imprime CIOT, averbação nem chaves dos CT-es). ` +
       `Chave MDF-e e vínculos abaixo conferem com o XML autorizado na SEFAZ.`,
     ML + 3,
     y + 10,
@@ -176,10 +183,20 @@ export async function generateMdfeComprovantePdf(
       ['Status', safe(payload.status)],
       ['Protocolo', safe(payload.protocolo)],
       ['Autorizado em', safe(payload.data_autorizacao)],
-      ['UF início → fim', `${safe(payload.uf_inicio)} → ${safe(payload.uf_fim)}`],
+      ['UF início > fim', formatUfRoute(payload.uf_inicio, payload.uf_fim)],
       [
         'Veículo',
         [payload.vehicle_plate, payload.vehicle_plate_2].filter(Boolean).join(' + ') || '—',
+      ],
+      [
+        'Proprietário (TAC)',
+        payload.proprietario
+          ? `${safe(payload.proprietario.nome)} · ${
+              (payload.proprietario.cpfCnpj ?? '').length === 14
+                ? `CNPJ ${formatCnpj(payload.proprietario.cpfCnpj)}`
+                : `CPF ${formatCpf(payload.proprietario.cpfCnpj)}`
+            } · RNTRC ${safe(payload.proprietario.rntrc)}`
+          : 'Frota própria (emitente)',
       ],
       ['Condutor', `${safe(payload.driver_name)} · CPF ${formatCpf(payload.driver_cpf)}`],
     ],
@@ -258,6 +275,45 @@ export async function generateMdfeComprovantePdf(
     y = (doc.lastAutoTable?.finalY ?? y) + 8;
   }
 
+  // Seguro / averbação
+  doc.setFillColor(58, 58, 58);
+  doc.rect(ML, y, CW, 7, 'F');
+  doc.setFillColor(...C.orange);
+  doc.rect(ML, y, 8, 7, 'F');
+  doc.setTextColor(...C.white);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('3', ML + 4, y + 5, { align: 'center' });
+  doc.text('Seguro da carga / Averbação', ML + 11, y + 5);
+  y += 10;
+
+  const seguros = payload.seguros ?? [];
+  if (seguros.length === 0) {
+    doc.setTextColor(...C.muted);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Sem seguro/averbação declarado neste MDF-e.', ML, y);
+    y += 6;
+  } else {
+    autoTable(doc, {
+      startY: y,
+      margin: { left: ML, right: MR },
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 2.2, textColor: C.text, lineColor: C.border },
+      headStyles: { fillColor: C.orange, textColor: C.white, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: C.light },
+      head: [['Seguradora', 'CNPJ', 'Apólice', 'Nº averbação']],
+      body: seguros.map((s) => [
+        safe(s.seguradora),
+        formatCnpj(s.cnpjSeguradora),
+        safe(s.apolice),
+        safe(s.averbacao),
+      ]),
+      columnStyles: { 3: { cellWidth: 70 } },
+    });
+    y = (doc.lastAutoTable?.finalY ?? y) + 8;
+  }
+
   // CT-es
   if (y > 240) {
     doc.addPage();
@@ -270,7 +326,7 @@ export async function generateMdfeComprovantePdf(
   doc.setTextColor(...C.white);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  doc.text('3', ML + 4, y + 5, { align: 'center' });
+  doc.text('4', ML + 4, y + 5, { align: 'center' });
   doc.text(`CT-es vinculados (${payload.ctes.length})`, ML + 11, y + 5);
   y += 10;
 
@@ -308,7 +364,7 @@ export async function generateMdfeComprovantePdf(
   doc.setFont('helvetica', 'normal');
   doc.text(
     'Este PDF é uso interno operacional. O documento fiscal oficial é o DAMDFE/XML Focus. ' +
-      'Não altere o MDF-e já autorizado na SEFAZ para “incluir” estes campos na impressão.',
+      'Não altere o MDF-e já autorizado na SEFAZ para "incluir" estes campos na impressão.',
     ML + 3,
     y + 10,
     { maxWidth: CW - 6 }
@@ -321,11 +377,7 @@ export async function generateMdfeComprovantePdf(
   doc.line(ML, pageH - 14, PW - MR, pageH - 14);
   doc.setFontSize(7);
   doc.setTextColor(...C.muted);
-  doc.text(
-    'Vectra Cargo Transportes e Logística  |  Navegantes / Itajaí - SC  |  www.vectracargo.com.br',
-    ML,
-    pageH - 9
-  );
+  doc.text('VECTRA HUB LTDA  |  CNPJ 62.188.748/0001-17  |  Itajaí - SC', ML, pageH - 9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(204, 0, 0);
   doc.text('CONFIDENCIAL', PW - MR, pageH - 9, { align: 'right' });
