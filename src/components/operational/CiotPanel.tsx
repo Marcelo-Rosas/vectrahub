@@ -629,6 +629,27 @@ export function CiotPanel({
           )}
 
           {canManage && ciotActive && !onlineActive && (
+            <div className="flex flex-wrap items-center gap-2 rounded-md border p-3">
+              <p className="text-xs text-muted-foreground mr-auto">
+                CIOT emitido no site do CIOT Online? Vincule para consultar e encerrar
+                automaticamente com o MDF-e.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={ciotAction.isPending}
+                onClick={() => void runAction({ action: 'link' }, 'CIOT vinculado ao CIOT Online')}
+              >
+                {ciotAction.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  'Vincular ao CIOT Online'
+                )}
+              </Button>
+            </div>
+          )}
+
+          {canManage && ciotActive && !onlineActive && (
             <div className="space-y-2 rounded-md border border-dashed border-destructive/40 bg-destructive/5 p-3">
               <Label htmlFor="cancel-ciot-proto" className="text-xs">
                 CIOT emitido fora do Hub foi cancelado? Marcar na OS

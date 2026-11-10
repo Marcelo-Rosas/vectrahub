@@ -267,3 +267,41 @@ export function shouldTryAdoption(error: { code: string; httpStatus: number }): 
   }
   return error.httpStatus >= 500 || error.httpStatus === 0;
 }
+
+export type LinkableCiot = {
+  id: number;
+  numero_ciot: string;
+  protocolo: string | null;
+  status: string;
+};
+
+/**
+ * CIOT emitido manualmente no site do CIOT Online: acha o item da listagem pelo número gravado na OS.
+ * Compara só dígitos; aceita o provider devolver o número com sufixo (ex.: dígito verificador).
+ */
+export function findCiotByNumero(
+  items: Array<{
+    id: number;
+    numero_ciot?: string | null;
+    protocolo?: string | null;
+    status?: string | null;
+  }>,
+  numero: string
+): LinkableCiot | null {
+  const alvo = String(numero ?? '').replace(/\D/g, '');
+  if (alvo.length < 8) return null;
+  const hit =
+    items.find((i) => String(i.numero_ciot ?? '').replace(/\D/g, '') === alvo) ??
+    items.find((i) =>
+      String(i.numero_ciot ?? '')
+        .replace(/\D/g, '')
+        .startsWith(alvo)
+    );
+  if (!hit) return null;
+  return {
+    id: Number(hit.id),
+    numero_ciot: String(hit.numero_ciot ?? ''),
+    protocolo: hit.protocolo ?? null,
+    status: String(hit.status ?? ''),
+  };
+}

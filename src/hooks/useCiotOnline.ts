@@ -42,7 +42,8 @@ type CiotActionInput =
   | { action: 'precheck'; force: true }
   | { action: 'consult'; operation_id: string }
   | { action: 'cancel'; operation_id: string; motivo: string; confirm?: boolean }
-  | { action: 'encerrar'; operation_id: string };
+  | { action: 'encerrar'; operation_id: string }
+  | { action: 'link' };
 
 /** Ações manuais: revalidar (force), consultar, cancelar, encerrar (retry). */
 export function useCiotAction(orderId: string) {
@@ -50,7 +51,10 @@ export function useCiotAction(orderId: string) {
   return useMutation({
     mutationFn: (input: CiotActionInput) =>
       invokeEdgeFunction<Record<string, unknown>>('manage-ciot', {
-        body: input.action === 'precheck' ? { ...input, order_id: orderId } : input,
+        body:
+          input.action === 'precheck' || input.action === 'link'
+            ? { ...input, order_id: orderId }
+            : input,
       }),
     onSuccess: async (data, input) => {
       if (input.action === 'precheck') {

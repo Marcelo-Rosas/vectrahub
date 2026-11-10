@@ -6,13 +6,19 @@
  *   { action: 'consult',  operation_id }            → GET /ciots/{id}, atualiza ciot_operations
  *   { action: 'cancel',   operation_id, motivo, confirm? }  → motivo ≥ 10; avisa MDF-e ativo (409 mdfe_ativo)
  *   { action: 'encerrar', operation_id }            → retry manual do encerramento
+ *   { action: 'link',     order_id }                 → vincula CIOT emitido no site (busca por número)
  *
  * Spec: docs/superpowers/specs/2026-11-10-ciot-online-provider-design.md §4
  */
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { createCiotOnlineClient, type CiotOnlineClient } from '../_shared/ciotonline-client.ts';
-import { resolvePagamento, mergeCiotMeta } from '../_shared/ciotonline-hub.ts';
+import {
+  resolvePagamento,
+  mergeCiotMeta,
+  findCiotByNumero,
+  listItemsFromResponse,
+} from '../_shared/ciotonline-hub.ts';
 import { checkPlate } from '../_shared/ciot-plate-cache.ts';
 import { closeCiotOperation } from '../_shared/ciot-close.ts';
 import { summarizePrecheck, DEFAULT_EIXOS_PISO } from '../_shared/ciot-precheck.ts';
@@ -106,6 +112,86 @@ Deno.serve(async (req) => {
           pagamento: resolvePagamento(load).tipo_pagamento,
           saldo,
         }),
+        200,
+        cors
+      );
+    }
+
+    // ── link ────────────────────────────────────────────────────────────────
+    // CIOT emitido manualmente no site do CIOT Online → associa provider_ciot_id às linhas
+    // ciot_operations com o mesmo número (todas as OS da viagem), habilitando consultar/encerrar.
+    if (action === 'link') {
+      const orderId = String(body.order_id ?? '');
+      if (!orderId) return json({ error: 'order_id_required' }, 400, cors);
+      const { data: order } = await supabase
+        .from('orders')
+        .select('id, ciot_number')
+        .eq('id', orderId)
+        .maybeSingle();
+      const numero = String(order?.ciot_number ?? '').replace(/\D/g, '');
+      if (!numero) {
+        return json(
+          { error: 'sem_ciot', message: 'OS sem número de CIOT para vincular.' },
+          422,
+          cors
+        );
+      }
+
+      let found: ReturnType<typeof findCiotByNumero> = null;
+      for (let page = 1; page <= 10 && !found; page++) {
+        const r = await client.listar({ page, limit: 100 });
+        if (!r.ok) {
+          return json(
+            { ok: false, error: r.error.code, message: r.error.message },
+            r.error.httpStatus === 401 || r.error.httpStatus === 403 ? r.error.httpStatus : 502,
+            cors
+          );
+        }
+        const items = listItemsFromResponse(r.data) as Parameters<typeof findCiotByNumero>[0];
+        if (items.length === 0) break;
+        found = findCiotByNumero(items, numero);
+      }
+      if (!found) {
+        return json(
+          {
+            error: 'nao_encontrado',
+            message: `CIOT ${numero} não encontrado na conta CIOT Online (emitido em outra conta/portal?).`,
+          },
+          404,
+          cors
+        );
+      }
+
+      const statusMap: Record<string, string> = {
+        emitido: 'generated',
+        encerrado: 'closed',
+        cancelado: 'cancelled',
+      };
+      const now = new Date().toISOString();
+      const { data: rows, error: upErr } = await supabase
+        .from('ciot_operations')
+        .update({
+          provider: 'ciotonline',
+          provider_ciot_id: found.id,
+          protocolo: found.protocolo,
+          status: statusMap[found.status] ?? 'generated',
+          updated_at: now,
+        })
+        .eq('ciot_number', order!.ciot_number)
+        .eq('status', 'generated')
+        .select('id, service_order_id');
+      if (upErr) {
+        return json({ ok: false, error: 'db_error', message: upErr.message }, 500, cors);
+      }
+      return json(
+        {
+          ok: true,
+          provider_ciot_id: found.id,
+          numero_ciot: found.numero_ciot,
+          protocolo: found.protocolo,
+          status_remoto: found.status,
+          linked: rows?.length ?? 0,
+        },
         200,
         cors
       );
