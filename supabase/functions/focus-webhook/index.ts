@@ -189,7 +189,9 @@ Deno.serve(async (req) => {
   // Falha de averbação NUNCA derruba o webhook (Focus reentrega em erro).
   if (isCte && newStatus === 'authorized' && update.xml_storage_path) {
     const internalToken = Deno.env.get('INTERNAL_AVERBA_TOKEN');
-    if (internalToken) {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    if (internalToken && supabaseUrl) {
       try {
         const { data: cteRow } = await supabase
           .from('cte_emissions')
