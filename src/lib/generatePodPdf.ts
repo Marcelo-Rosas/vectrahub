@@ -63,9 +63,14 @@ const PW = 210;
 const ML = 12;
 const MR = 12;
 const CW = PW - ML - MR;
-/** Teto baixo: retrato com fundo não toma a página. Paisagem fina encolhe sozinha. */
+/** Referência histórica de altura de canhoto em faixa (testes). Layout usa planPodImage. */
 export const POD_IMAGE_MAX_HEIGHT_MM = 62;
 const POD_FOOTER_RESERVE_MM = 16;
+/** Página dedicada ao canhoto: topo (título) até o rodapé. */
+const POD_FULL_PAGE_TOP_MM = 20;
+export const POD_FULL_PAGE_IMAGE_HEIGHT_MM = 297 - POD_FULL_PAGE_TOP_MM - POD_FOOTER_RESERVE_MM;
+/** Abaixo disso (fração da largura útil) a foto fica ilegível na página 1. */
+const POD_MIN_WIDTH_RATIO = 0.55;
 
 /**
  * Encaixa a foto no retângulo (contain): mantém aspect ratio, nunca estoura
@@ -87,6 +92,57 @@ export function fitImageContain(
   return {
     width: srcW * scale,
     height: srcH * scale,
+  };
+}
+
+/**
+ * Onde desenhar a foto do POD. Canhoto em faixa cabe na página atual; foto do DANFE
+ * inteiro em retrato ficaria estreita (ilegível) → vai para página própria em tamanho cheio.
+ */
+export function planPodImage(
+  srcW: number,
+  srcH: number,
+  availH: number
+): { page: 'current' | 'new'; width: number; height: number } {
+  const current = fitImageContain(srcW, srcH, CW, availH);
+  if (current.width >= CW * POD_MIN_WIDTH_RATIO) return { page: 'current', ...current };
+  const full = fitImageContain(srcW, srcH, CW, POD_FULL_PAGE_IMAGE_HEIGHT_MM);
+  if (full.width > current.width * 1.15) return { page: 'new', ...full };
+  return { page: 'current', ...current };
+}
+
+/** Data de entrega = registro do canhoto (não a previsão `eta`). Horário de Brasília. */
+export function podDeliveryLabel(p: Pick<PodPdfPayload, 'eta' | 'pod_uploaded_at'>): string {
+  const raw = p.pod_uploaded_at?.trim();
+  if (!raw) return '—';
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return '—';
+  const txt = d
+    .toLocaleString('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    .replace(',', '');
+  return `${txt} (registro do canhoto)`;
+}
+
+/** OS com um único embarcador: CT-e/NF-e vêm da fatia (payload de topo não traz). */
+export function withSingleShipperDocs(
+  payload: PodPdfPayload,
+  shippers: PodShipperSlice[]
+): PodPdfPayload {
+  if (shippers.length !== 1) return payload;
+  const s = shippers[0]!;
+  return {
+    ...payload,
+    nfe_number:
+      payload.nfe_number?.trim() || (s.nfe_numbers.length ? s.nfe_numbers.join(', ') : null),
+    cte_number:
+      payload.cte_number?.trim() || (s.cte_numbers.length ? s.cte_numbers.join(', ') : null),
   };
 }
 
@@ -239,7 +295,7 @@ function drawInfoGrid(doc: PdfDoc, payload: PodPdfPayload, y: number): number {
   rows.push(
     ['Origem', payload.origin, 'Destino', payload.destination],
     ['Motorista', payload.driver_name ?? '—', 'Placa', payload.vehicle_plate ?? '—'],
-    ['Data de Entrega', fmtDate(payload.eta), '', '']
+    ['Data de Entrega', podDeliveryLabel(payload), '', '']
   );
 
   if (payload.cte_number || payload.nfe_number) {
@@ -277,59 +333,65 @@ function imageFormat(dataUrl: string): 'PNG' | 'JPEG' | 'WEBP' {
   return 'JPEG';
 }
 
-function drawContainedImage(doc: PdfDoc, imageDataUrl: string, y: number, maxH: number): number {
-  if (maxH < 12) return y;
-  try {
-    const props = doc.getImageProperties(imageDataUrl);
-    const fitted = fitImageContain(props.width, props.height, CW, maxH);
-    const x = ML + (CW - fitted.width) / 2;
-    const ext = imageFormat(imageDataUrl);
-    doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.2);
-    doc.rect(x, y, fitted.width, fitted.height);
-    doc.addImage(imageDataUrl, ext, x, y, fitted.width, fitted.height, undefined, 'FAST');
-    return y + fitted.height + 3;
-  } catch {
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(8);
-    doc.setTextColor(...C.muted);
-    doc.text('[Imagem do canhoto não disponível]', ML, y + 6);
-    return y + 12;
-  }
+function drawImageAt(doc: PdfDoc, url: string, y: number, w: number, h: number): number {
+  const x = ML + (CW - w) / 2;
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.2);
+  doc.rect(x, y, w, h);
+  doc.addImage(url, imageFormat(url), x, y, w, h, undefined, 'FAST');
+  return y + h + 3;
+}
+
+function drawImageMissing(doc: PdfDoc, y: number): number {
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(8);
+  doc.setTextColor(...C.muted);
+  doc.text('[Imagem do canhoto não disponível]', ML, y + 6);
+  return y + 12;
+}
+
+function drawSectionTitle(doc: PdfDoc, title: string, y: number): number {
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...C.muted);
+  doc.text(title, ML, y);
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.3);
+  doc.line(ML, y + 1.5, PW - MR, y + 1.5);
+  return y + 4;
 }
 
 function drawPodImages(doc: PdfDoc, imageDataUrls: string[], y: number): number {
   const urls = imageDataUrls.map((u) => u.trim()).filter(Boolean);
-  const sectionTitleY = y + 4;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(...C.muted);
-  doc.text(
-    urls.length > 1 ? 'CANHOTOS ASSINADOS (Fotos do POD)' : 'CANHOTO ASSINADO (Foto do POD)',
-    ML,
-    sectionTitleY
-  );
-
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.3);
-  doc.line(ML, sectionTitleY + 1.5, PW - MR, sectionTitleY + 1.5);
-
-  let imgY = sectionTitleY + 4;
-  if (urls.length === 0) {
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(8);
-    doc.setTextColor(...C.muted);
-    doc.text('[Imagem do canhoto não disponível]', ML, imgY + 6);
-    return imgY + 12;
-  }
+  const title =
+    urls.length > 1 ? 'CANHOTOS ASSINADOS (Fotos do POD)' : 'CANHOTO ASSINADO (Foto do POD)';
+  let imgY = drawSectionTitle(doc, title, y + 4);
+  if (urls.length === 0) return drawImageMissing(doc, imgY);
 
   const pageHeight = doc.internal.pageSize.getHeight();
   for (let i = 0; i < urls.length; i++) {
-    const remain = pageHeight - imgY - POD_FOOTER_RESERVE_MM;
+    const url = urls[i]!;
+    let props: { width: number; height: number };
+    try {
+      props = doc.getImageProperties(url);
+    } catch {
+      imgY = drawImageMissing(doc, imgY);
+      continue;
+    }
     const left = urls.length - i;
-    const slot = Math.min(POD_IMAGE_MAX_HEIGHT_MM, remain / left - (left > 1 ? 3 : 0));
-    if (slot < 10) break;
-    imgY = drawContainedImage(doc, urls[i]!, imgY, slot);
+    const slot = (pageHeight - imgY - POD_FOOTER_RESERVE_MM) / left - (left > 1 ? 3 : 0);
+    const plan = slot >= 10 ? planPodImage(props.width, props.height, slot) : null;
+    if (!plan || plan.page === 'new') {
+      // Foto em retrato (DANFE inteiro) ou sem espaço: página própria, tamanho cheio.
+      const full =
+        plan ?? fitImageContain(props.width, props.height, CW, POD_FULL_PAGE_IMAGE_HEIGHT_MM);
+      doc.addPage();
+      const label = urls.length > 1 ? `${title} — ${i + 1}/${urls.length}` : title;
+      const top = drawSectionTitle(doc, label, 14);
+      imgY = drawImageAt(doc, url, Math.max(top, POD_FULL_PAGE_TOP_MM), full.width, full.height);
+      continue;
+    }
+    imgY = drawImageAt(doc, url, imgY, plan.width, plan.height);
   }
   return imgY;
 }
@@ -375,7 +437,11 @@ async function renderPodPdf(
         : [];
   const images = await Promise.all(rawImages.map((url) => cropReceiptDataUrl(url)));
   y = drawPodImages(doc, images, y + 4);
-  drawFooter(doc, payload);
+  const pages = doc.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p);
+    drawFooter(doc, payload);
+  }
 
   return {
     blob: doc.output('blob'),
@@ -410,7 +476,13 @@ export async function generatePodPdf(payload: PodPdfPayload): Promise<PodPdfFile
     return files;
   }
 
-  return [await renderPodPdf(payload, logoBase64, singlePodPdfFileName(payload.os_number))];
+  return [
+    await renderPodPdf(
+      withSingleShipperDocs(payload, shippers),
+      logoBase64,
+      singlePodPdfFileName(payload.os_number)
+    ),
+  ];
 }
 
 export function downloadPodPdfFiles(files: PodPdfFile[]): void {

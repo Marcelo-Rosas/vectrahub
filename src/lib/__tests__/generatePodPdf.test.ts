@@ -3,6 +3,10 @@ import {
   fitImageContain,
   generatePodPdf,
   POD_IMAGE_MAX_HEIGHT_MM,
+  POD_FULL_PAGE_IMAGE_HEIGHT_MM,
+  planPodImage,
+  podDeliveryLabel,
+  withSingleShipperDocs,
   type PodPdfPayload,
 } from '@/lib/generatePodPdf';
 
@@ -150,5 +154,56 @@ describe('generatePodPdf', () => {
     expect(text).toContain('ROTHA FITNESS LTDA');
     expect(text).not.toContain('KONNEN');
     expect(text).not.toContain('BUCKLER');
+  });
+});
+
+describe('planPodImage — foto do POD legível', () => {
+  it('canhoto paisagem cabe na página atual na largura útil', () => {
+    const p = planPodImage(1600, 355, 150);
+    expect(p.page).toBe('current');
+    expect(p.width).toBeCloseTo(186, 5);
+  });
+
+  it('DANFE inteiro em retrato (900×1600) que ficaria estreito vai para página própria', () => {
+    const p = planPodImage(900, 1600, 150);
+    expect(p.page).toBe('new');
+    expect(p.width).toBeGreaterThan(140);
+    expect(p.height).toBeLessThanOrEqual(POD_FULL_PAGE_IMAGE_HEIGHT_MM);
+  });
+
+  it('retrato que já fica largo o bastante permanece na página atual', () => {
+    const p = planPodImage(1000, 1100, 200);
+    expect(p.page).toBe('current');
+  });
+});
+
+describe('podDeliveryLabel', () => {
+  it('usa o registro do canhoto (horário de Brasília), não a previsão (eta)', () => {
+    const label = podDeliveryLabel({
+      eta: null,
+      pod_uploaded_at: '2026-11-10T18:58:58.814Z',
+    });
+    expect(label).toBe('10/11/2026 15:58 (registro do canhoto)');
+  });
+
+  it('sem registro → —', () => {
+    expect(podDeliveryLabel({ eta: '2026-11-12T06:47:00Z', pod_uploaded_at: '' })).toBe('—');
+  });
+});
+
+describe('withSingleShipperDocs', () => {
+  it('OS com 1 embarcador herda CT-e/NF-e da fatia', () => {
+    const out = withSingleShipperDocs(basePayload({ shipper_2_name: null }), [
+      { name: 'SIMIONI', origin: 'Paulo Lopes - SC', nfe_numbers: ['1824'], cte_numbers: ['50'] },
+    ]);
+    expect(out.nfe_number).toBe('1824');
+    expect(out.cte_number).toBe('50');
+  });
+
+  it('não sobrescreve número já informado', () => {
+    const out = withSingleShipperDocs(basePayload({ cte_number: '99' }), [
+      { name: 'X', origin: null, nfe_numbers: ['1'], cte_numbers: ['50'] },
+    ]);
+    expect(out.cte_number).toBe('99');
   });
 });
