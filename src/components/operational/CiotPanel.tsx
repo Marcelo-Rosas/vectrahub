@@ -30,6 +30,32 @@ import { useUpdateOrder, type OrderWithOccurrences } from '@/hooks/useOrders';
 import { FiscalEmissionPipeline } from '@/components/modals/order-detail/FiscalEmissionPipeline';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useCiotAction, useCiotPrecheck } from '@/hooks/useCiotOnline';
+import { CiotOnlinePrecheckCard } from '@/components/operational/CiotOnlinePrecheckCard';
+import { ciotErrorMessage } from '@/lib/ciot-online-errors';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
+type CiotOnlineOp = {
+  id: string;
+  provider?: string | null;
+  status: string;
+  ciot_number?: string | null;
+  protocolo?: string | null;
+  close_error?: string | null;
+};
+
+const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
+const errStatus = (e: unknown) => (e as { status?: number } | null)?.status;
 
 interface CiotPanelProps {
   order: OrderWithOccurrences;
@@ -54,6 +80,11 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
     label: 'Erro',
     color: 'bg-red-50 text-red-700 border-red-200',
     icon: <ShieldAlert className="w-4 h-4" />,
+  },
+  closed: {
+    label: 'Encerrado',
+    color: 'bg-sky-50 text-sky-700 border-sky-200',
+    icon: <ShieldCheck className="w-4 h-4" />,
   },
   cancelled: {
     label: 'Cancelado',
@@ -100,6 +131,45 @@ export function CiotPanel({
     !ciotActive &&
     (order.stage === 'documentacao' || order.stage === 'coleta_realizada') &&
     !!order.vehicle_plate;
+
+  // CIOT Online: pré-validação automática ao abrir a aba (sem CIOT ativo) + ações.
+  const precheck = useCiotPrecheck(order.id, canManage && !ciotActive && !!order.vehicle_plate);
+  const ciotAction = useCiotAction(order.id);
+  const onlineOps = ((operations ?? []) as unknown as CiotOnlineOp[]).filter(
+    (op) => op.provider === 'ciotonline'
+  );
+  const onlineActive = onlineOps.find((op) => op.status === 'generated');
+  const [confirmEmit, setConfirmEmit] = useState<string | null>(null);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelMotivo, setCancelMotivo] = useState('');
+  const [mdfeWarning, setMdfeWarning] = useState<string | null>(null);
+
+  const precheckIssues = (() => {
+    const d = precheck.data;
+    if (!d) return [] as string[];
+    const out: string[] = [];
+    if (d.placa.vinculo_valido === false) out.push('placa não vinculada ao transportador na ANTT');
+    if (d.piso.abaixo === true) out.push('frete abaixo do piso ANTT');
+    return out;
+  })();
+
+  const runAction = async (
+    input: Parameters<typeof ciotAction.mutateAsync>[0],
+    okMsg: string
+  ): Promise<boolean> => {
+    try {
+      await ciotAction.mutateAsync(input);
+      toast.success(okMsg);
+      return true;
+    } catch (e) {
+      if (input.action === 'cancel' && errStatus(e) === 409) {
+        setMdfeWarning(errMsg(e));
+        return false;
+      }
+      toast.error(ciotErrorMessage(undefined, undefined, errMsg(e)));
+      return false;
+    }
+  };
 
   /** Grava linha em ciot_operations (histórico). RLS exige created_by = auth.uid(). */
   const insertCiotOperation = useCallback(
@@ -214,9 +284,13 @@ export function CiotPanel({
     }
   };
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (confirmed = false) => {
     if (!order.vehicle_plate) {
       toast.error('Placa do veículo é obrigatória para gerar CIOT');
+      return;
+    }
+    if (!confirmed && precheckIssues.length > 0) {
+      setConfirmEmit(`Pré-validação: ${precheckIssues.join(' e ')}.`);
       return;
     }
     setIsGenerating(true);
@@ -224,26 +298,36 @@ export function CiotPanel({
       const result = await invokeEdgeFunction<{
         success: boolean;
         ciotNumber?: string;
+        protocolo?: string;
         status?: string;
         message?: string;
+        errorCode?: string;
+        anttStatus?: string;
         operationId?: string;
         anttPisoMinimo?: number;
         belowFloor?: boolean;
       }>('generate-ciot', {
-        body: { orderId: order.id },
+        body: { orderId: order.id, allowBelowFloor: confirmed },
       });
 
       if (result.success && result.ciotNumber) {
-        toast.success(`CIOT ${result.ciotNumber} gerado com sucesso`);
-        await qc.invalidateQueries({ queryKey: ['ciot-operations', order.id] });
-        await qc.invalidateQueries({ queryKey: ['orders'] });
+        toast.success(
+          `CIOT ${result.ciotNumber} emitido${result.protocolo ? ` (prot. ${result.protocolo})` : ''}`
+        );
       } else {
-        toast.error(result.message || 'Falha ao gerar CIOT');
+        toast.error(ciotErrorMessage(result.errorCode, result.anttStatus, result.message));
       }
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : String(error);
-      toast.error(`Erro ao gerar CIOT: ${msg}`);
+      const msg = errMsg(error);
+      // 422 abaixo do piso → pede confirmação explícita antes de emitir.
+      if (!confirmed && errStatus(error) === 422 && /piso/i.test(msg)) {
+        setConfirmEmit(msg);
+      } else {
+        toast.error(`Erro ao emitir CIOT: ${msg}`);
+      }
     } finally {
+      await qc.invalidateQueries({ queryKey: ['ciot-operations', order.id] });
+      await qc.invalidateQueries({ queryKey: ['orders'] });
       setIsGenerating(false);
     }
   };
@@ -370,12 +454,22 @@ export function CiotPanel({
 
       <p className="text-sm rounded-md border border-muted bg-muted/30 p-3 text-muted-foreground">
         Passo <strong className="text-foreground">após VPO</strong>,{' '}
-        <strong className="text-foreground">antes do MDF-e</strong>. CIOT e VPO usam a mesma chave
-        WebRouter/AILOG. Número grava em <code className="text-xs">orders.ciot_number</code> → Focus{' '}
-        <code className="text-xs">modal_rodoviario.ciot[]</code> (SEFAZ 304). Frete CIOT ={' '}
-        <code className="text-xs">carreteiro_real</code> (piso{' '}
-        <code className="text-xs">carreteiro_antt</code>).
+        <strong className="text-foreground">antes do MDF-e</strong>. Emissão via{' '}
+        <strong className="text-foreground">CIOT Online</strong> (frete ={' '}
+        <code className="text-xs">carreteiro_real</code>). O número vai para o MDF-e automaticamente
+        e o CIOT é encerrado quando o MDF-e for encerrado.
       </p>
+
+      {canManage && !ciotActive && order.vehicle_plate ? (
+        <CiotOnlinePrecheckCard
+          plate={order.vehicle_plate}
+          data={precheck.data}
+          isLoading={precheck.isLoading}
+          error={precheck.error}
+          revalidating={ciotAction.isPending && ciotAction.variables?.action === 'precheck'}
+          onRevalidate={() => void runAction({ action: 'precheck', force: true }, 'Revalidado')}
+        />
+      ) : null}
 
       {/* Status Card */}
       <Card>
@@ -386,7 +480,7 @@ export function CiotPanel({
               Status do CIOT
             </span>
             {canManage && !ciotActive ? (
-              <span className="text-[11px] text-muted-foreground">AILOG / WebRouter</span>
+              <span className="text-[11px] text-muted-foreground">CIOT Online</span>
             ) : null}
           </CardTitle>
         </CardHeader>
@@ -413,16 +507,75 @@ export function CiotPanel({
               </div>
             </div>
             {canGenerate && (
-              <Button size="sm" onClick={handleGenerate} disabled={isGenerating} className="gap-2">
+              <Button
+                size="sm"
+                onClick={() => void handleGenerate()}
+                disabled={isGenerating}
+                className="gap-2"
+              >
                 {isGenerating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Shield className="w-4 h-4" />
                 )}
-                {isGenerating ? 'Gerando...' : 'Gerar CIOT'}
+                {isGenerating ? 'Emitindo...' : 'Emitir CIOT (CIOT Online)'}
               </Button>
             )}
           </div>
+
+          {canManage && onlineActive && (
+            <div className="flex flex-wrap items-center gap-2 rounded-md border p-3">
+              {onlineActive.protocolo ? (
+                <span className="text-xs text-muted-foreground font-mono mr-auto">
+                  Protocolo ANTT {onlineActive.protocolo}
+                </span>
+              ) : (
+                <span className="mr-auto" />
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={ciotAction.isPending}
+                onClick={() =>
+                  void runAction(
+                    { action: 'consult', operation_id: onlineActive.id },
+                    'CIOT consultado'
+                  )
+                }
+              >
+                Consultar
+              </Button>
+              {onlineActive.close_error ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={ciotAction.isPending}
+                  title={onlineActive.close_error}
+                  onClick={() =>
+                    void runAction(
+                      { action: 'encerrar', operation_id: onlineActive.id },
+                      'CIOT encerrado'
+                    )
+                  }
+                >
+                  Encerrar
+                </Button>
+              ) : null}
+              <Button
+                size="sm"
+                variant="destructive"
+                disabled={ciotAction.isPending}
+                onClick={() => setCancelOpen(true)}
+              >
+                Cancelar
+              </Button>
+              {onlineActive.close_error ? (
+                <p className="w-full text-xs text-destructive">
+                  Encerramento automático falhou: {onlineActive.close_error}
+                </p>
+              ) : null}
+            </div>
+          )}
 
           {canManage && !ciotActive && (
             <div className="space-y-2 rounded-md border border-dashed p-3">
@@ -431,7 +584,7 @@ export function CiotPanel({
                 Colar CIOT manual (contingência)
               </Label>
               <p className="text-xs text-muted-foreground">
-                Preferência: botão Gerar CIOT (AILOG). Se já emitiu fora, cole o número aqui.
+                Preferência: botão Emitir CIOT (CIOT Online). Se já emitiu fora, cole o número aqui.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Input
@@ -467,13 +620,13 @@ export function CiotPanel({
             </div>
           )}
 
-          {canManage && ciotActive && (
+          {canManage && ciotActive && !onlineActive && (
             <div className="space-y-2 rounded-md border border-dashed border-destructive/40 bg-destructive/5 p-3">
               <Label htmlFor="cancel-ciot-proto" className="text-xs">
-                Cancelado no AILOG? Marcar na OS
+                CIOT emitido fora do Hub foi cancelado? Marcar na OS
               </Label>
               <p className="text-xs text-muted-foreground">
-                Após cancelar no WebRouter, informe o protocolo (opcional) e marque na OS.
+                Após cancelar no portal emissor, informe o protocolo (opcional) e marque na OS.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Input
@@ -697,6 +850,82 @@ export function CiotPanel({
           )}
         </CardContent>
       </Card>
+
+      {/* Emitir mesmo com pré-validação ❌ / abaixo do piso */}
+      <AlertDialog open={confirmEmit != null} onOpenChange={(o) => !o && setConfirmEmit(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Emitir CIOT mesmo assim?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmEmit} A emissão consome 1 crédito do CIOT Online e a ANTT pode recusar.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Voltar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirmEmit(null);
+                void handleGenerate(true);
+              }}
+            >
+              Emitir mesmo assim
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancelar CIOT Online (motivo ≥ 10) + aviso de MDF-e ativo */}
+      <AlertDialog
+        open={cancelOpen}
+        onOpenChange={(o) => {
+          setCancelOpen(o);
+          if (!o) {
+            setMdfeWarning(null);
+            setCancelMotivo('');
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancelar CIOT {onlineActive?.ciot_number ?? ''}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {mdfeWarning ??
+                'O cancelamento é enviado à ANTT. Informe o motivo (mínimo 10 caracteres).'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Textarea
+            value={cancelMotivo}
+            onChange={(e) => setCancelMotivo(e.target.value.slice(0, 255))}
+            placeholder="Ex.: viagem cancelada pelo cliente antes da coleta"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Voltar</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              disabled={cancelMotivo.trim().length < 10 || ciotAction.isPending || !onlineActive}
+              onClick={async () => {
+                if (!onlineActive) return;
+                const ok = await runAction(
+                  {
+                    action: 'cancel',
+                    operation_id: onlineActive.id,
+                    motivo: cancelMotivo.trim(),
+                    confirm: mdfeWarning != null,
+                  },
+                  'CIOT cancelado'
+                );
+                if (ok) {
+                  setCancelOpen(false);
+                  setCancelMotivo('');
+                  setMdfeWarning(null);
+                }
+              }}
+            >
+              {mdfeWarning ? 'Cancelar mesmo assim' : 'Cancelar CIOT'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
