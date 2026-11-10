@@ -51,14 +51,18 @@ export function extractMdfeComprovanteExtras(payloadSent: unknown): {
   return { seguros, proprietario };
 }
 
-/** data_autorizacao nem sempre é gravada (webhook MDF-e ausente) → usa updated_at se autorizado/encerrado. */
+/**
+ * data_autorizacao nem sempre é gravada (webhook MDF-e ausente; "Consultar" preenche via XML).
+ * Fallback updated_at só enquanto autorizado: após encerrar/cancelar, updated_at é a data
+ * do encerramento — mostrar como "Autorizado em" seria errado.
+ */
 export function resolveAutorizadoEm(e: {
   status?: string | null;
   data_autorizacao?: string | null;
   updated_at?: string | null;
 }): string | null {
   if (e.data_autorizacao) return e.data_autorizacao;
-  if (e.status === 'authorized' || e.status === 'encerrado') return e.updated_at ?? null;
+  if (e.status === 'authorized') return e.updated_at ?? null;
   return null;
 }
 

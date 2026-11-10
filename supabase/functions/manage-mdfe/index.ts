@@ -14,6 +14,7 @@ import { FocusClient, type FocusAmbiente } from '../_shared/focus-client.ts';
 import { normalizeSefazJustificativa } from '../_shared/sefaz-justificativa.ts';
 import { createCiotOnlineClient } from '../_shared/ciotonline-client.ts';
 import { closeCiotsForMdfe } from '../_shared/ciot-close.ts';
+import { protocolFromMdfeXml } from '../_shared/mdfe-xml-protocol.ts';
 
 function envOrThrow(key: string): string {
   const v = Deno.env.get(key);
@@ -41,19 +42,18 @@ function pickProtocolo(body: Record<string, unknown>, fallback: string | null): 
   return fallback;
 }
 
-function nProtFromXml(xml: string): string | null {
-  const m = xml.match(/<nProt>(\d{15})<\/nProt>/);
-  return m?.[1] ?? null;
-}
-
-async function protocoloFromXmlUrl(url: unknown): Promise<string | null> {
-  if (typeof url !== 'string' || !url.startsWith('http')) return null;
+/** nProt + dhRecbto (data real de autorização) do XML processado do MDF-e. */
+async function protocolFromXmlUrl(
+  url: unknown
+): Promise<{ nProt: string | null; dhRecbto: string | null }> {
+  const empty = { nProt: null, dhRecbto: null };
+  if (typeof url !== 'string' || !url.startsWith('http')) return empty;
   try {
     const r = await fetch(url);
-    if (!r.ok) return null;
-    return nProtFromXml(await r.text());
+    if (!r.ok) return empty;
+    return protocolFromMdfeXml(await r.text());
   } catch {
-    return null;
+    return empty;
   }
 }
 
@@ -117,8 +117,17 @@ serve(async (req) => {
               ? 'processing'
               : null;
     let protocolo = pickProtocolo(resp.body as Record<string, unknown>, emission.protocolo ?? null);
-    if (!protocolo) {
-      protocolo = await protocoloFromXmlUrl((resp.body as Record<string, unknown>).caminho_xml);
+    // Sem webhook MDF-e, data_autorizacao fica vazia: busca dhRecbto no XML autorizado
+    // (vale também para MDF-e já encerrado — updated_at reflete o encerramento, não a autorização).
+    const wasAuthorized =
+      focusStatus === 'autorizado' ||
+      focusStatus === 'encerrado' ||
+      ['authorized', 'encerrado'].includes(String(emission.status));
+    let dataAutorizacao: string | null = null;
+    if (!protocolo || (!emission.data_autorizacao && wasAuthorized)) {
+      const fromXml = await protocolFromXmlUrl((resp.body as Record<string, unknown>).caminho_xml);
+      protocolo = protocolo ?? fromXml.nProt;
+      dataAutorizacao = fromXml.dhRecbto;
     }
     const patch: Record<string, unknown> = {
       status_sefaz: resp.body.status_sefaz ?? emission.status_sefaz,
@@ -126,6 +135,12 @@ serve(async (req) => {
       protocolo,
       response_received: resp.body,
     };
+    if (!emission.data_autorizacao) {
+      if (dataAutorizacao) patch.data_autorizacao = dataAutorizacao;
+      else if (newStatus === 'authorized' && emission.status !== 'authorized') {
+        patch.data_autorizacao = new Date().toISOString(); // primeira vez que vemos autorizado
+      }
+    }
     if (newStatus && newStatus !== emission.status) patch.status = newStatus;
     await supabase.from('mdfe_emissions').update(patch).eq('id', emissionId);
     return json(

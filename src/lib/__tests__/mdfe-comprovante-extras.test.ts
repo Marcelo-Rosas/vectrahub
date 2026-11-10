@@ -69,6 +69,16 @@ describe('resolveAutorizadoEm', () => {
     ).toBe('2026-11-10T13:27:00Z');
   });
 
+  it('encerrado sem data → null (updated_at é a data do encerramento, não da autorização)', () => {
+    expect(
+      resolveAutorizadoEm({
+        status: 'encerrado',
+        data_autorizacao: null,
+        updated_at: '2026-11-10T22:28:16Z',
+      })
+    ).toBeNull();
+  });
+
   it('rejeitado sem data → null', () => {
     expect(
       resolveAutorizadoEm({ status: 'rejected', data_autorizacao: null, updated_at: 'x' })

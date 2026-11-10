@@ -351,12 +351,17 @@ export async function generateMdfeComprovantePdf(
       3: { cellWidth: CW - 84 },
     },
   });
-  y = (doc.lastAutoTable?.finalY ?? y) + 10;
+  y = (doc.lastAutoTable?.finalY ?? y) + 6;
 
-  // Nota
+  // Nota — nunca invade o rodapé (linha em pageH - 14).
+  const NOTE_H = 16;
+  if (y + NOTE_H > doc.internal.pageSize.getHeight() - 18) {
+    doc.addPage();
+    y = 20;
+  }
   doc.setDrawColor(...C.orange);
   doc.setFillColor(255, 243, 232);
-  doc.roundedRect(ML, y, CW, 16, 1, 1, 'FD');
+  doc.roundedRect(ML, y, CW, NOTE_H, 1, 1, 'FD');
   doc.setTextColor(...C.text);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
@@ -370,17 +375,22 @@ export async function generateMdfeComprovantePdf(
     { maxWidth: CW - 6 }
   );
 
-  // Footer
+  // Footer (todas as páginas)
   const pageH = doc.internal.pageSize.getHeight();
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.3);
-  doc.line(ML, pageH - 14, PW - MR, pageH - 14);
-  doc.setFontSize(7);
-  doc.setTextColor(...C.muted);
-  doc.text('VECTRA HUB LTDA  |  CNPJ 62.188.748/0001-17  |  Itajaí - SC', ML, pageH - 9);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(204, 0, 0);
-  doc.text('CONFIDENCIAL', PW - MR, pageH - 9, { align: 'right' });
+  const totalPages = doc.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.3);
+    doc.line(ML, pageH - 14, PW - MR, pageH - 14);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...C.muted);
+    doc.text('VECTRA HUB LTDA  |  CNPJ 62.188.748/0001-17  |  Itajaí - SC', ML, pageH - 9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(204, 0, 0);
+    doc.text('CONFIDENCIAL', PW - MR, pageH - 9, { align: 'right' });
+  }
 
   const fileName = buildCanonicalFilename(
     `MDFE-${payload.mdfe_numero}-comprovante`,
