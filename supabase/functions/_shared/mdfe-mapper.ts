@@ -282,7 +282,8 @@ export function buildMdfeDispositivosValePedagio(
     const row: Record<string, unknown> = {
       cnpj_empresa_fornecedora: forn,
       numero_comprovante_compra: nCompra.slice(0, 20),
-      valor_vale_pedagio: Number(valor.toFixed(2)),
+      // String com 2 casas: SEFAZ vValePed rejeita "117.9" (pattern exige .XX).
+      valor_vale_pedagio: valor.toFixed(2),
       tipo_vale_pedagio: d.tipo === '04' ? '04' : '01',
     };
     if (cnpjPg.length === 14) row.cnpj_responsavel_pagamento = cnpjPg;
