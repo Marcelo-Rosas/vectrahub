@@ -86,6 +86,22 @@ describe('createCiotOnlineClient', () => {
     expect(!r.ok && r.error.httpStatus).toBe(0);
   });
 
+  it('pisoFrete envia composicao_veicular=true (Tabela A, igual emissão)', async () => {
+    const f = mockFetch(200, {
+      ok: true,
+      status: 200,
+      data: { piso_minimo: 3425.71 },
+      error: null,
+    });
+    await createCiotOnlineClient({ token: 't', fetchImpl: f }).pisoFrete({
+      distancia_km: 730,
+      eixos: 2,
+      tipo_carga: 5,
+    });
+    expect(String(f.mock.calls[0][0])).toContain('composicao_veicular=true');
+    expect(String(f.mock.calls[0][0])).toContain('eixos=2');
+  });
+
   it('validarPlaca monta query placa+rntrc', async () => {
     const f = mockFetch(200, {
       ok: true,

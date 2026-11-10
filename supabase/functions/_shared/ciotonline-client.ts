@@ -170,8 +170,17 @@ export function createCiotOnlineClient(opts: CiotOnlineClientOptions = {}) {
         `/ciots/${id}/encerrar`,
         body
       ),
-    pisoFrete: (q: { distancia_km: number; eixos?: number; tipo_carga?: number }) =>
-      request<CiotOnlinePisoData>('GET', `/piso-frete${qs(q)}`),
+    /**
+     * API default composicao_veicular=false → Tabela B; a emissão (so_unidade_tracao=false)
+     * usa Tabela A. Default true aqui p/ o piso bater com o que a ANTT valida na emissão.
+     */
+    pisoFrete: (q: {
+      distancia_km: number;
+      eixos?: number;
+      tipo_carga?: number;
+      composicao_veicular?: boolean;
+    }) =>
+      request<CiotOnlinePisoData>('GET', `/piso-frete${qs({ composicao_veicular: true, ...q })}`),
     validarPlaca: (q: { placa: string; rntrc?: string; cnpj?: string }) =>
       request<CiotOnlinePlateData>('GET', `/antt/veiculo${qs(q)}`),
     saldo: () => request<{ creditos?: number; saldo?: number }>('GET', '/saldo'),
