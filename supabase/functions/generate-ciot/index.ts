@@ -1,9 +1,9 @@
 /**
  * generate-ciot
- * Emite CIOT via WebRouter AILOG Bank (módulo gratuito Emitir CIOT).
- * Mesma WEBROUTER_API_KEY do cálculo de rota e do vale-pedágio.
- *
- * Contingência: CIOT_PROVIDER=efrete | FORCE_CIOT_BRIDGE=1
+ * Emite CIOT. Provider por CIOT_PROVIDER:
+ *   ciotonline (padrão) — CIOT Online API (CIOTONLINE_TOKEN); ver emitViaCiotOnline
+ *   ailog — WebRouter AILOG Bank (WEBROUTER_API_KEY; legado, sem acesso ao painel)
+ *   efrete — contingência; FORCE_CIOT_BRIDGE=1 → ponte ciot-bridge
  */
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
@@ -22,6 +22,13 @@ import {
   type HubCiotLoad,
 } from '../_shared/ailog-ciot-hub.ts';
 import { emitCiotGratuitoEfrete } from '../_shared/efrete-ciot-client.ts';
+import { createCiotOnlineClient, type CiotOnlineClient } from '../_shared/ciotonline-client.ts';
+import {
+  buildCiotOnlineEmit,
+  findAdoptableCiot,
+  listItemsFromResponse,
+  mergeCiotMeta,
+} from '../_shared/ciotonline-hub.ts';
 
 const CIOT_BRIDGE_URL = Deno.env.get('CIOT_BRIDGE_URL') || 'http://localhost:8080';
 const CIOT_BRIDGE_TIMEOUT = 30_000;
@@ -53,6 +60,206 @@ function extractUf(location?: string): string | null {
 
 function envOr(key: string, fallback = ''): string {
   return Deno.env.get(key) || fallback;
+}
+
+const brl = (v: number) =>
+  Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/**
+ * Emissão via CIOT Online (provider padrão). Spec §4.2.
+ * Bloqueia duplicidade (CIOT generated na OS), recalcula piso pela API, e em timeout/503
+ * adota CIOT já criado na ANTT (codigo_cliente = OS) em vez de emitir de novo.
+ */
+async function emitViaCiotOnline(opts: {
+  // deno-lint-ignore no-explicit-any
+  supabase: any;
+  authHeader: string;
+  load: HubCiotLoad | null;
+  serviceOrderId?: string | null;
+  quoteId?: string | null;
+  ambiente: string;
+  allowBelowFloor: boolean;
+  corsHeaders: Record<string, string>;
+}): Promise<Response> {
+  const { supabase, load, corsHeaders } = opts;
+  const provider = 'ciotonline';
+  const orderId = opts.serviceOrderId;
+  if (!load || !orderId) {
+    return jsonResponse(
+      { success: false, status: 'error', message: 'CIOT Online exige orderId (OS).', provider },
+      400,
+      corsHeaders
+    );
+  }
+
+  const { data: existing } = await supabase
+    .from('ciot_operations')
+    .select('id, ciot_number')
+    .eq('service_order_id', orderId)
+    .eq('status', 'generated')
+    .limit(1)
+    .maybeSingle();
+  if (existing) {
+    return jsonResponse(
+      {
+        success: false,
+        status: 'error',
+        errorCode: 'ciot_ja_emitido',
+        message: `OS já tem CIOT ${existing.ciot_number ?? ''} emitido — cancele antes de emitir outro.`,
+        operationId: existing.id,
+        provider,
+      },
+      409,
+      corsHeaders
+    );
+  }
+
+  let client: CiotOnlineClient;
+  try {
+    client = createCiotOnlineClient();
+  } catch {
+    return jsonResponse(
+      {
+        success: false,
+        status: 'error',
+        errorCode: 'token_ausente',
+        message: 'CIOTONLINE_TOKEN ausente — configure o token do CIOT Online.',
+        provider,
+      },
+      503,
+      corsHeaders
+    );
+  }
+
+  const lookups = await resolveLookups(load);
+  const built = buildCiotOnlineEmit(load, lookups);
+  if (!built.ok) {
+    return jsonResponse(
+      { success: false, status: 'validation_failed', message: built.error, provider },
+      422,
+      corsHeaders
+    );
+  }
+
+  let anttPisoMinimo: number | null = null;
+  let belowFloor = false;
+  const piso = await client.pisoFrete({
+    distancia_km: Math.max(1, Math.round(load.km)),
+    eixos: load.eixos || 5,
+    tipo_carga: 5,
+  });
+  if (piso.ok && piso.data?.piso_minimo != null) {
+    anttPisoMinimo = Number(piso.data.piso_minimo);
+    belowFloor = built.payload.valor_frete < anttPisoMinimo;
+  }
+  if (belowFloor && !opts.allowBelowFloor) {
+    return jsonResponse(
+      {
+        success: false,
+        status: 'validation_failed',
+        errorCode: 'abaixo_piso',
+        message: `Frete R$ ${brl(built.payload.valor_frete)} abaixo do piso ANTT R$ ${brl(
+          anttPisoMinimo ?? 0
+        )} — confirme para emitir mesmo assim.`,
+        anttPisoMinimo,
+        belowFloor,
+        provider,
+      },
+      422,
+      corsHeaders
+    );
+  }
+
+  const r = await client.emitir(built.payload as unknown as Record<string, unknown>);
+  let adopted: { id: number; numero_ciot: string; protocolo: string } | null = null;
+  if (!r.ok && (r.error.code === 'network_error' || r.error.code === 'antt_sem_protocolo')) {
+    const list = await client.listar({ status: 'emitido', limit: 100 });
+    if (list.ok) {
+      adopted = findAdoptableCiot(
+        listItemsFromResponse(list.data) as unknown as Parameters<typeof findAdoptableCiot>[0],
+        load.osNumber
+      );
+    }
+  }
+
+  const success = r.ok || adopted != null;
+  const emitted = r.ok ? r.data : adopted;
+  const errorCode = r.ok ? undefined : r.error.code;
+  const anttStatus = r.ok ? undefined : r.error.anttStatus;
+  const message = success
+    ? adopted
+      ? 'CIOT recuperado do CIOT Online após falha de comunicação.'
+      : 'CIOT emitido.'
+    : r.ok
+      ? ''
+      : r.error.message;
+
+  const { data: opRow, error: insertErr } = await supabase
+    .from('ciot_operations')
+    .insert({
+      service_order_id: orderId,
+      quote_id: opts.quoteId ?? null,
+      provider,
+      provider_ciot_id: emitted?.id ?? null,
+      ciot_number: emitted?.numero_ciot ?? null,
+      protocolo: emitted?.protocolo ?? null,
+      status: success ? 'generated' : 'error',
+      ambiente: opts.ambiente,
+      payload: built.payload,
+      raw_response: r.ok ? r.data : { error: r.error, raw: r.raw, adopted },
+      error_message: success ? null : message,
+      antt_piso_minimo: anttPisoMinimo,
+      below_floor: belowFloor,
+      created_by: getUserIdFromJwt(opts.authHeader),
+    })
+    .select('id')
+    .single();
+  if (insertErr) console.error('[generate-ciot] ciot_operations insert error:', insertErr.message);
+
+  if (success && emitted) {
+    const { data: ord } = await supabase
+      .from('orders')
+      .select('pricing_breakdown')
+      .eq('id', orderId)
+      .maybeSingle();
+    await supabase
+      .from('orders')
+      .update({
+        ciot_number: emitted.numero_ciot,
+        ciot_status: 'generated',
+        pricing_breakdown: mergeCiotMeta(ord?.pricing_breakdown, {
+          number: emitted.numero_ciot,
+          protocolo: emitted.protocolo,
+          provider,
+          emitted_at: new Date().toISOString(),
+        }),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', orderId);
+  } else {
+    await supabase
+      .from('orders')
+      .update({ ciot_status: 'error', updated_at: new Date().toISOString() })
+      .eq('id', orderId);
+  }
+
+  return jsonResponse(
+    {
+      success,
+      ciotNumber: emitted?.numero_ciot,
+      protocolo: emitted?.protocolo,
+      status: success ? 'generated' : 'error',
+      message,
+      errorCode,
+      anttStatus,
+      operationId: opRow?.id,
+      anttPisoMinimo,
+      belowFloor,
+      provider,
+    },
+    success ? 200 : 502,
+    corsHeaders
+  );
 }
 
 Deno.serve(async (req) => {
@@ -310,6 +517,20 @@ Deno.serve(async (req) => {
 
     const validatedPayload = payloadParse.data;
 
+    const provider = (Deno.env.get('CIOT_PROVIDER') || 'ciotonline').toLowerCase();
+    if (provider === 'ciotonline') {
+      return await emitViaCiotOnline({
+        supabase,
+        authHeader,
+        load: ailogLoad,
+        serviceOrderId: validatedPayload.serviceOrderId,
+        quoteId: validatedPayload.quoteId,
+        ambiente: validatedPayload.ambiente,
+        allowBelowFloor: Boolean(allowBelowFloor),
+        corsHeaders,
+      });
+    }
+
     let anttPisoMinimo: number | null = null;
     let belowFloor = false;
 
@@ -378,7 +599,7 @@ Deno.serve(async (req) => {
       provider?: string;
     };
 
-    const providerOverride = (Deno.env.get('CIOT_PROVIDER') || '').toLowerCase();
+    const providerOverride = provider;
 
     if (providerOverride === 'efrete') {
       const efrete = await emitCiotGratuitoEfrete({

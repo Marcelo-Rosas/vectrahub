@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildCiotOnlineEmit,
+  findAdoptableCiot,
+  mergeCiotMeta,
+  listItemsFromResponse,
   tipoViagemFromProprietario,
 } from '../../../supabase/functions/_shared/ciotonline-hub';
 import type { HubCiotLoad } from '../../../supabase/functions/_shared/ailog-ciot-hub';
@@ -145,5 +148,88 @@ describe('buildCiotOnlineEmit', () => {
       NOW
     );
     expect(r.ok).toBe(false);
+  });
+});
+
+describe('findAdoptableCiot', () => {
+  const items = [
+    {
+      id: 1,
+      codigo_cliente: 'OS-2026-11-0002',
+      status: 'emitido',
+      numero_ciot: '111',
+      protocolo: 'P1',
+    },
+    {
+      id: 2,
+      codigo_cliente: 'OS-2026-11-0003',
+      status: 'cancelado',
+      numero_ciot: '222',
+      protocolo: 'P2',
+    },
+    {
+      id: 3,
+      codigo_cliente: 'OS-2026-11-0003',
+      status: 'emitido',
+      numero_ciot: '333',
+      protocolo: 'P3',
+    },
+  ];
+
+  it('acha CIOT emitido pela OS', () => {
+    expect(findAdoptableCiot(items, 'OS-2026-11-0003')).toEqual({
+      id: 3,
+      numero_ciot: '333',
+      protocolo: 'P3',
+    });
+  });
+
+  it('ignora cancelado', () => {
+    expect(findAdoptableCiot([items[1]], 'OS-2026-11-0003')).toBeNull();
+  });
+
+  it('null sem match', () => {
+    expect(findAdoptableCiot(items, 'OS-2026-11-9999')).toBeNull();
+  });
+});
+
+describe('listItemsFromResponse', () => {
+  it('aceita data como array, data.items ou data.data', () => {
+    const it1 = { id: 1 };
+    expect(listItemsFromResponse([it1])).toEqual([it1]);
+    expect(listItemsFromResponse({ items: [it1] })).toEqual([it1]);
+    expect(listItemsFromResponse({ data: [it1], page: 1 })).toEqual([it1]);
+    expect(listItemsFromResponse(null)).toEqual([]);
+  });
+});
+
+describe('mergeCiotMeta', () => {
+  it('grava meta.ciot preservando o resto do pricing_breakdown', () => {
+    const pb = {
+      total: 10,
+      meta: { vpo: { idANTT: 'X' }, ciot: { number: 'OLD', cnpjResponsavel: '1' } },
+    };
+    const out = mergeCiotMeta(pb, {
+      number: '550000012345678',
+      protocolo: 'P',
+      provider: 'ciotonline',
+    });
+    expect(out).toEqual({
+      total: 10,
+      meta: {
+        vpo: { idANTT: 'X' },
+        ciot: { number: '550000012345678', protocolo: 'P', provider: 'ciotonline' },
+      },
+    });
+    expect(pb.meta.ciot.number).toBe('OLD');
+  });
+
+  it('null remove meta.ciot (cancelamento)', () => {
+    const out = mergeCiotMeta({ meta: { ciot: { number: '1' }, vpo: {} } }, null);
+    expect(out).toEqual({ meta: { vpo: {} } });
+  });
+
+  it('pricing_breakdown nulo vira objeto', () => {
+    expect(mergeCiotMeta(null, { number: '9' })).toEqual({ meta: { ciot: { number: '9' } } });
   });
 });

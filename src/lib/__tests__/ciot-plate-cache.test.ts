@@ -38,7 +38,7 @@ const NOW = new Date('2026-11-10T12:00:00Z');
 const hoursAgo = (h: number) => new Date(NOW.getTime() - h * 3600_000).toISOString();
 
 function client(result: unknown) {
-  return { validarPlaca: vi.fn(async () => result) };
+  return { validarPlaca: vi.fn(async (_q: { placa: string; rntrc?: string }) => result as never) };
 }
 
 const OK_TRUE = {

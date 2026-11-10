@@ -200,3 +200,50 @@ export function buildCiotOnlineEmit(
     },
   };
 }
+
+export type AdoptableCiot = { id: number; numero_ciot: string; protocolo: string };
+
+/** GET /ciots devolve a lista em `data` (array) ou em `data.items` / `data.data` — aceita os três. */
+export function listItemsFromResponse(data: unknown): Array<Record<string, unknown>> {
+  if (Array.isArray(data)) return data as Array<Record<string, unknown>>;
+  const d = data as { items?: unknown; data?: unknown; ciots?: unknown } | null;
+  for (const k of ['items', 'data', 'ciots'] as const) {
+    if (d && Array.isArray(d[k])) return d[k] as Array<Record<string, unknown>>;
+  }
+  return [];
+}
+
+/** Após timeout/503 na emissão: CIOT já criado na ANTT para a OS (evita emitir em dobro). */
+export function findAdoptableCiot(
+  items: Array<{
+    id: number;
+    codigo_cliente: string;
+    status: string;
+    numero_ciot: string;
+    protocolo: string;
+  }>,
+  osNumber: string
+): AdoptableCiot | null {
+  const hit = items.find((i) => i.codigo_cliente === osNumber && i.status === 'emitido');
+  return hit ? { id: hit.id, numero_ciot: hit.numero_ciot, protocolo: hit.protocolo } : null;
+}
+
+/**
+ * emit-mdfe lê o CIOT de orders.pricing_breakdown.meta.ciot (prioridade) e orders.ciot_number.
+ * Grava (ou remove, com null) meta.ciot sem tocar no resto do breakdown. Não muta a entrada.
+ */
+export function mergeCiotMeta(
+  pricingBreakdown: unknown,
+  ciot: Record<string, unknown> | null
+): Record<string, unknown> {
+  const pb =
+    pricingBreakdown && typeof pricingBreakdown === 'object'
+      ? { ...(pricingBreakdown as Record<string, unknown>) }
+      : {};
+  const meta =
+    pb.meta && typeof pb.meta === 'object' ? { ...(pb.meta as Record<string, unknown>) } : {};
+  if (ciot) meta.ciot = { ...ciot };
+  else delete meta.ciot;
+  pb.meta = meta;
+  return pb;
+}
