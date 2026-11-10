@@ -48,3 +48,14 @@ CREATE POLICY "Allow service_role all"
   TO service_role
   USING (true)
   WITH CHECK (true);
+
+-- Encerramento do CIOT (MDF-e encerrado) → status 'closed' em ciot_operations e orders.
+ALTER TABLE public.ciot_operations DROP CONSTRAINT IF EXISTS ciot_operations_status_check;
+ALTER TABLE public.ciot_operations
+  ADD CONSTRAINT ciot_operations_status_check
+  CHECK (status = ANY (ARRAY['pending', 'generated', 'cancelled', 'error', 'validation_failed', 'closed']));
+
+ALTER TABLE public.orders DROP CONSTRAINT IF EXISTS orders_ciot_status_check;
+ALTER TABLE public.orders
+  ADD CONSTRAINT orders_ciot_status_check
+  CHECK (ciot_status = ANY (ARRAY['pending', 'generated', 'cancelled', 'error', 'closed']));

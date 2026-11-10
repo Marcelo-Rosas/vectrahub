@@ -223,3 +223,6 @@ verify_jwt = false  # Gateway 401 Invalid JWT; chamado pelo front com Bearer de 
 
 [functions.get-vpo-recibo]
 verify_jwt = false  # Gateway 401 Invalid JWT; chamado pelo front com Bearer de usuário
+
+[functions.manage-ciot]
+verify_jwt = false  # Mesmo motivo do generate-ciot (preflight CORS); valida JWT via auth.getUser()
