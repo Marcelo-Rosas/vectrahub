@@ -8,6 +8,8 @@ const LICENCA =
 const MESSAGES: Record<string, string> = {
   token_invalido: 'Integração CIOT Online inválida — falar com admin',
   empresa_inativa: 'Integração CIOT Online inválida — falar com admin',
+  api_desabilitada:
+    'Integração via API não liberada no CIOT Online — pedir habilitação a adm@ciotonline.com.br',
   token_ausente: 'Integração CIOT Online inválida — falar com admin',
   sem_creditos: LICENCA,
   licenca_vencida: LICENCA,

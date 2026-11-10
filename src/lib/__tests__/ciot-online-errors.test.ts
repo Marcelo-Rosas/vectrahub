@@ -28,4 +28,8 @@ describe('ciotErrorMessage', () => {
     expect(ciotErrorMessage('xyz', undefined, 'Falha X')).toBe('Falha X');
     expect(ciotErrorMessage(undefined, undefined, undefined)).toBe('Falha ao processar CIOT');
   });
+
+  it('api_desabilitada → orienta pedir habilitação', () => {
+    expect(ciotErrorMessage('api_desabilitada')).toContain('adm@ciotonline.com.br');
+  });
 });
