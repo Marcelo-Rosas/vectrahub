@@ -188,6 +188,8 @@ export class FocusClient {
       data: string;
       sigla_uf: string;
       nome_municipio: string;
+      /** IBGE 7 dígitos — sem ele a Focus tenta resolver pelo nome e pode falhar ("Município inválido"). */
+      codigo_municipio?: number;
     }
   ): Promise<FocusResponse> {
     return this.request('POST', `/v2/mdfe/${encodeURIComponent(ref)}/encerrar`, payload);

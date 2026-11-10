@@ -172,6 +172,7 @@ serve(async (req) => {
       data: dataEncerrar,
       sigla_uf: uf,
       nome_municipio: nomeMunicipio,
+      codigo_municipio: codigoMunicipio,
     });
     if (resp.status >= 400) {
       return json(
