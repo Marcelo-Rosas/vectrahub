@@ -4,7 +4,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '14.15';
+    PostgrestVersion: '14.18';
   };
   feira: {
     Tables: {
@@ -70,6 +70,7 @@ export type Database = {
       companies: {
         Row: {
           active: boolean;
+          brand_domain: string | null;
           created_at: string;
           email_domains: string[];
           event_flag: string;
@@ -85,6 +86,7 @@ export type Database = {
         };
         Insert: {
           active?: boolean;
+          brand_domain?: string | null;
           created_at?: string;
           email_domains: string[];
           event_flag: string;
@@ -100,6 +102,7 @@ export type Database = {
         };
         Update: {
           active?: boolean;
+          brand_domain?: string | null;
           created_at?: string;
           email_domains?: string[];
           event_flag?: string;
@@ -115,8 +118,62 @@ export type Database = {
         };
         Relationships: [];
       };
+      company_brands: {
+        Row: {
+          brand_domain: string;
+          brand_name: string | null;
+          colors_json: Json | null;
+          company_id: string;
+          error_last: string | null;
+          fetched_at: string;
+          logo_symbol_url: string | null;
+          logo_url: string | null;
+          quality_score: number | null;
+          source: string;
+          tokens_from_api: boolean;
+          tokens_json: Json | null;
+        };
+        Insert: {
+          brand_domain: string;
+          brand_name?: string | null;
+          colors_json?: Json | null;
+          company_id: string;
+          error_last?: string | null;
+          fetched_at?: string;
+          logo_symbol_url?: string | null;
+          logo_url?: string | null;
+          quality_score?: number | null;
+          source?: string;
+          tokens_from_api?: boolean;
+          tokens_json?: Json | null;
+        };
+        Update: {
+          brand_domain?: string;
+          brand_name?: string | null;
+          colors_json?: Json | null;
+          company_id?: string;
+          error_last?: string | null;
+          fetched_at?: string;
+          logo_symbol_url?: string | null;
+          logo_url?: string | null;
+          quality_score?: number | null;
+          source?: string;
+          tokens_from_api?: boolean;
+          tokens_json?: Json | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'company_brands_company_id_fkey';
+            columns: ['company_id'];
+            isOneToOne: true;
+            referencedRelation: 'companies';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       product_boxes: {
         Row: {
+          box_role: string;
           box_type: string;
           boxes_per_unit: number;
           company_id: string;
@@ -124,25 +181,33 @@ export type Database = {
           height_mm: number;
           id: string;
           length_mm: number;
+          pbr_base_height_mm: number;
+          plates_per_pallet: number | null;
           product_id: string;
           sku: string;
+          stack_height_mm: number | null;
           volume_m3: number;
           width_mm: number;
         };
         Insert: {
+          box_role?: string;
           box_type: string;
           boxes_per_unit?: number;
-          company_id?: string;
+          company_id: string;
           group_weight_kg?: number;
           height_mm: number;
           id?: string;
           length_mm: number;
+          pbr_base_height_mm?: number;
+          plates_per_pallet?: number | null;
           product_id: string;
-          sku?: string;
+          sku: string;
+          stack_height_mm?: number | null;
           volume_m3?: number;
           width_mm: number;
         };
         Update: {
+          box_role?: string;
           box_type?: string;
           boxes_per_unit?: number;
           company_id?: string;
@@ -150,8 +215,11 @@ export type Database = {
           height_mm?: number;
           id?: string;
           length_mm?: number;
+          pbr_base_height_mm?: number;
+          plates_per_pallet?: number | null;
           product_id?: string;
           sku?: string;
+          stack_height_mm?: number | null;
           volume_m3?: number;
           width_mm?: number;
         };
@@ -172,39 +240,137 @@ export type Database = {
           },
         ];
       };
+      product_stack_specs: {
+        Row: {
+          company_id: string;
+          id: string;
+          oem_raw: string | null;
+          plates: number;
+          plates_source: string;
+          sku: string;
+          stack_kg_oem: number;
+          stack_kg_source: string;
+          stack_sides: number;
+          validated_at: string;
+        };
+        Insert: {
+          company_id: string;
+          id?: string;
+          oem_raw?: string | null;
+          plates: number;
+          plates_source?: string;
+          sku: string;
+          stack_kg_oem: number;
+          stack_kg_source?: string;
+          stack_sides?: number;
+          validated_at?: string;
+        };
+        Update: {
+          company_id?: string;
+          id?: string;
+          oem_raw?: string | null;
+          plates?: number;
+          plates_source?: string;
+          sku?: string;
+          stack_kg_oem?: number;
+          stack_kg_source?: string;
+          stack_sides?: number;
+          validated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'product_stack_specs_company_id_fkey';
+            columns: ['company_id'];
+            isOneToOne: false;
+            referencedRelation: 'companies';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       products: {
         Row: {
           active: boolean;
           box_types_count: number;
           boxes_total: number;
+          boxes_total_with_stack: number | null;
+          catalog_group: string | null;
+          colors: Json;
           company_id: string;
+          geometry_label: string | null;
+          has_weight_stack: boolean;
           id: string;
+          line_code: string | null;
+          m2_per_plate: number | null;
           name: string;
+          plate_length_mm: number | null;
+          plate_thickness_mm: number | null;
+          plate_width_mm: number | null;
+          product_kind: string;
           sku: string;
+          typical_use: string | null;
           volume_m3_per_unit: number;
+          volume_m3_with_stack: number | null;
+          weight_kg_per_plate: number | null;
           weight_kg_per_unit: number;
+          weight_kg_with_stack: number | null;
+          weight_stack_boxes_count: number | null;
+          weight_stack_sku: string | null;
         };
         Insert: {
           active?: boolean;
           box_types_count?: number;
           boxes_total?: number;
+          boxes_total_with_stack?: number | null;
+          catalog_group?: string | null;
+          colors?: Json;
           company_id: string;
+          geometry_label?: string | null;
+          has_weight_stack?: boolean;
           id?: string;
+          line_code?: string | null;
+          m2_per_plate?: number | null;
           name: string;
+          plate_length_mm?: number | null;
+          plate_thickness_mm?: number | null;
+          plate_width_mm?: number | null;
+          product_kind?: string;
           sku: string;
+          typical_use?: string | null;
           volume_m3_per_unit: number;
+          volume_m3_with_stack?: number | null;
+          weight_kg_per_plate?: number | null;
           weight_kg_per_unit: number;
+          weight_kg_with_stack?: number | null;
+          weight_stack_boxes_count?: number | null;
+          weight_stack_sku?: string | null;
         };
         Update: {
           active?: boolean;
           box_types_count?: number;
           boxes_total?: number;
+          boxes_total_with_stack?: number | null;
+          catalog_group?: string | null;
+          colors?: Json;
           company_id?: string;
+          geometry_label?: string | null;
+          has_weight_stack?: boolean;
           id?: string;
+          line_code?: string | null;
+          m2_per_plate?: number | null;
           name?: string;
+          plate_length_mm?: number | null;
+          plate_thickness_mm?: number | null;
+          plate_width_mm?: number | null;
+          product_kind?: string;
           sku?: string;
+          typical_use?: string | null;
           volume_m3_per_unit?: number;
+          volume_m3_with_stack?: number | null;
+          weight_kg_per_plate?: number | null;
           weight_kg_per_unit?: number;
+          weight_kg_with_stack?: number | null;
+          weight_stack_boxes_count?: number | null;
+          weight_stack_sku?: string | null;
         };
         Relationships: [
           {
@@ -220,6 +386,7 @@ export type Database = {
         Row: {
           boxes_count: number;
           id: string;
+          include_weight_stack: boolean;
           quantity: number;
           quote_id: string;
           selected_box_types: string[] | null;
@@ -230,6 +397,7 @@ export type Database = {
         Insert: {
           boxes_count: number;
           id?: string;
+          include_weight_stack?: boolean;
           quantity: number;
           quote_id: string;
           selected_box_types?: string[] | null;
@@ -240,6 +408,7 @@ export type Database = {
         Update: {
           boxes_count?: number;
           id?: string;
+          include_weight_stack?: boolean;
           quantity?: number;
           quote_id?: string;
           selected_box_types?: string[] | null;
@@ -259,14 +428,20 @@ export type Database = {
       };
       quotes: {
         Row: {
+          billable_weight_kg: number | null;
           cargo_value: number;
           client_id: string | null;
           company_id: string;
+          coverage_incomplete: boolean | null;
           created_at: string;
           created_by: string;
           destination: string;
           event_flag: string;
+          freight_modality: string | null;
+          freight_type_label: string | null;
           freight_weight: number;
+          gate_alerts: Json | null;
+          gate_mode_source: string | null;
           hub_total_cliente: number;
           id: string;
           km_distance: number;
@@ -278,18 +453,25 @@ export type Database = {
           toll_method: string;
           toll_percent: number;
           total_exibido: number;
+          vehicle_type_code: string | null;
           volume_m3: number;
           weight_kg: number;
         };
         Insert: {
+          billable_weight_kg?: number | null;
           cargo_value: number;
           client_id?: string | null;
           company_id: string;
+          coverage_incomplete?: boolean | null;
           created_at?: string;
           created_by: string;
           destination: string;
           event_flag: string;
+          freight_modality?: string | null;
+          freight_type_label?: string | null;
           freight_weight: number;
+          gate_alerts?: Json | null;
+          gate_mode_source?: string | null;
           hub_total_cliente: number;
           id?: string;
           km_distance: number;
@@ -301,18 +483,25 @@ export type Database = {
           toll_method: string;
           toll_percent: number;
           total_exibido: number;
+          vehicle_type_code?: string | null;
           volume_m3: number;
           weight_kg: number;
         };
         Update: {
+          billable_weight_kg?: number | null;
           cargo_value?: number;
           client_id?: string | null;
           company_id?: string;
+          coverage_incomplete?: boolean | null;
           created_at?: string;
           created_by?: string;
           destination?: string;
           event_flag?: string;
+          freight_modality?: string | null;
+          freight_type_label?: string | null;
           freight_weight?: number;
+          gate_alerts?: Json | null;
+          gate_mode_source?: string | null;
           hub_total_cliente?: number;
           id?: string;
           km_distance?: number;
@@ -324,6 +513,7 @@ export type Database = {
           toll_method?: string;
           toll_percent?: number;
           total_exibido?: number;
+          vehicle_type_code?: string | null;
           volume_m3?: number;
           weight_kg?: number;
         };
@@ -380,10 +570,27 @@ export type Database = {
       };
       is_fair_tenant_email: { Args: { p_email: string }; Returns: boolean };
       is_vectra_staff: { Args: never; Returns: boolean };
+      list_companies_for_session: {
+        Args: never;
+        Returns: {
+          active: boolean;
+          email_domains: string[];
+          event_flag: string;
+          id: string;
+          name: string;
+          origin_cep: string;
+          origin_city: string;
+          origin_label: string;
+          origin_uf: string;
+          slug: string;
+          toll_fallback_percent: number;
+        }[];
+      };
       resolve_company_id_for_email: {
         Args: { p_email: string };
         Returns: string;
       };
+      session_email: { Args: never; Returns: string };
     };
     Enums: {
       [_ in never]: never;
@@ -955,12 +1162,19 @@ export type Database = {
           ambiente: string;
           antt_piso_minimo: number | null;
           below_floor: boolean;
+          cancel_reason: string | null;
+          cancelled_at: string | null;
           ciot_number: string | null;
+          close_error: string | null;
+          closed_at: string | null;
           created_at: string;
           created_by: string | null;
           error_message: string | null;
           id: string;
           payload: Json;
+          protocolo: string | null;
+          provider: string;
+          provider_ciot_id: number | null;
           quote_id: string | null;
           raw_response: Json | null;
           service_order_id: string | null;
@@ -971,12 +1185,19 @@ export type Database = {
           ambiente?: string;
           antt_piso_minimo?: number | null;
           below_floor?: boolean;
+          cancel_reason?: string | null;
+          cancelled_at?: string | null;
           ciot_number?: string | null;
+          close_error?: string | null;
+          closed_at?: string | null;
           created_at?: string;
           created_by?: string | null;
           error_message?: string | null;
           id?: string;
           payload?: Json;
+          protocolo?: string | null;
+          provider?: string;
+          provider_ciot_id?: number | null;
           quote_id?: string | null;
           raw_response?: Json | null;
           service_order_id?: string | null;
@@ -987,12 +1208,19 @@ export type Database = {
           ambiente?: string;
           antt_piso_minimo?: number | null;
           below_floor?: boolean;
+          cancel_reason?: string | null;
+          cancelled_at?: string | null;
           ciot_number?: string | null;
+          close_error?: string | null;
+          closed_at?: string | null;
           created_at?: string;
           created_by?: string | null;
           error_message?: string | null;
           id?: string;
           payload?: Json;
+          protocolo?: string | null;
+          provider?: string;
+          provider_ciot_id?: number | null;
           quote_id?: string | null;
           raw_response?: Json | null;
           service_order_id?: string | null;
@@ -1071,6 +1299,42 @@ export type Database = {
             referencedColumns: ['order_id'];
           },
         ];
+      };
+      ciot_plate_checks: {
+        Row: {
+          checked_at: string;
+          id: string;
+          mensagem_antt: string | null;
+          placa: string;
+          raw: Json | null;
+          rntrc: string;
+          transportador: Json | null;
+          veiculo: Json | null;
+          vinculo_valido: boolean;
+        };
+        Insert: {
+          checked_at?: string;
+          id?: string;
+          mensagem_antt?: string | null;
+          placa: string;
+          raw?: Json | null;
+          rntrc: string;
+          transportador?: Json | null;
+          veiculo?: Json | null;
+          vinculo_valido: boolean;
+        };
+        Update: {
+          checked_at?: string;
+          id?: string;
+          mensagem_antt?: string | null;
+          placa?: string;
+          raw?: Json | null;
+          rntrc?: string;
+          transportador?: Json | null;
+          veiculo?: Json | null;
+          vinculo_valido?: boolean;
+        };
+        Relationships: [];
       };
       clients: {
         Row: {
@@ -1619,6 +1883,42 @@ export type Database = {
           user_id?: string | null;
           valid_from?: string | null;
           valid_until?: string | null;
+        };
+        Relationships: [];
+      };
+      cotacoes: {
+        Row: {
+          assunto: string;
+          created_at: string;
+          email: string;
+          empresa: string | null;
+          id: string;
+          mensagem: string;
+          nome: string;
+          status: string | null;
+          telefone: string | null;
+        };
+        Insert: {
+          assunto: string;
+          created_at?: string;
+          email: string;
+          empresa?: string | null;
+          id?: string;
+          mensagem: string;
+          nome: string;
+          status?: string | null;
+          telefone?: string | null;
+        };
+        Update: {
+          assunto?: string;
+          created_at?: string;
+          email?: string;
+          empresa?: string | null;
+          id?: string;
+          mensagem?: string;
+          nome?: string;
+          status?: string | null;
+          telefone?: string | null;
         };
         Relationships: [];
       };
@@ -2433,6 +2733,214 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'valid_users';
             referencedColumns: ['user_id'];
+          },
+        ];
+      };
+      insurance_exception_requests: {
+        Row: {
+          applied_limit: number | null;
+          cargo_value: number;
+          created_at: string;
+          created_by: string | null;
+          decided_at: string | null;
+          decided_by: string | null;
+          docx_storage_path: string | null;
+          email_cc: string[] | null;
+          email_message_id: string | null;
+          email_to: string[] | null;
+          form_data: Json;
+          id: string;
+          liberation_code: string | null;
+          limit_basis: string | null;
+          order_id: string | null;
+          planned_start_at: string | null;
+          policy_id: string | null;
+          quote_ids: string[];
+          reasons: string[];
+          response_deadline: string | null;
+          response_notes: string | null;
+          response_storage_path: string | null;
+          risk_acceptance_reason: string | null;
+          risk_accepted_at: string | null;
+          risk_accepted_by: string | null;
+          sent_at: string | null;
+          sent_by: string | null;
+          status: string;
+          trip_id: string | null;
+          updated_at: string;
+          vehicle_plate: string | null;
+        };
+        Insert: {
+          applied_limit?: number | null;
+          cargo_value: number;
+          created_at?: string;
+          created_by?: string | null;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          docx_storage_path?: string | null;
+          email_cc?: string[] | null;
+          email_message_id?: string | null;
+          email_to?: string[] | null;
+          form_data?: Json;
+          id?: string;
+          liberation_code?: string | null;
+          limit_basis?: string | null;
+          order_id?: string | null;
+          planned_start_at?: string | null;
+          policy_id?: string | null;
+          quote_ids?: string[];
+          reasons?: string[];
+          response_deadline?: string | null;
+          response_notes?: string | null;
+          response_storage_path?: string | null;
+          risk_acceptance_reason?: string | null;
+          risk_accepted_at?: string | null;
+          risk_accepted_by?: string | null;
+          sent_at?: string | null;
+          sent_by?: string | null;
+          status?: string;
+          trip_id?: string | null;
+          updated_at?: string;
+          vehicle_plate?: string | null;
+        };
+        Update: {
+          applied_limit?: number | null;
+          cargo_value?: number;
+          created_at?: string;
+          created_by?: string | null;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          docx_storage_path?: string | null;
+          email_cc?: string[] | null;
+          email_message_id?: string | null;
+          email_to?: string[] | null;
+          form_data?: Json;
+          id?: string;
+          liberation_code?: string | null;
+          limit_basis?: string | null;
+          order_id?: string | null;
+          planned_start_at?: string | null;
+          policy_id?: string | null;
+          quote_ids?: string[];
+          reasons?: string[];
+          response_deadline?: string | null;
+          response_notes?: string | null;
+          response_storage_path?: string | null;
+          risk_acceptance_reason?: string | null;
+          risk_accepted_at?: string | null;
+          risk_accepted_by?: string | null;
+          sent_at?: string | null;
+          sent_by?: string | null;
+          status?: string;
+          trip_id?: string | null;
+          updated_at?: string;
+          vehicle_plate?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'insurance_exception_requests_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'valid_users';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_decided_by_fkey';
+            columns: ['decided_by'];
+            isOneToOne: false;
+            referencedRelation: 'valid_users';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_order_id_fkey';
+            columns: ['order_id'];
+            isOneToOne: false;
+            referencedRelation: 'orders';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_order_id_fkey';
+            columns: ['order_id'];
+            isOneToOne: false;
+            referencedRelation: 'orders_rs_per_km';
+            referencedColumns: ['order_id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_order_id_fkey';
+            columns: ['order_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_order_payment_reconciliation';
+            referencedColumns: ['order_id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_order_id_fkey';
+            columns: ['order_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_quote_order_divergence';
+            referencedColumns: ['order_id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_order_id_fkey';
+            columns: ['order_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_trip_financial_details';
+            referencedColumns: ['order_id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_order_id_fkey';
+            columns: ['order_id'];
+            isOneToOne: false;
+            referencedRelation: 'vw_order_risk_status';
+            referencedColumns: ['order_id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_policy_id_fkey';
+            columns: ['policy_id'];
+            isOneToOne: false;
+            referencedRelation: 'risk_policies';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_risk_accepted_by_fkey';
+            columns: ['risk_accepted_by'];
+            isOneToOne: false;
+            referencedRelation: 'valid_users';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_sent_by_fkey';
+            columns: ['sent_by'];
+            isOneToOne: false;
+            referencedRelation: 'valid_users';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_trip_id_fkey';
+            columns: ['trip_id'];
+            isOneToOne: false;
+            referencedRelation: 'trip_financial_summary';
+            referencedColumns: ['trip_id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_trip_id_fkey';
+            columns: ['trip_id'];
+            isOneToOne: false;
+            referencedRelation: 'trips';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_trip_id_fkey';
+            columns: ['trip_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_trip_payment_reconciliation';
+            referencedColumns: ['trip_id'];
+          },
+          {
+            foreignKeyName: 'insurance_exception_requests_trip_id_fkey';
+            columns: ['trip_id'];
+            isOneToOne: false;
+            referencedRelation: 'vw_trip_risk_summary';
+            referencedColumns: ['trip_id'];
           },
         ];
       };
@@ -5980,6 +6488,7 @@ export type Database = {
       };
       shipper_product_boxes: {
         Row: {
+          box_role: string;
           box_type: string;
           boxes_per_unit: number;
           created_at: string;
@@ -5992,6 +6501,7 @@ export type Database = {
           width_mm: number;
         };
         Insert: {
+          box_role?: string;
           box_type: string;
           boxes_per_unit?: number;
           created_at?: string;
@@ -6004,6 +6514,7 @@ export type Database = {
           width_mm: number;
         };
         Update: {
+          box_role?: string;
           box_type?: string;
           boxes_per_unit?: number;
           created_at?: string;
@@ -6030,40 +6541,58 @@ export type Database = {
           active: boolean;
           box_types_count: number;
           boxes_total: number;
+          boxes_total_with_stack: number | null;
           created_at: string;
+          has_weight_stack: boolean;
           id: string;
           name: string;
           shipper_id: string;
           sku: string;
           updated_at: string;
           volume_m3_per_unit: number;
+          volume_m3_with_stack: number | null;
           weight_kg_per_unit: number;
+          weight_kg_with_stack: number | null;
+          weight_stack_boxes_count: number | null;
+          weight_stack_sku: string | null;
         };
         Insert: {
           active?: boolean;
           box_types_count?: number;
           boxes_total?: number;
+          boxes_total_with_stack?: number | null;
           created_at?: string;
+          has_weight_stack?: boolean;
           id?: string;
           name: string;
           shipper_id: string;
           sku: string;
           updated_at?: string;
           volume_m3_per_unit: number;
+          volume_m3_with_stack?: number | null;
           weight_kg_per_unit: number;
+          weight_kg_with_stack?: number | null;
+          weight_stack_boxes_count?: number | null;
+          weight_stack_sku?: string | null;
         };
         Update: {
           active?: boolean;
           box_types_count?: number;
           boxes_total?: number;
+          boxes_total_with_stack?: number | null;
           created_at?: string;
+          has_weight_stack?: boolean;
           id?: string;
           name?: string;
           shipper_id?: string;
           sku?: string;
           updated_at?: string;
           volume_m3_per_unit?: number;
+          volume_m3_with_stack?: number | null;
           weight_kg_per_unit?: number;
+          weight_kg_with_stack?: number | null;
+          weight_stack_boxes_count?: number | null;
+          weight_stack_sku?: string | null;
         };
         Relationships: [
           {
@@ -8155,6 +8684,86 @@ export type Database = {
         Returns: string;
       };
       link_order_to_trip: { Args: { p_order_id: string }; Returns: string };
+      lock_quote_for_contract: {
+        Args: { p_quote_id: string };
+        Returns: {
+          additional_shippers: Json;
+          advance_due_date: string | null;
+          approval_metadata: Json | null;
+          approval_status: string | null;
+          assigned_to: string | null;
+          balance_due_date: string | null;
+          billable_weight: number | null;
+          cargo_type: string | null;
+          cargo_value: number | null;
+          client_email: string | null;
+          client_id: string | null;
+          client_name: string;
+          commercial_owner_name: string | null;
+          conditional_fees_breakdown: Json | null;
+          contract_splits: Json;
+          created_at: string;
+          created_by: string;
+          cubage_weight: number | null;
+          delivered_at: string | null;
+          delivery_conditions_selected: Json | null;
+          delivery_notes: string | null;
+          destination: string;
+          destination_cep: string | null;
+          destination_ibge: number | null;
+          destination_uf: string | null;
+          discharge_checklist_selected: Json | null;
+          discount_value: number | null;
+          email_sent: boolean;
+          email_sent_at: string | null;
+          estimated_loading_date: string | null;
+          followup_target_locked_at: string | null;
+          followup_target_type: string | null;
+          freight_modality: string | null;
+          freight_type: string | null;
+          handoff_required: boolean;
+          id: string;
+          is_legacy: boolean;
+          km_distance: number | null;
+          last_commercial_reply_at: string | null;
+          nfe_keys: string[] | null;
+          notes: string | null;
+          opened_at: string | null;
+          origin: string;
+          origin_cep: string | null;
+          origin_ibge: number | null;
+          origin_uf: string | null;
+          payment_method: string | null;
+          payment_term_id: string | null;
+          price_table_id: string | null;
+          pricing_breakdown: Json | null;
+          proposal_sent_at: string | null;
+          quote_code: string | null;
+          resend_email_id: string | null;
+          sent_at: string | null;
+          shipper_email: string | null;
+          shipper_id: string | null;
+          shipper_name: string | null;
+          stage: Database['public']['Enums']['quote_stage'];
+          tac_percent: number | null;
+          tags: string[] | null;
+          toll_value: number | null;
+          tomador_tipo: number | null;
+          updated_at: string;
+          validity_date: string | null;
+          value: number;
+          vehicle_type_id: string | null;
+          volume: number | null;
+          waiting_time_cost: number | null;
+          weight: number | null;
+        }[];
+        SetofOptions: {
+          from: '*';
+          to: 'quotes';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       lookup_rntrc_open_data: {
         Args: { p_cnpj?: string; p_rntrc?: string };
         Returns: {
@@ -8225,17 +8834,9 @@ export type Database = {
       collection_order_status: 'emitida' | 'cancelada';
       compliance_check_status: 'ok' | 'warning' | 'violation';
       compliance_check_type:
-        | 'pre_contratacao'
-        | 'pre_coleta'
-        | 'pre_entrega'
-        | 'auditoria_periodica';
+        'pre_contratacao' | 'pre_coleta' | 'pre_entrega' | 'auditoria_periodica';
       cte_emission_status:
-        | 'draft'
-        | 'sent'
-        | 'processing'
-        | 'authorized'
-        | 'rejected'
-        | 'cancelled';
+        'draft' | 'sent' | 'processing' | 'authorized' | 'rejected' | 'cancelled';
       cte_router: 'cfn' | 'active' | 'none';
       document_type:
         | 'nfe'
@@ -8262,23 +8863,13 @@ export type Database = {
         | 'xml';
       driver_contract_type: 'proprio' | 'agregado' | 'terceiro';
       driver_qualification_status:
-        | 'pendente'
-        | 'em_analise'
-        | 'aprovado'
-        | 'reprovado'
-        | 'bloqueado';
+        'pendente' | 'em_analise' | 'aprovado' | 'reprovado' | 'bloqueado';
       financial_doc_type: 'FAT' | 'PAG';
       financial_installment_status: 'pendente' | 'baixado';
       financial_source_type: 'quote' | 'order';
       focus_ambiente: 'homolog' | 'prod';
       mdfe_emission_status:
-        | 'draft'
-        | 'sent'
-        | 'processing'
-        | 'authorized'
-        | 'rejected'
-        | 'encerrado'
-        | 'cancelled';
+        'draft' | 'sent' | 'processing' | 'authorized' | 'rejected' | 'encerrado' | 'cancelled';
       occurrence_severity: 'baixa' | 'media' | 'alta' | 'critica';
       order_stage:
         | 'ordem_criada'
@@ -8332,12 +8923,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
@@ -8357,13 +8948,12 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+    keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
@@ -8382,13 +8972,12 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+    keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
@@ -8407,13 +8996,12 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    keyof DefaultSchema['Enums'] | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
@@ -8424,13 +9012,12 @@ export type Enums<
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    keyof DefaultSchema['CompositeTypes'] | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
