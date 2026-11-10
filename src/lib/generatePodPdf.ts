@@ -66,11 +66,6 @@ const CW = PW - ML - MR;
 /** Referência histórica de altura de canhoto em faixa (testes). Layout usa planPodImage. */
 export const POD_IMAGE_MAX_HEIGHT_MM = 62;
 const POD_FOOTER_RESERVE_MM = 16;
-/** Página dedicada ao canhoto: topo (título) até o rodapé. */
-const POD_FULL_PAGE_TOP_MM = 20;
-export const POD_FULL_PAGE_IMAGE_HEIGHT_MM = 297 - POD_FULL_PAGE_TOP_MM - POD_FOOTER_RESERVE_MM;
-/** Abaixo disso (fração da largura útil) a foto fica ilegível na página 1. */
-const POD_MIN_WIDTH_RATIO = 0.55;
 
 /**
  * Encaixa a foto no retângulo (contain): mantém aspect ratio, nunca estoura
@@ -96,19 +91,17 @@ export function fitImageContain(
 }
 
 /**
- * Onde desenhar a foto do POD. Canhoto em faixa cabe na página atual; foto do DANFE
- * inteiro em retrato ficaria estreita (ilegível) → vai para página própria em tamanho cheio.
+ * Tamanho da foto do POD: comprovante é sempre UMA página. A foto ocupa todo o espaço
+ * livre abaixo da tabela (largura útil × altura restante), sem teto fixo — canhoto em
+ * faixa usa a largura toda; DANFE em retrato usa a altura toda. Resolução original
+ * é mantida no PDF (zoom legível).
  */
 export function planPodImage(
   srcW: number,
   srcH: number,
   availH: number
-): { page: 'current' | 'new'; width: number; height: number } {
-  const current = fitImageContain(srcW, srcH, CW, availH);
-  if (current.width >= CW * POD_MIN_WIDTH_RATIO) return { page: 'current', ...current };
-  const full = fitImageContain(srcW, srcH, CW, POD_FULL_PAGE_IMAGE_HEIGHT_MM);
-  if (full.width > current.width * 1.15) return { page: 'new', ...full };
-  return { page: 'current', ...current };
+): { width: number; height: number } {
+  return fitImageContain(srcW, srcH, CW, availH);
 }
 
 /** Data de entrega = registro do canhoto (não a previsão `eta`). Horário de Brasília. */
@@ -380,17 +373,8 @@ function drawPodImages(doc: PdfDoc, imageDataUrls: string[], y: number): number 
     }
     const left = urls.length - i;
     const slot = (pageHeight - imgY - POD_FOOTER_RESERVE_MM) / left - (left > 1 ? 3 : 0);
-    const plan = slot >= 10 ? planPodImage(props.width, props.height, slot) : null;
-    if (!plan || plan.page === 'new') {
-      // Foto em retrato (DANFE inteiro) ou sem espaço: página própria, tamanho cheio.
-      const full =
-        plan ?? fitImageContain(props.width, props.height, CW, POD_FULL_PAGE_IMAGE_HEIGHT_MM);
-      doc.addPage();
-      const label = urls.length > 1 ? `${title} — ${i + 1}/${urls.length}` : title;
-      const top = drawSectionTitle(doc, label, 14);
-      imgY = drawImageAt(doc, url, Math.max(top, POD_FULL_PAGE_TOP_MM), full.width, full.height);
-      continue;
-    }
+    if (slot < 10) break;
+    const plan = planPodImage(props.width, props.height, slot);
     imgY = drawImageAt(doc, url, imgY, plan.width, plan.height);
   }
   return imgY;

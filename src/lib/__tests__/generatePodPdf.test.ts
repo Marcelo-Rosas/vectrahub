@@ -3,7 +3,6 @@ import {
   fitImageContain,
   generatePodPdf,
   POD_IMAGE_MAX_HEIGHT_MM,
-  POD_FULL_PAGE_IMAGE_HEIGHT_MM,
   planPodImage,
   podDeliveryLabel,
   withSingleShipperDocs,
@@ -157,23 +156,26 @@ describe('generatePodPdf', () => {
   });
 });
 
-describe('planPodImage — foto do POD legível', () => {
-  it('canhoto paisagem cabe na página atual na largura útil', () => {
-    const p = planPodImage(1600, 355, 150);
-    expect(p.page).toBe('current');
+describe('planPodImage — página única', () => {
+  it('canhoto em faixa (paisagem) usa a largura útil toda', () => {
+    const p = planPodImage(1600, 355, 140);
     expect(p.width).toBeCloseTo(186, 5);
+    expect(p.height).toBeLessThan(140);
   });
 
-  it('DANFE inteiro em retrato (900×1600) que ficaria estreito vai para página própria', () => {
-    const p = planPodImage(900, 1600, 150);
-    expect(p.page).toBe('new');
-    expect(p.width).toBeGreaterThan(140);
-    expect(p.height).toBeLessThanOrEqual(POD_FULL_PAGE_IMAGE_HEIGHT_MM);
+  it('DANFE em retrato (900×1600) usa toda a altura livre, sem teto de 62mm', () => {
+    const p = planPodImage(900, 1600, 140);
+    expect(p.height).toBeCloseTo(140, 5);
+    expect(p.height).toBeGreaterThan(POD_IMAGE_MAX_HEIGHT_MM);
+    expect(p.width).toBeCloseTo(140 * (900 / 1600), 5);
   });
+});
 
-  it('retrato que já fica largo o bastante permanece na página atual', () => {
-    const p = planPodImage(1000, 1100, 200);
-    expect(p.page).toBe('current');
+describe('generatePodPdf — página única', () => {
+  it('OS com foto do POD gera PDF de 1 página', async () => {
+    const [file] = await generatePodPdf(basePayload({ shipper_2_name: null }));
+    const text = await pdfText(file!.blob);
+    expect(text.match(/\/Type\s*\/Page[^s]/g)?.length).toBe(1);
   });
 });
 
