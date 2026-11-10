@@ -12,6 +12,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { FocusClient, type FocusAmbiente } from '../_shared/focus-client.ts';
 import { normalizeSefazJustificativa } from '../_shared/sefaz-justificativa.ts';
+import { createCiotOnlineClient } from '../_shared/ciotonline-client.ts';
+import { closeCiotsForMdfe } from '../_shared/ciot-close.ts';
 
 function envOrThrow(key: string): string {
   const v = Deno.env.get(key);
