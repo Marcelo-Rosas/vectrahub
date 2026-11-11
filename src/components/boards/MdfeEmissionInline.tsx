@@ -234,25 +234,26 @@ export function MdfeEmissionInline({
           </Button>
         )}
 
-        {isProcessing && !readOnly && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleConsult();
-            }}
-            disabled={manage.isPending}
-          >
-            {manage.isPending ? (
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-            ) : (
-              <RefreshCw className="w-3 h-3 mr-1" />
-            )}
-            Consultar
-          </Button>
-        )}
+        {(isProcessing || ((isAuthorized || isEncerrado) && !emission?.data_autorizacao)) &&
+          !readOnly && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleConsult();
+              }}
+              disabled={manage.isPending}
+            >
+              {manage.isPending ? (
+                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              ) : (
+                <RefreshCw className="w-3 h-3 mr-1" />
+              )}
+              Consultar
+            </Button>
+          )}
 
         {isAuthorized && !readOnly && (
           <>
